@@ -1,23 +1,13 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Image, Link } from "@heroui/react";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import NextImage from "next/image";
 
 export default function Home() {
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
+    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <Image
+          as={NextImage}
           className="dark:invert"
           src="/next.svg"
           alt="Next.js logo"
@@ -25,10 +15,10 @@ export default function Home() {
           height={38}
           priority
         />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
+        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left">
           <li className="mb-2 tracking-[-.01em]">
             Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
+            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
               src/pages/index.tsx
             </code>
             .
@@ -38,13 +28,14 @@ export default function Home() {
           </li>
         </ol>
         <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
+          <Link
             className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
             href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
             target="_blank"
             rel="noopener noreferrer"
           >
             <Image
+              as={NextImage}
               className="dark:invert"
               src="/vercel.svg"
               alt="Vercel logomark"
@@ -52,15 +43,15 @@ export default function Home() {
               height={20}
             />
             Deploy now
-          </a>
-          <a
+          </Link>
+          <Link
             className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
             href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
             target="_blank"
             rel="noopener noreferrer"
           >
             Read our docs
-          </a>
+          </Link>
         </div>
       </main>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
@@ -71,6 +62,7 @@ export default function Home() {
           rel="noopener noreferrer"
         >
           <Image
+            as={NextImage}
             aria-hidden
             src="/file.svg"
             alt="File icon"
@@ -86,6 +78,7 @@ export default function Home() {
           rel="noopener noreferrer"
         >
           <Image
+            as={NextImage}
             aria-hidden
             src="/window.svg"
             alt="Window icon"
@@ -101,6 +94,7 @@ export default function Home() {
           rel="noopener noreferrer"
         >
           <Image
+            as={NextImage}
             aria-hidden
             src="/globe.svg"
             alt="Globe icon"
