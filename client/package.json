@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack --port 3001",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -12,6 +12,7 @@
     "@heroui/react": "^2.8.0-beta.0",
     "framer-motion": "^12.6.5",
     "next": "15.3.0",
+    "next-auth": "^5.0.0-beta.25",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
