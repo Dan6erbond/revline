@@ -22,6 +22,15 @@ import {
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { DollarSign, Fuel, MapPin, Percent, Plus } from "lucide-react";
 import { FuelCategory, OctaneRating } from "../../gql/graphql";
+import {
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
 import { useMutation, useQuery } from "@apollo/client";
 
@@ -162,6 +171,23 @@ export default function FuelUps() {
         <Button onPress={onOpen} startContent={<Plus />} className="self-end">
           Add
         </Button>
+        <div className="h-[250] md:h-[350] lg:h-[450]">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={data?.car?.fuelUps.map((fu) => ({
+                ...fu,
+                occurredAt: new Date(fu.occurredAt).toLocaleDateString(),
+              }))}
+            >
+              <XAxis dataKey="occurredAt" />
+              <YAxis />
+              <Tooltip contentStyle={{ background: "transparent" }} />
+              <Legend />
+              <Line type="monotone" dataKey="amount" stroke="#8884d8" />
+              <Line type="monotone" dataKey="cost" stroke="#82ca9d" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
         {data?.car?.fuelUps.map((fu) => (
           <Card key={fu.id}>
             <CardHeader>{fu.station}</CardHeader>
