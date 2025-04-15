@@ -1,4 +1,4 @@
-import { ColorScale, heroui, colors } from "@heroui/react";
+import { ColorScale, commonColors, heroui } from "@heroui/react";
 import type { Config } from "tailwindcss";
 
 const teal = {
@@ -42,6 +42,9 @@ export default {
               ...teal,
               foreground: "#FFFFFF",
               DEFAULT: teal[600],
+            },
+            default: {
+              DEFAULT: commonColors.zinc[700],
             },
           },
         },

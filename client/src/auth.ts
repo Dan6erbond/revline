@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
 import Zitadel from "next-auth/providers/zitadel";
+import { buildClient } from "./apollo-client";
+import { graphql } from "./gql";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -15,12 +17,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.refreshToken = account.refresh_token;
       }
 
-      // TODO: Check if access token is expired then generate a new one
-
       return token;
     },
-    session: ({ session, token }) => {
-      return { ...session, accessToken: token.idToken };
+    session: async ({ session, token }) => {
+      let user = session.user;
+
+      if (!user.id) {
+        const { data } = await buildClient(async () => session).query({
+          query: graphql(`
+            query GetMe {
+              me {
+                id
+                email
+              }
+            }
+          `),
+        });
+
+        if (data.me) {
+          user = { ...data.me, ...user };
+        }
+      }
+
+      return { ...session, user, accessToken: token.idToken };
     },
     signIn: async () => {
       /* if (account) {

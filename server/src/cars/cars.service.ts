@@ -60,4 +60,8 @@ export class CarsService {
 
     return car;
   }
+
+  async findByOwner(owner: User) {
+    return await this.carRepository.findAll({ where: { owner: owner.id } });
+  }
 }

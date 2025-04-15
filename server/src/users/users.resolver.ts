@@ -1,14 +1,24 @@
 import { UseGuards } from "@nestjs/common";
-import { Query, Resolver } from "@nestjs/graphql";
-import { User } from "../auth/auth.decorator";
-import { GQLAuthGuard } from "../auth/gql-auth.guard";
-import { User as UserModel } from "../graphql";
+import { Parent, Query, ResolveField, Resolver } from "@nestjs/graphql";
+import { AuthGuard, AuthRequired } from "../auth/auth.guard";
+import { Profile, User as UserModel } from "../graphql";
+import { ProfileService } from "../profile/profile.service";
+import { User } from "./user.entity";
+import { User as AuthUser } from "../auth/auth.decorator";
 
-@Resolver("Users")
+@Resolver("User")
 export class UsersResolver {
+  constructor(private readonly profileService: ProfileService) {}
+
   @Query()
-  @UseGuards(GQLAuthGuard)
-  me(@User() user: UserModel): UserModel {
+  @AuthRequired(true)
+  @UseGuards(AuthGuard)
+  me(@AuthUser() user: UserModel): UserModel {
     return user;
+  }
+
+  @ResolveField()
+  async profile(@Parent() user: User): Promise<Profile | null> {
+    return await this.profileService.getUserProfile(user);
   }
 }

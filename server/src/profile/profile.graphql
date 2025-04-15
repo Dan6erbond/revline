@@ -1,4 +1,5 @@
 type Profile {
+  id: ID!
   username: String!
 }
 

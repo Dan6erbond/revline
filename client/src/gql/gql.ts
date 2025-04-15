@@ -14,10 +14,16 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "\n            query GetProfile {\n              profile {\n                username\n              }\n            }\n          ": typeof types.GetProfileDocument,
+    "\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          ": typeof types.GetMeDocument,
+    "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n      }\n    }\n  }\n": typeof types.GetMeNavbarDocument,
+    "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n    }\n  }\n": typeof types.CreateCarDocument,
+    "\n  query GetGarage {\n    cars {\n      id\n      name\n      make\n      model\n      year\n    }\n  }\n": typeof types.GetGarageDocument,
 };
 const documents: Documents = {
-    "\n            query GetProfile {\n              profile {\n                username\n              }\n            }\n          ": types.GetProfileDocument,
+    "\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          ": types.GetMeDocument,
+    "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n      }\n    }\n  }\n": types.GetMeNavbarDocument,
+    "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n    }\n  }\n": types.CreateCarDocument,
+    "\n  query GetGarage {\n    cars {\n      id\n      name\n      make\n      model\n      year\n    }\n  }\n": types.GetGarageDocument,
 };
 
 /**
@@ -37,7 +43,19 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n            query GetProfile {\n              profile {\n                username\n              }\n            }\n          "): (typeof documents)["\n            query GetProfile {\n              profile {\n                username\n              }\n            }\n          "];
+export function graphql(source: "\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          "): (typeof documents)["\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          "];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetGarage {\n    cars {\n      id\n      name\n      make\n      model\n      year\n    }\n  }\n"): (typeof documents)["\n  query GetGarage {\n    cars {\n      id\n      name\n      make\n      model\n      year\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

@@ -7,5 +7,6 @@ import { ProfileService } from "./profile.service";
 @Module({
   imports: [MikroOrmModule.forFeature([Profile])],
   providers: [ProfileService, ProfileResolver],
+  exports: [ProfileService],
 })
 export class ProfileModule {}

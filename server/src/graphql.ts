@@ -45,12 +45,14 @@ export interface IMutation {
 }
 
 export interface Profile {
+    id: string;
     username: string;
 }
 
 export interface User {
     id: string;
     email: string;
+    profile?: Nullable<Profile>;
 }
 
 type Nullable<T> = T | null;

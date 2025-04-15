@@ -1,9 +1,9 @@
-import { Args, Mutation, Resolver } from "@nestjs/graphql";
+import { Args, Mutation, Query, Resolver } from "@nestjs/graphql";
 
-import { GQLAuthGuard } from "../auth/gql-auth.guard";
-import { Inject, UseGuards } from "@nestjs/common";
-import { Car, CreateCarInput } from "../graphql";
+import { UseGuards } from "@nestjs/common";
 import { User } from "../auth/auth.decorator";
+import { AuthGuard, AuthRequired } from "../auth/auth.guard";
+import { Car, CreateCarInput } from "../graphql";
 import { User as UserModel } from "../users/user.entity";
 import { CarsService } from "./cars.service";
 
@@ -11,8 +11,16 @@ import { CarsService } from "./cars.service";
 export class CarsResolver {
   constructor(private carsService: CarsService) {}
 
+  @AuthRequired(true)
+  @Query()
+  @UseGuards(AuthGuard)
+  async cars(@User() user: UserModel): Promise<Car[]> {
+    return await this.carsService.findByOwner(user);
+  }
+
+  @AuthRequired(true)
   @Mutation()
-  @UseGuards(GQLAuthGuard)
+  @UseGuards(AuthGuard)
   async createCar(
     @Args("input") input: CreateCarInput,
     @User() user: UserModel,
