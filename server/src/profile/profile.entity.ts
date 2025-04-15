@@ -5,7 +5,7 @@ import { User } from "../users/user.entity";
 
 @Entity()
 export class Profile extends BaseEntity {
-  @OneToOne()
+  @OneToOne(() => User)
   user: User;
 
   @Property()

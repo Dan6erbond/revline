@@ -1,3 +1,4 @@
+
 /*
  * -------------------------------------------------------
  * THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
@@ -7,14 +8,14 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export class CreateCarInput {
+export interface CreateCarInput {
     name: string;
     make?: Nullable<string>;
     model?: Nullable<string>;
     year?: Nullable<number>;
 }
 
-export class UpdateCarInput {
+export interface UpdateCarInput {
     id: string;
     name?: Nullable<string>;
     make?: Nullable<string>;
@@ -22,7 +23,7 @@ export class UpdateCarInput {
     year?: Nullable<number>;
 }
 
-export class Car {
+export interface Car {
     id: string;
     name: string;
     make?: Nullable<string>;
@@ -31,27 +32,23 @@ export class Car {
     owner: User;
 }
 
-export abstract class IQuery {
-    abstract car(id: string): Nullable<Car> | Promise<Nullable<Car>>;
-
-    abstract cars(): Car[] | Promise<Car[]>;
-
-    abstract profile(): Nullable<Profile> | Promise<Nullable<Profile>>;
-
-    abstract me(): Nullable<User> | Promise<Nullable<User>>;
+export interface IQuery {
+    car(id: string): Nullable<Car> | Promise<Nullable<Car>>;
+    cars(): Car[] | Promise<Car[]>;
+    profile(): Nullable<Profile> | Promise<Nullable<Profile>>;
+    me(): Nullable<User> | Promise<Nullable<User>>;
 }
 
-export abstract class IMutation {
-    abstract createCar(input: CreateCarInput): Car | Promise<Car>;
-
-    abstract updateCar(input: UpdateCarInput): Car | Promise<Car>;
+export interface IMutation {
+    createCar(input: CreateCarInput): Car | Promise<Car>;
+    updateCar(input: UpdateCarInput): Car | Promise<Car>;
 }
 
-export class Profile {
+export interface Profile {
     username: string;
 }
 
-export class User {
+export interface User {
     id: string;
     email: string;
 }
