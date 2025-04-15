@@ -5,7 +5,9 @@ import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { CarsModule } from "./cars/cars.module";
 import { ConfigModule } from "@nestjs/config";
+import { FuelupsModule } from "./fuelups/fuelups.module";
 import { GraphQLModule } from "@nestjs/graphql";
+import { GraphqlModule } from "./graphql/graphql.module";
 import { MikroOrmModule } from "@mikro-orm/nestjs";
 import { Module } from "@nestjs/common";
 import { ProfileModule } from "./profile/profile.module";
@@ -28,6 +30,8 @@ import { join } from "path";
     ProfileModule,
     UsersModule,
     CarsModule,
+    FuelupsModule,
+    GraphqlModule,
   ],
   controllers: [AppController],
   providers: [AppService],

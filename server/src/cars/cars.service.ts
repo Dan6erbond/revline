@@ -1,8 +1,8 @@
 import { InjectRepository } from "@mikro-orm/nestjs";
 import { EntityManager, EntityRepository } from "@mikro-orm/postgresql";
 import { Injectable } from "@nestjs/common";
-import { User } from "../users/user.entity";
-import { Car } from "./car.entity";
+import { User } from "../users/users.entity";
+import { Car } from "./cars.entity";
 
 @Injectable()
 export class CarsService {

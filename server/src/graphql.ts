@@ -8,6 +8,23 @@
 /* tslint:disable */
 /* eslint-disable */
 
+export enum FuelCategory {
+    PETROL = "PETROL",
+    DIESEL = "DIESEL",
+    ELECTRIC = "ELECTRIC",
+    LPG = "LPG",
+    OTHER = "OTHER"
+}
+
+export enum OctaneRating {
+    RON91 = "RON91",
+    RON95 = "RON95",
+    RON98 = "RON98",
+    RON100 = "RON100",
+    E85 = "E85",
+    RACE = "RACE"
+}
+
 export interface CreateCarInput {
     name: string;
     make?: Nullable<string>;
@@ -23,6 +40,36 @@ export interface UpdateCarInput {
     year?: Nullable<number>;
 }
 
+export interface CreateFuelUpInput {
+    carId: string;
+    occurredAt: Date;
+    station: string;
+    amount: number;
+    cost: number;
+    fuelCategory: FuelCategory;
+    octane?: Nullable<OctaneRating>;
+    odometerKm?: Nullable<number>;
+    notes?: Nullable<string>;
+    isFullTank: boolean;
+    locationLat?: Nullable<number>;
+    locationLng?: Nullable<number>;
+}
+
+export interface UpdateFuelUpInput {
+    id: string;
+    occurredAt?: Nullable<Date>;
+    station?: Nullable<string>;
+    amount?: Nullable<number>;
+    cost?: Nullable<number>;
+    fuelCategory?: Nullable<FuelCategory>;
+    octane?: Nullable<OctaneRating>;
+    odometerKm?: Nullable<number>;
+    notes?: Nullable<string>;
+    isFullTank?: Nullable<boolean>;
+    locationLat?: Nullable<number>;
+    locationLng?: Nullable<number>;
+}
+
 export interface Car {
     id: string;
     name: string;
@@ -30,6 +77,7 @@ export interface Car {
     model?: Nullable<string>;
     year?: Nullable<number>;
     owner: User;
+    fuelUps: FuelUp[];
 }
 
 export interface IQuery {
@@ -42,6 +90,24 @@ export interface IQuery {
 export interface IMutation {
     createCar(input: CreateCarInput): Car | Promise<Car>;
     updateCar(input: UpdateCarInput): Car | Promise<Car>;
+    createFuelUp(input: CreateFuelUpInput): FuelUp | Promise<FuelUp>;
+    updateFuelUp(input: UpdateFuelUpInput): FuelUp | Promise<FuelUp>;
+}
+
+export interface FuelUp {
+    id: string;
+    car: Car;
+    occurredAt: Date;
+    station: string;
+    amount: number;
+    cost: number;
+    fuelCategory: FuelCategory;
+    octane?: Nullable<OctaneRating>;
+    odometerKm?: Nullable<number>;
+    notes?: Nullable<string>;
+    isFullTank: boolean;
+    locationLat?: Nullable<number>;
+    locationLng?: Nullable<number>;
 }
 
 export interface Profile {

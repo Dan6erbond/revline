@@ -13,8 +13,8 @@ import {
 } from "@heroui/react";
 import { signIn, signOut } from "next-auth/react";
 
-import Wordmark from "./wordmark";
-import { graphql } from "../gql";
+import Wordmark from "../wordmark";
+import { graphql } from "../../gql";
 import { useQuery } from "@apollo/client";
 
 const getMe = graphql(`
@@ -42,21 +42,6 @@ export default function RootNavbar() {
         <NavbarItem>
           <Link aria-current="page" color="primary" href="/">
             Garage
-          </Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link color="foreground" href="#">
-            Maintenance
-          </Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link color="foreground" href="#">
-            Performance
-          </Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link color="foreground" href="#">
-            Gallery
           </Link>
         </NavbarItem>
       </NavbarContent>

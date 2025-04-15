@@ -1,7 +1,7 @@
 import { Entity, OneToMany, OneToOne, Property } from "@mikro-orm/core";
 
 import { BaseEntity } from "../db/base.entity";
-import { Car } from "../cars/car.entity";
+import { Car } from "../cars/cars.entity";
 import { Profile } from "../profile/profile.entity";
 
 @Entity()

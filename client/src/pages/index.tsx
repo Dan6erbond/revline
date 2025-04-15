@@ -8,7 +8,7 @@ import {
 } from "@heroui/react";
 
 import { Plus } from "lucide-react";
-import RootNavbar from "../components/root-navbar";
+import RootNavbar from "../components/layout/root-navbar";
 import { graphql } from "../gql";
 import { useQuery } from "@apollo/client";
 
@@ -31,7 +31,7 @@ export default function Home() {
     <>
       <RootNavbar />
       <main className="p-8">
-        <div className="flex justify-end">
+        <div className="flex justify-end mb-4 md:mb-8">
           <Button as={Link} href="/cars/create" startContent={<Plus />}>
             Add Car
           </Button>

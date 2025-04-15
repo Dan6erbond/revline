@@ -2,7 +2,7 @@ import { Button, Input } from "@heroui/react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import React from "react";
-import RootNavbar from "../../components/root-navbar";
+import RootNavbar from "../../components/layout/root-navbar";
 import { graphql } from "../../gql";
 import { useMutation } from "@apollo/client";
 import { useRouter } from "next/router";

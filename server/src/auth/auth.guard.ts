@@ -13,7 +13,7 @@ import { AuthService } from "./auth.service";
 import { JwtService } from "@nestjs/jwt";
 import { Reflector } from "@nestjs/core";
 import { Request } from "express";
-import { User } from "../users/user.entity";
+import { User } from "../users/users.entity";
 
 export const AuthRequired = Reflector.createDecorator<boolean>();
 

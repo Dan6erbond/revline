@@ -4,7 +4,6 @@ import { ReactNode, useCallback, useMemo } from "react";
 import { ApolloProvider } from "@apollo/client/react/context";
 import { Session } from "next-auth";
 import { setContext } from "@apollo/client/link/context";
-import { useCalendar } from "@heroui/react";
 import { useSession } from "next-auth/react";
 
 const httpLink = createHttpLink({

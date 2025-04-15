@@ -16,12 +16,16 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
 type Documents = {
     "\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          ": typeof types.GetMeDocument,
     "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n      }\n    }\n  }\n": typeof types.GetMeNavbarDocument,
+    "\n  query GetFuelUps($id: ID!) {\n    car(id: $id) {\n      id\n      fuelUps {\n        id\n        occurredAt\n        station\n        amount\n        cost\n        fuelCategory\n        octane\n        odometerKm\n        notes\n        isFullTank\n        locationLat\n        locationLng\n      }\n    }\n  }\n": typeof types.GetFuelUpsDocument,
+    "\n  mutation CreateFuelUp($input: CreateFuelUpInput!) {\n    createFuelUp(input: $input) {\n      id\n      occurredAt\n      station\n      amount\n      cost\n      fuelCategory\n      octane\n      odometerKm\n      notes\n      isFullTank\n      locationLat\n      locationLng\n    }\n  }\n": typeof types.CreateFuelUpDocument,
     "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n    }\n  }\n": typeof types.CreateCarDocument,
     "\n  query GetGarage {\n    cars {\n      id\n      name\n      make\n      model\n      year\n    }\n  }\n": typeof types.GetGarageDocument,
 };
 const documents: Documents = {
     "\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          ": types.GetMeDocument,
     "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n      }\n    }\n  }\n": types.GetMeNavbarDocument,
+    "\n  query GetFuelUps($id: ID!) {\n    car(id: $id) {\n      id\n      fuelUps {\n        id\n        occurredAt\n        station\n        amount\n        cost\n        fuelCategory\n        octane\n        odometerKm\n        notes\n        isFullTank\n        locationLat\n        locationLng\n      }\n    }\n  }\n": types.GetFuelUpsDocument,
+    "\n  mutation CreateFuelUp($input: CreateFuelUpInput!) {\n    createFuelUp(input: $input) {\n      id\n      occurredAt\n      station\n      amount\n      cost\n      fuelCategory\n      octane\n      odometerKm\n      notes\n      isFullTank\n      locationLat\n      locationLng\n    }\n  }\n": types.CreateFuelUpDocument,
     "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n    }\n  }\n": types.CreateCarDocument,
     "\n  query GetGarage {\n    cars {\n      id\n      name\n      make\n      model\n      year\n    }\n  }\n": types.GetGarageDocument,
 };
@@ -48,6 +52,14 @@ export function graphql(source: "\n            query GetMe {\n              me {
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetFuelUps($id: ID!) {\n    car(id: $id) {\n      id\n      fuelUps {\n        id\n        occurredAt\n        station\n        amount\n        cost\n        fuelCategory\n        octane\n        odometerKm\n        notes\n        isFullTank\n        locationLat\n        locationLng\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetFuelUps($id: ID!) {\n    car(id: $id) {\n      id\n      fuelUps {\n        id\n        occurredAt\n        station\n        amount\n        cost\n        fuelCategory\n        octane\n        odometerKm\n        notes\n        isFullTank\n        locationLat\n        locationLng\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateFuelUp($input: CreateFuelUpInput!) {\n    createFuelUp(input: $input) {\n      id\n      occurredAt\n      station\n      amount\n      cost\n      fuelCategory\n      octane\n      odometerKm\n      notes\n      isFullTank\n      locationLat\n      locationLng\n    }\n  }\n"): (typeof documents)["\n  mutation CreateFuelUp($input: CreateFuelUpInput!) {\n    createFuelUp(input: $input) {\n      id\n      occurredAt\n      station\n      amount\n      cost\n      fuelCategory\n      octane\n      odometerKm\n      notes\n      isFullTank\n      locationLat\n      locationLng\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -3,7 +3,7 @@ import { Parent, Query, ResolveField, Resolver } from "@nestjs/graphql";
 import { AuthGuard, AuthRequired } from "../auth/auth.guard";
 import { Profile, User as UserModel } from "../graphql";
 import { ProfileService } from "../profile/profile.service";
-import { User } from "./user.entity";
+import { User } from "./users.entity";
 import { User as AuthUser } from "../auth/auth.decorator";
 
 @Resolver("User")
