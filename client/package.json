@@ -9,15 +9,23 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@apollo/client": "^3.13.7",
     "@heroui/react": "^2.8.0-beta.0",
     "framer-motion": "^12.6.5",
+    "graphql": "^16.10.0",
+    "lucide-react": "^0.488.0",
     "next": "15.3.0",
     "next-auth": "^5.0.0-beta.25",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@0no-co/graphqlsp": "^1.12.16",
     "@eslint/eslintrc": "^3",
+    "@graphql-codegen/cli": "^5.0.5",
+    "@graphql-codegen/client-preset": "^4.8.0",
+    "@graphql-codegen/schema-ast": "^4.1.0",
+    "@parcel/watcher": "^2.5.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -25,6 +33,6 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5.8.3"
   }
 }

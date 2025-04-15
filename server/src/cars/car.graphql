@@ -1,0 +1,33 @@
+type Car {
+  id: ID!
+  name: String!
+  make: String
+  model: String
+  year: Int
+  owner: User!
+}
+
+type Query {
+  car(id: ID!): Car
+  cars: [Car!]!
+}
+
+input CreateCarInput {
+  name: String!
+  make: String
+  model: String
+  year: Int
+}
+
+input UpdateCarInput {
+  id: ID!
+  name: String
+  make: String
+  model: String
+  year: Int
+}
+
+type Mutation {
+  createCar(input: CreateCarInput!): Car!
+  updateCar(input: UpdateCarInput!): Car!
+}

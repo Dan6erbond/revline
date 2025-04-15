@@ -1,14 +1,26 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "client"
-		},
-		{
-			"path": "server"
-		}
-	],
-  "settings": {}
+  "folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "client"
+    },
+    {
+      "path": "server"
+    }
+  ],
+  "settings": {
+    "sqltools.connections": [
+      {
+        "previewLimit": 50,
+        "server": "localhost",
+        "port": 5432,
+        "driver": "PostgreSQL",
+        "name": "revline",
+        "database": "revline",
+        "username": "postgres"
+      }
+    ]
+  }
 }
