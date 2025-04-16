@@ -1,15 +1,30 @@
-import { Args, Mutation, Query, Resolver } from "@nestjs/graphql";
+import {
+  Args,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from "@nestjs/graphql";
 
 import { UseGuards } from "@nestjs/common";
 import { User } from "../auth/auth.decorator";
 import { AuthGuard, AuthRequired } from "../auth/auth.guard";
-import { CreateCarInput } from "../graphql";
+import { CreateCarInput, UploadBannerImageInput } from "../graphql";
 import { User as UserModel } from "../users/users.entity";
 import { CarsService } from "./cars.service";
+import { Car } from "./cars.entity";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { EntityManager } from "@mikro-orm/postgresql";
 
-@Resolver("Cars")
+@Resolver("Car")
 export class CarsResolver {
-  constructor(private carsService: CarsService) {}
+  constructor(
+    private carsService: CarsService,
+    private readonly s3: S3Client,
+    private readonly em: EntityManager,
+  ) {}
 
   @AuthRequired(true)
   @Query()
@@ -33,5 +48,32 @@ export class CarsResolver {
     @User() user: UserModel,
   ) {
     return await this.carsService.create({ owner: user, values: input });
+  }
+
+  @Mutation()
+  @AuthRequired(true)
+  @UseGuards(AuthGuard)
+  async uploadBannerImage(
+    @Args("input") { carId, image }: UploadBannerImageInput,
+  ) {
+    const car = await this.carsService.findById(carId);
+
+    return this.carsService.uploadBannerImage({ car, image });
+  }
+
+  @ResolveField()
+  async bannerImageUrl(@Parent() car: Car) {
+    if (!car.bannerImage) return null;
+
+    if (!car.owner) {
+      await this.em.populate(car, ["owner"]);
+    }
+
+    const command = new GetObjectCommand({
+      Bucket: process.env.S3_BUCKET,
+      Key: `${car.owner.id}/cars/${car.id}/banner-images/${car.bannerImage}`,
+    });
+
+    return await getSignedUrl(this.s3, command, { expiresIn: 60 * 60 });
   }
 }

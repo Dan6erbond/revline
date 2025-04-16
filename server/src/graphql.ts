@@ -40,6 +40,11 @@ export interface UpdateCarInput {
     year?: Nullable<number>;
 }
 
+export interface UploadBannerImageInput {
+    carId: string;
+    image: Upload;
+}
+
 export interface CreateFuelUpInput {
     carId: string;
     occurredAt: Date;
@@ -105,6 +110,7 @@ export interface Car {
     owner: User;
     createdAt: Date;
     updatedAt: Date;
+    bannerImageUrl?: Nullable<string>;
     fuelUps: FuelUp[];
     odometerReadings: OdometerReading[];
 }
@@ -119,6 +125,7 @@ export interface IQuery {
 export interface IMutation {
     createCar(input: CreateCarInput): Car | Promise<Car>;
     updateCar(input: UpdateCarInput): Car | Promise<Car>;
+    uploadBannerImage(input: UploadBannerImageInput): Car | Promise<Car>;
     createFuelUp(input: CreateFuelUpInput): FuelUp | Promise<FuelUp>;
     updateFuelUp(input: UpdateFuelUpInput): FuelUp | Promise<FuelUp>;
     createOdometerReading(input: CreateOdometerReadingInput): OdometerReading | Promise<OdometerReading>;

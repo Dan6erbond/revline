@@ -7,6 +7,7 @@ type Car {
   owner: User!
   createdAt: Date!
   updatedAt: Date!
+  bannerImageUrl: String
 }
 
 type Query {
@@ -29,7 +30,13 @@ input UpdateCarInput {
   year: Int
 }
 
+input UploadBannerImageInput {
+  carId: ID!
+  image: Upload!
+}
+
 type Mutation {
   createCar(input: CreateCarInput!): Car!
   updateCar(input: UpdateCarInput!): Car!
+  uploadBannerImage(input: UploadBannerImageInput!): Car!
 }

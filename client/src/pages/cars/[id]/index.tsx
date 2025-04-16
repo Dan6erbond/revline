@@ -1,9 +1,5 @@
-import CarNavbar from "@/components/layout/car-navbar";
+import CarLayout from "@/components/layout/car-layout";
 
 export default function Car() {
-  return (
-    <>
-      <CarNavbar />
-    </>
-  );
+  return <CarLayout></CarLayout>;
 }

@@ -423,11 +423,12 @@ export default function FuelUps() {
                   <Controller
                     control={control}
                     name="odometerKm"
-                    render={({ field }) => (
+                    render={({ field: { onChange, ...field } }) => (
                       <NumberInput
                         label="Odometer"
                         endContent={"km"}
                         {...field}
+                        onValueChange={onChange}
                         variant="bordered"
                       />
                     )}

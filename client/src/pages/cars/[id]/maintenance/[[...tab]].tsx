@@ -1,7 +1,7 @@
 import { Fuel, Gauge, NotebookPen } from "lucide-react";
 import { Tab, Tabs } from "@heroui/react";
 
-import CarNavbar from "@/components/layout/car-navbar";
+import CarLayout from "@/components/layout/car-layout";
 import FuelUps from "@/components/maintenance/fuelups";
 import Odometer from "@/components/maintenance/odometer";
 import { getQueryParam } from "@/utils/router";
@@ -32,32 +32,29 @@ export default function Car() {
   const router = useRouter();
 
   return (
-    <>
-      <CarNavbar />
-      <main className="p-4 md:p-8">
-        <Tabs
-          key={getQueryParam(router.query.id)}
-          items={tabs}
-          variant="bordered"
-          selectedKey={getQueryParam(router.query.tab) ?? tabs[0].id}
-        >
-          {({ id, icon, label, disabled, component: Component }) => (
-            <Tab
-              key={id}
-              title={
-                <div className="flex items-center space-x-2">
-                  {icon}
-                  <span>{label}</span>
-                </div>
-              }
-              href={`/cars/${router.query.id}/maintenance/${id}`}
-              isDisabled={disabled}
-            >
-              {Component && <Component />}
-            </Tab>
-          )}
-        </Tabs>
-      </main>
-    </>
+    <CarLayout>
+      <Tabs
+        key={getQueryParam(router.query.id)}
+        items={tabs}
+        variant="bordered"
+        selectedKey={getQueryParam(router.query.tab) ?? tabs[0].id}
+      >
+        {({ id, icon, label, disabled, component: Component }) => (
+          <Tab
+            key={id}
+            title={
+              <div className="flex items-center space-x-2">
+                {icon}
+                <span>{label}</span>
+              </div>
+            }
+            href={`/cars/${router.query.id}/maintenance/${id}`}
+            isDisabled={disabled}
+          >
+            {Component && <Component />}
+          </Tab>
+        )}
+      </Tabs>
+    </CarLayout>
   );
 }

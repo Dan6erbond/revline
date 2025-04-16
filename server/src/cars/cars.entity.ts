@@ -19,4 +19,7 @@ export class Car extends BaseEntity {
 
   @Property()
   year: number;
+
+  @Property({ type: "uuid", nullable: true })
+  bannerImage: string;
 }
