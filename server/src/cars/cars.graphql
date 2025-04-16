@@ -5,6 +5,8 @@ type Car {
   model: String
   year: Int
   owner: User!
+  createdAt: Date!
+  updatedAt: Date!
 }
 
 type Query {

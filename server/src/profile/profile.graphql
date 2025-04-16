@@ -1,6 +1,8 @@
 type Profile {
   id: ID!
   username: String!
+  createdAt: Date!
+  updatedAt: Date!
 }
 
 type Query {

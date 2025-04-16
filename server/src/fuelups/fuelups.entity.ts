@@ -1,8 +1,9 @@
-import { Entity, Enum, ManyToOne, Property } from "@mikro-orm/core";
+import { Entity, Enum, ManyToOne, OneToOne, Property } from "@mikro-orm/core";
 import { FuelCategory, OctaneRating } from "../graphql";
 
 import { BaseEntity } from "../db/base.entity";
 import { Car } from "../cars/cars.entity";
+import { OdometerReading } from "../odometer-reading/odometer-reading.entity";
 
 @Entity()
 export class FuelUp extends BaseEntity {
@@ -15,8 +16,8 @@ export class FuelUp extends BaseEntity {
   @Property()
   station: string;
 
-  @Property()
-  amount: number;
+  @Property({ type: "float" })
+  amountLiters: number;
 
   @Property({ type: "float" })
   cost: number;
@@ -27,8 +28,8 @@ export class FuelUp extends BaseEntity {
   @Enum(() => OctaneRating)
   octane?: OctaneRating;
 
-  @Property({ type: "float", nullable: true })
-  odometerKm?: number;
+  @OneToOne(() => OdometerReading, { nullable: true })
+  odometerReading?: OdometerReading;
 
   @Property({ nullable: true })
   notes?: string;

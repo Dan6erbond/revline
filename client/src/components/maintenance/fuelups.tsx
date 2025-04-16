@@ -2,10 +2,6 @@ import {
   Autocomplete,
   AutocompleteItem,
   Button,
-  Card,
-  CardBody,
-  CardFooter,
-  CardHeader,
   Checkbox,
   DatePicker,
   Input,
@@ -16,25 +12,31 @@ import {
   ModalHeader,
   Select,
   SelectItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
   Textarea,
   useDisclosure,
 } from "@heroui/react";
-import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { DollarSign, Fuel, MapPin, Percent, Plus } from "lucide-react";
-import { FuelCategory, OctaneRating } from "../../gql/graphql";
 import {
+  Bar,
+  ComposedChart,
   Legend,
   Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { DollarSign, Fuel, MapPin, Percent, Plus } from "lucide-react";
+import { FuelCategory, OctaneRating } from "../../gql/graphql";
 import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
 import { useMutation, useQuery } from "@apollo/client";
 
-import React from "react";
 import { getQueryParam } from "../../utils/router";
 import { graphql } from "../../gql";
 import { useRouter } from "next/router";
@@ -47,11 +49,14 @@ const getFuelUps = graphql(`
         id
         occurredAt
         station
-        amount
+        amountLiters
         cost
         fuelCategory
         octane
-        odometerKm
+        odometerReading {
+          id
+          readingKm
+        }
         notes
         isFullTank
         locationLat
@@ -81,11 +86,14 @@ const createFuelUp = graphql(`
       id
       occurredAt
       station
-      amount
+      amountLiters
       cost
       fuelCategory
       octane
-      odometerKm
+      odometerReading {
+        id
+        readingKm
+      }
       notes
       isFullTank
       locationLat
@@ -93,6 +101,17 @@ const createFuelUp = graphql(`
     }
   }
 `);
+
+const columns = [
+  { key: "occurredAt", label: "Occurred At" },
+  { key: "station", label: "Station" },
+  { key: "amount", label: "Amount" },
+  { key: "cost", label: "Cost" },
+  { key: "fuelCategory", label: "Fuel Category" },
+  { key: "odometerKm", label: "Odometer (km)" },
+  { key: "notes", label: "Notes" },
+  { key: "fullTank", label: "Full Tank" },
+];
 
 export default function FuelUps() {
   const router = useRouter();
@@ -147,7 +166,7 @@ export default function FuelUps() {
           carId: getQueryParam(router.query.id)!,
           occurredAt: occurredAt.toDate().toISOString(),
           station,
-          amount,
+          amountLiters: amount,
           cost,
           fuelCategory,
           octane,
@@ -167,34 +186,108 @@ export default function FuelUps() {
 
   return (
     <>
-      <div className="flex flex-col gap-4">
-        <Button onPress={onOpen} startContent={<Plus />} className="self-end">
-          Add
-        </Button>
-        <div className="h-[250] md:h-[350] lg:h-[450]">
+      <div className="flex flex-col gap-4 md:gap-8 pt-4 md:pt-8">
+        <div className="flex justify-between">
+          <div></div>
+          <div>
+            <Button
+              onPress={onOpen}
+              startContent={<Plus />}
+              className="self-end"
+            >
+              Add
+            </Button>
+          </div>
+        </div>
+        <div className="h-[250] md:h-[350] lg:h-[450] bg-primary-50/30 backdrop-blur-2xl rounded-lg p-4 md:p-8 light">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart
+            <ComposedChart
               data={data?.car?.fuelUps.map((fu) => ({
                 ...fu,
                 occurredAt: new Date(fu.occurredAt).toLocaleDateString(),
+                relativeCost: fu.cost / fu.amountLiters,
               }))}
             >
-              <XAxis dataKey="occurredAt" />
-              <YAxis />
-              <Tooltip contentStyle={{ background: "transparent" }} />
+              <XAxis
+                dataKey="occurredAt"
+                tick={{ fill: "hsl(var(--heroui-foreground))" }}
+                stroke="hsl(var(--heroui-foreground))"
+              />
+              <YAxis
+                yAxisId="amount"
+                type="number"
+                dataKey="amountLiters"
+                unit="l"
+                tick={{ fill: "hsl(var(--heroui-foreground))" }}
+                stroke="hsl(var(--heroui-foreground))"
+              />
+              <YAxis
+                yAxisId="cost"
+                orientation="right"
+                type="number"
+                dataKey="relativeCost"
+                unit="$"
+                tick={{ fill: "hsl(var(--heroui-foreground))" }}
+                stroke="hsl(var(--heroui-foreground))"
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "hsl(var(--heroui-background))",
+                  color: "hsl(var(--heroui-foreground))",
+                }}
+              />
               <Legend />
-              <Line type="monotone" dataKey="amount" stroke="#8884d8" />
-              <Line type="monotone" dataKey="cost" stroke="#82ca9d" />
-            </LineChart>
+              <Bar
+                type="monotone"
+                dataKey="amountLiters"
+                fill="hsl(var(--heroui-secondary-400))"
+                yAxisId="amount"
+                unit="l"
+                name="Amount"
+              />
+              <Line
+                type="monotone"
+                dataKey="relativeCost"
+                stroke="hsl(var(--heroui-primary-400))"
+                dot={{ r: 5, strokeWidth: 3 }}
+                strokeWidth={3}
+                yAxisId="cost"
+                unit="$"
+                name="Relative cost"
+              />
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
-        {data?.car?.fuelUps.map((fu) => (
-          <Card key={fu.id}>
-            <CardHeader>{fu.station}</CardHeader>
-            <CardBody>{fu.amount}</CardBody>
-            <CardFooter>{fu.cost}</CardFooter>
-          </Card>
-        ))}
+        <Table isHeaderSticky>
+          <TableHeader columns={columns}>
+            {(column) => (
+              <TableColumn key={column.key}>{column.label}</TableColumn>
+            )}
+          </TableHeader>
+          <TableBody
+            items={data?.car?.fuelUps ?? []}
+            emptyContent={"No rows to display."}
+          >
+            {(fu) => (
+              <TableRow key={fu.id}>
+                <TableCell>
+                  {new Date(fu.occurredAt).toLocaleDateString()}
+                </TableCell>
+                <TableCell>{fu.station}</TableCell>
+                <TableCell>{fu.amountLiters}</TableCell>
+                <TableCell>{fu.cost}</TableCell>
+                <TableCell>{`${fu.fuelCategory}${
+                  fu.fuelCategory === FuelCategory.Petrol
+                    ? " (" + fu.octane + ")"
+                    : ""
+                }`}</TableCell>
+                <TableCell>{fu.odometerReading?.readingKm}</TableCell>
+                <TableCell>{fu.notes}</TableCell>
+                <TableCell>{fu.isFullTank}</TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
       <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
         <ModalContent>

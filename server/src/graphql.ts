@@ -44,7 +44,7 @@ export interface CreateFuelUpInput {
     carId: string;
     occurredAt: Date;
     station: string;
-    amount: number;
+    amountLiters: number;
     cost: number;
     fuelCategory: FuelCategory;
     octane?: Nullable<OctaneRating>;
@@ -59,7 +59,7 @@ export interface UpdateFuelUpInput {
     id: string;
     occurredAt?: Nullable<Date>;
     station?: Nullable<string>;
-    amount?: Nullable<number>;
+    amountLiters?: Nullable<number>;
     cost?: Nullable<number>;
     fuelCategory?: Nullable<FuelCategory>;
     octane?: Nullable<OctaneRating>;
@@ -70,6 +70,22 @@ export interface UpdateFuelUpInput {
     locationLng?: Nullable<number>;
 }
 
+export interface CreateOdometerReadingInput {
+    carId: string;
+    readingKm: number;
+    locationLat?: Nullable<number>;
+    locationLng?: Nullable<number>;
+    notes?: Nullable<string>;
+}
+
+export interface UpdateOdometerReadingInput {
+    id: string;
+    readingKm?: Nullable<number>;
+    locationLat?: Nullable<number>;
+    locationLng?: Nullable<number>;
+    notes?: Nullable<string>;
+}
+
 export interface Car {
     id: string;
     name: string;
@@ -77,7 +93,10 @@ export interface Car {
     model?: Nullable<string>;
     year?: Nullable<number>;
     owner: User;
+    createdAt: Date;
+    updatedAt: Date;
     fuelUps: FuelUp[];
+    odometerReadings: OdometerReading[];
 }
 
 export interface IQuery {
@@ -92,6 +111,9 @@ export interface IMutation {
     updateCar(input: UpdateCarInput): Car | Promise<Car>;
     createFuelUp(input: CreateFuelUpInput): FuelUp | Promise<FuelUp>;
     updateFuelUp(input: UpdateFuelUpInput): FuelUp | Promise<FuelUp>;
+    createOdometerReading(input: CreateOdometerReadingInput): OdometerReading | Promise<OdometerReading>;
+    updateOdometerReading(input: UpdateOdometerReadingInput): OdometerReading | Promise<OdometerReading>;
+    deleteOdometerReading(id: string): boolean | Promise<boolean>;
 }
 
 export interface FuelUp {
@@ -99,26 +121,44 @@ export interface FuelUp {
     car: Car;
     occurredAt: Date;
     station: string;
-    amount: number;
+    amountLiters: number;
     cost: number;
     fuelCategory: FuelCategory;
     octane?: Nullable<OctaneRating>;
-    odometerKm?: Nullable<number>;
+    odometerReading?: Nullable<OdometerReading>;
     notes?: Nullable<string>;
     isFullTank: boolean;
     locationLat?: Nullable<number>;
     locationLng?: Nullable<number>;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface OdometerReading {
+    id: string;
+    carId: string;
+    readingKm: number;
+    locationLat?: Nullable<number>;
+    locationLng?: Nullable<number>;
+    notes?: Nullable<string>;
+    createdAt: Date;
+    updatedAt: Date;
+    car: Car;
 }
 
 export interface Profile {
     id: string;
     username: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface User {
     id: string;
     email: string;
     profile?: Nullable<Profile>;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 type Nullable<T> = T | null;

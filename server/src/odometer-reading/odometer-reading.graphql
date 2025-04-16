@@ -1,0 +1,37 @@
+type OdometerReading {
+  id: ID!
+  carId: ID!
+  readingKm: Float!
+  locationLat: Float
+  locationLng: Float
+  notes: String
+  createdAt: Date!
+  updatedAt: Date!
+  car: Car!
+}
+
+input CreateOdometerReadingInput {
+  carId: ID!
+  readingKm: Float!
+  locationLat: Float
+  locationLng: Float
+  notes: String
+}
+
+input UpdateOdometerReadingInput {
+  id: ID!
+  readingKm: Float
+  locationLat: Float
+  locationLng: Float
+  notes: String
+}
+
+extend type Car {
+  odometerReadings: [OdometerReading!]!
+}
+
+type Mutation {
+  createOdometerReading(input: CreateOdometerReadingInput!): OdometerReading!
+  updateOdometerReading(input: UpdateOdometerReadingInput!): OdometerReading!
+  deleteOdometerReading(id: ID!): Boolean!
+}

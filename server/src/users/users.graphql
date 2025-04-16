@@ -2,6 +2,8 @@ type User {
   id: ID!
   email: String!
   profile: Profile
+  createdAt: Date!
+  updatedAt: Date!
 }
 
 type Query {

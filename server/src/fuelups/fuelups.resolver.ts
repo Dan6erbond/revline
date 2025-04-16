@@ -33,4 +33,9 @@ export class FuelupsResolver {
   async car(@Parent() fuelUp: FuelUp) {
     return await this.fuelUpsService.getCar(fuelUp);
   }
+
+  @ResolveField()
+  async odometerReading(@Parent() fuelUp: FuelUp) {
+    return await this.fuelUpsService.getOdometerReading(fuelUp);
+  }
 }

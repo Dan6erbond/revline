@@ -8,8 +8,8 @@ import {
 } from "@heroui/react";
 
 import { Plus } from "lucide-react";
-import RootNavbar from "../components/layout/root-navbar";
-import { graphql } from "../gql";
+import RootNavbar from "@/components/layout/root-navbar";
+import { graphql } from "@/gql";
 import { useQuery } from "@apollo/client";
 
 const getGarage = graphql(`

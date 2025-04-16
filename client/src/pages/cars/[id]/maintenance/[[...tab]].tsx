@@ -1,9 +1,10 @@
-import { Fuel, NotebookPen } from "lucide-react";
+import { Fuel, Gauge, NotebookPen } from "lucide-react";
 import { Tab, Tabs } from "@heroui/react";
 
-import CarNavbar from "../../../../components/layout/car-navbar";
-import FuelUps from "../../../../components/maintenance/fuelups";
-import { getQueryParam } from "../../../../utils/router";
+import CarNavbar from "@/components/layout/car-navbar";
+import FuelUps from "@/components/maintenance/fuelups";
+import Odometer from "@/components/maintenance/odometer";
+import { getQueryParam } from "@/utils/router";
 import { useRouter } from "next/router";
 
 const tabs = [
@@ -17,6 +18,13 @@ const tabs = [
     id: "service-logs",
     label: "Service logs",
     icon: <NotebookPen />,
+    disabled: true,
+  },
+  {
+    id: "odometer",
+    label: "Odometer",
+    icon: <Gauge />,
+    component: Odometer,
   },
 ];
 
@@ -33,7 +41,7 @@ export default function Car() {
           variant="bordered"
           selectedKey={getQueryParam(router.query.tab) ?? tabs[0].id}
         >
-          {({ id, icon, label, component: Component }) => (
+          {({ id, icon, label, disabled, component: Component }) => (
             <Tab
               key={id}
               title={
@@ -43,6 +51,7 @@ export default function Car() {
                 </div>
               }
               href={`/cars/${router.query.id}/maintenance/${id}`}
+              isDisabled={disabled}
             >
               {Component && <Component />}
             </Tab>

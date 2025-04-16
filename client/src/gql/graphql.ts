@@ -20,12 +20,15 @@ export type Scalars = {
 
 export type Car = {
   __typename?: 'Car';
+  createdAt: Scalars['Date']['output'];
   fuelUps: Array<FuelUp>;
   id: Scalars['ID']['output'];
   make?: Maybe<Scalars['String']['output']>;
   model?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
+  odometerReadings: Array<OdometerReading>;
   owner: User;
+  updatedAt: Scalars['Date']['output'];
   year?: Maybe<Scalars['Int']['output']>;
 };
 
@@ -37,7 +40,7 @@ export type CreateCarInput = {
 };
 
 export type CreateFuelUpInput = {
-  amount: Scalars['Float']['input'];
+  amountLiters: Scalars['Float']['input'];
   carId: Scalars['ID']['input'];
   cost: Scalars['Float']['input'];
   fuelCategory: FuelCategory;
@@ -51,6 +54,14 @@ export type CreateFuelUpInput = {
   station: Scalars['String']['input'];
 };
 
+export type CreateOdometerReadingInput = {
+  carId: Scalars['ID']['input'];
+  locationLat?: InputMaybe<Scalars['Float']['input']>;
+  locationLng?: InputMaybe<Scalars['Float']['input']>;
+  notes?: InputMaybe<Scalars['String']['input']>;
+  readingKm: Scalars['Float']['input'];
+};
+
 export enum FuelCategory {
   Diesel = 'DIESEL',
   Electric = 'ELECTRIC',
@@ -61,9 +72,10 @@ export enum FuelCategory {
 
 export type FuelUp = {
   __typename?: 'FuelUp';
-  amount: Scalars['Float']['output'];
+  amountLiters: Scalars['Float']['output'];
   car: Car;
   cost: Scalars['Float']['output'];
+  createdAt: Scalars['Date']['output'];
   fuelCategory: FuelCategory;
   id: Scalars['ID']['output'];
   isFullTank: Scalars['Boolean']['output'];
@@ -72,16 +84,20 @@ export type FuelUp = {
   notes?: Maybe<Scalars['String']['output']>;
   occurredAt: Scalars['Date']['output'];
   octane?: Maybe<OctaneRating>;
-  odometerKm?: Maybe<Scalars['Int']['output']>;
+  odometerReading?: Maybe<OdometerReading>;
   station: Scalars['String']['output'];
+  updatedAt: Scalars['Date']['output'];
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
   createCar: Car;
   createFuelUp: FuelUp;
+  createOdometerReading: OdometerReading;
+  deleteOdometerReading: Scalars['Boolean']['output'];
   updateCar: Car;
   updateFuelUp: FuelUp;
+  updateOdometerReading: OdometerReading;
 };
 
 
@@ -95,6 +111,16 @@ export type MutationCreateFuelUpArgs = {
 };
 
 
+export type MutationCreateOdometerReadingArgs = {
+  input: CreateOdometerReadingInput;
+};
+
+
+export type MutationDeleteOdometerReadingArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationUpdateCarArgs = {
   input: UpdateCarInput;
 };
@@ -102,6 +128,11 @@ export type MutationUpdateCarArgs = {
 
 export type MutationUpdateFuelUpArgs = {
   input: UpdateFuelUpInput;
+};
+
+
+export type MutationUpdateOdometerReadingArgs = {
+  input: UpdateOdometerReadingInput;
 };
 
 export enum OctaneRating {
@@ -113,9 +144,24 @@ export enum OctaneRating {
   Ron100 = 'RON100'
 }
 
+export type OdometerReading = {
+  __typename?: 'OdometerReading';
+  car: Car;
+  carId: Scalars['ID']['output'];
+  createdAt: Scalars['Date']['output'];
+  id: Scalars['ID']['output'];
+  locationLat?: Maybe<Scalars['Float']['output']>;
+  locationLng?: Maybe<Scalars['Float']['output']>;
+  notes?: Maybe<Scalars['String']['output']>;
+  readingKm: Scalars['Float']['output'];
+  updatedAt: Scalars['Date']['output'];
+};
+
 export type Profile = {
   __typename?: 'Profile';
+  createdAt: Scalars['Date']['output'];
   id: Scalars['ID']['output'];
+  updatedAt: Scalars['Date']['output'];
   username: Scalars['String']['output'];
 };
 
@@ -141,7 +187,7 @@ export type UpdateCarInput = {
 };
 
 export type UpdateFuelUpInput = {
-  amount?: InputMaybe<Scalars['Float']['input']>;
+  amountLiters?: InputMaybe<Scalars['Float']['input']>;
   cost?: InputMaybe<Scalars['Float']['input']>;
   fuelCategory?: InputMaybe<FuelCategory>;
   id: Scalars['ID']['input'];
@@ -155,11 +201,21 @@ export type UpdateFuelUpInput = {
   station?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type UpdateOdometerReadingInput = {
+  id: Scalars['ID']['input'];
+  locationLat?: InputMaybe<Scalars['Float']['input']>;
+  locationLng?: InputMaybe<Scalars['Float']['input']>;
+  notes?: InputMaybe<Scalars['String']['input']>;
+  readingKm?: InputMaybe<Scalars['Float']['input']>;
+};
+
 export type User = {
   __typename?: 'User';
+  createdAt: Scalars['Date']['output'];
   email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   profile?: Maybe<Profile>;
+  updatedAt: Scalars['Date']['output'];
 };
 
 export type GetMeQueryVariables = Exact<{ [key: string]: never; }>;
@@ -177,14 +233,28 @@ export type GetFuelUpsQueryVariables = Exact<{
 }>;
 
 
-export type GetFuelUpsQuery = { __typename?: 'Query', car?: { __typename?: 'Car', id: string, fuelUps: Array<{ __typename?: 'FuelUp', id: string, occurredAt: any, station: string, amount: number, cost: number, fuelCategory: FuelCategory, octane?: OctaneRating | null, odometerKm?: number | null, notes?: string | null, isFullTank: boolean, locationLat?: number | null, locationLng?: number | null }> } | null };
+export type GetFuelUpsQuery = { __typename?: 'Query', car?: { __typename?: 'Car', id: string, fuelUps: Array<{ __typename?: 'FuelUp', id: string, occurredAt: any, station: string, amountLiters: number, cost: number, fuelCategory: FuelCategory, octane?: OctaneRating | null, notes?: string | null, isFullTank: boolean, locationLat?: number | null, locationLng?: number | null, odometerReading?: { __typename?: 'OdometerReading', id: string, readingKm: number } | null }> } | null };
 
 export type CreateFuelUpMutationVariables = Exact<{
   input: CreateFuelUpInput;
 }>;
 
 
-export type CreateFuelUpMutation = { __typename?: 'Mutation', createFuelUp: { __typename?: 'FuelUp', id: string, occurredAt: any, station: string, amount: number, cost: number, fuelCategory: FuelCategory, octane?: OctaneRating | null, odometerKm?: number | null, notes?: string | null, isFullTank: boolean, locationLat?: number | null, locationLng?: number | null } };
+export type CreateFuelUpMutation = { __typename?: 'Mutation', createFuelUp: { __typename?: 'FuelUp', id: string, occurredAt: any, station: string, amountLiters: number, cost: number, fuelCategory: FuelCategory, octane?: OctaneRating | null, notes?: string | null, isFullTank: boolean, locationLat?: number | null, locationLng?: number | null, odometerReading?: { __typename?: 'OdometerReading', id: string, readingKm: number } | null } };
+
+export type GetOdometerReadingsQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetOdometerReadingsQuery = { __typename?: 'Query', car?: { __typename?: 'Car', id: string, odometerReadings: Array<{ __typename?: 'OdometerReading', id: string, readingKm: number, createdAt: any, notes?: string | null }> } | null };
+
+export type CreateOdometerReadingMutationVariables = Exact<{
+  input: CreateOdometerReadingInput;
+}>;
+
+
+export type CreateOdometerReadingMutation = { __typename?: 'Mutation', createOdometerReading: { __typename?: 'OdometerReading', id: string, readingKm: number, createdAt: any, notes?: string | null } };
 
 export type CreateCarMutationVariables = Exact<{
   input: CreateCarInput;
@@ -201,7 +271,9 @@ export type GetGarageQuery = { __typename?: 'Query', cars: Array<{ __typename?: 
 
 export const GetMeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMe"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"me"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"email"}}]}}]}}]} as unknown as DocumentNode<GetMeQuery, GetMeQueryVariables>;
 export const GetMeNavbarDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMeNavbar"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"me"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"profile"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}}]}}]}}]}}]} as unknown as DocumentNode<GetMeNavbarQuery, GetMeNavbarQueryVariables>;
-export const GetFuelUpsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetFuelUps"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"car"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"fuelUps"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"occurredAt"}},{"kind":"Field","name":{"kind":"Name","value":"station"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"cost"}},{"kind":"Field","name":{"kind":"Name","value":"fuelCategory"}},{"kind":"Field","name":{"kind":"Name","value":"octane"}},{"kind":"Field","name":{"kind":"Name","value":"odometerKm"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"isFullTank"}},{"kind":"Field","name":{"kind":"Name","value":"locationLat"}},{"kind":"Field","name":{"kind":"Name","value":"locationLng"}}]}}]}}]}}]} as unknown as DocumentNode<GetFuelUpsQuery, GetFuelUpsQueryVariables>;
-export const CreateFuelUpDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateFuelUp"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateFuelUpInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createFuelUp"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"occurredAt"}},{"kind":"Field","name":{"kind":"Name","value":"station"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"cost"}},{"kind":"Field","name":{"kind":"Name","value":"fuelCategory"}},{"kind":"Field","name":{"kind":"Name","value":"octane"}},{"kind":"Field","name":{"kind":"Name","value":"odometerKm"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"isFullTank"}},{"kind":"Field","name":{"kind":"Name","value":"locationLat"}},{"kind":"Field","name":{"kind":"Name","value":"locationLng"}}]}}]}}]} as unknown as DocumentNode<CreateFuelUpMutation, CreateFuelUpMutationVariables>;
+export const GetFuelUpsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetFuelUps"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"car"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"fuelUps"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"occurredAt"}},{"kind":"Field","name":{"kind":"Name","value":"station"}},{"kind":"Field","name":{"kind":"Name","value":"amountLiters"}},{"kind":"Field","name":{"kind":"Name","value":"cost"}},{"kind":"Field","name":{"kind":"Name","value":"fuelCategory"}},{"kind":"Field","name":{"kind":"Name","value":"octane"}},{"kind":"Field","name":{"kind":"Name","value":"odometerReading"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"readingKm"}}]}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"isFullTank"}},{"kind":"Field","name":{"kind":"Name","value":"locationLat"}},{"kind":"Field","name":{"kind":"Name","value":"locationLng"}}]}}]}}]}}]} as unknown as DocumentNode<GetFuelUpsQuery, GetFuelUpsQueryVariables>;
+export const CreateFuelUpDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateFuelUp"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateFuelUpInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createFuelUp"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"occurredAt"}},{"kind":"Field","name":{"kind":"Name","value":"station"}},{"kind":"Field","name":{"kind":"Name","value":"amountLiters"}},{"kind":"Field","name":{"kind":"Name","value":"cost"}},{"kind":"Field","name":{"kind":"Name","value":"fuelCategory"}},{"kind":"Field","name":{"kind":"Name","value":"octane"}},{"kind":"Field","name":{"kind":"Name","value":"odometerReading"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"readingKm"}}]}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"isFullTank"}},{"kind":"Field","name":{"kind":"Name","value":"locationLat"}},{"kind":"Field","name":{"kind":"Name","value":"locationLng"}}]}}]}}]} as unknown as DocumentNode<CreateFuelUpMutation, CreateFuelUpMutationVariables>;
+export const GetOdometerReadingsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetOdometerReadings"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"car"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"odometerReadings"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"readingKm"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}}]}}]}}]}}]} as unknown as DocumentNode<GetOdometerReadingsQuery, GetOdometerReadingsQueryVariables>;
+export const CreateOdometerReadingDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateOdometerReading"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateOdometerReadingInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createOdometerReading"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"readingKm"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}}]}}]}}]} as unknown as DocumentNode<CreateOdometerReadingMutation, CreateOdometerReadingMutationVariables>;
 export const CreateCarDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateCar"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateCarInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createCar"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CreateCarMutation, CreateCarMutationVariables>;
 export const GetGarageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetGarage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cars"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"make"}},{"kind":"Field","name":{"kind":"Name","value":"model"}},{"kind":"Field","name":{"kind":"Name","value":"year"}}]}}]}}]} as unknown as DocumentNode<GetGarageQuery, GetGarageQueryVariables>;

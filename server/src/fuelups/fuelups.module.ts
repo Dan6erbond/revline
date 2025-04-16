@@ -5,9 +5,14 @@ import { FuelupsResolver } from "./fuelups.resolver";
 import { FuelupsService } from "./fuelups.service";
 import { MikroOrmModule } from "@mikro-orm/nestjs";
 import { Module } from "@nestjs/common";
+import { OdometerReadingModule } from "../odometer-reading/odometer-reading.module";
 
 @Module({
-  imports: [MikroOrmModule.forFeature([FuelUp]), CarsModule],
+  imports: [
+    MikroOrmModule.forFeature([FuelUp]),
+    CarsModule,
+    OdometerReadingModule,
+  ],
   providers: [FuelupsResolver, FuelupsService, CarsResolver],
 })
 export class FuelupsModule {}

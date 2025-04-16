@@ -14,6 +14,7 @@ import { ProfileModule } from "./profile/profile.module";
 import { UsersModule } from "./users/users.module";
 import config from "./mikro-orm.config";
 import { join } from "path";
+import { OdometerReadingModule } from './odometer-reading/odometer-reading.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { join } from "path";
     CarsModule,
     FuelupsModule,
     GraphqlModule,
+    OdometerReadingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
