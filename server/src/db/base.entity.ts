@@ -4,7 +4,7 @@ import { v4 } from "uuid";
 
 @Entity({ abstract: true })
 export abstract class BaseEntity {
-  @PrimaryKey()
+  @PrimaryKey({ type: "uuid" })
   id = v4();
 
   @Property()

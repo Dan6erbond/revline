@@ -8,6 +8,15 @@ export class Profile extends BaseEntity {
   @OneToOne(() => User)
   user: User;
 
-  @Property()
+  @Property({ nullable: true })
   username: string;
+
+  @Property({ nullable: true })
+  firstName: string;
+
+  @Property({ nullable: true })
+  lastName: string;
+
+  @Property({ type: "uuid", nullable: true })
+  profilePicture?: string;
 }

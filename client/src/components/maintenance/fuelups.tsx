@@ -4,12 +4,12 @@ import {
   Button,
   Checkbox,
   DatePicker,
-  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
+  NumberInput,
   Select,
   SelectItem,
   Table,
@@ -33,12 +33,12 @@ import {
 } from "recharts";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { DollarSign, Fuel, MapPin, Percent, Plus } from "lucide-react";
-import { FuelCategory, OctaneRating } from "../../gql/graphql";
+import { FuelCategory, OctaneRating } from "@/gql/graphql";
 import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
 import { useMutation, useQuery } from "@apollo/client";
 
-import { getQueryParam } from "../../utils/router";
-import { graphql } from "../../gql";
+import { getQueryParam } from "@/utils/router";
+import { graphql } from "@/gql";
 import { useRouter } from "next/router";
 
 const getFuelUps = graphql(`
@@ -71,6 +71,7 @@ type Inputs = {
   station: string;
   amount: number;
   cost: number;
+  relativeCost: number;
   fuelCategory: FuelCategory;
   octane: OctaneRating;
   odometerKm: number;
@@ -123,11 +124,19 @@ export default function FuelUps() {
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
-  const { register, handleSubmit, control } = useForm<Inputs>({
-    defaultValues: {
-      occurredAt: now(getLocalTimeZone()),
-    },
-  });
+  const { register, handleSubmit, control, setValue, watch, formState } =
+    useForm<Inputs>({
+      defaultValues: {
+        occurredAt: now(getLocalTimeZone()),
+      },
+    });
+
+  const [amount, cost, relativeCost, fuelCategory] = watch([
+    "amount",
+    "cost",
+    "relativeCost",
+    "fuelCategory",
+  ]);
 
   const [mutate] = useMutation(createFuelUp, {
     update: (cache, res) => {
@@ -199,7 +208,7 @@ export default function FuelUps() {
             </Button>
           </div>
         </div>
-        <div className="h-[250] md:h-[350] lg:h-[450] bg-primary-50/30 backdrop-blur-2xl rounded-lg p-4 md:p-8 light">
+        <div className="h-[250] md:h-[350] lg:h-[450] bg-primary-50/30 backdrop-blur-2xl rounded-lg px-4 md:px-8 py-8 md:py-12 light">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={data?.car?.fuelUps.map((fu) => ({
@@ -309,6 +318,7 @@ export default function FuelUps() {
                         showMonthAndYearPickers
                         label="Date"
                         {...field}
+                        variant="bordered"
                       />
                     )}
                   />
@@ -318,6 +328,7 @@ export default function FuelUps() {
                     allowsCustomValue
                     endContent={<MapPin />}
                     {...register("station")}
+                    variant="bordered"
                   >
                     {(item) => (
                       <AutocompleteItem key={item.key}>
@@ -326,50 +337,106 @@ export default function FuelUps() {
                     )}
                   </Autocomplete>
                   <div className="flex gap-4">
-                    <Input
-                      type="number"
-                      label="Amount"
-                      endContent={"l"}
-                      {...register("amount", { valueAsNumber: true })}
+                    <Controller
+                      control={control}
+                      name="amount"
+                      render={({ field: { onChange, ...field } }) => (
+                        <NumberInput
+                          label="Amount"
+                          endContent={"l"}
+                          {...field}
+                          onValueChange={(value) => {
+                            onChange(value);
+                            if (formState.touchedFields.relativeCost) {
+                              setValue("relativeCost", cost / value);
+                            } else if (formState.touchedFields.cost) {
+                              setValue("cost", relativeCost * value);
+                            }
+                          }}
+                          variant="bordered"
+                        />
+                      )}
                     />
-                    <Input
-                      type="number"
-                      label="Cost"
-                      endContent={<DollarSign />}
-                      {...register("cost", { valueAsNumber: true })}
+                    <Controller
+                      control={control}
+                      name="cost"
+                      render={({ field: { onChange, ...field } }) => (
+                        <NumberInput
+                          label="Cost"
+                          endContent={<DollarSign />}
+                          {...field}
+                          onValueChange={(value) => {
+                            onChange(value);
+                            if (formState.touchedFields.amount) {
+                              setValue("relativeCost", value / amount);
+                            } else if (formState.touchedFields.relativeCost) {
+                              setValue("amount", value / relativeCost);
+                            }
+                          }}
+                          variant="bordered"
+                        />
+                      )}
                     />
-                    <Input
-                      type="number"
-                      label="Cost per l"
-                      endContent={"$/l"}
-                      // {...register("amount", { valueAsNumber: true })}
+                    <Controller
+                      control={control}
+                      name="relativeCost"
+                      render={({ field: { onChange, ...field } }) => (
+                        <NumberInput
+                          label="Cost per l"
+                          endContent={"$/l"}
+                          {...field}
+                          onValueChange={(value) => {
+                            onChange(value);
+                            if (formState.touchedFields.amount) {
+                              setValue("cost", value * amount);
+                            } else if (formState.touchedFields.cost) {
+                              setValue("amount", cost / value);
+                            }
+                          }}
+                          variant="bordered"
+                        />
+                      )}
                     />
                   </div>
                   <Select
                     label="Fuel category"
                     endContent={<Fuel />}
                     {...register("fuelCategory")}
+                    variant="bordered"
                   >
                     {Object.entries(FuelCategory).map(([label, category]) => (
                       <SelectItem key={category}>{label}</SelectItem>
                     ))}
                   </Select>
-                  <Select
-                    label="Octane rating"
-                    endContent={<Percent />}
-                    {...register("octane")}
-                  >
-                    {Object.entries(OctaneRating).map(([label, octane]) => (
-                      <SelectItem key={octane}>{label}</SelectItem>
-                    ))}
-                  </Select>
-                  <Input
-                    type="number"
-                    label="Odometer"
-                    endContent={"km"}
-                    {...register("odometerKm", { valueAsNumber: true })}
+                  {fuelCategory === FuelCategory.Petrol && (
+                    <Select
+                      label="Octane rating"
+                      endContent={<Percent />}
+                      {...register("octane")}
+                      variant="bordered"
+                    >
+                      {Object.entries(OctaneRating).map(([label, octane]) => (
+                        <SelectItem key={octane}>{label}</SelectItem>
+                      ))}
+                    </Select>
+                  )}
+                  <Controller
+                    control={control}
+                    name="odometerKm"
+                    render={({ field }) => (
+                      <NumberInput
+                        label="Odometer"
+                        endContent={"km"}
+                        {...field}
+                        variant="bordered"
+                      />
+                    )}
                   />
-                  <Textarea label="Notes" {...register("notes")} />
+                  <Textarea
+                    label="Notes"
+                    {...register("notes")}
+                    variant="bordered"
+                  />
                   <Checkbox {...register("isFullTank")}>Tank full</Checkbox>
                 </form>
               </ModalBody>

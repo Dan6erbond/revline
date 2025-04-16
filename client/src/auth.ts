@@ -23,10 +23,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       let user = session.user;
 
       if (!user.id) {
-        const { data } = await buildClient(async () => ({
-          ...session,
-          accessToken: token.idToken,
-        })).query({
+        const { data } = await buildClient({
+          current: async () => ({
+            ...session,
+            accessToken: token.idToken,
+          }),
+        }).query({
           query: graphql(`
             query GetMe {
               me {

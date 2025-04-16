@@ -86,6 +86,16 @@ export interface UpdateOdometerReadingInput {
     notes?: Nullable<string>;
 }
 
+export interface UpdateProfileInput {
+    username?: Nullable<string>;
+    firstName?: Nullable<string>;
+    lastName?: Nullable<string>;
+}
+
+export interface UploadProfilePictureInput {
+    picture: Upload;
+}
+
 export interface Car {
     id: string;
     name: string;
@@ -114,6 +124,8 @@ export interface IMutation {
     createOdometerReading(input: CreateOdometerReadingInput): OdometerReading | Promise<OdometerReading>;
     updateOdometerReading(input: UpdateOdometerReadingInput): OdometerReading | Promise<OdometerReading>;
     deleteOdometerReading(id: string): boolean | Promise<boolean>;
+    updateProfile(input: UpdateProfileInput): Profile | Promise<Profile>;
+    uploadProfilePicture(input: UploadProfilePictureInput): Profile | Promise<Profile>;
 }
 
 export interface FuelUp {
@@ -148,7 +160,10 @@ export interface OdometerReading {
 
 export interface Profile {
     id: string;
-    username: string;
+    username?: Nullable<string>;
+    firstName?: Nullable<string>;
+    lastName?: Nullable<string>;
+    profilePictureUrl?: Nullable<string>;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -161,4 +176,5 @@ export interface User {
     updatedAt: Date;
 }
 
+export type Upload = any;
 type Nullable<T> = T | null;

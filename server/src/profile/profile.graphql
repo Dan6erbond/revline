@@ -1,10 +1,28 @@
 type Profile {
   id: ID!
-  username: String!
+  username: String
+  firstName: String
+  lastName: String
+  profilePictureUrl: String
   createdAt: Date!
   updatedAt: Date!
 }
 
 type Query {
   profile: Profile
+}
+
+input UpdateProfileInput {
+  username: String
+  firstName: String
+  lastName: String
+}
+
+input UploadProfilePictureInput {
+  picture: Upload!
+}
+
+type Mutation {
+  updateProfile(input: UpdateProfileInput!): Profile!
+  uploadProfilePicture(input: UploadProfilePictureInput!): Profile!
 }

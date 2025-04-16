@@ -38,7 +38,7 @@ export default function Home() {
         </div>
         <div className="grid gap-4 md:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {data?.cars.map((car) => (
-            <Card key={car.id} isPressable as={Link} href={`/cars/${car.id}`}>
+            <Card key={car.id} isPressable as={Link} href={`/cars/${car.id}/maintenance`}>
               <CardHeader>{car.name}</CardHeader>
               <CardBody>5000 HP</CardBody>
               <CardFooter>Sold</CardFooter>

@@ -1,7 +1,7 @@
 import "@/styles/globals.css";
 
 import type { AppProps } from "next/app";
-import { AuthenticatedApolloProvider } from "../apollo-client";
+import AuthenticatedApolloProvider from "@/apollo-client/provider";
 import { HeroUIProvider } from "@heroui/react";
 import { Inter } from "next/font/google";
 import { SessionProvider } from "next-auth/react";

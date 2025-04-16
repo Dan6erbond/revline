@@ -2,6 +2,7 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack --port 3001",
     "build": "next build",
@@ -12,6 +13,7 @@
     "@apollo/client": "^3.13.7",
     "@heroui/react": "^2.8.0-beta.0",
     "@internationalized/date": "^3.7.0",
+    "apollo-upload-client": "^18.0.1",
     "framer-motion": "^12.6.5",
     "graphql": "^16.10.0",
     "lucide-react": "^0.488.0",
@@ -30,6 +32,7 @@
     "@graphql-codegen/schema-ast": "^4.1.0",
     "@parcel/watcher": "^2.5.1",
     "@tailwindcss/postcss": "^4",
+    "@types/apollo-upload-client": "^18.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

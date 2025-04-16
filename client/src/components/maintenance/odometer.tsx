@@ -136,7 +136,7 @@ export default function Odometer() {
           </Button>
         </div>
       </div>
-      <div className="h-[250] md:h-[350] lg:h-[450] bg-primary-50/30 backdrop-blur-2xl rounded-lg p-4 md:p-8 light">
+      <div className="h-[250] md:h-[350] lg:h-[450] bg-primary-50/30 backdrop-blur-2xl rounded-lg px-4 md:px-8 py-8 md:py-12 light">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={data?.car?.odometerReadings.map((or) => ({
@@ -212,8 +212,13 @@ export default function Odometer() {
                     label="Odometer"
                     endContent={"km"}
                     {...register("readingKm", { valueAsNumber: true })}
+                    variant="bordered"
                   />
-                  <Textarea label="Notes" {...register("notes")} />
+                  <Textarea
+                    label="Notes"
+                    {...register("notes")}
+                    variant="bordered"
+                  />
                 </form>
               </ModalBody>
               <ModalFooter>
