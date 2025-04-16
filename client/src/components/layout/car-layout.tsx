@@ -113,14 +113,14 @@ export default function CarLayout({ children }: { children: ReactNode }) {
                     });
                   }}
                 >
-                  Action
+                  Upload
                 </Button>
               </ModalFooter>
             </>
           )}
         </ModalContent>
       </Modal>
-      <main className="p-4 md:p-8">{children}</main>
+      <main>{children}</main>
     </>
   );
 }

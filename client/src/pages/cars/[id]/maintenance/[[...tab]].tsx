@@ -15,8 +15,8 @@ const tabs = [
     component: FuelUps,
   },
   {
-    id: "service-logs",
-    label: "Service logs",
+    id: "service",
+    label: "Service",
     icon: <NotebookPen />,
     disabled: true,
   },
@@ -36,8 +36,9 @@ export default function Car() {
       <Tabs
         key={getQueryParam(router.query.id)}
         items={tabs}
-        variant="bordered"
+        variant="underlined"
         selectedKey={getQueryParam(router.query.tab) ?? tabs[0].id}
+        className="mt-2"
       >
         {({ id, icon, label, disabled, component: Component }) => (
           <Tab
@@ -51,7 +52,7 @@ export default function Car() {
             href={`/cars/${router.query.id}/maintenance/${id}`}
             isDisabled={disabled}
           >
-            {Component && <Component />}
+            <div className="p-4 md:p-8">{Component && <Component />}</div>
           </Tab>
         )}
       </Tabs>

@@ -17,6 +17,7 @@ import { S3Module } from "./s3/s3.module";
 import { UsersModule } from "./users/users.module";
 import config from "./mikro-orm.config";
 import { join } from "path";
+import { ServiceModule } from './service/service.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { join } from "path";
     GraphqlModule,
     OdometerReadingModule,
     S3Module,
+    ServiceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

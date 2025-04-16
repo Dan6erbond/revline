@@ -1,0 +1,19 @@
+enum RecurrenceUnit {
+  DAYS
+  MONTHS
+  YEARS
+}
+
+type ServiceSchedule {
+  id: ID!
+  title: String!
+  description: String
+  active: Boolean!
+  intervalValue: Int
+  intervalUnit: RecurrenceUnit
+  intervalKm: Int
+  items: [ServiceItem!]!
+  car: Car!
+  createdAt: Date!
+  updatedAt: Date!
+}

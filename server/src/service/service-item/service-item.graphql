@@ -1,0 +1,8 @@
+type ServiceItem {
+  id: ID!
+  label: String!
+  notes: String
+  schedules: [ServiceSchedule!]!
+  createdAt: Date!
+  updatedAt: Date!
+}
