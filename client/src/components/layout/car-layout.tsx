@@ -63,7 +63,7 @@ export default function CarLayout({ children }: { children: ReactNode }) {
           alt={data?.car?.name}
         />
       </div>
-      <div className="sticky h-18 top-16 -mt-18 w-full z-10 bg-zinc-900/70 backdrop-blur-sm p-2 md:p-4 flex gap-4">
+      <div className="sticky h-18 top-16 -mt-18 w-full z-20 bg-zinc-900/70 backdrop-blur-sm p-2 md:p-4 flex gap-4">
         <Button
           as={Link}
           href={`/cars/${getQueryParam(router.query.id)}`}
