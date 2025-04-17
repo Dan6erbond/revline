@@ -30,6 +30,7 @@ import { useMutation, useQuery } from "@apollo/client";
 
 import { getQueryParam } from "../../../utils/router";
 import { graphql } from "../../../gql";
+import { useMemo } from "react";
 import { useRouter } from "next/router";
 
 const getServiceLogs = graphql(`
@@ -215,6 +216,12 @@ export default function Logs() {
 
   const [serviceItemIds, scheduleId] = watch(["serviceItemIds", "scheduleId"]);
 
+  const selectedSchedule = useMemo(
+    () =>
+      serviceSchedules?.car?.serviceSchedules.find((s) => s.id === scheduleId),
+    [serviceSchedules, scheduleId]
+  );
+
   const [mutate] = useMutation(createServiceLog, {
     update: (cache, res) => {
       if (!res.data?.createServiceLog || !data?.car) return;
@@ -346,9 +353,6 @@ export default function Logs() {
                       items.map(({ data: schedule }) => (
                         <div key={schedule?.id} className="flex flex-col">
                           <span className="text-small">{schedule?.title}</span>
-                          <span className="text-tiny text-default-400">
-                            {schedule?.notes}
-                          </span>
                         </div>
                       ))
                     }
@@ -357,14 +361,33 @@ export default function Logs() {
                       <SelectItem key={schedule.id}>
                         <div className="flex flex-col">
                           <span className="text-small">{schedule.title}</span>
-                          <span className="text-tiny text-default-400">
-                            {schedule.notes}
-                          </span>
                         </div>
                       </SelectItem>
                     )}
                   </Select>
-                  {!scheduleId && (
+                  {selectedSchedule ? (
+                    <div className="flex flex-col gap-2">
+                      <p>Notes</p>
+                      <span className="text-sm text-default-400">
+                        {selectedSchedule.notes}
+                      </span>
+                      <p>Items</p>
+                      <ul>
+                        {selectedSchedule.items.map(({ id, label, notes }) => (
+                          <li key={id} className="flex justify-between">
+                            <div>
+                              <p className="text-sm text-default-700">
+                                {label}
+                              </p>
+                              <p className="text-xs text-default-400">
+                                {notes}
+                              </p>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
                     <div className="flex flex-col gap-2">
                       <p>Items</p>
                       <ul>
