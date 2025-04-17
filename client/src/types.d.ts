@@ -1,5 +1,6 @@
 import "next-auth";
 import "next-auth/jwt";
+import "currency-codes/data";
 
 declare module "next-auth" {
   interface Session {
@@ -15,4 +16,17 @@ declare module "next-auth/jwt" {
     accessToken?: string;
     refreshToken?: string;
   }
+}
+
+declare module "currency-codes/data" {
+  interface CurrencyCodeData {
+    code: string;
+    number: string;
+    digits: number;
+    currency: string;
+    countries: string[];
+  }
+
+  const data: CurrencyCodeData[];
+  export default data;
 }

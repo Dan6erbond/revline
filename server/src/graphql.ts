@@ -25,6 +25,29 @@ export enum OctaneRating {
     RACE = "RACE"
 }
 
+export enum FuelVolumeUnit {
+    Liter = "Liter",
+    Gallon = "Gallon",
+    ImperialGallon = "ImperialGallon"
+}
+
+export enum DistanceUnit {
+    Kilometers = "Kilometers",
+    Miles = "Miles"
+}
+
+export enum FuelConsumptionUnit {
+    MPG = "MPG",
+    MPG_Imperial = "MPG_Imperial",
+    KPL = "KPL",
+    LP100K = "LP100K"
+}
+
+export enum TemperatureUnit {
+    Celsius = "Celsius",
+    Fahrenheit = "Fahrenheit"
+}
+
 export interface CreateCarInput {
     name: string;
     make?: Nullable<string>;
@@ -95,6 +118,11 @@ export interface UpdateProfileInput {
     username?: Nullable<string>;
     firstName?: Nullable<string>;
     lastName?: Nullable<string>;
+    currencyCode?: Nullable<string>;
+    fuelVolumeUnit?: Nullable<FuelVolumeUnit>;
+    distanceUnit?: Nullable<DistanceUnit>;
+    fuelConsumptionUnit?: Nullable<FuelConsumptionUnit>;
+    temperatureUnit?: Nullable<TemperatureUnit>;
 }
 
 export interface UploadProfilePictureInput {
@@ -247,6 +275,11 @@ export interface Profile {
     username?: Nullable<string>;
     firstName?: Nullable<string>;
     lastName?: Nullable<string>;
+    currencyCode?: Nullable<string>;
+    fuelVolumeUnit?: Nullable<FuelVolumeUnit>;
+    distanceUnit?: Nullable<DistanceUnit>;
+    fuelConsumptionUnit?: Nullable<FuelConsumptionUnit>;
+    temperatureUnit?: Nullable<TemperatureUnit>;
     profilePictureUrl?: Nullable<string>;
     createdAt: Date;
     updatedAt: Date;

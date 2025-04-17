@@ -34,6 +34,7 @@
     "@nestjs/graphql": "^13.1.0",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/platform-express": "^11.0.1",
+    "currency-codes": "^2.2.0",
     "dotenv": "^16.5.0",
     "graphql": "^16.10.0",
     "graphql-upload": "^17.0.0",

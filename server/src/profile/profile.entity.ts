@@ -1,4 +1,10 @@
-import { Entity, OneToOne, Property } from "@mikro-orm/core";
+import {
+  DistanceUnit,
+  FuelConsumptionUnit,
+  FuelVolumeUnit,
+  TemperatureUnit,
+} from "../graphql";
+import { Entity, Enum, OneToOne, Property } from "@mikro-orm/core";
 
 import { BaseEntity } from "../db/base.entity";
 import { User } from "../users/users.entity";
@@ -16,6 +22,21 @@ export class Profile extends BaseEntity {
 
   @Property({ nullable: true })
   lastName: string;
+
+  @Property({ nullable: true })
+  currencyCode: string;
+
+  @Enum({ items: () => FuelVolumeUnit, nullable: true })
+  fuelVolumeUnit: FuelVolumeUnit;
+
+  @Enum({ items: () => DistanceUnit, nullable: true })
+  distanceUnit: DistanceUnit;
+
+  @Enum({ items: () => FuelConsumptionUnit, nullable: true })
+  fuelConsumptionUnit: FuelConsumptionUnit;
+
+  @Enum({ items: () => TemperatureUnit, nullable: true })
+  temperatureUnit: TemperatureUnit;
 
   @Property({ type: "uuid", nullable: true })
   profilePicture?: string;

@@ -7,6 +7,12 @@ import { FileUpload } from "graphql-upload-ts";
 import { v4 } from "uuid";
 import { User } from "../users/users.entity";
 import { Profile } from "./profile.entity";
+import {
+  DistanceUnit,
+  FuelConsumptionUnit,
+  FuelVolumeUnit,
+  TemperatureUnit,
+} from "../graphql";
 
 @Injectable()
 export class ProfileService {
@@ -33,6 +39,11 @@ export class ProfileService {
     username?: string | null;
     firstName?: string | null;
     lastName?: string | null;
+    currencyCode?: string | null;
+    fuelVolumeUnit?: FuelVolumeUnit | null;
+    distanceUnit?: DistanceUnit | null;
+    fuelConsumptionUnit?: FuelConsumptionUnit | null;
+    temperatureUnit?: TemperatureUnit | null;
     profilePicture?: string | null;
   }) {
     let profile = await this.getUserProfile(user);

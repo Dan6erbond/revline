@@ -14,6 +14,7 @@
     "@heroui/react": "^2.8.0-beta.0",
     "@internationalized/date": "^3.7.0",
     "apollo-upload-client": "^18.0.1",
+    "currency-codes": "^2.2.0",
     "framer-motion": "^12.6.5",
     "graphql": "^16.10.0",
     "lucide-react": "^0.488.0",

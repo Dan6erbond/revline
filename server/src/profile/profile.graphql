@@ -1,8 +1,36 @@
+enum FuelVolumeUnit {
+  Liter
+  Gallon
+  ImperialGallon
+}
+
+enum DistanceUnit {
+  Kilometers
+  Miles
+}
+
+enum FuelConsumptionUnit {
+  MPG
+  MPG_Imperial
+  KPL
+  LP100K
+}
+
+enum TemperatureUnit {
+  Celsius
+  Fahrenheit
+}
+
 type Profile {
   id: ID!
   username: String
   firstName: String
   lastName: String
+  currencyCode: String
+  fuelVolumeUnit: FuelVolumeUnit
+  distanceUnit: DistanceUnit
+  fuelConsumptionUnit: FuelConsumptionUnit
+  temperatureUnit: TemperatureUnit
   profilePictureUrl: String
   createdAt: Date!
   updatedAt: Date!
@@ -16,6 +44,11 @@ input UpdateProfileInput {
   username: String
   firstName: String
   lastName: String
+  currencyCode: String
+  fuelVolumeUnit: FuelVolumeUnit
+  distanceUnit: DistanceUnit
+  fuelConsumptionUnit: FuelConsumptionUnit
+  temperatureUnit: TemperatureUnit
 }
 
 input UploadProfilePictureInput {
