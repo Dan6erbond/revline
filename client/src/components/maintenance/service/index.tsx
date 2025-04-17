@@ -2,6 +2,7 @@ import { ClipboardList, Repeat, Wrench } from "lucide-react";
 import { ComponentType, ReactNode } from "react";
 import { Tab, Tabs } from "@heroui/react";
 
+import Items from "./items";
 import Logs from "./logs";
 import { getQueryParam } from "../../../utils/router";
 import { useRouter } from "next/router";
@@ -23,6 +24,7 @@ const tabs: {
     id: "items",
     label: "Items",
     icon: <Wrench />,
+    component: Items,
   },
   {
     id: "schedules",
