@@ -12,12 +12,6 @@ import { Car } from "../../cars/cars.entity";
 import { ServiceItem } from "../service-item/service-item.entity";
 import { ServiceLog } from "../service-log/service-log.entity";
 
-export enum RecurrenceUnit {
-  DAYS = "DAYS",
-  MONTHS = "MONTHS",
-  YEARS = "YEARS",
-}
-
 @Entity()
 export class ServiceSchedule extends BaseEntity {
   @ManyToOne(() => Car)

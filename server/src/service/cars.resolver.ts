@@ -26,4 +26,9 @@ export class CarsResolver {
   async serviceSchedules(@Parent() car: Car) {
     return await this.serviceSchedulesService.findByCar(car);
   }
+
+  @ResolveField()
+  async upcomingServices(@Parent() car: Car) {
+    return await this.serviceSchedulesService.getUpcomingServices(car);
+  }
 }

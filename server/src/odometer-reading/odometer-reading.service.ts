@@ -1,4 +1,8 @@
-import { EntityManager, EntityRepository } from "@mikro-orm/postgresql";
+import {
+  EntityManager,
+  EntityRepository,
+  QueryOrder,
+} from "@mikro-orm/postgresql";
 import { Injectable } from "@nestjs/common";
 import { OdometerReading } from "./odometer-reading.entity";
 import { InjectRepository } from "@mikro-orm/nestjs";
@@ -66,5 +70,14 @@ export class OdometerReadingService {
     return await this.odometerReadingRepository.findAll({
       where: { car: car.id },
     });
+  }
+
+  async getLatestReading(car: Car) {
+    return await this.odometerReadingRepository.findOne(
+      { car: car.id },
+      {
+        orderBy: { createdAt: QueryOrder.DESC },
+      },
+    );
   }
 }

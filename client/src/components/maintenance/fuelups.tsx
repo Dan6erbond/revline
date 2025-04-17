@@ -2,6 +2,9 @@ import {
   Autocomplete,
   AutocompleteItem,
   Button,
+  Card,
+  CardBody,
+  CardHeader,
   Checkbox,
   DatePicker,
   Modal,
@@ -62,6 +65,7 @@ const getFuelUps = graphql(`
         locationLat
         locationLng
       }
+      averageConsumptionLitersPerKm
     }
   }
 `);
@@ -128,6 +132,7 @@ export default function FuelUps() {
     useForm<Inputs>({
       defaultValues: {
         occurredAt: now(getLocalTimeZone()),
+        isFullTank: true,
       },
     });
 
@@ -197,7 +202,16 @@ export default function FuelUps() {
     <>
       <div className="flex flex-col gap-4 md:gap-8 pt-4 md:pt-8">
         <div className="flex justify-between">
-          <div></div>
+          <div>
+            {data?.car?.averageConsumptionLitersPerKm && (
+              <Card>
+                <CardHeader>Average consumption</CardHeader>
+                <CardBody>
+                  {data.car.averageConsumptionLitersPerKm * 100} l/100km
+                </CardBody>
+              </Card>
+            )}
+          </div>
           <div>
             <Button
               onPress={onOpen}
@@ -292,7 +306,9 @@ export default function FuelUps() {
                 }`}</TableCell>
                 <TableCell>{fu.odometerReading?.readingKm}</TableCell>
                 <TableCell>{fu.notes}</TableCell>
-                <TableCell>{fu.isFullTank}</TableCell>
+                <TableCell>
+                  <Checkbox isSelected={fu.isFullTank} isReadOnly />
+                </TableCell>
               </TableRow>
             )}
           </TableBody>

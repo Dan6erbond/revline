@@ -29,5 +29,11 @@ export const buildClient = (
 ) =>
   new ApolloClient({
     link: authLink(getSessionRef).concat(httpLink),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      typePolicies: {
+        UpcomingService: {
+          keyFields: false,
+        },
+      },
+    }),
   });

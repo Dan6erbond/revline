@@ -35,6 +35,7 @@ type FuelUp {
 
 extend type Car {
   fuelUps: [FuelUp!]!
+  averageConsumptionLitersPerKm: Float
 }
 
 input CreateFuelUpInput {

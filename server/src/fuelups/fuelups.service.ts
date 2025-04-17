@@ -1,4 +1,8 @@
-import { EntityManager, EntityRepository } from "@mikro-orm/postgresql";
+import {
+  EntityManager,
+  EntityRepository,
+  QueryOrder,
+} from "@mikro-orm/postgresql";
 import { FuelUp } from "./fuelups.entity";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@mikro-orm/nestjs";
@@ -120,5 +124,47 @@ export class FuelupsService {
     await this.em.populate(fuelUp, ["odometerReading"]);
 
     return fuelUp.odometerReading;
+  }
+
+  async getAverageConsumption(car: Car) {
+    const fuelUps = await this.fuelUpRepository.findAll({
+      where: { car: car.id },
+      orderBy: { occurredAt: QueryOrder.ASC },
+      populate: ["odometerReading"],
+    });
+
+    const fullTanks = fuelUps.filter((f) => f.isFullTank && f.odometerReading);
+
+    if (fullTanks.length < 2) return null; // Not enough data
+
+    let totalDistance = 0;
+    let totalFuelUsed = 0;
+
+    for (let i = 0; i < fullTanks.length - 1; i++) {
+      const start = fullTanks[i];
+      const end = fullTanks[i + 1];
+
+      const startKm = start.odometerReading!.readingKm;
+      const endKm = end.odometerReading!.readingKm;
+
+      const distance = endKm - startKm;
+      if (distance <= 0) continue; // skip invalid data
+
+      // Get all fuel-ups between start and end (excluding start)
+      const fuelInBetween = fuelUps.filter(
+        (f) =>
+          f.occurredAt > start.occurredAt && f.occurredAt <= end.occurredAt,
+      );
+
+      const fuelUsed = fuelInBetween.reduce(
+        (sum, f) => sum + f.amountLiters,
+        0,
+      );
+
+      totalDistance += distance;
+      totalFuelUsed += fuelUsed;
+    }
+
+    return totalDistance > 0 ? totalFuelUsed / totalDistance : null;
   }
 }

@@ -163,11 +163,11 @@ export default function Items() {
             {(si) => (
               <TableRow key={si.id}>
                 <TableCell>{si.label}</TableCell>
-                <TableCell>{si.notes}</TableCell>
                 <TableCell>{si.estimatedDuration}</TableCell>
                 <TableCell>{si.defaultIntervalKm}</TableCell>
                 <TableCell>{si.defaultIntervalMonths}</TableCell>
                 <TableCell>{si.tags}</TableCell>
+                <TableCell>{si.notes}</TableCell>
               </TableRow>
             )}
           </TableBody>

@@ -10,4 +10,9 @@ export class CarsResolver {
   async fuelUps(@Parent() car: Car) {
     return await this.fuelUpsService.findByCar(car);
   }
+
+  @ResolveField()
+  async averageConsumptionLitersPerKm(@Parent() car: Car) {
+    return await this.fuelUpsService.getAverageConsumption(car);
+  }
 }

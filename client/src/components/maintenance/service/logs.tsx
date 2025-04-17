@@ -11,6 +11,9 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  NumberInput,
+  Select,
+  SelectItem,
   Table,
   TableBody,
   TableCell,
@@ -92,11 +95,42 @@ const getServiceItems = graphql(`
   }
 `);
 
+const getServiceSchedules = graphql(`
+  query GetServiceSchedules($id: ID!) {
+    car(id: $id) {
+      serviceSchedules {
+        id
+        title
+        notes
+        items {
+          id
+          label
+          notes
+          estimatedDuration
+          defaultIntervalKm
+          defaultIntervalMonths
+          tags
+          createdAt
+          updatedAt
+        }
+        repeatEveryKm
+        repeatEveryMonths
+        startsAtKm
+        startsAtDate
+        archived
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`);
+
 type Inputs = {
   datePerformed: ZonedDateTime;
   odometerKm: number;
   notes: string;
   performedBy?: string | null;
+  scheduleId?: string | null;
   serviceItemIds: string[];
 };
 
@@ -147,6 +181,7 @@ const columns = [
   { key: "datePerformed", label: "Date performed" },
   { key: "odometerKm", label: "Odometer (km)" },
   { key: "items", label: "Items" },
+  { key: "schedule", label: "Schedule" },
   { key: "notes", label: "Notes" },
   { key: "performedBy", label: "Performed by" },
 ];
@@ -164,6 +199,11 @@ export default function Logs() {
     skip: !getQueryParam(router.query.id),
   });
 
+  const { data: serviceSchedules } = useQuery(getServiceSchedules, {
+    variables: { id: getQueryParam(router.query.id) as string },
+    skip: !getQueryParam(router.query.id),
+  });
+
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const { register, handleSubmit, control, watch, setValue } = useForm<Inputs>({
@@ -173,7 +213,7 @@ export default function Logs() {
     },
   });
 
-  const serviceItemIds = watch("serviceItemIds");
+  const [serviceItemIds, scheduleId] = watch(["serviceItemIds", "scheduleId"]);
 
   const [mutate] = useMutation(createServiceLog, {
     update: (cache, res) => {
@@ -199,6 +239,7 @@ export default function Logs() {
     performedBy,
     notes,
     serviceItemIds,
+    scheduleId,
   }) => {
     mutate({
       variables: {
@@ -209,6 +250,7 @@ export default function Logs() {
           performedBy,
           notes,
           serviceItemIds,
+          scheduleId,
         },
       },
     }).then(({ data }) => {
@@ -250,6 +292,7 @@ export default function Logs() {
                 </TableCell>
                 <TableCell>{sl.odometerReading?.readingKm}</TableCell>
                 <TableCell>{sl.items.map((i) => i.label).join(", ")}</TableCell>
+                <TableCell>{sl.schedule?.title}</TableCell>
                 <TableCell>{sl.notes}</TableCell>
                 <TableCell>{sl.performedBy}</TableCell>
               </TableRow>
@@ -281,83 +324,118 @@ export default function Logs() {
                       />
                     )}
                   />
-                  <Input
-                    type="number"
-                    label="Odometer"
-                    endContent={"km"}
-                    {...register("odometerKm", { valueAsNumber: true })}
-                    variant="bordered"
+                  <Controller
+                    control={control}
+                    name="odometerKm"
+                    render={({ field: { onChange, ...field } }) => (
+                      <NumberInput
+                        label="Odometer"
+                        endContent={"km"}
+                        {...field}
+                        onValueChange={onChange}
+                        variant="bordered"
+                      />
+                    )}
                   />
-                  <div className="flex flex-col gap-2">
-                    <p>Items</p>
-                    <ul>
-                      {serviceItemIds.map((id) => (
-                        <li key={id} className="flex justify-between">
-                          <div>
-                            <p className="text-sm text-default-700">
-                              {
-                                serviceItems?.car?.serviceItems.find(
-                                  (si) => si.id === id
-                                )?.label
+                  <Select
+                    items={serviceSchedules?.car?.serviceSchedules}
+                    label="Schedule"
+                    {...register("scheduleId")}
+                    variant="bordered"
+                    renderValue={(items) =>
+                      items.map(({ data: schedule }) => (
+                        <div key={schedule?.id} className="flex flex-col">
+                          <span className="text-small">{schedule?.title}</span>
+                          <span className="text-tiny text-default-400">
+                            {schedule?.notes}
+                          </span>
+                        </div>
+                      ))
+                    }
+                  >
+                    {(schedule) => (
+                      <SelectItem key={schedule.id}>
+                        <div className="flex flex-col">
+                          <span className="text-small">{schedule.title}</span>
+                          <span className="text-tiny text-default-400">
+                            {schedule.notes}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    )}
+                  </Select>
+                  {!scheduleId && (
+                    <div className="flex flex-col gap-2">
+                      <p>Items</p>
+                      <ul>
+                        {serviceItemIds.map((id) => (
+                          <li key={id} className="flex justify-between">
+                            <div>
+                              <p className="text-sm text-default-700">
+                                {
+                                  serviceItems?.car?.serviceItems.find(
+                                    (si) => si.id === id
+                                  )?.label
+                                }
+                              </p>
+                              <p className="text-xs text-default-400">
+                                {
+                                  serviceItems?.car?.serviceItems.find(
+                                    (si) => si.id === id
+                                  )?.notes
+                                }
+                              </p>
+                            </div>
+                            <Button
+                              variant="bordered"
+                              color="danger"
+                              size="sm"
+                              isIconOnly
+                              onPress={() =>
+                                setValue(
+                                  "serviceItemIds",
+                                  serviceItemIds.filter((i) => id !== i)
+                                )
                               }
-                            </p>
-                            <p className="text-xs text-default-400">
-                              {
-                                serviceItems?.car?.serviceItems.find(
-                                  (si) => si.id === id
-                                )?.notes
-                              }
-                            </p>
-                          </div>
+                            >
+                              <Trash size={16} />
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                      <Dropdown>
+                        <DropdownTrigger>
                           <Button
                             variant="bordered"
-                            color="danger"
-                            size="sm"
-                            isIconOnly
-                            onPress={() =>
-                              setValue(
-                                "serviceItemIds",
-                                serviceItemIds.filter((i) => id !== i)
-                              )
-                            }
+                            endContent={<Plus />}
+                            className="self-end"
                           >
-                            <Trash size={16} />
+                            Add Item
                           </Button>
-                        </li>
-                      ))}
-                    </ul>
-                    <Dropdown>
-                      <DropdownTrigger>
-                        <Button
-                          variant="bordered"
-                          endContent={<Plus />}
-                          className="self-end"
+                        </DropdownTrigger>
+                        <DropdownMenu
+                          items={serviceItems?.car?.serviceItems.filter(
+                            (si) => !serviceItemIds.includes(si.id)
+                          )}
                         >
-                          Add Item
-                        </Button>
-                      </DropdownTrigger>
-                      <DropdownMenu
-                        items={serviceItems?.car?.serviceItems.filter(
-                          (si) => !serviceItemIds.includes(si.id)
-                        )}
-                      >
-                        {(item) => (
-                          <DropdownItem
-                            key={item.id}
-                            description={item.notes}
-                            onPress={() =>
-                              setValue("serviceItemIds", [
-                                ...serviceItemIds,
-                                item.id,
-                              ])
-                            }
-                          >
-                            {item.label}
-                          </DropdownItem>
-                        )}
-                      </DropdownMenu>
-                    </Dropdown>
-                  </div>
+                          {(item) => (
+                            <DropdownItem
+                              key={item.id}
+                              description={item.notes}
+                              onPress={() =>
+                                setValue("serviceItemIds", [
+                                  ...serviceItemIds,
+                                  item.id,
+                                ])
+                              }
+                            >
+                              {item.label}
+                            </DropdownItem>
+                          )}
+                        </DropdownMenu>
+                      </Dropdown>
+                    </div>
+                  )}
                   <Textarea
                     label="Notes"
                     {...register("notes")}
@@ -367,6 +445,7 @@ export default function Logs() {
                     label="Performed by"
                     {...register("performedBy")}
                     variant="bordered"
+                    description="Leave empty if done by yourself"
                   />
                 </form>
               </ModalBody>

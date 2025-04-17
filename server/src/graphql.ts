@@ -175,7 +175,9 @@ export interface Car {
     updatedAt: Date;
     bannerImageUrl?: Nullable<string>;
     fuelUps: FuelUp[];
+    averageConsumptionLitersPerKm?: Nullable<number>;
     odometerReadings: OdometerReading[];
+    upcomingServices: UpcomingService[];
     serviceItems: ServiceItem[];
     serviceLogs: ServiceLog[];
     serviceSchedules: ServiceSchedule[];
@@ -248,6 +250,12 @@ export interface Profile {
     profilePictureUrl?: Nullable<string>;
     createdAt: Date;
     updatedAt: Date;
+}
+
+export interface UpcomingService {
+    schedule: ServiceSchedule;
+    nextDueKm?: Nullable<number>;
+    nextDueDate?: Nullable<Date>;
 }
 
 export interface ServiceItem {
