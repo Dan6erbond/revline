@@ -43,4 +43,9 @@ export class ServiceLogResolver {
   async items(@Parent() log: ServiceLog) {
     return await this.serviceLogsService.getServiceItems(log);
   }
+
+  @ResolveField()
+  async schedule(@Parent() log: ServiceLog) {
+    return await this.serviceLogsService.getSchedule(log);
+  }
 }
