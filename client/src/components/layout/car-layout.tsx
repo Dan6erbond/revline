@@ -1,3 +1,4 @@
+import { ArrowLeft, Upload } from "lucide-react";
 import {
   Button,
   Image,
@@ -14,7 +15,6 @@ import { ReactNode, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 
 import CarNavbar from "./car-navbar";
-import { ArrowLeft, Upload } from "lucide-react";
 import { getQueryParam } from "../../utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
@@ -62,19 +62,19 @@ export default function CarLayout({ children }: { children: ReactNode }) {
           src={data?.car?.bannerImageUrl ?? "/placeholder.png"}
           alt={data?.car?.name}
         />
-        <div className="absolute bottom-0 w-full z-10 bg-zinc-900/70 backdrop-blur-sm p-2 md:p-4 flex gap-4">
-          <Button
-            as={Link}
-            href={`/cars/${getQueryParam(router.query.id)}`}
-            isIconOnly
-          >
-            <ArrowLeft />
-          </Button>
-          <h2 className="text-3xl text-white">{data?.car?.name}</h2>
-          <Button isIconOnly className="ml-auto" onPress={onOpen}>
-            <Upload />
-          </Button>
-        </div>
+      </div>
+      <div className="sticky h-18 top-16 -mt-18 w-full z-10 bg-zinc-900/70 backdrop-blur-sm p-2 md:p-4 flex gap-4">
+        <Button
+          as={Link}
+          href={`/cars/${getQueryParam(router.query.id)}`}
+          isIconOnly
+        >
+          <ArrowLeft />
+        </Button>
+        <h2 className="text-3xl text-white">{data?.car?.name}</h2>
+        <Button isIconOnly className="ml-auto" onPress={onOpen}>
+          <Upload />
+        </Button>
       </div>
       <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
         <ModalContent>
