@@ -4,83 +4,86 @@ import {
   NavbarBrand,
   NavbarContent,
   NavbarItem,
+  NavbarMenu,
+  NavbarMenuItem,
+  NavbarMenuToggle,
 } from "@heroui/react";
 
 import AuthButton from "./auth-button";
 import Wordmark from "../wordmark";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
 export default function CarNavbar() {
   const router = useRouter();
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const menuItems = [
+    {
+      name: "Garage",
+      href: "/",
+      active: router.pathname === "/",
+    },
+    {
+      name: "Maintenance",
+      href: `/cars/${router.query.id}/maintenance`,
+      active: router.pathname.startsWith("/cars/[id]/maintenance"),
+    },
+    {
+      name: "Performance",
+      href: `/cars/${router.query.id}/performance`,
+      active: router.pathname.startsWith("/cars/[id]/performance"),
+    },
+    {
+      name: "Gallery",
+      href: `/cars/${router.query.id}/gallery`,
+      active: router.pathname.startsWith("/cars/[id]/gallery"),
+    },
+  ];
+
   return (
-    <Navbar>
-      <NavbarBrand as={Link} href="/">
-        <Wordmark />
-      </NavbarBrand>
+    <Navbar onMenuOpenChange={setIsMenuOpen} isMenuOpen={isMenuOpen}>
       <NavbarContent>
-        <NavbarItem>
-          <Link
-            aria-current={router.pathname === "/" ? "page" : false}
-            color={router.pathname === "/" ? "primary" : "foreground"}
-            href="/"
-          >
-            Garage
-          </Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link
-            aria-current={
-              router.pathname.startsWith("/cars/[id]/maintenance")
-                ? "page"
-                : false
-            }
-            color={
-              router.pathname.startsWith("/cars/[id]/maintenance")
-                ? "primary"
-                : "foreground"
-            }
-            href={`/cars/${router.query.id}/maintenance`}
-          >
-            Maintenance
-          </Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link
-            aria-current={
-              router.pathname.startsWith("/cars/[id]/performance")
-                ? "page"
-                : false
-            }
-            color={
-              router.pathname.startsWith("/cars/[id]/performance")
-                ? "primary"
-                : "foreground"
-            }
-            href={`/cars/${router.query.id}/performance`}
-          >
-            Performance
-          </Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link
-            aria-current={
-              router.pathname.startsWith("/cars/[id]/gallery") ? "page" : false
-            }
-            color={
-              router.pathname.startsWith("/cars/[id]/gallery")
-                ? "primary"
-                : "foreground"
-            }
-            href={`/cars/${router.query.id}/gallery`}
-          >
-            Gallery
-          </Link>
-        </NavbarItem>
+        <NavbarMenuToggle
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          className="sm:hidden"
+        />
+        <NavbarBrand as={Link} href="/">
+          <Wordmark />
+        </NavbarBrand>
+      </NavbarContent>
+      <NavbarContent className="hidden sm:flex">
+        {menuItems.map(({ name, href, active }) => (
+          <NavbarItem key={name}>
+            <Link
+              aria-current={active ? "page" : false}
+              color={active ? "primary" : "foreground"}
+              href={href}
+            >
+              {name}
+            </Link>
+          </NavbarItem>
+        ))}
       </NavbarContent>
       <NavbarContent as="div" justify="end">
         <AuthButton />
       </NavbarContent>
+
+      <NavbarMenu className="pt-4">
+        {menuItems.map(({ name, active }) => (
+          <NavbarMenuItem key={name}>
+            <Link
+              className="w-full"
+              color={active ? "primary" : "foreground"}
+              href="#"
+              size="lg"
+            >
+              {name}
+            </Link>
+          </NavbarMenuItem>
+        ))}
+      </NavbarMenu>
     </Navbar>
   );
 }

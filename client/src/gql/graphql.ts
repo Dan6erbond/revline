@@ -31,6 +31,9 @@ export type Car = {
   name: Scalars['String']['output'];
   odometerReadings: Array<OdometerReading>;
   owner: User;
+  serviceItems: Array<ServiceItem>;
+  serviceLogs: Array<ServiceLog>;
+  serviceSchedules: Array<ServiceSchedule>;
   updatedAt: Scalars['Date']['output'];
   year?: Maybe<Scalars['Int']['output']>;
 };
@@ -65,6 +68,37 @@ export type CreateOdometerReadingInput = {
   readingKm: Scalars['Float']['input'];
 };
 
+export type CreateServiceItemInput = {
+  carId: Scalars['ID']['input'];
+  defaultIntervalKm?: InputMaybe<Scalars['Int']['input']>;
+  defaultIntervalMonths?: InputMaybe<Scalars['Int']['input']>;
+  estimatedDuration?: InputMaybe<Scalars['Int']['input']>;
+  label: Scalars['String']['input'];
+  notes?: InputMaybe<Scalars['String']['input']>;
+  tags?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+export type CreateServiceLogInput = {
+  carId: Scalars['ID']['input'];
+  datePerformed: Scalars['Date']['input'];
+  notes?: InputMaybe<Scalars['String']['input']>;
+  odometerKm?: InputMaybe<Scalars['Int']['input']>;
+  performedBy?: InputMaybe<Scalars['String']['input']>;
+  scheduleId?: InputMaybe<Scalars['ID']['input']>;
+  serviceItemIds: Array<Scalars['ID']['input']>;
+};
+
+export type CreateServiceScheduleInput = {
+  carId: Scalars['ID']['input'];
+  notes?: InputMaybe<Scalars['String']['input']>;
+  repeatEveryKm?: InputMaybe<Scalars['Int']['input']>;
+  repeatEveryMonths?: InputMaybe<Scalars['Int']['input']>;
+  serviceItemIds: Array<Scalars['ID']['input']>;
+  startsAtDate?: InputMaybe<Scalars['Date']['input']>;
+  startsAtKm?: InputMaybe<Scalars['Int']['input']>;
+  title: Scalars['String']['input'];
+};
+
 export enum FuelCategory {
   Diesel = 'DIESEL',
   Electric = 'ELECTRIC',
@@ -97,11 +131,20 @@ export type Mutation = {
   createCar: Car;
   createFuelUp: FuelUp;
   createOdometerReading: OdometerReading;
+  createServiceItem: ServiceItem;
+  createServiceLog: ServiceLog;
+  createServiceSchedule: ServiceSchedule;
   deleteOdometerReading: Scalars['Boolean']['output'];
+  deleteServiceItem: Scalars['Boolean']['output'];
+  deleteServiceLog: Scalars['Boolean']['output'];
+  deleteServiceSchedule: Scalars['Boolean']['output'];
   updateCar: Car;
   updateFuelUp: FuelUp;
   updateOdometerReading: OdometerReading;
   updateProfile: Profile;
+  updateServiceItem: ServiceItem;
+  updateServiceLog: ServiceLog;
+  updateServiceSchedule: ServiceSchedule;
   uploadBannerImage: Car;
   uploadProfilePicture: Profile;
 };
@@ -122,7 +165,37 @@ export type MutationCreateOdometerReadingArgs = {
 };
 
 
+export type MutationCreateServiceItemArgs = {
+  input: CreateServiceItemInput;
+};
+
+
+export type MutationCreateServiceLogArgs = {
+  input: CreateServiceLogInput;
+};
+
+
+export type MutationCreateServiceScheduleArgs = {
+  input: CreateServiceScheduleInput;
+};
+
+
 export type MutationDeleteOdometerReadingArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteServiceItemArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteServiceLogArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteServiceScheduleArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -144,6 +217,21 @@ export type MutationUpdateOdometerReadingArgs = {
 
 export type MutationUpdateProfileArgs = {
   input: UpdateProfileInput;
+};
+
+
+export type MutationUpdateServiceItemArgs = {
+  input: UpdateServiceItemInput;
+};
+
+
+export type MutationUpdateServiceLogArgs = {
+  input: UpdateServiceLogInput;
+};
+
+
+export type MutationUpdateServiceScheduleArgs = {
+  input: UpdateServiceScheduleInput;
 };
 
 
@@ -202,6 +290,52 @@ export type QueryCarArgs = {
   id: Scalars['ID']['input'];
 };
 
+export type ServiceItem = {
+  __typename?: 'ServiceItem';
+  car: Car;
+  createdAt: Scalars['Date']['output'];
+  defaultIntervalKm?: Maybe<Scalars['Int']['output']>;
+  defaultIntervalMonths?: Maybe<Scalars['Int']['output']>;
+  estimatedDuration?: Maybe<Scalars['Int']['output']>;
+  id: Scalars['ID']['output'];
+  label: Scalars['String']['output'];
+  notes?: Maybe<Scalars['String']['output']>;
+  schedules: Array<ServiceSchedule>;
+  tags: Array<Scalars['String']['output']>;
+  updatedAt: Scalars['Date']['output'];
+};
+
+export type ServiceLog = {
+  __typename?: 'ServiceLog';
+  car: Car;
+  createdAt: Scalars['Date']['output'];
+  datePerformed: Scalars['Date']['output'];
+  id: Scalars['ID']['output'];
+  items: Array<ServiceItem>;
+  notes?: Maybe<Scalars['String']['output']>;
+  odometerReading?: Maybe<OdometerReading>;
+  performedBy?: Maybe<Scalars['String']['output']>;
+  schedule?: Maybe<ServiceSchedule>;
+  updatedAt: Scalars['Date']['output'];
+};
+
+export type ServiceSchedule = {
+  __typename?: 'ServiceSchedule';
+  archived: Scalars['Boolean']['output'];
+  car: Car;
+  createdAt: Scalars['Date']['output'];
+  id: Scalars['ID']['output'];
+  items: Array<ServiceItem>;
+  logs: Array<ServiceLog>;
+  notes?: Maybe<Scalars['String']['output']>;
+  repeatEveryKm?: Maybe<Scalars['Int']['output']>;
+  repeatEveryMonths?: Maybe<Scalars['Int']['output']>;
+  startsAtDate?: Maybe<Scalars['Date']['output']>;
+  startsAtKm?: Maybe<Scalars['Int']['output']>;
+  title: Scalars['String']['output'];
+  updatedAt: Scalars['Date']['output'];
+};
+
 export type UpdateCarInput = {
   id: Scalars['ID']['input'];
   make?: InputMaybe<Scalars['String']['input']>;
@@ -237,6 +371,38 @@ export type UpdateProfileInput = {
   firstName?: InputMaybe<Scalars['String']['input']>;
   lastName?: InputMaybe<Scalars['String']['input']>;
   username?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateServiceItemInput = {
+  defaultIntervalKm?: InputMaybe<Scalars['Int']['input']>;
+  defaultIntervalMonths?: InputMaybe<Scalars['Int']['input']>;
+  estimatedDuration?: InputMaybe<Scalars['Int']['input']>;
+  id: Scalars['ID']['input'];
+  label?: InputMaybe<Scalars['String']['input']>;
+  notes?: InputMaybe<Scalars['String']['input']>;
+  tags?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+export type UpdateServiceLogInput = {
+  datePerformed?: InputMaybe<Scalars['Date']['input']>;
+  id: Scalars['ID']['input'];
+  notes?: InputMaybe<Scalars['String']['input']>;
+  odometerKm?: InputMaybe<Scalars['Int']['input']>;
+  performedBy?: InputMaybe<Scalars['String']['input']>;
+  scheduleId?: InputMaybe<Scalars['ID']['input']>;
+  serviceItemIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+};
+
+export type UpdateServiceScheduleInput = {
+  archived?: InputMaybe<Scalars['Boolean']['input']>;
+  id: Scalars['ID']['input'];
+  notes?: InputMaybe<Scalars['String']['input']>;
+  repeatEveryKm?: InputMaybe<Scalars['Int']['input']>;
+  repeatEveryMonths?: InputMaybe<Scalars['Int']['input']>;
+  serviceItemIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+  startsAtDate?: InputMaybe<Scalars['Date']['input']>;
+  startsAtKm?: InputMaybe<Scalars['Int']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UploadBannerImageInput = {
@@ -309,6 +475,20 @@ export type CreateOdometerReadingMutationVariables = Exact<{
 
 export type CreateOdometerReadingMutation = { __typename?: 'Mutation', createOdometerReading: { __typename?: 'OdometerReading', id: string, readingKm: number, createdAt: any, notes?: string | null } };
 
+export type GetServiceLogsQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetServiceLogsQuery = { __typename?: 'Query', car?: { __typename?: 'Car', serviceLogs: Array<{ __typename?: 'ServiceLog', id: string, datePerformed: any, notes?: string | null, performedBy?: string | null, createdAt: any, updatedAt: any, odometerReading?: { __typename?: 'OdometerReading', id: string, readingKm: number, notes?: string | null, createdAt: any, updatedAt: any } | null, items: Array<{ __typename?: 'ServiceItem', id: string, label: string, notes?: string | null, estimatedDuration?: number | null, defaultIntervalKm?: number | null, defaultIntervalMonths?: number | null, tags: Array<string>, createdAt: any, updatedAt: any }>, schedule?: { __typename?: 'ServiceSchedule', id: string, title: string, notes?: string | null, repeatEveryKm?: number | null, repeatEveryMonths?: number | null, startsAtKm?: number | null, startsAtDate?: any | null, archived: boolean, createdAt: any, updatedAt: any } | null }> } | null };
+
+export type CreateServiceLogMutationVariables = Exact<{
+  input: CreateServiceLogInput;
+}>;
+
+
+export type CreateServiceLogMutation = { __typename?: 'Mutation', createServiceLog: { __typename?: 'ServiceLog', id: string, datePerformed: any, notes?: string | null, performedBy?: string | null, createdAt: any, updatedAt: any, odometerReading?: { __typename?: 'OdometerReading', id: string, readingKm: number, notes?: string | null, createdAt: any, updatedAt: any } | null, items: Array<{ __typename?: 'ServiceItem', id: string, label: string, notes?: string | null, estimatedDuration?: number | null, defaultIntervalKm?: number | null, defaultIntervalMonths?: number | null, tags: Array<string>, createdAt: any, updatedAt: any }>, schedule?: { __typename?: 'ServiceSchedule', id: string, title: string, notes?: string | null, repeatEveryKm?: number | null, repeatEveryMonths?: number | null, startsAtKm?: number | null, startsAtDate?: any | null, archived: boolean, createdAt: any, updatedAt: any } | null } };
+
 export type GetProfileQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -349,6 +529,8 @@ export const GetFuelUpsDocument = {"kind":"Document","definitions":[{"kind":"Ope
 export const CreateFuelUpDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateFuelUp"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateFuelUpInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createFuelUp"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"occurredAt"}},{"kind":"Field","name":{"kind":"Name","value":"station"}},{"kind":"Field","name":{"kind":"Name","value":"amountLiters"}},{"kind":"Field","name":{"kind":"Name","value":"cost"}},{"kind":"Field","name":{"kind":"Name","value":"fuelCategory"}},{"kind":"Field","name":{"kind":"Name","value":"octane"}},{"kind":"Field","name":{"kind":"Name","value":"odometerReading"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"readingKm"}}]}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"isFullTank"}},{"kind":"Field","name":{"kind":"Name","value":"locationLat"}},{"kind":"Field","name":{"kind":"Name","value":"locationLng"}}]}}]}}]} as unknown as DocumentNode<CreateFuelUpMutation, CreateFuelUpMutationVariables>;
 export const GetOdometerReadingsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetOdometerReadings"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"car"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"odometerReadings"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"readingKm"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}}]}}]}}]}}]} as unknown as DocumentNode<GetOdometerReadingsQuery, GetOdometerReadingsQueryVariables>;
 export const CreateOdometerReadingDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateOdometerReading"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateOdometerReadingInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createOdometerReading"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"readingKm"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}}]}}]}}]} as unknown as DocumentNode<CreateOdometerReadingMutation, CreateOdometerReadingMutationVariables>;
+export const GetServiceLogsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetServiceLogs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"car"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"serviceLogs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"datePerformed"}},{"kind":"Field","name":{"kind":"Name","value":"odometerReading"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"readingKm"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"estimatedDuration"}},{"kind":"Field","name":{"kind":"Name","value":"defaultIntervalKm"}},{"kind":"Field","name":{"kind":"Name","value":"defaultIntervalMonths"}},{"kind":"Field","name":{"kind":"Name","value":"tags"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"schedule"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"repeatEveryKm"}},{"kind":"Field","name":{"kind":"Name","value":"repeatEveryMonths"}},{"kind":"Field","name":{"kind":"Name","value":"startsAtKm"}},{"kind":"Field","name":{"kind":"Name","value":"startsAtDate"}},{"kind":"Field","name":{"kind":"Name","value":"archived"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"performedBy"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]}}]}}]} as unknown as DocumentNode<GetServiceLogsQuery, GetServiceLogsQueryVariables>;
+export const CreateServiceLogDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateServiceLog"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateServiceLogInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createServiceLog"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"datePerformed"}},{"kind":"Field","name":{"kind":"Name","value":"odometerReading"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"readingKm"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"estimatedDuration"}},{"kind":"Field","name":{"kind":"Name","value":"defaultIntervalKm"}},{"kind":"Field","name":{"kind":"Name","value":"defaultIntervalMonths"}},{"kind":"Field","name":{"kind":"Name","value":"tags"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"schedule"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"repeatEveryKm"}},{"kind":"Field","name":{"kind":"Name","value":"repeatEveryMonths"}},{"kind":"Field","name":{"kind":"Name","value":"startsAtKm"}},{"kind":"Field","name":{"kind":"Name","value":"startsAtDate"}},{"kind":"Field","name":{"kind":"Name","value":"archived"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"performedBy"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]}}]} as unknown as DocumentNode<CreateServiceLogMutation, CreateServiceLogMutationVariables>;
 export const GetProfileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetProfile"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"me"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"profile"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}},{"kind":"Field","name":{"kind":"Name","value":"profilePictureUrl"}}]}}]}}]}}]} as unknown as DocumentNode<GetProfileQuery, GetProfileQueryVariables>;
 export const UpdateProfileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateProfile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateProfileInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateProfile"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}}]}}]}}]} as unknown as DocumentNode<UpdateProfileMutation, UpdateProfileMutationVariables>;
 export const UploadProfilePictureDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UploadProfilePicture"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UploadProfilePictureInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"uploadProfilePicture"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"profilePictureUrl"}}]}}]}}]} as unknown as DocumentNode<UploadProfilePictureMutation, UploadProfilePictureMutationVariables>;

@@ -1,13 +1,21 @@
+import { ComponentType, ReactNode } from "react";
 import { Fuel, Gauge, NotebookPen } from "lucide-react";
 import { Tab, Tabs } from "@heroui/react";
 
 import CarLayout from "@/components/layout/car-layout";
 import FuelUps from "@/components/maintenance/fuelups";
 import Odometer from "@/components/maintenance/odometer";
+import Service from "@/components/maintenance/service";
 import { getQueryParam } from "@/utils/router";
 import { useRouter } from "next/router";
 
-const tabs = [
+const tabs: {
+  id: string;
+  label: string;
+  icon: ReactNode;
+  component?: ComponentType;
+  disabled?: boolean;
+}[] = [
   {
     id: "fuelups",
     label: "Fuel-ups",
@@ -18,7 +26,7 @@ const tabs = [
     id: "service",
     label: "Service",
     icon: <NotebookPen />,
-    disabled: true,
+    component: Service,
   },
   {
     id: "odometer",

@@ -2,7 +2,43 @@ type ServiceItem {
   id: ID!
   label: String!
   notes: String
+  estimatedDuration: Int
+  defaultIntervalKm: Int
+  defaultIntervalMonths: Int
+  tags: [String!]!
   schedules: [ServiceSchedule!]!
+  car: Car!
   createdAt: Date!
   updatedAt: Date!
 }
+
+extend type Car {
+  serviceItems: [ServiceItem!]!
+}
+
+input CreateServiceItemInput {
+  carId: ID!
+  label: String!
+  notes: String
+  estimatedDuration: Int
+  defaultIntervalKm: Int
+  defaultIntervalMonths: Int
+  tags: [String!]
+}
+
+input UpdateServiceItemInput {
+  id: ID!
+  label: String
+  notes: String
+  estimatedDuration: Int
+  defaultIntervalKm: Int
+  defaultIntervalMonths: Int
+  tags: [String!]
+}
+
+type Mutation {
+  createServiceItem(input: CreateServiceItemInput!): ServiceItem!
+  updateServiceItem(input: UpdateServiceItemInput!): ServiceItem!
+  deleteServiceItem(id: ID!): Boolean!
+}
+

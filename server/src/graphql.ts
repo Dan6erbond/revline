@@ -101,6 +101,69 @@ export interface UploadProfilePictureInput {
     picture: Upload;
 }
 
+export interface CreateServiceItemInput {
+    carId: string;
+    label: string;
+    notes?: Nullable<string>;
+    estimatedDuration?: Nullable<number>;
+    defaultIntervalKm?: Nullable<number>;
+    defaultIntervalMonths?: Nullable<number>;
+    tags?: Nullable<string[]>;
+}
+
+export interface UpdateServiceItemInput {
+    id: string;
+    label?: Nullable<string>;
+    notes?: Nullable<string>;
+    estimatedDuration?: Nullable<number>;
+    defaultIntervalKm?: Nullable<number>;
+    defaultIntervalMonths?: Nullable<number>;
+    tags?: Nullable<string[]>;
+}
+
+export interface CreateServiceLogInput {
+    carId: string;
+    datePerformed: Date;
+    odometerKm?: Nullable<number>;
+    serviceItemIds: string[];
+    scheduleId?: Nullable<string>;
+    notes?: Nullable<string>;
+    performedBy?: Nullable<string>;
+}
+
+export interface UpdateServiceLogInput {
+    id: string;
+    datePerformed?: Nullable<Date>;
+    odometerKm?: Nullable<number>;
+    serviceItemIds?: Nullable<string[]>;
+    scheduleId?: Nullable<string>;
+    notes?: Nullable<string>;
+    performedBy?: Nullable<string>;
+}
+
+export interface CreateServiceScheduleInput {
+    carId: string;
+    title: string;
+    serviceItemIds: string[];
+    repeatEveryKm?: Nullable<number>;
+    repeatEveryMonths?: Nullable<number>;
+    startsAtKm?: Nullable<number>;
+    startsAtDate?: Nullable<Date>;
+    notes?: Nullable<string>;
+}
+
+export interface UpdateServiceScheduleInput {
+    id: string;
+    title?: Nullable<string>;
+    serviceItemIds?: Nullable<string[]>;
+    repeatEveryKm?: Nullable<number>;
+    repeatEveryMonths?: Nullable<number>;
+    startsAtKm?: Nullable<number>;
+    startsAtDate?: Nullable<Date>;
+    notes?: Nullable<string>;
+    archived?: Nullable<boolean>;
+}
+
 export interface Car {
     id: string;
     name: string;
@@ -113,6 +176,9 @@ export interface Car {
     bannerImageUrl?: Nullable<string>;
     fuelUps: FuelUp[];
     odometerReadings: OdometerReading[];
+    serviceItems: ServiceItem[];
+    serviceLogs: ServiceLog[];
+    serviceSchedules: ServiceSchedule[];
 }
 
 export interface IQuery {
@@ -133,6 +199,15 @@ export interface IMutation {
     deleteOdometerReading(id: string): boolean | Promise<boolean>;
     updateProfile(input: UpdateProfileInput): Profile | Promise<Profile>;
     uploadProfilePicture(input: UploadProfilePictureInput): Profile | Promise<Profile>;
+    createServiceItem(input: CreateServiceItemInput): ServiceItem | Promise<ServiceItem>;
+    updateServiceItem(input: UpdateServiceItemInput): ServiceItem | Promise<ServiceItem>;
+    deleteServiceItem(id: string): boolean | Promise<boolean>;
+    createServiceLog(input: CreateServiceLogInput): ServiceLog | Promise<ServiceLog>;
+    updateServiceLog(input: UpdateServiceLogInput): ServiceLog | Promise<ServiceLog>;
+    deleteServiceLog(id: string): boolean | Promise<boolean>;
+    createServiceSchedule(input: CreateServiceScheduleInput): ServiceSchedule | Promise<ServiceSchedule>;
+    updateServiceSchedule(input: UpdateServiceScheduleInput): ServiceSchedule | Promise<ServiceSchedule>;
+    deleteServiceSchedule(id: string): boolean | Promise<boolean>;
 }
 
 export interface FuelUp {
@@ -171,6 +246,49 @@ export interface Profile {
     firstName?: Nullable<string>;
     lastName?: Nullable<string>;
     profilePictureUrl?: Nullable<string>;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface ServiceItem {
+    id: string;
+    label: string;
+    notes?: Nullable<string>;
+    estimatedDuration?: Nullable<number>;
+    defaultIntervalKm?: Nullable<number>;
+    defaultIntervalMonths?: Nullable<number>;
+    tags: string[];
+    schedules: ServiceSchedule[];
+    car: Car;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface ServiceLog {
+    id: string;
+    car: Car;
+    datePerformed: Date;
+    odometerReading?: Nullable<OdometerReading>;
+    notes?: Nullable<string>;
+    items: ServiceItem[];
+    schedule?: Nullable<ServiceSchedule>;
+    performedBy?: Nullable<string>;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface ServiceSchedule {
+    id: string;
+    title: string;
+    notes?: Nullable<string>;
+    repeatEveryKm?: Nullable<number>;
+    repeatEveryMonths?: Nullable<number>;
+    startsAtKm?: Nullable<number>;
+    startsAtDate?: Nullable<Date>;
+    items: ServiceItem[];
+    logs: ServiceLog[];
+    car: Car;
+    archived: boolean;
     createdAt: Date;
     updatedAt: Date;
 }

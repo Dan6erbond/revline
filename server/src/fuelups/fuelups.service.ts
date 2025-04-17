@@ -62,12 +62,13 @@ export class FuelupsService {
 
   async updateFuelUp({
     id,
+    odometerKm,
     ...values
   }: {
     id: string;
     occurredAt?: Date | null;
     station?: string | null;
-    amount?: number | null;
+    amountLiters?: number | null;
     cost?: number | null;
     fuelCategory?: FuelCategory | null;
     octane?: OctaneRating | null;
@@ -80,6 +81,23 @@ export class FuelupsService {
     const fuelUp = await this.fuelUpRepository.findOneOrFail({ id });
 
     Object.assign(fuelUp, values);
+
+    if (odometerKm != null) {
+      if (fuelUp.odometerReading) {
+        fuelUp.odometerReading.readingKm = odometerKm;
+
+        this.em.persist(fuelUp.odometerReading);
+      } else {
+        const newReading =
+          await this.odometerReadingService.createOdometerReading({
+            carId: fuelUp.car.id,
+            readingKm: odometerKm,
+            notes: "Created by service log",
+          });
+
+        fuelUp.odometerReading = newReading;
+      }
+    }
 
     await this.em.persistAndFlush(fuelUp);
 

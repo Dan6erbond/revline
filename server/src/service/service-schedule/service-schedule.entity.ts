@@ -1,13 +1,16 @@
 import {
-  Entity,
-  ManyToOne,
-  Property,
   Collection,
+  Entity,
   ManyToMany,
+  ManyToOne,
+  OneToMany,
+  Property,
 } from "@mikro-orm/core";
+
 import { BaseEntity } from "../../db/base.entity";
 import { Car } from "../../cars/cars.entity";
 import { ServiceItem } from "../service-item/service-item.entity";
+import { ServiceLog } from "../service-log/service-log.entity";
 
 export enum RecurrenceUnit {
   DAYS = "DAYS",
@@ -24,20 +27,26 @@ export class ServiceSchedule extends BaseEntity {
   title: string;
 
   @Property({ nullable: true })
-  description?: string;
-
-  @Property({ default: true })
-  active: boolean = true;
+  notes?: string;
 
   @Property({ nullable: true })
-  intervalValue?: number;
+  repeatEveryKm?: number;
 
   @Property({ nullable: true })
-  intervalUnit?: RecurrenceUnit;
+  repeatEveryMonths?: number;
 
   @Property({ nullable: true })
-  intervalKm?: number;
+  startsAtKm?: number;
+
+  @Property({ nullable: true })
+  startsAtDate?: Date;
+
+  @Property({ default: false })
+  archived: boolean = false;
 
   @ManyToMany(() => ServiceItem)
   items = new Collection<ServiceItem>(this);
+
+  @OneToMany({ entity: () => ServiceLog, mappedBy: (sl) => sl.schedule })
+  logs = new Collection<ServiceLog>(this);
 }
