@@ -1,6 +1,10 @@
 import {
   Button,
   DatePicker,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   Input,
   Modal,
   ModalBody,
@@ -17,10 +21,10 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { Plus, Trash } from "lucide-react";
 import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
 import { useMutation, useQuery } from "@apollo/client";
 
-import { Plus } from "lucide-react";
 import { getQueryParam } from "../../../utils/router";
 import { graphql } from "../../../gql";
 import { useRouter } from "next/router";
@@ -70,11 +74,30 @@ const getServiceLogs = graphql(`
   }
 `);
 
+const getServiceItems = graphql(`
+  query GetServiceItems($id: ID!) {
+    car(id: $id) {
+      serviceItems {
+        id
+        label
+        notes
+        estimatedDuration
+        defaultIntervalKm
+        defaultIntervalMonths
+        tags
+        createdAt
+        updatedAt
+      }
+    }
+  }
+`);
+
 type Inputs = {
   datePerformed: ZonedDateTime;
   odometerKm: number;
   notes: string;
   performedBy?: string | null;
+  serviceItemIds: string[];
 };
 
 const createServiceLog = graphql(`
@@ -123,6 +146,7 @@ const createServiceLog = graphql(`
 const columns = [
   { key: "datePerformed", label: "Date performed" },
   { key: "odometerKm", label: "Odometer (km)" },
+  { key: "items", label: "Items" },
   { key: "notes", label: "Notes" },
   { key: "performedBy", label: "Performed by" },
 ];
@@ -135,13 +159,21 @@ export default function Logs() {
     skip: !getQueryParam(router.query.id),
   });
 
+  const { data: serviceItems } = useQuery(getServiceItems, {
+    variables: { id: getQueryParam(router.query.id) as string },
+    skip: !getQueryParam(router.query.id),
+  });
+
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
-  const { register, handleSubmit, control } = useForm<Inputs>({
+  const { register, handleSubmit, control, watch, setValue } = useForm<Inputs>({
     defaultValues: {
       datePerformed: now(getLocalTimeZone()),
+      serviceItemIds: [],
     },
   });
+
+  const serviceItemIds = watch("serviceItemIds");
 
   const [mutate] = useMutation(createServiceLog, {
     update: (cache, res) => {
@@ -166,6 +198,7 @@ export default function Logs() {
     odometerKm,
     performedBy,
     notes,
+    serviceItemIds,
   }) => {
     mutate({
       variables: {
@@ -175,7 +208,7 @@ export default function Logs() {
           odometerKm,
           performedBy,
           notes,
-          serviceItemIds: [],
+          serviceItemIds,
         },
       },
     }).then(({ data }) => {
@@ -210,14 +243,15 @@ export default function Logs() {
             items={data?.car?.serviceLogs ?? []}
             emptyContent={"No rows to display."}
           >
-            {(fu) => (
-              <TableRow key={fu.id}>
+            {(sl) => (
+              <TableRow key={sl.id}>
                 <TableCell>
-                  {new Date(fu.datePerformed).toLocaleDateString()}
+                  {new Date(sl.datePerformed).toLocaleDateString()}
                 </TableCell>
-                <TableCell>{fu.odometerReading?.readingKm}</TableCell>
-                <TableCell>{fu.notes}</TableCell>
-                <TableCell>{fu.performedBy}</TableCell>
+                <TableCell>{sl.odometerReading?.readingKm}</TableCell>
+                <TableCell>{sl.items.map((i) => i.label).join(", ")}</TableCell>
+                <TableCell>{sl.notes}</TableCell>
+                <TableCell>{sl.performedBy}</TableCell>
               </TableRow>
             )}
           </TableBody>
@@ -254,6 +288,76 @@ export default function Logs() {
                     {...register("odometerKm", { valueAsNumber: true })}
                     variant="bordered"
                   />
+                  <div className="flex flex-col gap-2">
+                    <p>Items</p>
+                    <ul>
+                      {serviceItemIds.map((id) => (
+                        <li key={id} className="flex justify-between">
+                          <div>
+                            <p className="text-sm text-default-700">
+                              {
+                                serviceItems?.car?.serviceItems.find(
+                                  (si) => si.id === id
+                                )?.label
+                              }
+                            </p>
+                            <p className="text-xs text-default-400">
+                              {
+                                serviceItems?.car?.serviceItems.find(
+                                  (si) => si.id === id
+                                )?.notes
+                              }
+                            </p>
+                          </div>
+                          <Button
+                            variant="bordered"
+                            color="danger"
+                            size="sm"
+                            isIconOnly
+                            onPress={() =>
+                              setValue(
+                                "serviceItemIds",
+                                serviceItemIds.filter((i) => id !== i)
+                              )
+                            }
+                          >
+                            <Trash size={16} />
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                    <Dropdown>
+                      <DropdownTrigger>
+                        <Button
+                          variant="bordered"
+                          endContent={<Plus />}
+                          className="self-end"
+                        >
+                          Add Item
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownMenu
+                        items={serviceItems?.car?.serviceItems.filter(
+                          (si) => !serviceItemIds.includes(si.id)
+                        )}
+                      >
+                        {(item) => (
+                          <DropdownItem
+                            key={item.id}
+                            description={item.notes}
+                            onPress={() =>
+                              setValue("serviceItemIds", [
+                                ...serviceItemIds,
+                                item.id,
+                              ])
+                            }
+                          >
+                            {item.label}
+                          </DropdownItem>
+                        )}
+                      </DropdownMenu>
+                    </Dropdown>
+                  </div>
                   <Textarea
                     label="Notes"
                     {...register("notes")}
