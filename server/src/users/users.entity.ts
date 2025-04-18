@@ -1,4 +1,10 @@
-import { Entity, OneToMany, OneToOne, Property } from "@mikro-orm/core";
+import {
+  Collection,
+  Entity,
+  OneToMany,
+  OneToOne,
+  Property,
+} from "@mikro-orm/core";
 
 import { BaseEntity } from "../db/base.entity";
 import { Car } from "../cars/cars.entity";
@@ -13,5 +19,5 @@ export class User extends BaseEntity {
   profile: Profile;
 
   @OneToMany(() => Car, (car) => car.owner)
-  cars: Car[];
+  cars = new Collection<Car>(this);
 }

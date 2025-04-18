@@ -8,6 +8,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
+export enum DragResultUnit {
+    Kph = "Kph",
+    Km = "Km"
+}
+
 export enum FuelCategory {
     PETROL = "PETROL",
     DIESEL = "DIESEL",
@@ -61,6 +66,20 @@ export interface UpdateCarInput {
     make?: Nullable<string>;
     model?: Nullable<string>;
     year?: Nullable<number>;
+}
+
+export interface CreateDragSessionInput {
+    carId: string;
+    title: string;
+    notes?: Nullable<string>;
+}
+
+export interface CreateDragResultInput {
+    sessionId: string;
+    unit: DragResultUnit;
+    value: number;
+    result: number;
+    notes?: Nullable<string>;
 }
 
 export interface CreateFuelUpInput {
@@ -201,6 +220,7 @@ export interface Car {
     createdAt: Date;
     updatedAt: Date;
     bannerImageUrl?: Nullable<string>;
+    dragSessions: DragSession[];
     fuelUps: FuelUp[];
     averageConsumptionLitersPerKm?: Nullable<number>;
     media: Media[];
@@ -214,6 +234,7 @@ export interface Car {
 export interface IQuery {
     car(id: string): Nullable<Car> | Promise<Nullable<Car>>;
     cars(): Car[] | Promise<Car[]>;
+    dragSession(id: string): Nullable<DragSession> | Promise<Nullable<DragSession>>;
     profile(): Nullable<Profile> | Promise<Nullable<Profile>>;
     me(): Nullable<User> | Promise<Nullable<User>>;
 }
@@ -222,6 +243,8 @@ export interface IMutation {
     createCar(input: CreateCarInput): Car | Promise<Car>;
     updateCar(input: UpdateCarInput): Car | Promise<Car>;
     uploadBannerImage(input: UploadMediaInput): UploadMediaResponse | Promise<UploadMediaResponse>;
+    createDragSession(input: CreateDragSessionInput): DragSession | Promise<DragSession>;
+    createDragResult(input: CreateDragResultInput): DragResult | Promise<DragResult>;
     createFuelUp(input: CreateFuelUpInput): FuelUp | Promise<FuelUp>;
     updateFuelUp(input: UpdateFuelUpInput): FuelUp | Promise<FuelUp>;
     uploadMedia(input: UploadMediaInput): UploadMediaResponse | Promise<UploadMediaResponse>;
@@ -239,6 +262,24 @@ export interface IMutation {
     createServiceSchedule(input: CreateServiceScheduleInput): ServiceSchedule | Promise<ServiceSchedule>;
     updateServiceSchedule(input: UpdateServiceScheduleInput): ServiceSchedule | Promise<ServiceSchedule>;
     deleteServiceSchedule(id: string): boolean | Promise<boolean>;
+}
+
+export interface DragSession {
+    id: string;
+    title: string;
+    notes?: Nullable<string>;
+    results: DragResult[];
+    car: Car;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface DragResult {
+    id: string;
+    unit: DragResultUnit;
+    value: number;
+    result: number;
+    session: DragSession;
 }
 
 export interface FuelUp {

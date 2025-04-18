@@ -1,0 +1,49 @@
+type DragSession {
+  id: ID!
+  title: String!
+  notes: String
+  results: [DragResult!]!
+  car: Car!
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+enum DragResultUnit {
+  Kph
+  Km
+}
+
+type DragResult {
+  id: ID!
+  unit: DragResultUnit!
+  value: Float!
+  result: Float!
+  session: DragSession!
+}
+
+extend type Car {
+  dragSessions: [DragSession!]!
+}
+
+extend type Query {
+  dragSession(id: ID!): DragSession
+}
+
+input CreateDragSessionInput {
+  carId: ID!
+  title: String!
+  notes: String
+}
+
+input CreateDragResultInput {
+  sessionId: ID!
+  unit: DragResultUnit!
+  value: Float!
+  result: Float!
+  notes: String
+}
+
+extend type Mutation {
+  createDragSession(input: CreateDragSessionInput!): DragSession!
+  createDragResult(input: CreateDragResultInput!): DragResult!
+}

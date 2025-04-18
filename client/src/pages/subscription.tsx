@@ -42,7 +42,7 @@ export default function Subscription() {
             </CardBody>
           </Card>
           <Card
-            className="w-[400px] px-2 py-6 gap-4 border-primary-200 border-2 relative overflow-visible"
+            className="w-[400px] px-2 py-6 gap-4 border-primary-400 border-2 relative overflow-visible"
             isBlurred
           >
             <div className="absolute -top-4 z-20 w-full flex">
@@ -89,7 +89,7 @@ export default function Subscription() {
             </CardBody>
             <Divider />
             <CardFooter className="justify-center">
-              <Button color="secondary">Subscribe</Button>
+              <Button color="primary" className="bg-gradient-to-r from-teal-500 to-teal-700">Subscribe</Button>
             </CardFooter>
           </Card>
         </div>

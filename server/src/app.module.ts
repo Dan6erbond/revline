@@ -19,6 +19,7 @@ import { ServiceModule } from "./service/service.module";
 import { UsersModule } from "./users/users.module";
 import config from "./mikro-orm.config";
 import { join } from "path";
+import { DragSessionsModule } from './drag-sessions/drag-sessions.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { join } from "path";
     S3Module,
     ServiceModule,
     MediaModule,
+    DragSessionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
