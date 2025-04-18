@@ -1,12 +1,13 @@
 import { InjectRepository } from "@mikro-orm/nestjs";
 import { EntityManager, EntityRepository } from "@mikro-orm/postgresql";
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { User } from "../users/users.entity";
 import { Car } from "./cars.entity";
 import { FileUpload } from "graphql-upload-ts";
 import { v4 } from "uuid";
 import { S3Client } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
+import { MediaService } from "../media/media.service";
 
 @Injectable()
 export class CarsService {
@@ -15,6 +16,8 @@ export class CarsService {
     private readonly carRepository: EntityRepository<Car>,
     private readonly em: EntityManager,
     private readonly s3: S3Client,
+    @Inject(forwardRef(() => MediaService))
+    private readonly mediaService: MediaService,
   ) {}
 
   async findById(id: string) {
@@ -55,7 +58,7 @@ export class CarsService {
       make?: string | null;
       model?: string | null;
       year?: number | null;
-      bannerImage?:string|null
+      bannerImage?: string | null;
     };
   }) {
     const car = await this.findById(id);
@@ -66,35 +69,16 @@ export class CarsService {
     return car;
   }
 
-  async uploadBannerImage({
-    car,
-    image,
-  }: {
-    car: Car;
-    image: Promise<FileUpload>;
-  }) {
-    const id = v4();
-
-    if (!car.owner) {
-      await this.em.populate(car, ["owner"]);
-    }
-
-    const key = `${car.owner.id}/cars/${car.id}/banner-images/${id}`;
-
-    const { createReadStream } = await image;
-
-    const upload = new Upload({
-      client: this.s3,
-      params: {
-        Bucket: process.env.S3_BUCKET,
-        Key: key,
-        Body: createReadStream(),
-      },
+  async uploadBannerImage({ car }: { car: Car }) {
+    const { uploadUrl, media } = await this.mediaService.upload({
+      carId: car.id,
     });
 
-    await upload.done();
+    car.bannerImage = media;
 
-    return await this.update({ id: car.id, values: { bannerImage: id } });
+    await this.em.persistAndFlush(car);
+
+    return { uploadUrl, media };
   }
 
   async findByOwner(owner: User) {

@@ -63,11 +63,6 @@ export interface UpdateCarInput {
     year?: Nullable<number>;
 }
 
-export interface UploadBannerImageInput {
-    carId: string;
-    image: Upload;
-}
-
 export interface CreateFuelUpInput {
     carId: string;
     occurredAt: Date;
@@ -96,6 +91,10 @@ export interface UpdateFuelUpInput {
     isFullTank?: Nullable<boolean>;
     locationLat?: Nullable<number>;
     locationLng?: Nullable<number>;
+}
+
+export interface UploadMediaInput {
+    carId: string;
 }
 
 export interface CreateOdometerReadingInput {
@@ -204,6 +203,7 @@ export interface Car {
     bannerImageUrl?: Nullable<string>;
     fuelUps: FuelUp[];
     averageConsumptionLitersPerKm?: Nullable<number>;
+    media: Media[];
     odometerReadings: OdometerReading[];
     upcomingServices: UpcomingService[];
     serviceItems: ServiceItem[];
@@ -221,9 +221,10 @@ export interface IQuery {
 export interface IMutation {
     createCar(input: CreateCarInput): Car | Promise<Car>;
     updateCar(input: UpdateCarInput): Car | Promise<Car>;
-    uploadBannerImage(input: UploadBannerImageInput): Car | Promise<Car>;
+    uploadBannerImage(input: UploadMediaInput): UploadMediaResponse | Promise<UploadMediaResponse>;
     createFuelUp(input: CreateFuelUpInput): FuelUp | Promise<FuelUp>;
     updateFuelUp(input: UpdateFuelUpInput): FuelUp | Promise<FuelUp>;
+    uploadMedia(input: UploadMediaInput): UploadMediaResponse | Promise<UploadMediaResponse>;
     createOdometerReading(input: CreateOdometerReadingInput): OdometerReading | Promise<OdometerReading>;
     updateOdometerReading(input: UpdateOdometerReadingInput): OdometerReading | Promise<OdometerReading>;
     deleteOdometerReading(id: string): boolean | Promise<boolean>;
@@ -256,6 +257,18 @@ export interface FuelUp {
     locationLng?: Nullable<number>;
     createdAt: Date;
     updatedAt: Date;
+}
+
+export interface Media {
+    id: string;
+    car: Car;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface UploadMediaResponse {
+    media: Media;
+    uploadUrl: string;
 }
 
 export interface OdometerReading {

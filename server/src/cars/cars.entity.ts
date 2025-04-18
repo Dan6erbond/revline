@@ -1,6 +1,7 @@
-import { Entity, ManyToOne, Property } from "@mikro-orm/core";
+import { Entity, ManyToOne, OneToOne, Property } from "@mikro-orm/core";
 
 import { BaseEntity } from "../db/base.entity";
+import { Media } from "../media/media.entity";
 import { User } from "../users/users.entity";
 
 @Entity()
@@ -20,6 +21,6 @@ export class Car extends BaseEntity {
   @Property()
   year: number;
 
-  @Property({ type: "uuid", nullable: true })
-  bannerImage: string;
+  @OneToOne(() => Media, { nullable: true })
+  bannerImage: Media;
 }

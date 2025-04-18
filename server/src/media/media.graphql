@@ -1,0 +1,23 @@
+type Media {
+  id: ID!
+  car: Car!
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+extend type Car {
+  media: [Media!]!
+}
+
+input UploadMediaInput {
+  carId: ID!
+}
+
+type UploadMediaResponse {
+  media: Media!
+  uploadUrl: String!
+}
+
+extend type Mutation {
+  uploadMedia(input: UploadMediaInput!): UploadMediaResponse!
+}

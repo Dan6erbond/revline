@@ -15,9 +15,10 @@ import { ReactNode, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 
 import CarNavbar from "./car-navbar";
-import { getQueryParam } from "../../utils/router";
+import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
+import { useS3Upload } from "@/hooks/use-s3-upload";
 
 const getCarBanner = graphql(`
   query GetCarBanner($id: ID!) {
@@ -30,10 +31,12 @@ const getCarBanner = graphql(`
 `);
 
 const uploadBannerImage = graphql(`
-  mutation UploadBannerImage($input: UploadBannerImageInput!) {
+  mutation UploadBannerImage($input: UploadMediaInput!) {
     uploadBannerImage(input: $input) {
-      id
-      bannerImageUrl
+      media {
+        id
+      }
+      uploadUrl
     }
   }
 `);
@@ -41,12 +44,14 @@ const uploadBannerImage = graphql(`
 export default function CarLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
 
-  const { data } = useQuery(getCarBanner, {
+  const { data, refetch } = useQuery(getCarBanner, {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
   });
 
   const [mutate] = useMutation(uploadBannerImage);
+
+  const { upload } = useS3Upload();
 
   const [bannerImage, setBannerImage] = useState<File | null>(null);
 
@@ -99,16 +104,27 @@ export default function CarLayout({ children }: { children: ReactNode }) {
                 </Button>
                 <Button
                   color="primary"
-                  type="submit"
                   onPress={() => {
+                    if (!bannerImage) return;
+
                     mutate({
                       variables: {
                         input: {
                           carId: getQueryParam(router.query.id) as string,
-                          image: bannerImage,
                         },
                       },
-                    }).then(() => {
+                    }).then(async ({ data }) => {
+                      if (!data?.uploadBannerImage) {
+                        onClose();
+                        return;
+                      }
+
+                      await upload(
+                        bannerImage,
+                        data.uploadBannerImage.uploadUrl
+                      );
+
+                      refetch();
                       onClose();
                     });
                   }}

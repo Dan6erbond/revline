@@ -10,7 +10,7 @@ import {
 import { UseGuards } from "@nestjs/common";
 import { User } from "../auth/auth.decorator";
 import { AuthGuard, AuthRequired } from "../auth/auth.guard";
-import { CreateCarInput, UploadBannerImageInput } from "../graphql";
+import { CreateCarInput, UploadMediaInput } from "../graphql";
 import { User as UserModel } from "../users/users.entity";
 import { CarsService } from "./cars.service";
 import { Car } from "./cars.entity";
@@ -53,25 +53,23 @@ export class CarsResolver {
   @Mutation()
   @AuthRequired(true)
   @UseGuards(AuthGuard)
-  async uploadBannerImage(
-    @Args("input") { carId, image }: UploadBannerImageInput,
-  ) {
+  async uploadBannerImage(@Args("input") { carId }: UploadMediaInput) {
     const car = await this.carsService.findById(carId);
 
-    return this.carsService.uploadBannerImage({ car, image });
+    return await this.carsService.uploadBannerImage({ car });
   }
 
   @ResolveField()
   async bannerImageUrl(@Parent() car: Car) {
-    if (!car.bannerImage) return null;
-
-    if (!car.owner) {
-      await this.em.populate(car, ["owner"]);
+    if (!car.bannerImage || !car.owner) {
+      await this.em.populate(car, ["bannerImage", "owner"]);
     }
+
+    if (!car.bannerImage) return null;
 
     const command = new GetObjectCommand({
       Bucket: process.env.S3_BUCKET,
-      Key: `${car.owner.id}/cars/${car.id}/banner-images/${car.bannerImage}`,
+      Key: `${car.owner.id}/cars/${car.id}/media/${car.bannerImage.id}`,
     });
 
     return await getSignedUrl(this.s3, command, { expiresIn: 60 * 60 });

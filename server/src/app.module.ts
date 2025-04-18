@@ -9,15 +9,16 @@ import { FuelupsModule } from "./fuelups/fuelups.module";
 import { GraphQLModule } from "@nestjs/graphql";
 import { GraphQLUpload } from "graphql-upload-ts";
 import { GraphqlModule } from "./graphql/graphql.module";
+import { MediaModule } from "./media/media.module";
 import { MikroOrmModule } from "@mikro-orm/nestjs";
 import { Module } from "@nestjs/common";
 import { OdometerReadingModule } from "./odometer-reading/odometer-reading.module";
 import { ProfileModule } from "./profile/profile.module";
 import { S3Module } from "./s3/s3.module";
+import { ServiceModule } from "./service/service.module";
 import { UsersModule } from "./users/users.module";
 import config from "./mikro-orm.config";
 import { join } from "path";
-import { ServiceModule } from './service/service.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ServiceModule } from './service/service.module';
     OdometerReadingModule,
     S3Module,
     ServiceModule,
+    MediaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

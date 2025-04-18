@@ -49,6 +49,9 @@ export default function AuthButton() {
         <DropdownItem key="profile" href="/profile">
           Profile
         </DropdownItem>
+        <DropdownItem key="subscription" href="/subscription">
+          Manage Subscription
+        </DropdownItem>
         <DropdownItem key="logout" color="danger" onPress={() => signOut()}>
           Log Out
         </DropdownItem>

@@ -17,7 +17,7 @@ type Documents = {
     "\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          ": typeof types.GetMeDocument,
     "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n        profilePictureUrl\n      }\n    }\n  }\n": typeof types.GetMeNavbarDocument,
     "\n  query GetCarBanner($id: ID!) {\n    car(id: $id) {\n      id\n      name\n      bannerImageUrl\n    }\n  }\n": typeof types.GetCarBannerDocument,
-    "\n  mutation UploadBannerImage($input: UploadBannerImageInput!) {\n    uploadBannerImage(input: $input) {\n      id\n      bannerImageUrl\n    }\n  }\n": typeof types.UploadBannerImageDocument,
+    "\n  mutation UploadBannerImage($input: UploadMediaInput!) {\n    uploadBannerImage(input: $input) {\n      media {\n        id\n      }\n      uploadUrl\n    }\n  }\n": typeof types.UploadBannerImageDocument,
     "\n  query GetFuelUps($id: ID!) {\n    car(id: $id) {\n      id\n      fuelUps {\n        id\n        occurredAt\n        station\n        amountLiters\n        cost\n        fuelCategory\n        octane\n        odometerReading {\n          id\n          readingKm\n        }\n        notes\n        isFullTank\n        locationLat\n        locationLng\n      }\n      averageConsumptionLitersPerKm\n    }\n  }\n": typeof types.GetFuelUpsDocument,
     "\n  mutation CreateFuelUp($input: CreateFuelUpInput!) {\n    createFuelUp(input: $input) {\n      id\n      occurredAt\n      station\n      amountLiters\n      cost\n      fuelCategory\n      octane\n      odometerReading {\n        id\n        readingKm\n      }\n      notes\n      isFullTank\n      locationLat\n      locationLng\n    }\n  }\n": typeof types.CreateFuelUpDocument,
     "\n  query GetOdometerReadings($id: ID!) {\n    car(id: $id) {\n      id\n      odometerReadings {\n        id\n        readingKm\n        createdAt\n        notes\n      }\n    }\n  }\n": typeof types.GetOdometerReadingsDocument,
@@ -39,7 +39,7 @@ const documents: Documents = {
     "\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          ": types.GetMeDocument,
     "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n        profilePictureUrl\n      }\n    }\n  }\n": types.GetMeNavbarDocument,
     "\n  query GetCarBanner($id: ID!) {\n    car(id: $id) {\n      id\n      name\n      bannerImageUrl\n    }\n  }\n": types.GetCarBannerDocument,
-    "\n  mutation UploadBannerImage($input: UploadBannerImageInput!) {\n    uploadBannerImage(input: $input) {\n      id\n      bannerImageUrl\n    }\n  }\n": types.UploadBannerImageDocument,
+    "\n  mutation UploadBannerImage($input: UploadMediaInput!) {\n    uploadBannerImage(input: $input) {\n      media {\n        id\n      }\n      uploadUrl\n    }\n  }\n": types.UploadBannerImageDocument,
     "\n  query GetFuelUps($id: ID!) {\n    car(id: $id) {\n      id\n      fuelUps {\n        id\n        occurredAt\n        station\n        amountLiters\n        cost\n        fuelCategory\n        octane\n        odometerReading {\n          id\n          readingKm\n        }\n        notes\n        isFullTank\n        locationLat\n        locationLng\n      }\n      averageConsumptionLitersPerKm\n    }\n  }\n": types.GetFuelUpsDocument,
     "\n  mutation CreateFuelUp($input: CreateFuelUpInput!) {\n    createFuelUp(input: $input) {\n      id\n      occurredAt\n      station\n      amountLiters\n      cost\n      fuelCategory\n      octane\n      odometerReading {\n        id\n        readingKm\n      }\n      notes\n      isFullTank\n      locationLat\n      locationLng\n    }\n  }\n": types.CreateFuelUpDocument,
     "\n  query GetOdometerReadings($id: ID!) {\n    car(id: $id) {\n      id\n      odometerReadings {\n        id\n        readingKm\n        createdAt\n        notes\n      }\n    }\n  }\n": types.GetOdometerReadingsDocument,
@@ -87,7 +87,7 @@ export function graphql(source: "\n  query GetCarBanner($id: ID!) {\n    car(id:
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation UploadBannerImage($input: UploadBannerImageInput!) {\n    uploadBannerImage(input: $input) {\n      id\n      bannerImageUrl\n    }\n  }\n"): (typeof documents)["\n  mutation UploadBannerImage($input: UploadBannerImageInput!) {\n    uploadBannerImage(input: $input) {\n      id\n      bannerImageUrl\n    }\n  }\n"];
+export function graphql(source: "\n  mutation UploadBannerImage($input: UploadMediaInput!) {\n    uploadBannerImage(input: $input) {\n      media {\n        id\n      }\n      uploadUrl\n    }\n  }\n"): (typeof documents)["\n  mutation UploadBannerImage($input: UploadMediaInput!) {\n    uploadBannerImage(input: $input) {\n      media {\n        id\n      }\n      uploadUrl\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
