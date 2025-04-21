@@ -26,11 +26,11 @@ import {
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Plus, Trash } from "lucide-react";
 import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
+import { getDistance, getKilometers } from "@/utils/distance";
 import { useMutation, useQuery } from "@apollo/client";
 
 import { DistanceUnit } from "@/gql/graphql";
 import { distanceUnits } from "@/literals";
-import { getDistance } from "@/utils/distance";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useMemo } from "react";
@@ -282,7 +282,7 @@ export default function Logs() {
         input: {
           carId: getQueryParam(router.query.id)!,
           datePerformed: datePerformed.toDate().toISOString(),
-          odometerKm: getDistance(odometerKm, distanceUnit),
+          odometerKm: getKilometers(odometerKm, distanceUnit),
           performedBy,
           notes,
           serviceItemIds,

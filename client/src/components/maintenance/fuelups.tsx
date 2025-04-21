@@ -49,11 +49,11 @@ import {
   fuelConsumptionUnitsShort,
   fuelVolumeUnits,
 } from "@/literals";
+import { getDistance, getKilometers } from "@/utils/distance";
 import { getFuelVolume, getLiters } from "@/utils/fuel-volume";
 import { useMutation, useQuery } from "@apollo/client";
 
 import { getCurrencySymbol } from "@/utils/currency";
-import { getDistance } from "@/utils/distance";
 import { getFuelConsumption } from "@/utils/fuel-consumption";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
@@ -216,7 +216,7 @@ export default function FuelUps() {
           cost,
           fuelCategory,
           octane,
-          odometerKm,
+          odometerKm: getKilometers(odometerKm, distanceUnit),
           notes,
           isFullTank,
           locationLat,

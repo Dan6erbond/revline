@@ -17,12 +17,12 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { getDistance, getKilometers } from "@/utils/distance";
 import { useMutation, useQuery } from "@apollo/client";
 
 import { DistanceUnit } from "@/gql/graphql";
 import { Plus } from "lucide-react";
 import { distanceUnits } from "@/literals";
-import { getDistance } from "@/utils/distance";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
@@ -139,7 +139,7 @@ export default function Items() {
           estimatedDuration,
           defaultIntervalKm:
             defaultIntervalKm != null
-              ? getDistance(defaultIntervalKm, distanceUnit)
+              ? getKilometers(defaultIntervalKm, distanceUnit)
               : null,
           defaultIntervalMonths,
         },

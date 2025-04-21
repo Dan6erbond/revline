@@ -25,15 +25,25 @@ import {
   YAxis,
 } from "recharts";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { getDistance, getKilometers } from "@/utils/distance";
 import { useMutation, useQuery } from "@apollo/client";
 
+import { DistanceUnit } from "@/gql/graphql";
 import { Plus } from "lucide-react";
-import { getQueryParam } from "../../utils/router";
-import { graphql } from "../../gql";
+import { distanceUnits } from "@/literals";
+import { getQueryParam } from "@/utils/router";
+import { graphql } from "@/gql";
 import { useRouter } from "next/router";
 
 const getOdometerReadings = graphql(`
   query GetOdometerReadings($id: ID!) {
+    me {
+      id
+      profile {
+        id
+        distanceUnit
+      }
+    }
     car(id: $id) {
       id
       odometerReadings {
@@ -65,7 +75,7 @@ const createOdometerReading = graphql(`
 `);
 
 const columns = [
-  { key: "readingKm", label: "Reading (km)" },
+  { key: "readingKm", label: "Reading" },
   { key: "createdAt", label: "Created At" },
   { key: "notes", label: "Notes" },
 ];
@@ -77,6 +87,8 @@ export default function Odometer() {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
   });
+
+  const distanceUnit = data?.me?.profile?.distanceUnit ?? DistanceUnit.Miles;
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
@@ -114,7 +126,7 @@ export default function Odometer() {
       variables: {
         input: {
           carId: getQueryParam(router.query.id)!,
-          readingKm,
+          readingKm: getKilometers(readingKm, distanceUnit),
           locationLat,
           locationLng,
         },
@@ -142,6 +154,7 @@ export default function Odometer() {
             data={data?.car?.odometerReadings.map((or) => ({
               ...or,
               createdAt: new Date(or.createdAt).toLocaleDateString(),
+              reading: getDistance(or.readingKm, distanceUnit),
             }))}
           >
             <XAxis
@@ -151,8 +164,8 @@ export default function Odometer() {
             />
             <YAxis
               type="number"
-              dataKey="readingKm"
-              unit="km"
+              dataKey="reading"
+              unit={distanceUnits[distanceUnit]}
               tick={{ fill: "hsl(var(--heroui-foreground))" }}
               stroke="hsl(var(--heroui-foreground))"
             />
@@ -165,11 +178,11 @@ export default function Odometer() {
             <Legend />
             <Line
               type="monotone"
-              dataKey="readingKm"
+              dataKey="reading"
               stroke="hsl(var(--heroui-primary-400))"
               dot={{ r: 5, strokeWidth: 3 }}
               strokeWidth={3}
-              unit="km"
+              unit={distanceUnits[distanceUnit]}
               name="Reading"
             />
           </ComposedChart>
@@ -187,7 +200,9 @@ export default function Odometer() {
         >
           {(or) => (
             <TableRow key={or.id}>
-              <TableCell>{or.readingKm}</TableCell>
+              <TableCell>{`${getDistance(or.readingKm, distanceUnit)} ${
+                distanceUnits[distanceUnit]
+              }`}</TableCell>
               <TableCell>
                 {new Date(or.createdAt).toLocaleDateString()}
               </TableCell>
@@ -210,7 +225,7 @@ export default function Odometer() {
                   <Input
                     type="number"
                     label="Odometer"
-                    endContent={"km"}
+                    endContent={distanceUnits[distanceUnit]}
                     {...register("readingKm", { valueAsNumber: true })}
                     variant="bordered"
                   />

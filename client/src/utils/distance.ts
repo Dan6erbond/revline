@@ -8,3 +8,12 @@ export function getDistance(km: number, unit: DistanceUnit) {
       return km;
   }
 }
+
+export function getKilometers(value: number, unit: DistanceUnit) {
+  switch (unit) {
+    case DistanceUnit.Miles:
+      return value / 0.621371;
+    default:
+      return value;
+  }
+}

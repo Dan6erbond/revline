@@ -23,12 +23,12 @@ import {
 } from "@heroui/react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Plus, Trash } from "lucide-react";
+import { getDistance, getKilometers } from "@/utils/distance";
 import { useMutation, useQuery } from "@apollo/client";
 
 import { DistanceUnit } from "@/gql/graphql";
 import { ZonedDateTime } from "@internationalized/date";
 import { distanceUnits } from "@/literals";
-import { getDistance } from "@/utils/distance";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
@@ -209,7 +209,7 @@ export default function Schedules() {
           notes,
           repeatEveryKm:
             repeatEveryKm != null
-              ? getDistance(repeatEveryKm, distanceUnit)
+              ? getKilometers(repeatEveryKm, distanceUnit)
               : null,
           repeatEveryMonths,
           startsAtKm,
