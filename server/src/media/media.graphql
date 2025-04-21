@@ -1,5 +1,6 @@
 type Media {
   id: ID!
+  url: String!
   car: Car!
   createdAt: Date!
   updatedAt: Date!

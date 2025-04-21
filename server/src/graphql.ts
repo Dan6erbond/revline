@@ -302,6 +302,7 @@ export interface FuelUp {
 
 export interface Media {
     id: string;
+    url: string;
     car: Car;
     createdAt: Date;
     updatedAt: Date;

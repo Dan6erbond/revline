@@ -1,8 +1,7 @@
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft, ImageUp, Upload, X } from "lucide-react";
 import {
   Button,
   Image,
-  Input,
   Link,
   Modal,
   ModalBody,
@@ -11,14 +10,21 @@ import {
   ModalHeader,
   useDisclosure,
 } from "@heroui/react";
-import { ReactNode, useState } from "react";
+import {
+  ChangeEvent,
+  DragEvent,
+  ReactNode,
+  useCallback,
+  useRef,
+  useState,
+} from "react";
 import { useMutation, useQuery } from "@apollo/client";
 
 import CarNavbar from "./car-navbar";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
+import { uploadFile } from "@/utils/upload-file";
 import { useRouter } from "next/router";
-import { useS3Upload } from "@/hooks/use-s3-upload";
 
 const getCarBanner = graphql(`
   query GetCarBanner($id: ID!) {
@@ -51,11 +57,95 @@ export default function CarLayout({ children }: { children: ReactNode }) {
 
   const [mutate] = useMutation(uploadBannerImage);
 
-  const { upload } = useS3Upload();
-
   const [bannerImage, setBannerImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleDragEnter = useCallback((e: DragEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: DragEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (e.currentTarget.contains(e.relatedTarget as Node)) {
+      return;
+    }
+
+    setIsDragging(false);
+  }, []);
+
+  const handleDragOver = useCallback((e: DragEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleFileUpload = useCallback(async () => {
+    if (!bannerImage) return;
+
+    mutate({
+      variables: {
+        input: {
+          carId: getQueryParam(router.query.id) as string,
+        },
+      },
+    }).then(async ({ data }) => {
+      if (!data?.uploadBannerImage) {
+        onClose();
+        return;
+      }
+
+      await uploadFile(bannerImage, data.uploadBannerImage.uploadUrl, "PUT");
+
+      refetch();
+      onClose();
+    });
+  }, [mutate, bannerImage, router.query.id, onClose, refetch]);
+
+  const handleChange = useCallback((file: File | null) => {
+    setBannerImage(file);
+    setPreviewUrl(file && URL.createObjectURL(file));
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: DragEvent<HTMLElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+
+      // Don't process files if the input is disabled
+      if (inputRef.current?.disabled) {
+        return;
+      }
+
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleChange(e.dataTransfer.files[0]);
+      }
+    },
+    [handleChange]
+  );
+
+  const openFileDialog = useCallback(() => {
+    if (inputRef.current) {
+      inputRef.current.click();
+    }
+  }, []);
+
+  const handleFileChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleChange(e.target.files[0]);
+      }
+    },
+    [handleChange]
+  );
 
   return (
     <>
@@ -87,48 +177,80 @@ export default function CarLayout({ children }: { children: ReactNode }) {
             <>
               <ModalHeader>Upload banner image</ModalHeader>
               <ModalBody>
-                <Input
-                  type="file"
-                  label="Picture"
-                  onChange={(e) => {
-                    setBannerImage((bi) =>
-                      e.target.files?.length ? e.target.files[0] : bi
-                    );
-                  }}
-                  variant="bordered"
-                />
+                <div className="flex flex-col gap-2">
+                  <div className="relative">
+                    {/* Drop area */}
+                    <div
+                      role="button"
+                      onClick={openFileDialog}
+                      onDragEnter={handleDragEnter}
+                      onDragLeave={handleDragLeave}
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                      data-dragging={isDragging || undefined}
+                      className="cursor-pointer border-input hover:bg-secondary/20 data-[dragging=true]:bg-secondary/20 has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 relative flex min-h-52 flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed p-4 transition-colors has-disabled:pointer-events-none has-disabled:opacity-50 has-[img]:border-none has-[input:focus]:ring-[3px]"
+                    >
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        multiple
+                        className="sr-only"
+                        aria-label="Upload file"
+                        ref={inputRef}
+                      />
+                      {previewUrl ? (
+                        <div className="absolute inset-0">
+                          <Image
+                            src={previewUrl}
+                            alt={"Uploaded image"}
+                            className="size-full object-cover object-center"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center px-4 py-3 text-center">
+                          <div
+                            className="bg-background mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border"
+                            aria-hidden="true"
+                          >
+                            <ImageUp className="size-4 opacity-60" />
+                          </div>
+                          <p className="mb-1.5 text-sm font-medium">
+                            Drop your image here or click to browse
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    {previewUrl && (
+                      <div className="absolute top-4 right-4">
+                        <button
+                          type="button"
+                          className="focus-visible:border-ring focus-visible:ring-ring/50 z-50 flex size-8 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition-[color,box-shadow] outline-none hover:bg-black/80 focus-visible:ring-[3px]"
+                          onClick={() => handleChange(null)}
+                          aria-label="Remove image"
+                        >
+                          <X className="size-4" aria-hidden="true" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* errors.length > 0 && (
+                    <div
+                      className="text-destructive flex items-center gap-1 text-xs"
+                      role="alert"
+                    >
+                      <AlertCircleIcon className="size-3 shrink-0" />
+                      <span>{errors[0]}</span>
+                    </div>
+                  ) */}
+                </div>
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>
                   Close
                 </Button>
-                <Button
-                  color="primary"
-                  onPress={() => {
-                    if (!bannerImage) return;
-
-                    mutate({
-                      variables: {
-                        input: {
-                          carId: getQueryParam(router.query.id) as string,
-                        },
-                      },
-                    }).then(async ({ data }) => {
-                      if (!data?.uploadBannerImage) {
-                        onClose();
-                        return;
-                      }
-
-                      await upload(
-                        bannerImage,
-                        data.uploadBannerImage.uploadUrl
-                      );
-
-                      refetch();
-                      onClose();
-                    });
-                  }}
-                >
+                <Button color="primary" onPress={handleFileUpload}>
                   Upload
                 </Button>
               </ModalFooter>

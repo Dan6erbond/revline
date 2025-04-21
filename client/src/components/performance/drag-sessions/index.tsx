@@ -20,6 +20,7 @@ import { useRouter } from "next/router";
 const getDragSessions = graphql(`
   query GetDragSessions($id: ID!) {
     car(id: $id) {
+      id
       dragSessions {
         id
         title

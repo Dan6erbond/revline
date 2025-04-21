@@ -16,10 +16,10 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { Plus, X } from "lucide-react";
 import { useMutation, useSuspenseQuery } from "@apollo/client";
 
 import { DragResultUnit } from "@/gql/graphql";
+import { Plus } from "lucide-react";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
 
