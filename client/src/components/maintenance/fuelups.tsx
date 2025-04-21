@@ -64,6 +64,7 @@ const getFuelUps = graphql(`
     me {
       id
       profile {
+        id
         fuelConsumptionUnit
         currencyCode
         distanceUnit

@@ -28,14 +28,25 @@ import { Plus, Trash } from "lucide-react";
 import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
 import { useMutation, useQuery } from "@apollo/client";
 
-import { getQueryParam } from "../../../utils/router";
-import { graphql } from "../../../gql";
+import { DistanceUnit } from "@/gql/graphql";
+import { distanceUnits } from "@/literals";
+import { getDistance } from "@/utils/distance";
+import { getQueryParam } from "@/utils/router";
+import { graphql } from "@/gql";
 import { useMemo } from "react";
 import { useRouter } from "next/router";
 
 const getServiceLogs = graphql(`
   query GetServiceLogs($id: ID!) {
+    me {
+      id
+      profile {
+        id
+        distanceUnit
+      }
+    }
     car(id: $id) {
+      id
       serviceLogs {
         id
         datePerformed
@@ -80,7 +91,15 @@ const getServiceLogs = graphql(`
 
 const getServiceItems = graphql(`
   query GetServiceItems($id: ID!) {
+    me {
+      id
+      profile {
+        id
+        distanceUnit
+      }
+    }
     car(id: $id) {
+      id
       serviceItems {
         id
         label
@@ -98,7 +117,15 @@ const getServiceItems = graphql(`
 
 const getServiceSchedules = graphql(`
   query GetServiceSchedules($id: ID!) {
+    me {
+      id
+      profile {
+        id
+        distanceUnit
+      }
+    }
     car(id: $id) {
+      id
       serviceSchedules {
         id
         title
@@ -180,7 +207,7 @@ const createServiceLog = graphql(`
 
 const columns = [
   { key: "datePerformed", label: "Date performed" },
-  { key: "odometerKm", label: "Odometer (km)" },
+  { key: "odometer", label: "Odometer" },
   { key: "items", label: "Items" },
   { key: "schedule", label: "Schedule" },
   { key: "notes", label: "Notes" },
@@ -194,6 +221,8 @@ export default function Logs() {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
   });
+
+  const distanceUnit = data?.me?.profile?.distanceUnit ?? DistanceUnit.Miles;
 
   const { data: serviceItems } = useQuery(getServiceItems, {
     variables: { id: getQueryParam(router.query.id) as string },
@@ -253,7 +282,7 @@ export default function Logs() {
         input: {
           carId: getQueryParam(router.query.id)!,
           datePerformed: datePerformed.toDate().toISOString(),
-          odometerKm,
+          odometerKm: getDistance(odometerKm, distanceUnit),
           performedBy,
           notes,
           serviceItemIds,
@@ -297,7 +326,10 @@ export default function Logs() {
                 <TableCell>
                   {new Date(sl.datePerformed).toLocaleDateString()}
                 </TableCell>
-                <TableCell>{sl.odometerReading?.readingKm}</TableCell>
+                <TableCell>
+                  {sl.odometerReading?.readingKm &&
+                    getDistance(sl.odometerReading?.readingKm, distanceUnit)}
+                </TableCell>
                 <TableCell>{sl.items.map((i) => i.label).join(", ")}</TableCell>
                 <TableCell>{sl.schedule?.title}</TableCell>
                 <TableCell>{sl.notes}</TableCell>
@@ -337,7 +369,7 @@ export default function Logs() {
                     render={({ field: { onChange, ...field } }) => (
                       <NumberInput
                         label="Odometer"
-                        endContent={"km"}
+                        endContent={distanceUnits[distanceUnit]}
                         {...field}
                         onValueChange={onChange}
                         variant="bordered"

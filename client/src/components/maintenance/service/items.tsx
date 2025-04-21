@@ -19,14 +19,25 @@ import {
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@apollo/client";
 
+import { DistanceUnit } from "@/gql/graphql";
 import { Plus } from "lucide-react";
-import { getQueryParam } from "../../../utils/router";
-import { graphql } from "../../../gql";
+import { distanceUnits } from "@/literals";
+import { getDistance } from "@/utils/distance";
+import { getQueryParam } from "@/utils/router";
+import { graphql } from "@/gql";
 import { useRouter } from "next/router";
 
 const getServiceItems = graphql(`
   query GetServiceItems($id: ID!) {
+    me {
+      id
+      profile {
+        id
+        distanceUnit
+      }
+    }
     car(id: $id) {
+      id
       serviceItems {
         id
         label
@@ -69,7 +80,7 @@ const createServiceItem = graphql(`
 const columns = [
   { key: "label", label: "Label" },
   { key: "estimatedDuration", label: "Duration (min)" },
-  { key: "defaultIntervalKm", label: "Default interval (km)" },
+  { key: "defaultInterval", label: "Default interval" },
   { key: "defaultIntervalMonths", label: "Default interval (months)" },
   { key: "tags", label: "Tags" },
   { key: "notes", label: "Notes" },
@@ -82,6 +93,8 @@ export default function Items() {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
   });
+
+  const distanceUnit = data?.me?.profile?.distanceUnit ?? DistanceUnit.Miles;
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
@@ -124,7 +137,10 @@ export default function Items() {
           label,
           notes,
           estimatedDuration,
-          defaultIntervalKm,
+          defaultIntervalKm:
+            defaultIntervalKm != null
+              ? getDistance(defaultIntervalKm, distanceUnit)
+              : null,
           defaultIntervalMonths,
         },
       },
@@ -164,7 +180,12 @@ export default function Items() {
               <TableRow key={si.id}>
                 <TableCell>{si.label}</TableCell>
                 <TableCell>{si.estimatedDuration}</TableCell>
-                <TableCell>{si.defaultIntervalKm}</TableCell>
+                <TableCell>
+                  {si.defaultIntervalKm != null &&
+                    `${getDistance(si.defaultIntervalKm, distanceUnit)} ${
+                      distanceUnits[distanceUnit]
+                    }`}
+                </TableCell>
                 <TableCell>{si.defaultIntervalMonths}</TableCell>
                 <TableCell>{si.tags}</TableCell>
                 <TableCell>{si.notes}</TableCell>
@@ -208,7 +229,7 @@ export default function Items() {
                     render={({ field: { onChange, ...field } }) => (
                       <NumberInput
                         label="Default interval"
-                        endContent={"km"}
+                        endContent={distanceUnits[distanceUnit]}
                         {...field}
                         onValueChange={onChange}
                         variant="bordered"

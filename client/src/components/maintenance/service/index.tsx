@@ -5,8 +5,8 @@ import { ComponentType, ReactNode } from "react";
 import Items from "./items";
 import Logs from "./logs";
 import Schedules from "./schedules";
-import { getQueryParam } from "../../../utils/router";
-import { graphql } from "../../../gql";
+import { getQueryParam } from "@/utils/router";
+import { graphql } from "@/gql";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
 
@@ -39,7 +39,15 @@ const tabs: {
 
 const getUpcomingServices = graphql(`
   query GetUpcomingServices($id: ID!) {
+    me {
+      id
+      profile {
+        id
+        distanceUnit
+      }
+    }
     car(id: $id) {
+      id
       upcomingServices {
         nextDueKm
         nextDueDate

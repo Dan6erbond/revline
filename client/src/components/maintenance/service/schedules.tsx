@@ -25,14 +25,25 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Plus, Trash } from "lucide-react";
 import { useMutation, useQuery } from "@apollo/client";
 
+import { DistanceUnit } from "@/gql/graphql";
 import { ZonedDateTime } from "@internationalized/date";
+import { distanceUnits } from "@/literals";
+import { getDistance } from "@/utils/distance";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
 
 const getServiceSchedules = graphql(`
   query GetServiceSchedules($id: ID!) {
+    me {
+      id
+      profile {
+        id
+        distanceUnit
+      }
+    }
     car(id: $id) {
+      id
       serviceSchedules {
         id
         title
@@ -62,7 +73,15 @@ const getServiceSchedules = graphql(`
 
 const getServiceItems = graphql(`
   query GetServiceItems($id: ID!) {
+    me {
+      id
+      profile {
+        id
+        distanceUnit
+      }
+    }
     car(id: $id) {
+      id
       serviceItems {
         id
         label
@@ -119,8 +138,8 @@ const createServiceSchedule = graphql(`
 const columns = [
   { key: "title", label: "Title" },
   { key: "notes", label: "Notes" },
-  { key: "repeatEveryKm", label: "Repeat every x km" },
-  { key: "repeatEveryMonths", label: "Repeat every x months" },
+  { key: "repeatEvery", label: "Repeat every" },
+  { key: "repeatEveryMonths", label: "Repeat every" },
   { key: "startsAtKm", label: "Starts at km" },
   { key: "startsAtDate", label: "Starts at date" },
   { key: "serviceItemIds", label: "Items" },
@@ -134,6 +153,8 @@ export default function Schedules() {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
   });
+
+  const distanceUnit = data?.me?.profile?.distanceUnit ?? DistanceUnit.Miles;
 
   const { data: serviceItems } = useQuery(getServiceItems, {
     variables: { id: getQueryParam(router.query.id) as string },
@@ -186,7 +207,10 @@ export default function Schedules() {
           carId: getQueryParam(router.query.id)!,
           title,
           notes,
-          repeatEveryKm,
+          repeatEveryKm:
+            repeatEveryKm != null
+              ? getDistance(repeatEveryKm, distanceUnit)
+              : null,
           repeatEveryMonths,
           startsAtKm,
           startsAtDate: startsAtDate?.toDate().toISOString(),
@@ -229,8 +253,15 @@ export default function Schedules() {
               <TableRow key={sl.id}>
                 <TableCell>{sl.title}</TableCell>
                 <TableCell>{sl.notes}</TableCell>
-                <TableCell>{sl.repeatEveryKm}</TableCell>
-                <TableCell>{sl.repeatEveryMonths}</TableCell>
+                <TableCell>
+                  {sl.repeatEveryKm &&
+                    `${getDistance(sl.repeatEveryKm, distanceUnit)} ${
+                      distanceUnits[distanceUnit]
+                    }`}
+                </TableCell>
+                <TableCell>
+                  {sl.repeatEveryMonths && `${sl.repeatEveryMonths} months`}
+                </TableCell>
                 <TableCell>{sl.startsAtKm}</TableCell>
                 <TableCell>
                   {sl.startsAtDate &&
@@ -340,7 +371,7 @@ export default function Schedules() {
                     render={({ field: { onChange, ...field } }) => (
                       <NumberInput
                         label="Repeat every"
-                        endContent={"km"}
+                        endContent={distanceUnits[distanceUnit]}
                         {...field}
                         onValueChange={onChange}
                         variant="bordered"
