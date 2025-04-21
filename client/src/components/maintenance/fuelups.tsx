@@ -355,7 +355,7 @@ export default function FuelUps() {
                     `${getDistance(
                       fu.odometerReading?.readingKm,
                       distanceUnit
-                    )} ${distanceUnits[distanceUnit]}`}
+                    ).toLocaleString()} ${distanceUnits[distanceUnit]}`}
                 </TableCell>
                 <TableCell>{fu.notes}</TableCell>
                 <TableCell>

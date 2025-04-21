@@ -200,7 +200,7 @@ export default function Odometer() {
         >
           {(or) => (
             <TableRow key={or.id}>
-              <TableCell>{`${getDistance(or.readingKm, distanceUnit)} ${
+              <TableCell>{`${getDistance(or.readingKm, distanceUnit).toLocaleString()} ${
                 distanceUnits[distanceUnit]
               }`}</TableCell>
               <TableCell>

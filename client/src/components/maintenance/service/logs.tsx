@@ -328,7 +328,10 @@ export default function Logs() {
                 </TableCell>
                 <TableCell>
                   {sl.odometerReading?.readingKm &&
-                    getDistance(sl.odometerReading?.readingKm, distanceUnit)}
+                    getDistance(
+                      sl.odometerReading?.readingKm,
+                      distanceUnit
+                    ).toLocaleString()}
                 </TableCell>
                 <TableCell>{sl.items.map((i) => i.label).join(", ")}</TableCell>
                 <TableCell>{sl.schedule?.title}</TableCell>

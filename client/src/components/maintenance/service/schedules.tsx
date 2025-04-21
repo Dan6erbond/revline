@@ -255,9 +255,10 @@ export default function Schedules() {
                 <TableCell>{sl.notes}</TableCell>
                 <TableCell>
                   {sl.repeatEveryKm &&
-                    `${getDistance(sl.repeatEveryKm, distanceUnit)} ${
-                      distanceUnits[distanceUnit]
-                    }`}
+                    `${getDistance(
+                      sl.repeatEveryKm,
+                      distanceUnit
+                    ).toLocaleString()} ${distanceUnits[distanceUnit]}`}
                 </TableCell>
                 <TableCell>
                   {sl.repeatEveryMonths && `${sl.repeatEveryMonths} months`}

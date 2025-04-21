@@ -182,9 +182,10 @@ export default function Items() {
                 <TableCell>{si.estimatedDuration}</TableCell>
                 <TableCell>
                   {si.defaultIntervalKm != null &&
-                    `${getDistance(si.defaultIntervalKm, distanceUnit)} ${
-                      distanceUnits[distanceUnit]
-                    }`}
+                    `${getDistance(
+                      si.defaultIntervalKm,
+                      distanceUnit
+                    ).toLocaleString()} ${distanceUnits[distanceUnit]}`}
                 </TableCell>
                 <TableCell>{si.defaultIntervalMonths}</TableCell>
                 <TableCell>{si.tags}</TableCell>
