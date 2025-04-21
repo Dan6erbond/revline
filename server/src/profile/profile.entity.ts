@@ -2,6 +2,7 @@ import {
   DistanceUnit,
   FuelConsumptionUnit,
   FuelVolumeUnit,
+  ProfileVisibility,
   TemperatureUnit,
 } from "../graphql";
 import { Entity, Enum, OneToOne, Property } from "@mikro-orm/core";
@@ -40,4 +41,7 @@ export class Profile extends BaseEntity {
 
   @Property({ type: "uuid", nullable: true })
   profilePicture?: string;
+
+  @Enum({ items: () => ProfileVisibility, default: ProfileVisibility.Private })
+  visibility!: ProfileVisibility;
 }

@@ -21,6 +21,11 @@ enum TemperatureUnit {
   Fahrenheit
 }
 
+enum ProfileVisibility {
+  Public
+  Private
+}
+
 type Profile {
   id: ID!
   username: String
@@ -32,6 +37,7 @@ type Profile {
   fuelConsumptionUnit: FuelConsumptionUnit
   temperatureUnit: TemperatureUnit
   profilePictureUrl: String
+  visibility: ProfileVisibility!
   createdAt: Date!
   updatedAt: Date!
 }

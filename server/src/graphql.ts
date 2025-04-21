@@ -53,6 +53,11 @@ export enum TemperatureUnit {
     Fahrenheit = "Fahrenheit"
 }
 
+export enum ProfileVisibility {
+    Public = "Public",
+    Private = "Private"
+}
+
 export interface CreateCarInput {
     name: string;
     make?: Nullable<string>;
@@ -336,6 +341,7 @@ export interface Profile {
     fuelConsumptionUnit?: Nullable<FuelConsumptionUnit>;
     temperatureUnit?: Nullable<TemperatureUnit>;
     profilePictureUrl?: Nullable<string>;
+    visibility: ProfileVisibility;
     createdAt: Date;
     updatedAt: Date;
 }

@@ -35,17 +35,41 @@ import {
   YAxis,
 } from "recharts";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { DollarSign, Fuel, MapPin, Percent, Plus } from "lucide-react";
-import { FuelCategory, OctaneRating } from "@/gql/graphql";
+import {
+  DistanceUnit,
+  FuelCategory,
+  FuelConsumptionUnit,
+  FuelVolumeUnit,
+  OctaneRating,
+} from "@/gql/graphql";
+import { Fuel, MapPin, Percent, Plus } from "lucide-react";
 import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
+import {
+  distanceUnits,
+  fuelConsumptionUnitsShort,
+  fuelVolumeUnits,
+} from "@/literals";
+import { getFuelVolume, getLiters } from "@/utils/fuel-volume";
 import { useMutation, useQuery } from "@apollo/client";
 
+import { getCurrencySymbol } from "@/utils/currency";
+import { getDistance } from "@/utils/distance";
+import { getFuelConsumption } from "@/utils/fuel-consumption";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
 
 const getFuelUps = graphql(`
   query GetFuelUps($id: ID!) {
+    me {
+      id
+      profile {
+        fuelConsumptionUnit
+        currencyCode
+        distanceUnit
+        fuelVolumeUnit
+      }
+    }
     car(id: $id) {
       id
       fuelUps {
@@ -113,7 +137,7 @@ const columns = [
   { key: "amount", label: "Amount" },
   { key: "cost", label: "Cost" },
   { key: "fuelCategory", label: "Fuel Category" },
-  { key: "odometerKm", label: "Odometer (km)" },
+  { key: "odometer", label: "Odometer" },
   { key: "notes", label: "Notes" },
   { key: "fullTank", label: "Full Tank" },
 ];
@@ -125,6 +149,13 @@ export default function FuelUps() {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
   });
+
+  const fuelVolumeUnit =
+    data?.me?.profile?.fuelVolumeUnit ?? FuelVolumeUnit.Gallon;
+  const distanceUnit = data?.me?.profile?.distanceUnit ?? DistanceUnit.Miles;
+  const currencyCode = data?.me?.profile?.currencyCode ?? "USD";
+  const fuelConsumptionUnit =
+    data?.me?.profile?.fuelConsumptionUnit ?? FuelConsumptionUnit.Mpg;
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
@@ -180,7 +211,7 @@ export default function FuelUps() {
           carId: getQueryParam(router.query.id)!,
           occurredAt: occurredAt.toDate().toISOString(),
           station,
-          amountLiters: amount,
+          amountLiters: getLiters(amount, fuelVolumeUnit),
           cost,
           fuelCategory,
           octane,
@@ -207,7 +238,11 @@ export default function FuelUps() {
               <Card>
                 <CardHeader>Average consumption</CardHeader>
                 <CardBody>
-                  {data.car.averageConsumptionLitersPerKm * 100} l/100km
+                  {getFuelConsumption(
+                    data.car.averageConsumptionLitersPerKm,
+                    fuelConsumptionUnit
+                  ).toLocaleString()}{" "}
+                  {fuelConsumptionUnitsShort[fuelConsumptionUnit]}
                 </CardBody>
               </Card>
             )}
@@ -229,6 +264,7 @@ export default function FuelUps() {
                 ...fu,
                 occurredAt: new Date(fu.occurredAt).toLocaleDateString(),
                 relativeCost: fu.cost / fu.amountLiters,
+                amount: getFuelVolume(fu.amountLiters, fuelVolumeUnit),
               }))}
             >
               <XAxis
@@ -239,8 +275,8 @@ export default function FuelUps() {
               <YAxis
                 yAxisId="amount"
                 type="number"
-                dataKey="amountLiters"
-                unit="l"
+                dataKey="amount"
+                unit={fuelVolumeUnits[fuelVolumeUnit]}
                 tick={{ fill: "hsl(var(--heroui-foreground))" }}
                 stroke="hsl(var(--heroui-foreground))"
               />
@@ -249,7 +285,7 @@ export default function FuelUps() {
                 orientation="right"
                 type="number"
                 dataKey="relativeCost"
-                unit="$"
+                unit={getCurrencySymbol(currencyCode)}
                 tick={{ fill: "hsl(var(--heroui-foreground))" }}
                 stroke="hsl(var(--heroui-foreground))"
               />
@@ -262,10 +298,10 @@ export default function FuelUps() {
               <Legend />
               <Bar
                 type="monotone"
-                dataKey="amountLiters"
+                dataKey="amount"
                 fill="hsl(var(--heroui-secondary-400))"
                 yAxisId="amount"
-                unit="l"
+                unit={fuelVolumeUnits[fuelVolumeUnit]}
                 name="Amount"
               />
               <Line
@@ -275,7 +311,7 @@ export default function FuelUps() {
                 dot={{ r: 5, strokeWidth: 3 }}
                 strokeWidth={3}
                 yAxisId="cost"
-                unit="$"
+                unit={getCurrencySymbol(currencyCode)}
                 name="Relative cost"
               />
             </ComposedChart>
@@ -297,14 +333,29 @@ export default function FuelUps() {
                   {new Date(fu.occurredAt).toLocaleDateString()}
                 </TableCell>
                 <TableCell>{fu.station}</TableCell>
-                <TableCell>{fu.amountLiters}</TableCell>
-                <TableCell>{fu.cost}</TableCell>
+                <TableCell>
+                  {getFuelVolume(fu.amountLiters, fuelVolumeUnit)}{" "}
+                  {fuelVolumeUnits[fuelVolumeUnit]}
+                </TableCell>
+                <TableCell>
+                  {fu.cost.toLocaleString([], {
+                    style: "currency",
+                    currency: currencyCode,
+                    maximumFractionDigits: 2,
+                  })}
+                </TableCell>
                 <TableCell>{`${fu.fuelCategory}${
                   fu.fuelCategory === FuelCategory.Petrol
                     ? " (" + fu.octane + ")"
                     : ""
                 }`}</TableCell>
-                <TableCell>{fu.odometerReading?.readingKm}</TableCell>
+                <TableCell>
+                  {fu.odometerReading?.readingKm &&
+                    `${getDistance(
+                      fu.odometerReading?.readingKm,
+                      distanceUnit
+                    )} ${distanceUnits[distanceUnit]}`}
+                </TableCell>
                 <TableCell>{fu.notes}</TableCell>
                 <TableCell>
                   <Checkbox isSelected={fu.isFullTank} isReadOnly />
@@ -359,7 +410,7 @@ export default function FuelUps() {
                       render={({ field: { onChange, ...field } }) => (
                         <NumberInput
                           label="Amount"
-                          endContent={"l"}
+                          endContent={fuelVolumeUnits[fuelVolumeUnit]}
                           {...field}
                           onValueChange={(value) => {
                             onChange(value);
@@ -379,7 +430,7 @@ export default function FuelUps() {
                       render={({ field: { onChange, ...field } }) => (
                         <NumberInput
                           label="Cost"
-                          endContent={<DollarSign />}
+                          endContent={getCurrencySymbol(currencyCode)}
                           {...field}
                           onValueChange={(value) => {
                             onChange(value);
@@ -398,8 +449,10 @@ export default function FuelUps() {
                       name="relativeCost"
                       render={({ field: { onChange, ...field } }) => (
                         <NumberInput
-                          label="Cost per l"
-                          endContent={"$/l"}
+                          label={`Cost per ${fuelVolumeUnits[fuelVolumeUnit]}`}
+                          endContent={`${getCurrencySymbol(currencyCode)}/${
+                            fuelVolumeUnits[fuelVolumeUnit]
+                          }`}
                           {...field}
                           onValueChange={(value) => {
                             onChange(value);
@@ -442,7 +495,7 @@ export default function FuelUps() {
                     render={({ field: { onChange, ...field } }) => (
                       <NumberInput
                         label="Odometer"
-                        endContent={"km"}
+                        endContent={distanceUnits[distanceUnit]}
                         {...field}
                         onValueChange={onChange}
                         variant="bordered"

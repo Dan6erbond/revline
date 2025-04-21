@@ -30,10 +30,9 @@ import {
   TemperatureUnit,
 } from "@/gql/graphql";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { code, data as currencyCodes } from "currency-codes";
 import { skipToken, useMutation, useSuspenseQuery } from "@apollo/client";
 
-import cc from "currency-codes";
-import currencyCodes from "currency-codes/data";
 import { graphql } from "@/gql";
 import { useSession } from "next-auth/react";
 
@@ -215,7 +214,7 @@ export default function ProfileForm() {
       return true;
     }
 
-    const c = cc.code(textValue)!;
+    const c = code(textValue)!;
 
     return `${c.currency} ${c.code} ${c.countries.join(" ")}`
       .toLowerCase()
