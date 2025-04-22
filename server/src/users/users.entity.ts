@@ -18,6 +18,9 @@ export class User extends BaseEntity {
   @OneToOne(() => Profile, (profile) => profile.user)
   profile: Profile;
 
+  @Property({ nullable: true })
+  stripeCustomerId?: string;
+
   @OneToMany(() => Car, (car) => car.owner)
   cars = new Collection<Car>(this);
 }

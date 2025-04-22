@@ -40,6 +40,9 @@ type Documents = {
     "\n  mutation UploadMedia($input: UploadMediaInput!) {\n    uploadMedia(input: $input) {\n      media {\n        id\n        url\n        createdAt\n        updatedAt\n      }\n      uploadUrl\n    }\n  }\n": typeof types.UploadMediaDocument,
     "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n    }\n  }\n": typeof types.CreateCarDocument,
     "\n  query GetGarage {\n    cars {\n      id\n      name\n      bannerImageUrl\n    }\n  }\n": typeof types.GetGarageDocument,
+    "\n  query GetSubscription {\n    me {\n      id\n      subscription {\n        id\n        plan\n      }\n    }\n  }\n": typeof types.GetSubscriptionDocument,
+    "\n  mutation CreateCheckoutSession($input: CreateCheckoutSessionInput!) {\n    createCheckoutSession(input: $input)\n  }\n": typeof types.CreateCheckoutSessionDocument,
+    "\n  mutation CreatePortalSession {\n    createPortalSession\n  }\n": typeof types.CreatePortalSessionDocument,
 };
 const documents: Documents = {
     "\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          ": types.GetMeDocument,
@@ -68,6 +71,9 @@ const documents: Documents = {
     "\n  mutation UploadMedia($input: UploadMediaInput!) {\n    uploadMedia(input: $input) {\n      media {\n        id\n        url\n        createdAt\n        updatedAt\n      }\n      uploadUrl\n    }\n  }\n": types.UploadMediaDocument,
     "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n    }\n  }\n": types.CreateCarDocument,
     "\n  query GetGarage {\n    cars {\n      id\n      name\n      bannerImageUrl\n    }\n  }\n": types.GetGarageDocument,
+    "\n  query GetSubscription {\n    me {\n      id\n      subscription {\n        id\n        plan\n      }\n    }\n  }\n": types.GetSubscriptionDocument,
+    "\n  mutation CreateCheckoutSession($input: CreateCheckoutSessionInput!) {\n    createCheckoutSession(input: $input)\n  }\n": types.CreateCheckoutSessionDocument,
+    "\n  mutation CreatePortalSession {\n    createPortalSession\n  }\n": types.CreatePortalSessionDocument,
 };
 
 /**
@@ -188,6 +194,18 @@ export function graphql(source: "\n  mutation CreateCar($input: CreateCarInput!)
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query GetGarage {\n    cars {\n      id\n      name\n      bannerImageUrl\n    }\n  }\n"): (typeof documents)["\n  query GetGarage {\n    cars {\n      id\n      name\n      bannerImageUrl\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetSubscription {\n    me {\n      id\n      subscription {\n        id\n        plan\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetSubscription {\n    me {\n      id\n      subscription {\n        id\n        plan\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateCheckoutSession($input: CreateCheckoutSessionInput!) {\n    createCheckoutSession(input: $input)\n  }\n"): (typeof documents)["\n  mutation CreateCheckoutSession($input: CreateCheckoutSessionInput!) {\n    createCheckoutSession(input: $input)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreatePortalSession {\n    createPortalSession\n  }\n"): (typeof documents)["\n  mutation CreatePortalSession {\n    createPortalSession\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

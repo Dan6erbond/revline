@@ -5,6 +5,7 @@ import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { CarsModule } from "./cars/cars.module";
 import { ConfigModule } from "@nestjs/config";
+import { DragSessionsModule } from "./drag-sessions/drag-sessions.module";
 import { FuelupsModule } from "./fuelups/fuelups.module";
 import { GraphQLModule } from "@nestjs/graphql";
 import { GraphQLUpload } from "graphql-upload-ts";
@@ -16,10 +17,11 @@ import { OdometerReadingModule } from "./odometer-reading/odometer-reading.modul
 import { ProfileModule } from "./profile/profile.module";
 import { S3Module } from "./s3/s3.module";
 import { ServiceModule } from "./service/service.module";
+import { StripeModule } from "./stripe/stripe.module";
+import { SubscriptionModule } from "./subscription/subscription.module";
 import { UsersModule } from "./users/users.module";
 import config from "./mikro-orm.config";
 import { join } from "path";
-import { DragSessionsModule } from './drag-sessions/drag-sessions.module';
 
 @Module({
   imports: [
@@ -44,6 +46,8 @@ import { DragSessionsModule } from './drag-sessions/drag-sessions.module';
     ServiceModule,
     MediaModule,
     DragSessionsModule,
+    SubscriptionModule,
+    StripeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

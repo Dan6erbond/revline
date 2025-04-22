@@ -58,6 +58,11 @@ export enum ProfileVisibility {
     Private = "Private"
 }
 
+export enum SubscriptionPlan {
+    Diy = "Diy",
+    Enthusiast = "Enthusiast"
+}
+
 export interface CreateCarInput {
     name: string;
     make?: Nullable<string>;
@@ -215,6 +220,10 @@ export interface UpdateServiceScheduleInput {
     archived?: Nullable<boolean>;
 }
 
+export interface CreateCheckoutSessionInput {
+    plan: SubscriptionPlan;
+}
+
 export interface Car {
     id: string;
     name: string;
@@ -267,6 +276,8 @@ export interface IMutation {
     createServiceSchedule(input: CreateServiceScheduleInput): ServiceSchedule | Promise<ServiceSchedule>;
     updateServiceSchedule(input: UpdateServiceScheduleInput): ServiceSchedule | Promise<ServiceSchedule>;
     deleteServiceSchedule(id: string): boolean | Promise<boolean>;
+    createCheckoutSession(input: CreateCheckoutSessionInput): string | Promise<string>;
+    createPortalSession(): Nullable<string> | Promise<Nullable<string>>;
 }
 
 export interface DragSession {
@@ -395,7 +406,14 @@ export interface ServiceSchedule {
     updatedAt: Date;
 }
 
+export interface ISubscription {
+    id(): string | Promise<string>;
+    plan(): SubscriptionPlan | Promise<SubscriptionPlan>;
+    user(): User | Promise<User>;
+}
+
 export interface User {
+    subscription?: Nullable<ISubscription>;
     id: string;
     email: string;
     profile?: Nullable<Profile>;

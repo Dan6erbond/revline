@@ -7,11 +7,44 @@ import {
   Chip,
   Divider,
 } from "@heroui/react";
+import { Check, Settings } from "lucide-react";
+import { useMutation, useQuery } from "@apollo/client";
 
-import { Check } from "lucide-react";
 import RootNavbar from "@/components/layout/root-navbar";
+import { SubscriptionPlan } from "../gql/graphql";
+import { graphql } from "../gql";
+import { useEffect } from "react";
+
+const getSubscription = graphql(`
+  query GetSubscription {
+    me {
+      id
+      subscription {
+        id
+        plan
+      }
+    }
+  }
+`);
+
+const createCheckoutSession = graphql(`
+  mutation CreateCheckoutSession($input: CreateCheckoutSessionInput!) {
+    createCheckoutSession(input: $input)
+  }
+`);
+
+const createPortalSession = graphql(`
+  mutation CreatePortalSession {
+    createPortalSession
+  }
+`);
 
 export default function Subscription() {
+  const { data } = useQuery(getSubscription);
+
+  const [mutateCreateCheckoutSession] = useMutation(createCheckoutSession);
+  const [mutateCreatePortalSession] = useMutation(createPortalSession);
+
   return (
     <>
       <RootNavbar />
@@ -89,7 +122,40 @@ export default function Subscription() {
             </CardBody>
             <Divider />
             <CardFooter className="justify-center">
-              <Button color="primary" className="bg-gradient-to-r from-teal-500 to-teal-700">Subscribe</Button>
+              {data?.me?.subscription ? (
+                <Button
+                  color="primary"
+                  className="bg-gradient-to-r from-teal-500 to-teal-700"
+                  startContent={<Settings />}
+                  onPress={() => {
+                    mutateCreatePortalSession().then(({ data }) => {
+                      if (!data?.createPortalSession) return;
+
+                      window.location.href = data.createPortalSession;
+                    });
+                  }}
+                >
+                  Manage
+                </Button>
+              ) : (
+                <Button
+                  color="primary"
+                  className="bg-gradient-to-r from-teal-500 to-teal-700"
+                  onPress={() =>
+                    mutateCreateCheckoutSession({
+                      variables: {
+                        input: { plan: SubscriptionPlan.Enthusiast },
+                      },
+                    }).then(({ data }) => {
+                      if (!data?.createCheckoutSession) return;
+
+                      window.location.href = data.createCheckoutSession;
+                    })
+                  }
+                >
+                  Subscribe
+                </Button>
+              )}
             </CardFooter>
           </Card>
         </div>

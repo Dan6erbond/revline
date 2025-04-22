@@ -49,6 +49,10 @@ export type CreateCarInput = {
   year?: InputMaybe<Scalars['Int']['input']>;
 };
 
+export type CreateCheckoutSessionInput = {
+  plan: SubscriptionPlan;
+};
+
 export type CreateDragResultInput = {
   notes?: InputMaybe<Scalars['String']['input']>;
   result: Scalars['Float']['input'];
@@ -199,10 +203,12 @@ export type Media = {
 export type Mutation = {
   __typename?: 'Mutation';
   createCar: Car;
+  createCheckoutSession: Scalars['String']['output'];
   createDragResult: DragResult;
   createDragSession: DragSession;
   createFuelUp: FuelUp;
   createOdometerReading: OdometerReading;
+  createPortalSession?: Maybe<Scalars['String']['output']>;
   createServiceItem: ServiceItem;
   createServiceLog: ServiceLog;
   createServiceSchedule: ServiceSchedule;
@@ -225,6 +231,11 @@ export type Mutation = {
 
 export type MutationCreateCarArgs = {
   input: CreateCarInput;
+};
+
+
+export type MutationCreateCheckoutSessionArgs = {
+  input: CreateCheckoutSessionInput;
 };
 
 
@@ -441,6 +452,18 @@ export type ServiceSchedule = {
   updatedAt: Scalars['Date']['output'];
 };
 
+export type Subscription = {
+  __typename?: 'Subscription';
+  id: Scalars['ID']['output'];
+  plan: SubscriptionPlan;
+  user: User;
+};
+
+export enum SubscriptionPlan {
+  Diy = 'Diy',
+  Enthusiast = 'Enthusiast'
+}
+
 export enum TemperatureUnit {
   Celsius = 'Celsius',
   Fahrenheit = 'Fahrenheit'
@@ -547,6 +570,7 @@ export type User = {
   email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   profile?: Maybe<Profile>;
+  subscription?: Maybe<Subscription>;
   updatedAt: Scalars['Date']['output'];
 };
 
@@ -724,6 +748,23 @@ export type GetGarageQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetGarageQuery = { __typename?: 'Query', cars: Array<{ __typename?: 'Car', id: string, name: string, bannerImageUrl?: string | null }> };
 
+export type GetSubscriptionQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetSubscriptionQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, subscription?: { __typename?: 'Subscription', id: string, plan: SubscriptionPlan } | null } | null };
+
+export type CreateCheckoutSessionMutationVariables = Exact<{
+  input: CreateCheckoutSessionInput;
+}>;
+
+
+export type CreateCheckoutSessionMutation = { __typename?: 'Mutation', createCheckoutSession: string };
+
+export type CreatePortalSessionMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CreatePortalSessionMutation = { __typename?: 'Mutation', createPortalSession?: string | null };
+
 
 export const GetMeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMe"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"me"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"email"}}]}}]}}]} as unknown as DocumentNode<GetMeQuery, GetMeQueryVariables>;
 export const GetMeNavbarDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetMeNavbar"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"me"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"profile"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"profilePictureUrl"}}]}}]}}]}}]} as unknown as DocumentNode<GetMeNavbarQuery, GetMeNavbarQueryVariables>;
@@ -751,3 +792,6 @@ export const GetGalleryDocument = {"kind":"Document","definitions":[{"kind":"Ope
 export const UploadMediaDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UploadMedia"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UploadMediaInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"uploadMedia"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"media"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"uploadUrl"}}]}}]}}]} as unknown as DocumentNode<UploadMediaMutation, UploadMediaMutationVariables>;
 export const CreateCarDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateCar"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateCarInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createCar"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CreateCarMutation, CreateCarMutationVariables>;
 export const GetGarageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetGarage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cars"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"bannerImageUrl"}}]}}]}}]} as unknown as DocumentNode<GetGarageQuery, GetGarageQueryVariables>;
+export const GetSubscriptionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetSubscription"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"me"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"subscription"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"plan"}}]}}]}}]}}]} as unknown as DocumentNode<GetSubscriptionQuery, GetSubscriptionQueryVariables>;
+export const CreateCheckoutSessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateCheckoutSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateCheckoutSessionInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createCheckoutSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}]}]}}]} as unknown as DocumentNode<CreateCheckoutSessionMutation, CreateCheckoutSessionMutationVariables>;
+export const CreatePortalSessionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreatePortalSession"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createPortalSession"}}]}}]} as unknown as DocumentNode<CreatePortalSessionMutation, CreatePortalSessionMutationVariables>;

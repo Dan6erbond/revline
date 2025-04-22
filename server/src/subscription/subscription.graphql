@@ -1,0 +1,23 @@
+enum SubscriptionPlan {
+  Diy
+  Enthusiast
+}
+
+type Subscription {
+  id: ID!
+  plan: SubscriptionPlan!
+  user: User!
+}
+
+extend type User {
+  subscription: Subscription
+}
+
+input CreateCheckoutSessionInput {
+  plan: SubscriptionPlan!
+}
+
+extend type Mutation {
+  createCheckoutSession(input: CreateCheckoutSessionInput!): String!
+  createPortalSession: String
+}
