@@ -200,9 +200,10 @@ export default function Odometer() {
         >
           {(or) => (
             <TableRow key={or.id}>
-              <TableCell>{`${getDistance(or.readingKm, distanceUnit).toLocaleString()} ${
-                distanceUnits[distanceUnit]
-              }`}</TableCell>
+              <TableCell>{`${getDistance(
+                or.readingKm,
+                distanceUnit
+              ).toLocaleString()} ${distanceUnits[distanceUnit]}`}</TableCell>
               <TableCell>
                 {new Date(or.createdAt).toLocaleDateString()}
               </TableCell>
@@ -211,7 +212,11 @@ export default function Odometer() {
           )}
         </TableBody>
       </Table>
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+      <Modal
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+        scrollBehavior="inside"
+      >
         <ModalContent>
           {(onClose) => (
             <>

@@ -171,7 +171,11 @@ export default function CarLayout({ children }: { children?: ReactNode }) {
           <Upload />
         </Button>
       </div>
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+      <Modal
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+        scrollBehavior="inside"
+      >
         <ModalContent>
           {(onClose) => (
             <>
