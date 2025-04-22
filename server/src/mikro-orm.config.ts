@@ -1,5 +1,6 @@
 import "dotenv/config";
 
+import { Migrator } from "@mikro-orm/migrations";
 import { defineConfig } from "@mikro-orm/postgresql";
 
 export default defineConfig({
@@ -10,4 +11,5 @@ export default defineConfig({
   dbName: process.env.POSTGRES_DB!,
   user: process.env.POSTGRES_USER!,
   password: process.env.POSTGRES_PASSWORD!,
+  extensions: [Migrator],
 });
