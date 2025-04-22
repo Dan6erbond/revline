@@ -24,13 +24,16 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# This will do the trick, use the corresponding env file for each environment.
-COPY .env.production.sample .env.production
+
+ARG NEXT_PUBLIC_GRAPHQL_URL
+
 RUN npm run build
 
 # 3. Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
+
+ARG NEXT_PUBLIC_GRAPHQL_URL
 
 ENV NODE_ENV=production
 
@@ -43,7 +46,6 @@ COPY --from=builder /app/public ./public
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
 
 USER nextjs
 

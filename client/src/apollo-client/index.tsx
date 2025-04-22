@@ -6,7 +6,7 @@ import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 import { setContext } from "@apollo/client/link/context";
 
 const httpLink = createUploadLink({
-  uri: "http://localhost:4000/graphql",
+  uri: process.env.NEXT_PUBLIC_GRAPHQL_URL,
 });
 
 const authLink = (getSessionRef: RefObject<() => Promise<Session | null>>) =>
