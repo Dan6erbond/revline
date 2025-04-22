@@ -404,13 +404,14 @@ export default function FuelUps() {
                       </AutocompleteItem>
                     )}
                   </Autocomplete>
-                  <div className="flex gap-4">
+                  <div className="flex flex-wrap gap-4">
                     <Controller
                       control={control}
                       name="amount"
                       render={({ field: { onChange, ...field } }) => (
                         <NumberInput
                           label="Amount"
+                          className="min-w-36"
                           endContent={fuelVolumeUnits[fuelVolumeUnit]}
                           {...field}
                           onValueChange={(value) => {
@@ -431,6 +432,7 @@ export default function FuelUps() {
                       render={({ field: { onChange, ...field } }) => (
                         <NumberInput
                           label="Cost"
+                          className="min-w-36"
                           endContent={getCurrencySymbol(currencyCode)}
                           {...field}
                           onValueChange={(value) => {
@@ -451,6 +453,7 @@ export default function FuelUps() {
                       render={({ field: { onChange, ...field } }) => (
                         <NumberInput
                           label={`Cost per ${fuelVolumeUnits[fuelVolumeUnit]}`}
+                          className="min-w-36"
                           endContent={`${getCurrencySymbol(currencyCode)}/${
                             fuelVolumeUnits[fuelVolumeUnit]
                           }`}
