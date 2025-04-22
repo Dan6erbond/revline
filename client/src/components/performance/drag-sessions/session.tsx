@@ -211,7 +211,9 @@ export default function Session() {
                         onClose={
                           t.unit === unit && t.value === value
                             ? () => {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 setValue("unit", null as any);
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 setValue("value", null as any);
                               }
                             : undefined
