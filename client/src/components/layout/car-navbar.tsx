@@ -71,12 +71,12 @@ export default function CarNavbar() {
       </NavbarContent>
 
       <NavbarMenu className="pt-4">
-        {menuItems.map(({ name, active }) => (
+        {menuItems.map(({ name, active, href }) => (
           <NavbarMenuItem key={name}>
             <Link
               className="w-full"
               color={active ? "primary" : "foreground"}
-              href="#"
+              href={href}
               size="lg"
             >
               {name}
