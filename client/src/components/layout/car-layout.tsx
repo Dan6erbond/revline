@@ -47,7 +47,7 @@ const uploadBannerImage = graphql(`
   }
 `);
 
-export default function CarLayout({ children }: { children: ReactNode }) {
+export default function CarLayout({ children }: { children?: ReactNode }) {
   const router = useRouter();
 
   const { data, refetch } = useQuery(getCarBanner, {
