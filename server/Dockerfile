@@ -29,6 +29,7 @@ COPY --from=builder /revline/revline .
 
 ENV PORT=4000
 ENV HOST=0.0.0.0
+ENV ENVIRONMENT=production
 
 EXPOSE 4000
 

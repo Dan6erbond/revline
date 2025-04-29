@@ -29,14 +29,16 @@ var Module = fx.Module("ent",
 
 			lc.Append(fx.StartStopHook(
 				func() error {
-					err := client.Schema.Create(context.Background())
+					if config.Environment == "development" {
+						err := client.Schema.Create(context.Background())
 
-					if err != nil {
-						logger.Error("Failed to create schema", zap.Error(err))
-						return err
+						if err != nil {
+							logger.Error("Failed to create schema", zap.Error(err))
+							return err
+						}
+
+						logger.Debug("Created schema")
 					}
-
-					logger.Debug("Created schema")
 					return nil
 				},
 				func() {
