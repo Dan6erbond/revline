@@ -15,6 +15,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynoresult"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -1098,6 +1100,504 @@ func (ds *DragSession) ToEdge(order *DragSessionOrder) *DragSessionEdge {
 		order = DefaultDragSessionOrder
 	}
 	return &DragSessionEdge{
+		Node:   ds,
+		Cursor: order.Field.toCursor(ds),
+	}
+}
+
+// DynoResultEdge is the edge representation of DynoResult.
+type DynoResultEdge struct {
+	Node   *DynoResult `json:"node"`
+	Cursor Cursor      `json:"cursor"`
+}
+
+// DynoResultConnection is the connection containing edges to DynoResult.
+type DynoResultConnection struct {
+	Edges      []*DynoResultEdge `json:"edges"`
+	PageInfo   PageInfo          `json:"pageInfo"`
+	TotalCount int               `json:"totalCount"`
+}
+
+func (c *DynoResultConnection) build(nodes []*DynoResult, pager *dynoresultPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *DynoResult
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *DynoResult {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *DynoResult {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*DynoResultEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &DynoResultEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// DynoResultPaginateOption enables pagination customization.
+type DynoResultPaginateOption func(*dynoresultPager) error
+
+// WithDynoResultOrder configures pagination ordering.
+func WithDynoResultOrder(order *DynoResultOrder) DynoResultPaginateOption {
+	if order == nil {
+		order = DefaultDynoResultOrder
+	}
+	o := *order
+	return func(pager *dynoresultPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultDynoResultOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithDynoResultFilter configures pagination filter.
+func WithDynoResultFilter(filter func(*DynoResultQuery) (*DynoResultQuery, error)) DynoResultPaginateOption {
+	return func(pager *dynoresultPager) error {
+		if filter == nil {
+			return errors.New("DynoResultQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type dynoresultPager struct {
+	reverse bool
+	order   *DynoResultOrder
+	filter  func(*DynoResultQuery) (*DynoResultQuery, error)
+}
+
+func newDynoResultPager(opts []DynoResultPaginateOption, reverse bool) (*dynoresultPager, error) {
+	pager := &dynoresultPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultDynoResultOrder
+	}
+	return pager, nil
+}
+
+func (p *dynoresultPager) applyFilter(query *DynoResultQuery) (*DynoResultQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *dynoresultPager) toCursor(dr *DynoResult) Cursor {
+	return p.order.Field.toCursor(dr)
+}
+
+func (p *dynoresultPager) applyCursors(query *DynoResultQuery, after, before *Cursor) (*DynoResultQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultDynoResultOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *dynoresultPager) applyOrder(query *DynoResultQuery) *DynoResultQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultDynoResultOrder.Field {
+		query = query.Order(DefaultDynoResultOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *dynoresultPager) orderExpr(query *DynoResultQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultDynoResultOrder.Field {
+			b.Comma().Ident(DefaultDynoResultOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to DynoResult.
+func (dr *DynoResultQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...DynoResultPaginateOption,
+) (*DynoResultConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newDynoResultPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if dr, err = pager.applyFilter(dr); err != nil {
+		return nil, err
+	}
+	conn := &DynoResultConnection{Edges: []*DynoResultEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := dr.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if dr, err = pager.applyCursors(dr, after, before); err != nil {
+		return nil, err
+	}
+	limit := paginateLimit(first, last)
+	if limit != 0 {
+		dr.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := dr.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	dr = pager.applyOrder(dr)
+	nodes, err := dr.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// DynoResultOrderField defines the ordering field of DynoResult.
+type DynoResultOrderField struct {
+	// Value extracts the ordering value from the given DynoResult.
+	Value    func(*DynoResult) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) dynoresult.OrderOption
+	toCursor func(*DynoResult) Cursor
+}
+
+// DynoResultOrder defines the ordering of DynoResult.
+type DynoResultOrder struct {
+	Direction OrderDirection        `json:"direction"`
+	Field     *DynoResultOrderField `json:"field"`
+}
+
+// DefaultDynoResultOrder is the default ordering of DynoResult.
+var DefaultDynoResultOrder = &DynoResultOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &DynoResultOrderField{
+		Value: func(dr *DynoResult) (ent.Value, error) {
+			return dr.ID, nil
+		},
+		column: dynoresult.FieldID,
+		toTerm: dynoresult.ByID,
+		toCursor: func(dr *DynoResult) Cursor {
+			return Cursor{ID: dr.ID}
+		},
+	},
+}
+
+// ToEdge converts DynoResult into DynoResultEdge.
+func (dr *DynoResult) ToEdge(order *DynoResultOrder) *DynoResultEdge {
+	if order == nil {
+		order = DefaultDynoResultOrder
+	}
+	return &DynoResultEdge{
+		Node:   dr,
+		Cursor: order.Field.toCursor(dr),
+	}
+}
+
+// DynoSessionEdge is the edge representation of DynoSession.
+type DynoSessionEdge struct {
+	Node   *DynoSession `json:"node"`
+	Cursor Cursor       `json:"cursor"`
+}
+
+// DynoSessionConnection is the connection containing edges to DynoSession.
+type DynoSessionConnection struct {
+	Edges      []*DynoSessionEdge `json:"edges"`
+	PageInfo   PageInfo           `json:"pageInfo"`
+	TotalCount int                `json:"totalCount"`
+}
+
+func (c *DynoSessionConnection) build(nodes []*DynoSession, pager *dynosessionPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *DynoSession
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *DynoSession {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *DynoSession {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*DynoSessionEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &DynoSessionEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// DynoSessionPaginateOption enables pagination customization.
+type DynoSessionPaginateOption func(*dynosessionPager) error
+
+// WithDynoSessionOrder configures pagination ordering.
+func WithDynoSessionOrder(order *DynoSessionOrder) DynoSessionPaginateOption {
+	if order == nil {
+		order = DefaultDynoSessionOrder
+	}
+	o := *order
+	return func(pager *dynosessionPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultDynoSessionOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithDynoSessionFilter configures pagination filter.
+func WithDynoSessionFilter(filter func(*DynoSessionQuery) (*DynoSessionQuery, error)) DynoSessionPaginateOption {
+	return func(pager *dynosessionPager) error {
+		if filter == nil {
+			return errors.New("DynoSessionQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type dynosessionPager struct {
+	reverse bool
+	order   *DynoSessionOrder
+	filter  func(*DynoSessionQuery) (*DynoSessionQuery, error)
+}
+
+func newDynoSessionPager(opts []DynoSessionPaginateOption, reverse bool) (*dynosessionPager, error) {
+	pager := &dynosessionPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultDynoSessionOrder
+	}
+	return pager, nil
+}
+
+func (p *dynosessionPager) applyFilter(query *DynoSessionQuery) (*DynoSessionQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *dynosessionPager) toCursor(ds *DynoSession) Cursor {
+	return p.order.Field.toCursor(ds)
+}
+
+func (p *dynosessionPager) applyCursors(query *DynoSessionQuery, after, before *Cursor) (*DynoSessionQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultDynoSessionOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *dynosessionPager) applyOrder(query *DynoSessionQuery) *DynoSessionQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultDynoSessionOrder.Field {
+		query = query.Order(DefaultDynoSessionOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *dynosessionPager) orderExpr(query *DynoSessionQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultDynoSessionOrder.Field {
+			b.Comma().Ident(DefaultDynoSessionOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to DynoSession.
+func (ds *DynoSessionQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...DynoSessionPaginateOption,
+) (*DynoSessionConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newDynoSessionPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if ds, err = pager.applyFilter(ds); err != nil {
+		return nil, err
+	}
+	conn := &DynoSessionConnection{Edges: []*DynoSessionEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := ds.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if ds, err = pager.applyCursors(ds, after, before); err != nil {
+		return nil, err
+	}
+	limit := paginateLimit(first, last)
+	if limit != 0 {
+		ds.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := ds.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	ds = pager.applyOrder(ds)
+	nodes, err := ds.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// DynoSessionOrderField defines the ordering field of DynoSession.
+type DynoSessionOrderField struct {
+	// Value extracts the ordering value from the given DynoSession.
+	Value    func(*DynoSession) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) dynosession.OrderOption
+	toCursor func(*DynoSession) Cursor
+}
+
+// DynoSessionOrder defines the ordering of DynoSession.
+type DynoSessionOrder struct {
+	Direction OrderDirection         `json:"direction"`
+	Field     *DynoSessionOrderField `json:"field"`
+}
+
+// DefaultDynoSessionOrder is the default ordering of DynoSession.
+var DefaultDynoSessionOrder = &DynoSessionOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &DynoSessionOrderField{
+		Value: func(ds *DynoSession) (ent.Value, error) {
+			return ds.ID, nil
+		},
+		column: dynosession.FieldID,
+		toTerm: dynosession.ByID,
+		toCursor: func(ds *DynoSession) Cursor {
+			return Cursor{ID: ds.ID}
+		},
+	},
+}
+
+// ToEdge converts DynoSession into DynoSessionEdge.
+func (ds *DynoSession) ToEdge(order *DynoSessionOrder) *DynoSessionEdge {
+	if order == nil {
+		order = DefaultDynoSessionOrder
+	}
+	return &DynoSessionEdge{
 		Node:   ds,
 		Cursor: order.Field.toCursor(ds),
 	}

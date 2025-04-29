@@ -216,6 +216,46 @@ func (pu *ProfileUpdate) ClearTemperatureUnit() *ProfileUpdate {
 	return pu
 }
 
+// SetPowerUnit sets the "power_unit" field.
+func (pu *ProfileUpdate) SetPowerUnit(value profile.PowerUnit) *ProfileUpdate {
+	pu.mutation.SetPowerUnit(value)
+	return pu
+}
+
+// SetNillablePowerUnit sets the "power_unit" field if the given value is not nil.
+func (pu *ProfileUpdate) SetNillablePowerUnit(value *profile.PowerUnit) *ProfileUpdate {
+	if value != nil {
+		pu.SetPowerUnit(*value)
+	}
+	return pu
+}
+
+// ClearPowerUnit clears the value of the "power_unit" field.
+func (pu *ProfileUpdate) ClearPowerUnit() *ProfileUpdate {
+	pu.mutation.ClearPowerUnit()
+	return pu
+}
+
+// SetTorqueUnit sets the "torque_unit" field.
+func (pu *ProfileUpdate) SetTorqueUnit(value profile.TorqueUnit) *ProfileUpdate {
+	pu.mutation.SetTorqueUnit(value)
+	return pu
+}
+
+// SetNillableTorqueUnit sets the "torque_unit" field if the given value is not nil.
+func (pu *ProfileUpdate) SetNillableTorqueUnit(value *profile.TorqueUnit) *ProfileUpdate {
+	if value != nil {
+		pu.SetTorqueUnit(*value)
+	}
+	return pu
+}
+
+// ClearTorqueUnit clears the value of the "torque_unit" field.
+func (pu *ProfileUpdate) ClearTorqueUnit() *ProfileUpdate {
+	pu.mutation.ClearTorqueUnit()
+	return pu
+}
+
 // SetVisibility sets the "visibility" field.
 func (pu *ProfileUpdate) SetVisibility(pr profile.Visibility) *ProfileUpdate {
 	pu.mutation.SetVisibility(pr)
@@ -310,6 +350,16 @@ func (pu *ProfileUpdate) check() error {
 			return &ValidationError{Name: "temperature_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.temperature_unit": %w`, err)}
 		}
 	}
+	if v, ok := pu.mutation.PowerUnit(); ok {
+		if err := profile.PowerUnitValidator(v); err != nil {
+			return &ValidationError{Name: "power_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.power_unit": %w`, err)}
+		}
+	}
+	if v, ok := pu.mutation.TorqueUnit(); ok {
+		if err := profile.TorqueUnitValidator(v); err != nil {
+			return &ValidationError{Name: "torque_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.torque_unit": %w`, err)}
+		}
+	}
 	if v, ok := pu.mutation.Visibility(); ok {
 		if err := profile.VisibilityValidator(v); err != nil {
 			return &ValidationError{Name: "visibility", err: fmt.Errorf(`ent: validator failed for field "Profile.visibility": %w`, err)}
@@ -389,6 +439,18 @@ func (pu *ProfileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.TemperatureUnitCleared() {
 		_spec.ClearField(profile.FieldTemperatureUnit, field.TypeEnum)
+	}
+	if value, ok := pu.mutation.PowerUnit(); ok {
+		_spec.SetField(profile.FieldPowerUnit, field.TypeEnum, value)
+	}
+	if pu.mutation.PowerUnitCleared() {
+		_spec.ClearField(profile.FieldPowerUnit, field.TypeEnum)
+	}
+	if value, ok := pu.mutation.TorqueUnit(); ok {
+		_spec.SetField(profile.FieldTorqueUnit, field.TypeEnum, value)
+	}
+	if pu.mutation.TorqueUnitCleared() {
+		_spec.ClearField(profile.FieldTorqueUnit, field.TypeEnum)
 	}
 	if value, ok := pu.mutation.Visibility(); ok {
 		_spec.SetField(profile.FieldVisibility, field.TypeEnum, value)
@@ -628,6 +690,46 @@ func (puo *ProfileUpdateOne) ClearTemperatureUnit() *ProfileUpdateOne {
 	return puo
 }
 
+// SetPowerUnit sets the "power_unit" field.
+func (puo *ProfileUpdateOne) SetPowerUnit(pu profile.PowerUnit) *ProfileUpdateOne {
+	puo.mutation.SetPowerUnit(pu)
+	return puo
+}
+
+// SetNillablePowerUnit sets the "power_unit" field if the given value is not nil.
+func (puo *ProfileUpdateOne) SetNillablePowerUnit(pu *profile.PowerUnit) *ProfileUpdateOne {
+	if pu != nil {
+		puo.SetPowerUnit(*pu)
+	}
+	return puo
+}
+
+// ClearPowerUnit clears the value of the "power_unit" field.
+func (puo *ProfileUpdateOne) ClearPowerUnit() *ProfileUpdateOne {
+	puo.mutation.ClearPowerUnit()
+	return puo
+}
+
+// SetTorqueUnit sets the "torque_unit" field.
+func (puo *ProfileUpdateOne) SetTorqueUnit(pu profile.TorqueUnit) *ProfileUpdateOne {
+	puo.mutation.SetTorqueUnit(pu)
+	return puo
+}
+
+// SetNillableTorqueUnit sets the "torque_unit" field if the given value is not nil.
+func (puo *ProfileUpdateOne) SetNillableTorqueUnit(pu *profile.TorqueUnit) *ProfileUpdateOne {
+	if pu != nil {
+		puo.SetTorqueUnit(*pu)
+	}
+	return puo
+}
+
+// ClearTorqueUnit clears the value of the "torque_unit" field.
+func (puo *ProfileUpdateOne) ClearTorqueUnit() *ProfileUpdateOne {
+	puo.mutation.ClearTorqueUnit()
+	return puo
+}
+
 // SetVisibility sets the "visibility" field.
 func (puo *ProfileUpdateOne) SetVisibility(pr profile.Visibility) *ProfileUpdateOne {
 	puo.mutation.SetVisibility(pr)
@@ -735,6 +837,16 @@ func (puo *ProfileUpdateOne) check() error {
 			return &ValidationError{Name: "temperature_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.temperature_unit": %w`, err)}
 		}
 	}
+	if v, ok := puo.mutation.PowerUnit(); ok {
+		if err := profile.PowerUnitValidator(v); err != nil {
+			return &ValidationError{Name: "power_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.power_unit": %w`, err)}
+		}
+	}
+	if v, ok := puo.mutation.TorqueUnit(); ok {
+		if err := profile.TorqueUnitValidator(v); err != nil {
+			return &ValidationError{Name: "torque_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.torque_unit": %w`, err)}
+		}
+	}
 	if v, ok := puo.mutation.Visibility(); ok {
 		if err := profile.VisibilityValidator(v); err != nil {
 			return &ValidationError{Name: "visibility", err: fmt.Errorf(`ent: validator failed for field "Profile.visibility": %w`, err)}
@@ -831,6 +943,18 @@ func (puo *ProfileUpdateOne) sqlSave(ctx context.Context) (_node *Profile, err e
 	}
 	if puo.mutation.TemperatureUnitCleared() {
 		_spec.ClearField(profile.FieldTemperatureUnit, field.TypeEnum)
+	}
+	if value, ok := puo.mutation.PowerUnit(); ok {
+		_spec.SetField(profile.FieldPowerUnit, field.TypeEnum, value)
+	}
+	if puo.mutation.PowerUnitCleared() {
+		_spec.ClearField(profile.FieldPowerUnit, field.TypeEnum)
+	}
+	if value, ok := puo.mutation.TorqueUnit(); ok {
+		_spec.SetField(profile.FieldTorqueUnit, field.TypeEnum, value)
+	}
+	if puo.mutation.TorqueUnitCleared() {
+		_spec.ClearField(profile.FieldTorqueUnit, field.TypeEnum)
 	}
 	if value, ok := puo.mutation.Visibility(); ok {
 		_spec.SetField(profile.FieldVisibility, field.TypeEnum, value)

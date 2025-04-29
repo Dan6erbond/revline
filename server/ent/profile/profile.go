@@ -40,6 +40,10 @@ const (
 	FieldFuelConsumptionUnit = "fuel_consumption_unit"
 	// FieldTemperatureUnit holds the string denoting the temperature_unit field in the database.
 	FieldTemperatureUnit = "temperature_unit"
+	// FieldPowerUnit holds the string denoting the power_unit field in the database.
+	FieldPowerUnit = "power_unit"
+	// FieldTorqueUnit holds the string denoting the torque_unit field in the database.
+	FieldTorqueUnit = "torque_unit"
 	// FieldVisibility holds the string denoting the visibility field in the database.
 	FieldVisibility = "visibility"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -69,6 +73,8 @@ var Columns = []string{
 	FieldDistanceUnit,
 	FieldFuelConsumptionUnit,
 	FieldTemperatureUnit,
+	FieldPowerUnit,
+	FieldTorqueUnit,
 	FieldVisibility,
 }
 
@@ -199,6 +205,56 @@ func TemperatureUnitValidator(tu TemperatureUnit) error {
 	}
 }
 
+// PowerUnit defines the type for the "power_unit" enum field.
+type PowerUnit string
+
+// PowerUnit values.
+const (
+	PowerUnitMetricHorsepower   PowerUnit = "metric_horsepower"
+	PowerUnitMechHorsepower     PowerUnit = "mech_horsepower"
+	PowerUnitKilowatts          PowerUnit = "kilowatts"
+	PowerUnitImpHorsepower      PowerUnit = "imp_horsepower"
+	PowerUnitElectricHorsepower PowerUnit = "electric_horsepower"
+)
+
+func (pu PowerUnit) String() string {
+	return string(pu)
+}
+
+// PowerUnitValidator is a validator for the "power_unit" field enum values. It is called by the builders before save.
+func PowerUnitValidator(pu PowerUnit) error {
+	switch pu {
+	case PowerUnitMetricHorsepower, PowerUnitMechHorsepower, PowerUnitKilowatts, PowerUnitImpHorsepower, PowerUnitElectricHorsepower:
+		return nil
+	default:
+		return fmt.Errorf("profile: invalid enum value for power_unit field: %q", pu)
+	}
+}
+
+// TorqueUnit defines the type for the "torque_unit" enum field.
+type TorqueUnit string
+
+// TorqueUnit values.
+const (
+	TorqueUnitNewtonMeters  TorqueUnit = "newton_meters"
+	TorqueUnitPoundFeet     TorqueUnit = "pound_feet"
+	TorqueUnitKilogramMeter TorqueUnit = "kilogram_meter"
+)
+
+func (tu TorqueUnit) String() string {
+	return string(tu)
+}
+
+// TorqueUnitValidator is a validator for the "torque_unit" field enum values. It is called by the builders before save.
+func TorqueUnitValidator(tu TorqueUnit) error {
+	switch tu {
+	case TorqueUnitNewtonMeters, TorqueUnitPoundFeet, TorqueUnitKilogramMeter:
+		return nil
+	default:
+		return fmt.Errorf("profile: invalid enum value for torque_unit field: %q", tu)
+	}
+}
+
 // Visibility defines the type for the "visibility" enum field.
 type Visibility string
 
@@ -288,6 +344,16 @@ func ByTemperatureUnit(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTemperatureUnit, opts...).ToFunc()
 }
 
+// ByPowerUnit orders the results by the power_unit field.
+func ByPowerUnit(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPowerUnit, opts...).ToFunc()
+}
+
+// ByTorqueUnit orders the results by the torque_unit field.
+func ByTorqueUnit(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTorqueUnit, opts...).ToFunc()
+}
+
 // ByVisibility orders the results by the visibility field.
 func ByVisibility(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldVisibility, opts...).ToFunc()
@@ -375,6 +441,42 @@ func (e *TemperatureUnit) UnmarshalGQL(val interface{}) error {
 	*e = TemperatureUnit(str)
 	if err := TemperatureUnitValidator(*e); err != nil {
 		return fmt.Errorf("%s is not a valid TemperatureUnit", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e PowerUnit) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *PowerUnit) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = PowerUnit(str)
+	if err := PowerUnitValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid PowerUnit", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e TorqueUnit) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *TorqueUnit) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = TorqueUnit(str)
+	if err := TorqueUnitValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid TorqueUnit", str)
 	}
 	return nil
 }

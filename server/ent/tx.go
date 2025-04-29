@@ -20,6 +20,10 @@ type Tx struct {
 	DragResult *DragResultClient
 	// DragSession is the client for interacting with the DragSession builders.
 	DragSession *DragSessionClient
+	// DynoResult is the client for interacting with the DynoResult builders.
+	DynoResult *DynoResultClient
+	// DynoSession is the client for interacting with the DynoSession builders.
+	DynoSession *DynoSessionClient
 	// FuelUp is the client for interacting with the FuelUp builders.
 	FuelUp *FuelUpClient
 	// Media is the client for interacting with the Media builders.
@@ -171,6 +175,8 @@ func (tx *Tx) init() {
 	tx.Document = NewDocumentClient(tx.config)
 	tx.DragResult = NewDragResultClient(tx.config)
 	tx.DragSession = NewDragSessionClient(tx.config)
+	tx.DynoResult = NewDynoResultClient(tx.config)
+	tx.DynoSession = NewDynoSessionClient(tx.config)
 	tx.FuelUp = NewFuelUpClient(tx.config)
 	tx.Media = NewMediaClient(tx.config)
 	tx.OdometerReading = NewOdometerReadingClient(tx.config)

@@ -7,6 +7,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynoresult"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -25,7 +27,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 12)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 14)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   car.Table,
@@ -101,6 +103,41 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[4] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   dynoresult.Table,
+			Columns: dynoresult.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: dynoresult.FieldID,
+			},
+		},
+		Type: "DynoResult",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			dynoresult.FieldCreateTime: {Type: field.TypeTime, Column: dynoresult.FieldCreateTime},
+			dynoresult.FieldUpdateTime: {Type: field.TypeTime, Column: dynoresult.FieldUpdateTime},
+			dynoresult.FieldRpm:        {Type: field.TypeInt, Column: dynoresult.FieldRpm},
+			dynoresult.FieldPowerKw:    {Type: field.TypeFloat64, Column: dynoresult.FieldPowerKw},
+			dynoresult.FieldTorqueNm:   {Type: field.TypeFloat64, Column: dynoresult.FieldTorqueNm},
+		},
+	}
+	graph.Nodes[5] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   dynosession.Table,
+			Columns: dynosession.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: dynosession.FieldID,
+			},
+		},
+		Type: "DynoSession",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			dynosession.FieldCreateTime: {Type: field.TypeTime, Column: dynosession.FieldCreateTime},
+			dynosession.FieldUpdateTime: {Type: field.TypeTime, Column: dynosession.FieldUpdateTime},
+			dynosession.FieldTitle:      {Type: field.TypeString, Column: dynosession.FieldTitle},
+			dynosession.FieldNotes:      {Type: field.TypeString, Column: dynosession.FieldNotes},
+		},
+	}
+	graph.Nodes[6] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   fuelup.Table,
 			Columns: fuelup.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -122,7 +159,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			fuelup.FieldNotes:        {Type: field.TypeString, Column: fuelup.FieldNotes},
 		},
 	}
-	graph.Nodes[5] = &sqlgraph.Node{
+	graph.Nodes[7] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   media.Table,
 			Columns: media.Columns,
@@ -137,7 +174,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			media.FieldUpdateTime: {Type: field.TypeTime, Column: media.FieldUpdateTime},
 		},
 	}
-	graph.Nodes[6] = &sqlgraph.Node{
+	graph.Nodes[8] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   odometerreading.Table,
 			Columns: odometerreading.Columns,
@@ -154,7 +191,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			odometerreading.FieldNotes:      {Type: field.TypeString, Column: odometerreading.FieldNotes},
 		},
 	}
-	graph.Nodes[7] = &sqlgraph.Node{
+	graph.Nodes[9] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   profile.Table,
 			Columns: profile.Columns,
@@ -176,10 +213,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 			profile.FieldDistanceUnit:        {Type: field.TypeEnum, Column: profile.FieldDistanceUnit},
 			profile.FieldFuelConsumptionUnit: {Type: field.TypeEnum, Column: profile.FieldFuelConsumptionUnit},
 			profile.FieldTemperatureUnit:     {Type: field.TypeEnum, Column: profile.FieldTemperatureUnit},
+			profile.FieldPowerUnit:           {Type: field.TypeEnum, Column: profile.FieldPowerUnit},
+			profile.FieldTorqueUnit:          {Type: field.TypeEnum, Column: profile.FieldTorqueUnit},
 			profile.FieldVisibility:          {Type: field.TypeEnum, Column: profile.FieldVisibility},
 		},
 	}
-	graph.Nodes[8] = &sqlgraph.Node{
+	graph.Nodes[10] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   serviceitem.Table,
 			Columns: serviceitem.Columns,
@@ -200,7 +239,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			serviceitem.FieldTags:                  {Type: field.TypeJSON, Column: serviceitem.FieldTags},
 		},
 	}
-	graph.Nodes[9] = &sqlgraph.Node{
+	graph.Nodes[11] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   servicelog.Table,
 			Columns: servicelog.Columns,
@@ -218,7 +257,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			servicelog.FieldNotes:         {Type: field.TypeString, Column: servicelog.FieldNotes},
 		},
 	}
-	graph.Nodes[10] = &sqlgraph.Node{
+	graph.Nodes[12] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   serviceschedule.Table,
 			Columns: serviceschedule.Columns,
@@ -240,7 +279,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			serviceschedule.FieldArchived:          {Type: field.TypeBool, Column: serviceschedule.FieldArchived},
 		},
 	}
-	graph.Nodes[11] = &sqlgraph.Node{
+	graph.Nodes[13] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
@@ -365,6 +404,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Document",
 	)
 	graph.MustAddE(
+		"dyno_sessions",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.DynoSessionsTable,
+			Columns: []string{car.DynoSessionsColumn},
+			Bidi:    false,
+		},
+		"Car",
+		"DynoSession",
+	)
+	graph.MustAddE(
 		"banner_image",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -423,6 +474,42 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"DragSession",
 		"DragResult",
+	)
+	graph.MustAddE(
+		"session",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   dynoresult.SessionTable,
+			Columns: []string{dynoresult.SessionColumn},
+			Bidi:    false,
+		},
+		"DynoResult",
+		"DynoSession",
+	)
+	graph.MustAddE(
+		"car",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   dynosession.CarTable,
+			Columns: []string{dynosession.CarColumn},
+			Bidi:    false,
+		},
+		"DynoSession",
+		"Car",
+	)
+	graph.MustAddE(
+		"results",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dynosession.ResultsTable,
+			Columns: []string{dynosession.ResultsColumn},
+			Bidi:    false,
+		},
+		"DynoSession",
+		"DynoResult",
 	)
 	graph.MustAddE(
 		"car",
@@ -867,6 +954,20 @@ func (f *CarFilter) WhereHasDocumentsWith(preds ...predicate.Document) {
 	})))
 }
 
+// WhereHasDynoSessions applies a predicate to check if query has an edge dyno_sessions.
+func (f *CarFilter) WhereHasDynoSessions() {
+	f.Where(entql.HasEdge("dyno_sessions"))
+}
+
+// WhereHasDynoSessionsWith applies a predicate to check if query has an edge dyno_sessions with a given conditions (other predicates).
+func (f *CarFilter) WhereHasDynoSessionsWith(preds ...predicate.DynoSession) {
+	f.Where(entql.HasEdgeWith("dyno_sessions", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // WhereHasBannerImage applies a predicate to check if query has an edge banner_image.
 func (f *CarFilter) WhereHasBannerImage() {
 	f.Where(entql.HasEdge("banner_image"))
@@ -1123,6 +1224,173 @@ func (f *DragSessionFilter) WhereHasResultsWith(preds ...predicate.DragResult) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (drq *DynoResultQuery) addPredicate(pred func(s *sql.Selector)) {
+	drq.predicates = append(drq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the DynoResultQuery builder.
+func (drq *DynoResultQuery) Filter() *DynoResultFilter {
+	return &DynoResultFilter{config: drq.config, predicateAdder: drq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *DynoResultMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the DynoResultMutation builder.
+func (m *DynoResultMutation) Filter() *DynoResultFilter {
+	return &DynoResultFilter{config: m.config, predicateAdder: m}
+}
+
+// DynoResultFilter provides a generic filtering capability at runtime for DynoResultQuery.
+type DynoResultFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *DynoResultFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *DynoResultFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(dynoresult.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *DynoResultFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(dynoresult.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *DynoResultFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(dynoresult.FieldUpdateTime))
+}
+
+// WhereRpm applies the entql int predicate on the rpm field.
+func (f *DynoResultFilter) WhereRpm(p entql.IntP) {
+	f.Where(p.Field(dynoresult.FieldRpm))
+}
+
+// WherePowerKw applies the entql float64 predicate on the power_kw field.
+func (f *DynoResultFilter) WherePowerKw(p entql.Float64P) {
+	f.Where(p.Field(dynoresult.FieldPowerKw))
+}
+
+// WhereTorqueNm applies the entql float64 predicate on the torque_nm field.
+func (f *DynoResultFilter) WhereTorqueNm(p entql.Float64P) {
+	f.Where(p.Field(dynoresult.FieldTorqueNm))
+}
+
+// WhereHasSession applies a predicate to check if query has an edge session.
+func (f *DynoResultFilter) WhereHasSession() {
+	f.Where(entql.HasEdge("session"))
+}
+
+// WhereHasSessionWith applies a predicate to check if query has an edge session with a given conditions (other predicates).
+func (f *DynoResultFilter) WhereHasSessionWith(preds ...predicate.DynoSession) {
+	f.Where(entql.HasEdgeWith("session", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (dsq *DynoSessionQuery) addPredicate(pred func(s *sql.Selector)) {
+	dsq.predicates = append(dsq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the DynoSessionQuery builder.
+func (dsq *DynoSessionQuery) Filter() *DynoSessionFilter {
+	return &DynoSessionFilter{config: dsq.config, predicateAdder: dsq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *DynoSessionMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the DynoSessionMutation builder.
+func (m *DynoSessionMutation) Filter() *DynoSessionFilter {
+	return &DynoSessionFilter{config: m.config, predicateAdder: m}
+}
+
+// DynoSessionFilter provides a generic filtering capability at runtime for DynoSessionQuery.
+type DynoSessionFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *DynoSessionFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *DynoSessionFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(dynosession.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *DynoSessionFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(dynosession.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *DynoSessionFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(dynosession.FieldUpdateTime))
+}
+
+// WhereTitle applies the entql string predicate on the title field.
+func (f *DynoSessionFilter) WhereTitle(p entql.StringP) {
+	f.Where(p.Field(dynosession.FieldTitle))
+}
+
+// WhereNotes applies the entql string predicate on the notes field.
+func (f *DynoSessionFilter) WhereNotes(p entql.StringP) {
+	f.Where(p.Field(dynosession.FieldNotes))
+}
+
+// WhereHasCar applies a predicate to check if query has an edge car.
+func (f *DynoSessionFilter) WhereHasCar() {
+	f.Where(entql.HasEdge("car"))
+}
+
+// WhereHasCarWith applies a predicate to check if query has an edge car with a given conditions (other predicates).
+func (f *DynoSessionFilter) WhereHasCarWith(preds ...predicate.Car) {
+	f.Where(entql.HasEdgeWith("car", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasResults applies a predicate to check if query has an edge results.
+func (f *DynoSessionFilter) WhereHasResults() {
+	f.Where(entql.HasEdge("results"))
+}
+
+// WhereHasResultsWith applies a predicate to check if query has an edge results with a given conditions (other predicates).
+func (f *DynoSessionFilter) WhereHasResultsWith(preds ...predicate.DynoResult) {
+	f.Where(entql.HasEdgeWith("results", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (fuq *FuelUpQuery) addPredicate(pred func(s *sql.Selector)) {
 	fuq.predicates = append(fuq.predicates, pred)
 }
@@ -1151,7 +1419,7 @@ type FuelUpFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *FuelUpFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1269,7 +1537,7 @@ type MediaFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *MediaFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1333,7 +1601,7 @@ type OdometerReadingFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OdometerReadingFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1435,7 +1703,7 @@ type ProfileFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ProfileFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1501,6 +1769,16 @@ func (f *ProfileFilter) WhereTemperatureUnit(p entql.StringP) {
 	f.Where(p.Field(profile.FieldTemperatureUnit))
 }
 
+// WherePowerUnit applies the entql string predicate on the power_unit field.
+func (f *ProfileFilter) WherePowerUnit(p entql.StringP) {
+	f.Where(p.Field(profile.FieldPowerUnit))
+}
+
+// WhereTorqueUnit applies the entql string predicate on the torque_unit field.
+func (f *ProfileFilter) WhereTorqueUnit(p entql.StringP) {
+	f.Where(p.Field(profile.FieldTorqueUnit))
+}
+
 // WhereVisibility applies the entql string predicate on the visibility field.
 func (f *ProfileFilter) WhereVisibility(p entql.StringP) {
 	f.Where(p.Field(profile.FieldVisibility))
@@ -1549,7 +1827,7 @@ type ServiceItemFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ServiceItemFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1671,7 +1949,7 @@ type ServiceLogFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ServiceLogFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[11].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1792,7 +2070,7 @@ type ServiceScheduleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ServiceScheduleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[12].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1919,7 +2197,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[11].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[13].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

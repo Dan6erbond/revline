@@ -207,6 +207,54 @@ func (f DragSessionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mut
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.DragSessionMutation", m)
 }
 
+// The DynoResultQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type DynoResultQueryRuleFunc func(context.Context, *ent.DynoResultQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f DynoResultQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.DynoResultQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.DynoResultQuery", q)
+}
+
+// The DynoResultMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type DynoResultMutationRuleFunc func(context.Context, *ent.DynoResultMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f DynoResultMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.DynoResultMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.DynoResultMutation", m)
+}
+
+// The DynoSessionQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type DynoSessionQueryRuleFunc func(context.Context, *ent.DynoSessionQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f DynoSessionQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.DynoSessionQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.DynoSessionQuery", q)
+}
+
+// The DynoSessionMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type DynoSessionMutationRuleFunc func(context.Context, *ent.DynoSessionMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f DynoSessionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.DynoSessionMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.DynoSessionMutation", m)
+}
+
 // The FuelUpQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type FuelUpQueryRuleFunc func(context.Context, *ent.FuelUpQuery) error
@@ -442,6 +490,10 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.DragSessionQuery:
 		return q.Filter(), nil
+	case *ent.DynoResultQuery:
+		return q.Filter(), nil
+	case *ent.DynoSessionQuery:
+		return q.Filter(), nil
 	case *ent.FuelUpQuery:
 		return q.Filter(), nil
 	case *ent.MediaQuery:
@@ -472,6 +524,10 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.DragResultMutation:
 		return m.Filter(), nil
 	case *ent.DragSessionMutation:
+		return m.Filter(), nil
+	case *ent.DynoResultMutation:
+		return m.Filter(), nil
+	case *ent.DynoSessionMutation:
 		return m.Filter(), nil
 	case *ent.FuelUpMutation:
 		return m.Filter(), nil

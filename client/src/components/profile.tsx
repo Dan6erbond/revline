@@ -225,7 +225,7 @@ export default function ProfileForm() {
   return (
     <form
       id="fuel-up"
-      className="flex flex-col gap-4 p-4 md:p-8"
+      className="flex flex-col gap-4 p-4 md:p-8 max-w-screen-xl mx-auto"
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="flex flex-col md:flex-row gap-4">

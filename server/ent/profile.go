@@ -41,6 +41,10 @@ type Profile struct {
 	FuelConsumptionUnit *profile.FuelConsumptionUnit `json:"fuel_consumption_unit,omitempty"`
 	// TemperatureUnit holds the value of the "temperature_unit" field.
 	TemperatureUnit *profile.TemperatureUnit `json:"temperature_unit,omitempty"`
+	// PowerUnit holds the value of the "power_unit" field.
+	PowerUnit *profile.PowerUnit `json:"power_unit,omitempty"`
+	// TorqueUnit holds the value of the "torque_unit" field.
+	TorqueUnit *profile.TorqueUnit `json:"torque_unit,omitempty"`
 	// Visibility holds the value of the "visibility" field.
 	Visibility profile.Visibility `json:"visibility,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -79,7 +83,7 @@ func (*Profile) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case profile.FieldPicture:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case profile.FieldUsername, profile.FieldFirstName, profile.FieldLastName, profile.FieldCurrencyCode, profile.FieldFuelVolumeUnit, profile.FieldDistanceUnit, profile.FieldFuelConsumptionUnit, profile.FieldTemperatureUnit, profile.FieldVisibility:
+		case profile.FieldUsername, profile.FieldFirstName, profile.FieldLastName, profile.FieldCurrencyCode, profile.FieldFuelVolumeUnit, profile.FieldDistanceUnit, profile.FieldFuelConsumptionUnit, profile.FieldTemperatureUnit, profile.FieldPowerUnit, profile.FieldTorqueUnit, profile.FieldVisibility:
 			values[i] = new(sql.NullString)
 		case profile.FieldCreateTime, profile.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
@@ -183,6 +187,20 @@ func (pr *Profile) assignValues(columns []string, values []any) error {
 				pr.TemperatureUnit = new(profile.TemperatureUnit)
 				*pr.TemperatureUnit = profile.TemperatureUnit(value.String)
 			}
+		case profile.FieldPowerUnit:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field power_unit", values[i])
+			} else if value.Valid {
+				pr.PowerUnit = new(profile.PowerUnit)
+				*pr.PowerUnit = profile.PowerUnit(value.String)
+			}
+		case profile.FieldTorqueUnit:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field torque_unit", values[i])
+			} else if value.Valid {
+				pr.TorqueUnit = new(profile.TorqueUnit)
+				*pr.TorqueUnit = profile.TorqueUnit(value.String)
+			}
 		case profile.FieldVisibility:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field visibility", values[i])
@@ -285,6 +303,16 @@ func (pr *Profile) String() string {
 	builder.WriteString(", ")
 	if v := pr.TemperatureUnit; v != nil {
 		builder.WriteString("temperature_unit=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := pr.PowerUnit; v != nil {
+		builder.WriteString("power_unit=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := pr.TorqueUnit; v != nil {
+		builder.WriteString("torque_unit=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")

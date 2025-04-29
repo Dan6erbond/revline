@@ -18,6 +18,12 @@ type DragResult func(*sql.Selector)
 // DragSession is the predicate function for dragsession builders.
 type DragSession func(*sql.Selector)
 
+// DynoResult is the predicate function for dynoresult builders.
+type DynoResult func(*sql.Selector)
+
+// DynoSession is the predicate function for dynosession builders.
+type DynoSession func(*sql.Selector)
+
 // FuelUp is the predicate function for fuelup builders.
 type FuelUp func(*sql.Selector)
 

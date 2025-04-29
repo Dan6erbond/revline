@@ -20,6 +20,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynoresult"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -43,6 +45,10 @@ type Client struct {
 	DragResult *DragResultClient
 	// DragSession is the client for interacting with the DragSession builders.
 	DragSession *DragSessionClient
+	// DynoResult is the client for interacting with the DynoResult builders.
+	DynoResult *DynoResultClient
+	// DynoSession is the client for interacting with the DynoSession builders.
+	DynoSession *DynoSessionClient
 	// FuelUp is the client for interacting with the FuelUp builders.
 	FuelUp *FuelUpClient
 	// Media is the client for interacting with the Media builders.
@@ -74,6 +80,8 @@ func (c *Client) init() {
 	c.Document = NewDocumentClient(c.config)
 	c.DragResult = NewDragResultClient(c.config)
 	c.DragSession = NewDragSessionClient(c.config)
+	c.DynoResult = NewDynoResultClient(c.config)
+	c.DynoSession = NewDynoSessionClient(c.config)
 	c.FuelUp = NewFuelUpClient(c.config)
 	c.Media = NewMediaClient(c.config)
 	c.OdometerReading = NewOdometerReadingClient(c.config)
@@ -178,6 +186,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Document:        NewDocumentClient(cfg),
 		DragResult:      NewDragResultClient(cfg),
 		DragSession:     NewDragSessionClient(cfg),
+		DynoResult:      NewDynoResultClient(cfg),
+		DynoSession:     NewDynoSessionClient(cfg),
 		FuelUp:          NewFuelUpClient(cfg),
 		Media:           NewMediaClient(cfg),
 		OdometerReading: NewOdometerReadingClient(cfg),
@@ -209,6 +219,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Document:        NewDocumentClient(cfg),
 		DragResult:      NewDragResultClient(cfg),
 		DragSession:     NewDragSessionClient(cfg),
+		DynoResult:      NewDynoResultClient(cfg),
+		DynoSession:     NewDynoSessionClient(cfg),
 		FuelUp:          NewFuelUpClient(cfg),
 		Media:           NewMediaClient(cfg),
 		OdometerReading: NewOdometerReadingClient(cfg),
@@ -246,9 +258,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Car, c.Document, c.DragResult, c.DragSession, c.FuelUp, c.Media,
-		c.OdometerReading, c.Profile, c.ServiceItem, c.ServiceLog, c.ServiceSchedule,
-		c.User,
+		c.Car, c.Document, c.DragResult, c.DragSession, c.DynoResult, c.DynoSession,
+		c.FuelUp, c.Media, c.OdometerReading, c.Profile, c.ServiceItem, c.ServiceLog,
+		c.ServiceSchedule, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -258,9 +270,9 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Car, c.Document, c.DragResult, c.DragSession, c.FuelUp, c.Media,
-		c.OdometerReading, c.Profile, c.ServiceItem, c.ServiceLog, c.ServiceSchedule,
-		c.User,
+		c.Car, c.Document, c.DragResult, c.DragSession, c.DynoResult, c.DynoSession,
+		c.FuelUp, c.Media, c.OdometerReading, c.Profile, c.ServiceItem, c.ServiceLog,
+		c.ServiceSchedule, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -277,6 +289,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.DragResult.mutate(ctx, m)
 	case *DragSessionMutation:
 		return c.DragSession.mutate(ctx, m)
+	case *DynoResultMutation:
+		return c.DynoResult.mutate(ctx, m)
+	case *DynoSessionMutation:
+		return c.DynoSession.mutate(ctx, m)
 	case *FuelUpMutation:
 		return c.FuelUp.mutate(ctx, m)
 	case *MediaMutation:
@@ -543,6 +559,22 @@ func (c *CarClient) QueryDocuments(ca *Car) *DocumentQuery {
 			sqlgraph.From(car.Table, car.FieldID, id),
 			sqlgraph.To(document.Table, document.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, car.DocumentsTable, car.DocumentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDynoSessions queries the dyno_sessions edge of a Car.
+func (c *CarClient) QueryDynoSessions(ca *Car) *DynoSessionQuery {
+	query := (&DynoSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ca.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, id),
+			sqlgraph.To(dynosession.Table, dynosession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.DynoSessionsTable, car.DynoSessionsColumn),
 		)
 		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
 		return fromV, nil
@@ -1051,6 +1083,320 @@ func (c *DragSessionClient) mutate(ctx context.Context, m *DragSessionMutation) 
 		return (&DragSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown DragSession mutation op: %q", m.Op())
+	}
+}
+
+// DynoResultClient is a client for the DynoResult schema.
+type DynoResultClient struct {
+	config
+}
+
+// NewDynoResultClient returns a client for the DynoResult from the given config.
+func NewDynoResultClient(c config) *DynoResultClient {
+	return &DynoResultClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `dynoresult.Hooks(f(g(h())))`.
+func (c *DynoResultClient) Use(hooks ...Hook) {
+	c.hooks.DynoResult = append(c.hooks.DynoResult, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `dynoresult.Intercept(f(g(h())))`.
+func (c *DynoResultClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DynoResult = append(c.inters.DynoResult, interceptors...)
+}
+
+// Create returns a builder for creating a DynoResult entity.
+func (c *DynoResultClient) Create() *DynoResultCreate {
+	mutation := newDynoResultMutation(c.config, OpCreate)
+	return &DynoResultCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DynoResult entities.
+func (c *DynoResultClient) CreateBulk(builders ...*DynoResultCreate) *DynoResultCreateBulk {
+	return &DynoResultCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DynoResultClient) MapCreateBulk(slice any, setFunc func(*DynoResultCreate, int)) *DynoResultCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DynoResultCreateBulk{err: fmt.Errorf("calling to DynoResultClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DynoResultCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DynoResultCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DynoResult.
+func (c *DynoResultClient) Update() *DynoResultUpdate {
+	mutation := newDynoResultMutation(c.config, OpUpdate)
+	return &DynoResultUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DynoResultClient) UpdateOne(dr *DynoResult) *DynoResultUpdateOne {
+	mutation := newDynoResultMutation(c.config, OpUpdateOne, withDynoResult(dr))
+	return &DynoResultUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DynoResultClient) UpdateOneID(id uuid.UUID) *DynoResultUpdateOne {
+	mutation := newDynoResultMutation(c.config, OpUpdateOne, withDynoResultID(id))
+	return &DynoResultUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DynoResult.
+func (c *DynoResultClient) Delete() *DynoResultDelete {
+	mutation := newDynoResultMutation(c.config, OpDelete)
+	return &DynoResultDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DynoResultClient) DeleteOne(dr *DynoResult) *DynoResultDeleteOne {
+	return c.DeleteOneID(dr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DynoResultClient) DeleteOneID(id uuid.UUID) *DynoResultDeleteOne {
+	builder := c.Delete().Where(dynoresult.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DynoResultDeleteOne{builder}
+}
+
+// Query returns a query builder for DynoResult.
+func (c *DynoResultClient) Query() *DynoResultQuery {
+	return &DynoResultQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDynoResult},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DynoResult entity by its id.
+func (c *DynoResultClient) Get(ctx context.Context, id uuid.UUID) (*DynoResult, error) {
+	return c.Query().Where(dynoresult.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DynoResultClient) GetX(ctx context.Context, id uuid.UUID) *DynoResult {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QuerySession queries the session edge of a DynoResult.
+func (c *DynoResultClient) QuerySession(dr *DynoResult) *DynoSessionQuery {
+	query := (&DynoSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := dr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dynoresult.Table, dynoresult.FieldID, id),
+			sqlgraph.To(dynosession.Table, dynosession.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, dynoresult.SessionTable, dynoresult.SessionColumn),
+		)
+		fromV = sqlgraph.Neighbors(dr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DynoResultClient) Hooks() []Hook {
+	return c.hooks.DynoResult
+}
+
+// Interceptors returns the client interceptors.
+func (c *DynoResultClient) Interceptors() []Interceptor {
+	return c.inters.DynoResult
+}
+
+func (c *DynoResultClient) mutate(ctx context.Context, m *DynoResultMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DynoResultCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DynoResultUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DynoResultUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DynoResultDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DynoResult mutation op: %q", m.Op())
+	}
+}
+
+// DynoSessionClient is a client for the DynoSession schema.
+type DynoSessionClient struct {
+	config
+}
+
+// NewDynoSessionClient returns a client for the DynoSession from the given config.
+func NewDynoSessionClient(c config) *DynoSessionClient {
+	return &DynoSessionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `dynosession.Hooks(f(g(h())))`.
+func (c *DynoSessionClient) Use(hooks ...Hook) {
+	c.hooks.DynoSession = append(c.hooks.DynoSession, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `dynosession.Intercept(f(g(h())))`.
+func (c *DynoSessionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DynoSession = append(c.inters.DynoSession, interceptors...)
+}
+
+// Create returns a builder for creating a DynoSession entity.
+func (c *DynoSessionClient) Create() *DynoSessionCreate {
+	mutation := newDynoSessionMutation(c.config, OpCreate)
+	return &DynoSessionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DynoSession entities.
+func (c *DynoSessionClient) CreateBulk(builders ...*DynoSessionCreate) *DynoSessionCreateBulk {
+	return &DynoSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DynoSessionClient) MapCreateBulk(slice any, setFunc func(*DynoSessionCreate, int)) *DynoSessionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DynoSessionCreateBulk{err: fmt.Errorf("calling to DynoSessionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DynoSessionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DynoSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DynoSession.
+func (c *DynoSessionClient) Update() *DynoSessionUpdate {
+	mutation := newDynoSessionMutation(c.config, OpUpdate)
+	return &DynoSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DynoSessionClient) UpdateOne(ds *DynoSession) *DynoSessionUpdateOne {
+	mutation := newDynoSessionMutation(c.config, OpUpdateOne, withDynoSession(ds))
+	return &DynoSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DynoSessionClient) UpdateOneID(id uuid.UUID) *DynoSessionUpdateOne {
+	mutation := newDynoSessionMutation(c.config, OpUpdateOne, withDynoSessionID(id))
+	return &DynoSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DynoSession.
+func (c *DynoSessionClient) Delete() *DynoSessionDelete {
+	mutation := newDynoSessionMutation(c.config, OpDelete)
+	return &DynoSessionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DynoSessionClient) DeleteOne(ds *DynoSession) *DynoSessionDeleteOne {
+	return c.DeleteOneID(ds.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DynoSessionClient) DeleteOneID(id uuid.UUID) *DynoSessionDeleteOne {
+	builder := c.Delete().Where(dynosession.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DynoSessionDeleteOne{builder}
+}
+
+// Query returns a query builder for DynoSession.
+func (c *DynoSessionClient) Query() *DynoSessionQuery {
+	return &DynoSessionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDynoSession},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DynoSession entity by its id.
+func (c *DynoSessionClient) Get(ctx context.Context, id uuid.UUID) (*DynoSession, error) {
+	return c.Query().Where(dynosession.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DynoSessionClient) GetX(ctx context.Context, id uuid.UUID) *DynoSession {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryCar queries the car edge of a DynoSession.
+func (c *DynoSessionClient) QueryCar(ds *DynoSession) *CarQuery {
+	query := (&CarClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ds.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dynosession.Table, dynosession.FieldID, id),
+			sqlgraph.To(car.Table, car.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, dynosession.CarTable, dynosession.CarColumn),
+		)
+		fromV = sqlgraph.Neighbors(ds.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryResults queries the results edge of a DynoSession.
+func (c *DynoSessionClient) QueryResults(ds *DynoSession) *DynoResultQuery {
+	query := (&DynoResultClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ds.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dynosession.Table, dynosession.FieldID, id),
+			sqlgraph.To(dynoresult.Table, dynoresult.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dynosession.ResultsTable, dynosession.ResultsColumn),
+		)
+		fromV = sqlgraph.Neighbors(ds.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DynoSessionClient) Hooks() []Hook {
+	return c.hooks.DynoSession
+}
+
+// Interceptors returns the client interceptors.
+func (c *DynoSessionClient) Interceptors() []Interceptor {
+	return c.inters.DynoSession
+}
+
+func (c *DynoSessionClient) mutate(ctx context.Context, m *DynoSessionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DynoSessionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DynoSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DynoSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DynoSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DynoSession mutation op: %q", m.Op())
 	}
 }
 
@@ -2425,11 +2771,13 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Car, Document, DragResult, DragSession, FuelUp, Media, OdometerReading, Profile,
-		ServiceItem, ServiceLog, ServiceSchedule, User []ent.Hook
+		Car, Document, DragResult, DragSession, DynoResult, DynoSession, FuelUp, Media,
+		OdometerReading, Profile, ServiceItem, ServiceLog, ServiceSchedule,
+		User []ent.Hook
 	}
 	inters struct {
-		Car, Document, DragResult, DragSession, FuelUp, Media, OdometerReading, Profile,
-		ServiceItem, ServiceLog, ServiceSchedule, User []ent.Interceptor
+		Car, Document, DragResult, DragSession, DynoResult, DynoSession, FuelUp, Media,
+		OdometerReading, Profile, ServiceItem, ServiceLog, ServiceSchedule,
+		User []ent.Interceptor
 	}
 )

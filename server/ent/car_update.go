@@ -14,6 +14,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -304,6 +305,21 @@ func (cu *CarUpdate) AddDocuments(d ...*Document) *CarUpdate {
 	return cu.AddDocumentIDs(ids...)
 }
 
+// AddDynoSessionIDs adds the "dyno_sessions" edge to the DynoSession entity by IDs.
+func (cu *CarUpdate) AddDynoSessionIDs(ids ...uuid.UUID) *CarUpdate {
+	cu.mutation.AddDynoSessionIDs(ids...)
+	return cu
+}
+
+// AddDynoSessions adds the "dyno_sessions" edges to the DynoSession entity.
+func (cu *CarUpdate) AddDynoSessions(d ...*DynoSession) *CarUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return cu.AddDynoSessionIDs(ids...)
+}
+
 // SetBannerImageID sets the "banner_image" edge to the Media entity by ID.
 func (cu *CarUpdate) SetBannerImageID(id uuid.UUID) *CarUpdate {
 	cu.mutation.SetBannerImageID(id)
@@ -500,6 +516,27 @@ func (cu *CarUpdate) RemoveDocuments(d ...*Document) *CarUpdate {
 		ids[i] = d[i].ID
 	}
 	return cu.RemoveDocumentIDs(ids...)
+}
+
+// ClearDynoSessions clears all "dyno_sessions" edges to the DynoSession entity.
+func (cu *CarUpdate) ClearDynoSessions() *CarUpdate {
+	cu.mutation.ClearDynoSessions()
+	return cu
+}
+
+// RemoveDynoSessionIDs removes the "dyno_sessions" edge to DynoSession entities by IDs.
+func (cu *CarUpdate) RemoveDynoSessionIDs(ids ...uuid.UUID) *CarUpdate {
+	cu.mutation.RemoveDynoSessionIDs(ids...)
+	return cu
+}
+
+// RemoveDynoSessions removes "dyno_sessions" edges to DynoSession entities.
+func (cu *CarUpdate) RemoveDynoSessions(d ...*DynoSession) *CarUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return cu.RemoveDynoSessionIDs(ids...)
 }
 
 // ClearBannerImage clears the "banner_image" edge to the Media entity.
@@ -981,6 +1018,51 @@ func (cu *CarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if cu.mutation.DynoSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.DynoSessionsTable,
+			Columns: []string{car.DynoSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedDynoSessionsIDs(); len(nodes) > 0 && !cu.mutation.DynoSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.DynoSessionsTable,
+			Columns: []string{car.DynoSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.DynoSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.DynoSessionsTable,
+			Columns: []string{car.DynoSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if cu.mutation.BannerImageCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -1296,6 +1378,21 @@ func (cuo *CarUpdateOne) AddDocuments(d ...*Document) *CarUpdateOne {
 	return cuo.AddDocumentIDs(ids...)
 }
 
+// AddDynoSessionIDs adds the "dyno_sessions" edge to the DynoSession entity by IDs.
+func (cuo *CarUpdateOne) AddDynoSessionIDs(ids ...uuid.UUID) *CarUpdateOne {
+	cuo.mutation.AddDynoSessionIDs(ids...)
+	return cuo
+}
+
+// AddDynoSessions adds the "dyno_sessions" edges to the DynoSession entity.
+func (cuo *CarUpdateOne) AddDynoSessions(d ...*DynoSession) *CarUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return cuo.AddDynoSessionIDs(ids...)
+}
+
 // SetBannerImageID sets the "banner_image" edge to the Media entity by ID.
 func (cuo *CarUpdateOne) SetBannerImageID(id uuid.UUID) *CarUpdateOne {
 	cuo.mutation.SetBannerImageID(id)
@@ -1492,6 +1589,27 @@ func (cuo *CarUpdateOne) RemoveDocuments(d ...*Document) *CarUpdateOne {
 		ids[i] = d[i].ID
 	}
 	return cuo.RemoveDocumentIDs(ids...)
+}
+
+// ClearDynoSessions clears all "dyno_sessions" edges to the DynoSession entity.
+func (cuo *CarUpdateOne) ClearDynoSessions() *CarUpdateOne {
+	cuo.mutation.ClearDynoSessions()
+	return cuo
+}
+
+// RemoveDynoSessionIDs removes the "dyno_sessions" edge to DynoSession entities by IDs.
+func (cuo *CarUpdateOne) RemoveDynoSessionIDs(ids ...uuid.UUID) *CarUpdateOne {
+	cuo.mutation.RemoveDynoSessionIDs(ids...)
+	return cuo
+}
+
+// RemoveDynoSessions removes "dyno_sessions" edges to DynoSession entities.
+func (cuo *CarUpdateOne) RemoveDynoSessions(d ...*DynoSession) *CarUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return cuo.RemoveDynoSessionIDs(ids...)
 }
 
 // ClearBannerImage clears the "banner_image" edge to the Media entity.
@@ -1996,6 +2114,51 @@ func (cuo *CarUpdateOne) sqlSave(ctx context.Context) (_node *Car, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.DynoSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.DynoSessionsTable,
+			Columns: []string{car.DynoSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedDynoSessionsIDs(); len(nodes) > 0 && !cuo.mutation.DynoSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.DynoSessionsTable,
+			Columns: []string{car.DynoSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.DynoSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.DynoSessionsTable,
+			Columns: []string{car.DynoSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

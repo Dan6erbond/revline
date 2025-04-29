@@ -30,6 +30,7 @@ extend type Document {
 extend type Query {
   car(id: ID!): Car!
   dragSession(id: ID!): DragSession!
+  dynoSession(id: ID!): DynoSession!
   document(id: ID!): Document!
 }
 
@@ -66,4 +67,6 @@ extend type Mutation {
   createServiceLog(input: CreateServiceLogInput!): ServiceLog! @loggedIn
   createDragSession(input: CreateDragSessionInput!): DragSession! @loggedIn
   createDragResult(input: CreateDragResultInput!): DragResult! @loggedIn
+  createDynoSession(input: CreateDynoSessionInput!): DynoSession! @loggedIn
+  createDynoResult(input: CreateDynoResultInput!): DynoResult! @loggedIn
 }

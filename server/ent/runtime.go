@@ -9,6 +9,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynoresult"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -105,6 +107,44 @@ func init() {
 	dragsessionDescID := dragsessionFields[0].Descriptor()
 	// dragsession.DefaultID holds the default value on creation for the id field.
 	dragsession.DefaultID = dragsessionDescID.Default.(func() uuid.UUID)
+	dynoresultMixin := schema.DynoResult{}.Mixin()
+	dynoresultMixinFields0 := dynoresultMixin[0].Fields()
+	_ = dynoresultMixinFields0
+	dynoresultFields := schema.DynoResult{}.Fields()
+	_ = dynoresultFields
+	// dynoresultDescCreateTime is the schema descriptor for create_time field.
+	dynoresultDescCreateTime := dynoresultMixinFields0[0].Descriptor()
+	// dynoresult.DefaultCreateTime holds the default value on creation for the create_time field.
+	dynoresult.DefaultCreateTime = dynoresultDescCreateTime.Default.(func() time.Time)
+	// dynoresultDescUpdateTime is the schema descriptor for update_time field.
+	dynoresultDescUpdateTime := dynoresultMixinFields0[1].Descriptor()
+	// dynoresult.DefaultUpdateTime holds the default value on creation for the update_time field.
+	dynoresult.DefaultUpdateTime = dynoresultDescUpdateTime.Default.(func() time.Time)
+	// dynoresult.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	dynoresult.UpdateDefaultUpdateTime = dynoresultDescUpdateTime.UpdateDefault.(func() time.Time)
+	// dynoresultDescID is the schema descriptor for id field.
+	dynoresultDescID := dynoresultFields[0].Descriptor()
+	// dynoresult.DefaultID holds the default value on creation for the id field.
+	dynoresult.DefaultID = dynoresultDescID.Default.(func() uuid.UUID)
+	dynosessionMixin := schema.DynoSession{}.Mixin()
+	dynosessionMixinFields0 := dynosessionMixin[0].Fields()
+	_ = dynosessionMixinFields0
+	dynosessionFields := schema.DynoSession{}.Fields()
+	_ = dynosessionFields
+	// dynosessionDescCreateTime is the schema descriptor for create_time field.
+	dynosessionDescCreateTime := dynosessionMixinFields0[0].Descriptor()
+	// dynosession.DefaultCreateTime holds the default value on creation for the create_time field.
+	dynosession.DefaultCreateTime = dynosessionDescCreateTime.Default.(func() time.Time)
+	// dynosessionDescUpdateTime is the schema descriptor for update_time field.
+	dynosessionDescUpdateTime := dynosessionMixinFields0[1].Descriptor()
+	// dynosession.DefaultUpdateTime holds the default value on creation for the update_time field.
+	dynosession.DefaultUpdateTime = dynosessionDescUpdateTime.Default.(func() time.Time)
+	// dynosession.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	dynosession.UpdateDefaultUpdateTime = dynosessionDescUpdateTime.UpdateDefault.(func() time.Time)
+	// dynosessionDescID is the schema descriptor for id field.
+	dynosessionDescID := dynosessionFields[0].Descriptor()
+	// dynosession.DefaultID holds the default value on creation for the id field.
+	dynosession.DefaultID = dynosessionDescID.Default.(func() uuid.UUID)
 	fuelupMixin := schema.FuelUp{}.Mixin()
 	fuelupMixinFields0 := fuelupMixin[0].Fields()
 	_ = fuelupMixinFields0

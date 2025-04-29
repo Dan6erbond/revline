@@ -222,7 +222,7 @@ export default function FuelUps() {
 
   return (
     <>
-      <div className="flex flex-col gap-4 md:gap-8 pt-4 md:pt-8">
+      <div className="flex flex-col gap-4 md:gap-8 pt-4 md:pt-8 max-w-screen-xl mx-auto">
         <div className="flex justify-between">
           <div>
             {data?.car.averageConsumptionLitersPerKm && (
@@ -248,7 +248,7 @@ export default function FuelUps() {
             </Button>
           </div>
         </div>
-        <div className="h-[250] md:h-[350] lg:h-[450] bg-primary-50/30 backdrop-blur-2xl rounded-lg px-4 md:px-8 py-8 md:py-12 light">
+        <div className="aspect-video min-h-[300px] rounded-2xl bg-primary/5 backdrop-blur-xl px-6 md:px-10 py-8 md:py-12 border border-primary/10 shadow-sm">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={data?.car.fuelUps?.map((fu) => ({
@@ -260,50 +260,58 @@ export default function FuelUps() {
             >
               <XAxis
                 dataKey="occurredAt"
-                tick={{ fill: "hsl(var(--heroui-foreground))" }}
+                tick={{ fill: "hsl(var(--heroui-foreground))", fontSize: 12 }}
                 stroke="hsl(var(--heroui-foreground))"
               />
               <YAxis
                 yAxisId="amount"
-                type="number"
                 dataKey="amount"
                 unit={fuelVolumeUnits[fuelVolumeUnit]}
-                tick={{ fill: "hsl(var(--heroui-foreground))" }}
+                tick={{ fill: "hsl(var(--heroui-foreground))", fontSize: 12 }}
                 stroke="hsl(var(--heroui-foreground))"
               />
               <YAxis
                 yAxisId="cost"
                 orientation="right"
-                type="number"
                 dataKey="relativeCost"
                 unit={getCurrencySymbol(currencyCode)}
-                tick={{ fill: "hsl(var(--heroui-foreground))" }}
+                tick={{ fill: "hsl(var(--heroui-foreground))", fontSize: 12 }}
                 stroke="hsl(var(--heroui-foreground))"
               />
               <Tooltip
                 contentStyle={{
                   background: "hsl(var(--heroui-background))",
                   color: "hsl(var(--heroui-foreground))",
+                  borderRadius: "0.5rem",
+                  border: "1px solid hsl(var(--heroui-default))",
+                }}
+                labelStyle={{ color: "hsl(var(--heroui-foreground))" }}
+              />
+              <Legend
+                wrapperStyle={{
+                  paddingTop: 16,
+                  color: "hsl(var(--heroui-foreground))",
                 }}
               />
-              <Legend />
               <Bar
-                type="monotone"
+                yAxisId="amount"
                 dataKey="amount"
                 fill="hsl(var(--heroui-secondary-400))"
-                yAxisId="amount"
-                unit={fuelVolumeUnits[fuelVolumeUnit]}
-                name="Amount"
+                name={`Amount (${fuelVolumeUnits[fuelVolumeUnit]})`}
               />
               <Line
+                yAxisId="cost"
                 type="monotone"
                 dataKey="relativeCost"
-                stroke="hsl(var(--heroui-primary-400))"
-                dot={{ r: 5, strokeWidth: 3 }}
-                strokeWidth={3}
-                yAxisId="cost"
-                unit={getCurrencySymbol(currencyCode)}
-                name="Relative cost"
+                stroke="hsl(var(--heroui-primary))"
+                strokeWidth={2.5}
+                dot={{
+                  r: 4,
+                  strokeWidth: 2,
+                  stroke: "hsl(var(--heroui-primary))",
+                  fill: "white",
+                }}
+                name={`Cost (${getCurrencySymbol(currencyCode)}/L)`}
               />
             </ComposedChart>
           </ResponsiveContainer>

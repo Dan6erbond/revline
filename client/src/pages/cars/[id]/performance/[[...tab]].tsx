@@ -4,6 +4,7 @@ import { Tab, Tabs } from "@heroui/react";
 
 import CarLayout from "@/components/layout/car-layout";
 import DragSessions from "@/components/performance/drag-sessions";
+import DynoSessions from "@/components/performance/dyno-sessions";
 import { getQueryParam } from "@/utils/router";
 import { useRouter } from "next/router";
 
@@ -25,9 +26,10 @@ const tabs: {
     component: DragSessions,
   },
   {
-    id: "dyno",
+    id: "dyno-sessions",
     label: "Dyno",
     icon: <ChartLine />,
+    component: DynoSessions,
   },
 ];
 

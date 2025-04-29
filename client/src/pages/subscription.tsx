@@ -15,10 +15,13 @@ export default function Subscription() {
   return (
     <>
       <RootNavbar />
-      <main className="p-4 flex flex-col gap-4 relative">
+      <main className="p-4 flex flex-col gap-4 relative max-w-screen-xl mx-auto">
         <h1 className="text-2xl text-center mb-4">Manage your Subscription</h1>
-        <div className="flex flex-wrap justify-center gap-8 md:gap-4">
-          <Card className="w-[400px] px-2 py-6 gap-4" isBlurred>
+        <div className="flex flex-col md:flex-row flex-wrap justify-center gap-8 md:gap-4">
+          <Card
+            className="min-w-[250px] max-w-[400px] flex-1 px-2 py-6 gap-4"
+            isBlurred
+          >
             <CardHeader className="flex-col gap-2">
               <p className="text-2xl">Free</p>
               <p>
@@ -42,7 +45,7 @@ export default function Subscription() {
             </CardBody>
           </Card>
           <Card
-            className="w-[400px] px-2 py-6 gap-4 border-primary-400 border-2 relative overflow-visible"
+            className="min-w-[250px] max-w-[400px] flex-1 px-2 py-6 gap-4 border-primary-400 border-2 relative overflow-visible"
             isBlurred
           >
             <div className="absolute -top-4 z-20 w-full flex">
@@ -89,7 +92,12 @@ export default function Subscription() {
             </CardBody>
             <Divider />
             <CardFooter className="justify-center">
-              <Button color="primary" className="bg-gradient-to-r from-teal-500 to-teal-700">Subscribe</Button>
+              <Button
+                color="primary"
+                className="bg-gradient-to-r from-teal-500 to-teal-700"
+              >
+                Subscribe
+              </Button>
             </CardFooter>
           </Card>
         </div>

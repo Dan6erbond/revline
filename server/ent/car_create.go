@@ -13,6 +13,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -285,6 +286,21 @@ func (cc *CarCreate) AddDocuments(d ...*Document) *CarCreate {
 		ids[i] = d[i].ID
 	}
 	return cc.AddDocumentIDs(ids...)
+}
+
+// AddDynoSessionIDs adds the "dyno_sessions" edge to the DynoSession entity by IDs.
+func (cc *CarCreate) AddDynoSessionIDs(ids ...uuid.UUID) *CarCreate {
+	cc.mutation.AddDynoSessionIDs(ids...)
+	return cc
+}
+
+// AddDynoSessions adds the "dyno_sessions" edges to the DynoSession entity.
+func (cc *CarCreate) AddDynoSessions(d ...*DynoSession) *CarCreate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return cc.AddDynoSessionIDs(ids...)
 }
 
 // SetBannerImageID sets the "banner_image" edge to the Media entity by ID.
@@ -571,6 +587,22 @@ func (cc *CarCreate) createSpec() (*Car, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.DynoSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.DynoSessionsTable,
+			Columns: []string{car.DynoSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -176,6 +176,34 @@ func (pc *ProfileCreate) SetNillableTemperatureUnit(pu *profile.TemperatureUnit)
 	return pc
 }
 
+// SetPowerUnit sets the "power_unit" field.
+func (pc *ProfileCreate) SetPowerUnit(pu profile.PowerUnit) *ProfileCreate {
+	pc.mutation.SetPowerUnit(pu)
+	return pc
+}
+
+// SetNillablePowerUnit sets the "power_unit" field if the given value is not nil.
+func (pc *ProfileCreate) SetNillablePowerUnit(pu *profile.PowerUnit) *ProfileCreate {
+	if pu != nil {
+		pc.SetPowerUnit(*pu)
+	}
+	return pc
+}
+
+// SetTorqueUnit sets the "torque_unit" field.
+func (pc *ProfileCreate) SetTorqueUnit(pu profile.TorqueUnit) *ProfileCreate {
+	pc.mutation.SetTorqueUnit(pu)
+	return pc
+}
+
+// SetNillableTorqueUnit sets the "torque_unit" field if the given value is not nil.
+func (pc *ProfileCreate) SetNillableTorqueUnit(pu *profile.TorqueUnit) *ProfileCreate {
+	if pu != nil {
+		pc.SetTorqueUnit(*pu)
+	}
+	return pc
+}
+
 // SetVisibility sets the "visibility" field.
 func (pc *ProfileCreate) SetVisibility(pr profile.Visibility) *ProfileCreate {
 	pc.mutation.SetVisibility(pr)
@@ -296,6 +324,16 @@ func (pc *ProfileCreate) check() error {
 			return &ValidationError{Name: "temperature_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.temperature_unit": %w`, err)}
 		}
 	}
+	if v, ok := pc.mutation.PowerUnit(); ok {
+		if err := profile.PowerUnitValidator(v); err != nil {
+			return &ValidationError{Name: "power_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.power_unit": %w`, err)}
+		}
+	}
+	if v, ok := pc.mutation.TorqueUnit(); ok {
+		if err := profile.TorqueUnitValidator(v); err != nil {
+			return &ValidationError{Name: "torque_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.torque_unit": %w`, err)}
+		}
+	}
 	if _, ok := pc.mutation.Visibility(); !ok {
 		return &ValidationError{Name: "visibility", err: errors.New(`ent: missing required field "Profile.visibility"`)}
 	}
@@ -385,6 +423,14 @@ func (pc *ProfileCreate) createSpec() (*Profile, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.TemperatureUnit(); ok {
 		_spec.SetField(profile.FieldTemperatureUnit, field.TypeEnum, value)
 		_node.TemperatureUnit = &value
+	}
+	if value, ok := pc.mutation.PowerUnit(); ok {
+		_spec.SetField(profile.FieldPowerUnit, field.TypeEnum, value)
+		_node.PowerUnit = &value
+	}
+	if value, ok := pc.mutation.TorqueUnit(); ok {
+		_spec.SetField(profile.FieldTorqueUnit, field.TypeEnum, value)
+		_node.TorqueUnit = &value
 	}
 	if value, ok := pc.mutation.Visibility(); ok {
 		_spec.SetField(profile.FieldVisibility, field.TypeEnum, value)

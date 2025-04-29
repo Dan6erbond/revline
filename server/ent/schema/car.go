@@ -53,6 +53,7 @@ func (Car) Edges() []ent.Edge {
 		edge.To("service_schedules", ServiceSchedule.Type),
 		edge.To("media", Media.Type),
 		edge.To("documents", Document.Type),
+		edge.To("dyno_sessions", DynoSession.Type),
 		edge.To("banner_image", Media.Type).
 			Unique(),
 	}

@@ -15,6 +15,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynoresult"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -40,6 +42,8 @@ const (
 	TypeDocument        = "Document"
 	TypeDragResult      = "DragResult"
 	TypeDragSession     = "DragSession"
+	TypeDynoResult      = "DynoResult"
+	TypeDynoSession     = "DynoSession"
 	TypeFuelUp          = "FuelUp"
 	TypeMedia           = "Media"
 	TypeOdometerReading = "OdometerReading"
@@ -92,6 +96,9 @@ type CarMutation struct {
 	documents                map[uuid.UUID]struct{}
 	removeddocuments         map[uuid.UUID]struct{}
 	cleareddocuments         bool
+	dyno_sessions            map[uuid.UUID]struct{}
+	removeddyno_sessions     map[uuid.UUID]struct{}
+	cleareddyno_sessions     bool
 	banner_image             *uuid.UUID
 	clearedbanner_image      bool
 	done                     bool
@@ -1048,6 +1055,60 @@ func (m *CarMutation) ResetDocuments() {
 	m.removeddocuments = nil
 }
 
+// AddDynoSessionIDs adds the "dyno_sessions" edge to the DynoSession entity by ids.
+func (m *CarMutation) AddDynoSessionIDs(ids ...uuid.UUID) {
+	if m.dyno_sessions == nil {
+		m.dyno_sessions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.dyno_sessions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDynoSessions clears the "dyno_sessions" edge to the DynoSession entity.
+func (m *CarMutation) ClearDynoSessions() {
+	m.cleareddyno_sessions = true
+}
+
+// DynoSessionsCleared reports if the "dyno_sessions" edge to the DynoSession entity was cleared.
+func (m *CarMutation) DynoSessionsCleared() bool {
+	return m.cleareddyno_sessions
+}
+
+// RemoveDynoSessionIDs removes the "dyno_sessions" edge to the DynoSession entity by IDs.
+func (m *CarMutation) RemoveDynoSessionIDs(ids ...uuid.UUID) {
+	if m.removeddyno_sessions == nil {
+		m.removeddyno_sessions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.dyno_sessions, ids[i])
+		m.removeddyno_sessions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDynoSessions returns the removed IDs of the "dyno_sessions" edge to the DynoSession entity.
+func (m *CarMutation) RemovedDynoSessionsIDs() (ids []uuid.UUID) {
+	for id := range m.removeddyno_sessions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DynoSessionsIDs returns the "dyno_sessions" edge IDs in the mutation.
+func (m *CarMutation) DynoSessionsIDs() (ids []uuid.UUID) {
+	for id := range m.dyno_sessions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDynoSessions resets all changes to the "dyno_sessions" edge.
+func (m *CarMutation) ResetDynoSessions() {
+	m.dyno_sessions = nil
+	m.cleareddyno_sessions = false
+	m.removeddyno_sessions = nil
+}
+
 // SetBannerImageID sets the "banner_image" edge to the Media entity by id.
 func (m *CarMutation) SetBannerImageID(id uuid.UUID) {
 	m.banner_image = &id
@@ -1387,7 +1448,7 @@ func (m *CarMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *CarMutation) AddedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.owner != nil {
 		edges = append(edges, car.EdgeOwner)
 	}
@@ -1414,6 +1475,9 @@ func (m *CarMutation) AddedEdges() []string {
 	}
 	if m.documents != nil {
 		edges = append(edges, car.EdgeDocuments)
+	}
+	if m.dyno_sessions != nil {
+		edges = append(edges, car.EdgeDynoSessions)
 	}
 	if m.banner_image != nil {
 		edges = append(edges, car.EdgeBannerImage)
@@ -1477,6 +1541,12 @@ func (m *CarMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case car.EdgeDynoSessions:
+		ids := make([]ent.Value, 0, len(m.dyno_sessions))
+		for id := range m.dyno_sessions {
+			ids = append(ids, id)
+		}
+		return ids
 	case car.EdgeBannerImage:
 		if id := m.banner_image; id != nil {
 			return []ent.Value{*id}
@@ -1487,7 +1557,7 @@ func (m *CarMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *CarMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.removeddrag_sessions != nil {
 		edges = append(edges, car.EdgeDragSessions)
 	}
@@ -1511,6 +1581,9 @@ func (m *CarMutation) RemovedEdges() []string {
 	}
 	if m.removeddocuments != nil {
 		edges = append(edges, car.EdgeDocuments)
+	}
+	if m.removeddyno_sessions != nil {
+		edges = append(edges, car.EdgeDynoSessions)
 	}
 	return edges
 }
@@ -1567,13 +1640,19 @@ func (m *CarMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case car.EdgeDynoSessions:
+		ids := make([]ent.Value, 0, len(m.removeddyno_sessions))
+		for id := range m.removeddyno_sessions {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *CarMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.clearedowner {
 		edges = append(edges, car.EdgeOwner)
 	}
@@ -1600,6 +1679,9 @@ func (m *CarMutation) ClearedEdges() []string {
 	}
 	if m.cleareddocuments {
 		edges = append(edges, car.EdgeDocuments)
+	}
+	if m.cleareddyno_sessions {
+		edges = append(edges, car.EdgeDynoSessions)
 	}
 	if m.clearedbanner_image {
 		edges = append(edges, car.EdgeBannerImage)
@@ -1629,6 +1711,8 @@ func (m *CarMutation) EdgeCleared(name string) bool {
 		return m.clearedmedia
 	case car.EdgeDocuments:
 		return m.cleareddocuments
+	case car.EdgeDynoSessions:
+		return m.cleareddyno_sessions
 	case car.EdgeBannerImage:
 		return m.clearedbanner_image
 	}
@@ -1679,6 +1763,9 @@ func (m *CarMutation) ResetEdge(name string) error {
 		return nil
 	case car.EdgeDocuments:
 		m.ResetDocuments()
+		return nil
+	case car.EdgeDynoSessions:
+		m.ResetDynoSessions()
 		return nil
 	case car.EdgeBannerImage:
 		m.ResetBannerImage()
@@ -3614,6 +3701,1391 @@ func (m *DragSessionMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown DragSession edge %s", name)
+}
+
+// DynoResultMutation represents an operation that mutates the DynoResult nodes in the graph.
+type DynoResultMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *uuid.UUID
+	create_time    *time.Time
+	update_time    *time.Time
+	rpm            *int
+	addrpm         *int
+	power_kw       *float64
+	addpower_kw    *float64
+	torque_nm      *float64
+	addtorque_nm   *float64
+	clearedFields  map[string]struct{}
+	session        *uuid.UUID
+	clearedsession bool
+	done           bool
+	oldValue       func(context.Context) (*DynoResult, error)
+	predicates     []predicate.DynoResult
+}
+
+var _ ent.Mutation = (*DynoResultMutation)(nil)
+
+// dynoresultOption allows management of the mutation configuration using functional options.
+type dynoresultOption func(*DynoResultMutation)
+
+// newDynoResultMutation creates new mutation for the DynoResult entity.
+func newDynoResultMutation(c config, op Op, opts ...dynoresultOption) *DynoResultMutation {
+	m := &DynoResultMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDynoResult,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDynoResultID sets the ID field of the mutation.
+func withDynoResultID(id uuid.UUID) dynoresultOption {
+	return func(m *DynoResultMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *DynoResult
+		)
+		m.oldValue = func(ctx context.Context) (*DynoResult, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().DynoResult.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDynoResult sets the old DynoResult of the mutation.
+func withDynoResult(node *DynoResult) dynoresultOption {
+	return func(m *DynoResultMutation) {
+		m.oldValue = func(context.Context) (*DynoResult, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DynoResultMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DynoResultMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of DynoResult entities.
+func (m *DynoResultMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DynoResultMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DynoResultMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().DynoResult.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *DynoResultMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *DynoResultMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the DynoResult entity.
+// If the DynoResult object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DynoResultMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *DynoResultMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *DynoResultMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *DynoResultMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the DynoResult entity.
+// If the DynoResult object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DynoResultMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *DynoResultMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetRpm sets the "rpm" field.
+func (m *DynoResultMutation) SetRpm(i int) {
+	m.rpm = &i
+	m.addrpm = nil
+}
+
+// Rpm returns the value of the "rpm" field in the mutation.
+func (m *DynoResultMutation) Rpm() (r int, exists bool) {
+	v := m.rpm
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRpm returns the old "rpm" field's value of the DynoResult entity.
+// If the DynoResult object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DynoResultMutation) OldRpm(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRpm is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRpm requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRpm: %w", err)
+	}
+	return oldValue.Rpm, nil
+}
+
+// AddRpm adds i to the "rpm" field.
+func (m *DynoResultMutation) AddRpm(i int) {
+	if m.addrpm != nil {
+		*m.addrpm += i
+	} else {
+		m.addrpm = &i
+	}
+}
+
+// AddedRpm returns the value that was added to the "rpm" field in this mutation.
+func (m *DynoResultMutation) AddedRpm() (r int, exists bool) {
+	v := m.addrpm
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRpm resets all changes to the "rpm" field.
+func (m *DynoResultMutation) ResetRpm() {
+	m.rpm = nil
+	m.addrpm = nil
+}
+
+// SetPowerKw sets the "power_kw" field.
+func (m *DynoResultMutation) SetPowerKw(f float64) {
+	m.power_kw = &f
+	m.addpower_kw = nil
+}
+
+// PowerKw returns the value of the "power_kw" field in the mutation.
+func (m *DynoResultMutation) PowerKw() (r float64, exists bool) {
+	v := m.power_kw
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPowerKw returns the old "power_kw" field's value of the DynoResult entity.
+// If the DynoResult object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DynoResultMutation) OldPowerKw(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPowerKw is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPowerKw requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPowerKw: %w", err)
+	}
+	return oldValue.PowerKw, nil
+}
+
+// AddPowerKw adds f to the "power_kw" field.
+func (m *DynoResultMutation) AddPowerKw(f float64) {
+	if m.addpower_kw != nil {
+		*m.addpower_kw += f
+	} else {
+		m.addpower_kw = &f
+	}
+}
+
+// AddedPowerKw returns the value that was added to the "power_kw" field in this mutation.
+func (m *DynoResultMutation) AddedPowerKw() (r float64, exists bool) {
+	v := m.addpower_kw
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPowerKw resets all changes to the "power_kw" field.
+func (m *DynoResultMutation) ResetPowerKw() {
+	m.power_kw = nil
+	m.addpower_kw = nil
+}
+
+// SetTorqueNm sets the "torque_nm" field.
+func (m *DynoResultMutation) SetTorqueNm(f float64) {
+	m.torque_nm = &f
+	m.addtorque_nm = nil
+}
+
+// TorqueNm returns the value of the "torque_nm" field in the mutation.
+func (m *DynoResultMutation) TorqueNm() (r float64, exists bool) {
+	v := m.torque_nm
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTorqueNm returns the old "torque_nm" field's value of the DynoResult entity.
+// If the DynoResult object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DynoResultMutation) OldTorqueNm(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTorqueNm is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTorqueNm requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTorqueNm: %w", err)
+	}
+	return oldValue.TorqueNm, nil
+}
+
+// AddTorqueNm adds f to the "torque_nm" field.
+func (m *DynoResultMutation) AddTorqueNm(f float64) {
+	if m.addtorque_nm != nil {
+		*m.addtorque_nm += f
+	} else {
+		m.addtorque_nm = &f
+	}
+}
+
+// AddedTorqueNm returns the value that was added to the "torque_nm" field in this mutation.
+func (m *DynoResultMutation) AddedTorqueNm() (r float64, exists bool) {
+	v := m.addtorque_nm
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTorqueNm resets all changes to the "torque_nm" field.
+func (m *DynoResultMutation) ResetTorqueNm() {
+	m.torque_nm = nil
+	m.addtorque_nm = nil
+}
+
+// SetSessionID sets the "session" edge to the DynoSession entity by id.
+func (m *DynoResultMutation) SetSessionID(id uuid.UUID) {
+	m.session = &id
+}
+
+// ClearSession clears the "session" edge to the DynoSession entity.
+func (m *DynoResultMutation) ClearSession() {
+	m.clearedsession = true
+}
+
+// SessionCleared reports if the "session" edge to the DynoSession entity was cleared.
+func (m *DynoResultMutation) SessionCleared() bool {
+	return m.clearedsession
+}
+
+// SessionID returns the "session" edge ID in the mutation.
+func (m *DynoResultMutation) SessionID() (id uuid.UUID, exists bool) {
+	if m.session != nil {
+		return *m.session, true
+	}
+	return
+}
+
+// SessionIDs returns the "session" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// SessionID instead. It exists only for internal usage by the builders.
+func (m *DynoResultMutation) SessionIDs() (ids []uuid.UUID) {
+	if id := m.session; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetSession resets all changes to the "session" edge.
+func (m *DynoResultMutation) ResetSession() {
+	m.session = nil
+	m.clearedsession = false
+}
+
+// Where appends a list predicates to the DynoResultMutation builder.
+func (m *DynoResultMutation) Where(ps ...predicate.DynoResult) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DynoResultMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DynoResultMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DynoResult, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DynoResultMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DynoResultMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (DynoResult).
+func (m *DynoResultMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DynoResultMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.create_time != nil {
+		fields = append(fields, dynoresult.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, dynoresult.FieldUpdateTime)
+	}
+	if m.rpm != nil {
+		fields = append(fields, dynoresult.FieldRpm)
+	}
+	if m.power_kw != nil {
+		fields = append(fields, dynoresult.FieldPowerKw)
+	}
+	if m.torque_nm != nil {
+		fields = append(fields, dynoresult.FieldTorqueNm)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DynoResultMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case dynoresult.FieldCreateTime:
+		return m.CreateTime()
+	case dynoresult.FieldUpdateTime:
+		return m.UpdateTime()
+	case dynoresult.FieldRpm:
+		return m.Rpm()
+	case dynoresult.FieldPowerKw:
+		return m.PowerKw()
+	case dynoresult.FieldTorqueNm:
+		return m.TorqueNm()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DynoResultMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case dynoresult.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case dynoresult.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case dynoresult.FieldRpm:
+		return m.OldRpm(ctx)
+	case dynoresult.FieldPowerKw:
+		return m.OldPowerKw(ctx)
+	case dynoresult.FieldTorqueNm:
+		return m.OldTorqueNm(ctx)
+	}
+	return nil, fmt.Errorf("unknown DynoResult field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DynoResultMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case dynoresult.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case dynoresult.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case dynoresult.FieldRpm:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRpm(v)
+		return nil
+	case dynoresult.FieldPowerKw:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPowerKw(v)
+		return nil
+	case dynoresult.FieldTorqueNm:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTorqueNm(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DynoResult field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DynoResultMutation) AddedFields() []string {
+	var fields []string
+	if m.addrpm != nil {
+		fields = append(fields, dynoresult.FieldRpm)
+	}
+	if m.addpower_kw != nil {
+		fields = append(fields, dynoresult.FieldPowerKw)
+	}
+	if m.addtorque_nm != nil {
+		fields = append(fields, dynoresult.FieldTorqueNm)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DynoResultMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case dynoresult.FieldRpm:
+		return m.AddedRpm()
+	case dynoresult.FieldPowerKw:
+		return m.AddedPowerKw()
+	case dynoresult.FieldTorqueNm:
+		return m.AddedTorqueNm()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DynoResultMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case dynoresult.FieldRpm:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRpm(v)
+		return nil
+	case dynoresult.FieldPowerKw:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPowerKw(v)
+		return nil
+	case dynoresult.FieldTorqueNm:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTorqueNm(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DynoResult numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DynoResultMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DynoResultMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DynoResultMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown DynoResult nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DynoResultMutation) ResetField(name string) error {
+	switch name {
+	case dynoresult.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case dynoresult.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case dynoresult.FieldRpm:
+		m.ResetRpm()
+		return nil
+	case dynoresult.FieldPowerKw:
+		m.ResetPowerKw()
+		return nil
+	case dynoresult.FieldTorqueNm:
+		m.ResetTorqueNm()
+		return nil
+	}
+	return fmt.Errorf("unknown DynoResult field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DynoResultMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.session != nil {
+		edges = append(edges, dynoresult.EdgeSession)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DynoResultMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case dynoresult.EdgeSession:
+		if id := m.session; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DynoResultMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DynoResultMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DynoResultMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedsession {
+		edges = append(edges, dynoresult.EdgeSession)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DynoResultMutation) EdgeCleared(name string) bool {
+	switch name {
+	case dynoresult.EdgeSession:
+		return m.clearedsession
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DynoResultMutation) ClearEdge(name string) error {
+	switch name {
+	case dynoresult.EdgeSession:
+		m.ClearSession()
+		return nil
+	}
+	return fmt.Errorf("unknown DynoResult unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DynoResultMutation) ResetEdge(name string) error {
+	switch name {
+	case dynoresult.EdgeSession:
+		m.ResetSession()
+		return nil
+	}
+	return fmt.Errorf("unknown DynoResult edge %s", name)
+}
+
+// DynoSessionMutation represents an operation that mutates the DynoSession nodes in the graph.
+type DynoSessionMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *uuid.UUID
+	create_time    *time.Time
+	update_time    *time.Time
+	title          *string
+	notes          *string
+	clearedFields  map[string]struct{}
+	car            *uuid.UUID
+	clearedcar     bool
+	results        map[uuid.UUID]struct{}
+	removedresults map[uuid.UUID]struct{}
+	clearedresults bool
+	done           bool
+	oldValue       func(context.Context) (*DynoSession, error)
+	predicates     []predicate.DynoSession
+}
+
+var _ ent.Mutation = (*DynoSessionMutation)(nil)
+
+// dynosessionOption allows management of the mutation configuration using functional options.
+type dynosessionOption func(*DynoSessionMutation)
+
+// newDynoSessionMutation creates new mutation for the DynoSession entity.
+func newDynoSessionMutation(c config, op Op, opts ...dynosessionOption) *DynoSessionMutation {
+	m := &DynoSessionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDynoSession,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDynoSessionID sets the ID field of the mutation.
+func withDynoSessionID(id uuid.UUID) dynosessionOption {
+	return func(m *DynoSessionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *DynoSession
+		)
+		m.oldValue = func(ctx context.Context) (*DynoSession, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().DynoSession.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDynoSession sets the old DynoSession of the mutation.
+func withDynoSession(node *DynoSession) dynosessionOption {
+	return func(m *DynoSessionMutation) {
+		m.oldValue = func(context.Context) (*DynoSession, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DynoSessionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DynoSessionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of DynoSession entities.
+func (m *DynoSessionMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DynoSessionMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DynoSessionMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().DynoSession.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *DynoSessionMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *DynoSessionMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the DynoSession entity.
+// If the DynoSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DynoSessionMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *DynoSessionMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *DynoSessionMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *DynoSessionMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the DynoSession entity.
+// If the DynoSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DynoSessionMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *DynoSessionMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetTitle sets the "title" field.
+func (m *DynoSessionMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *DynoSessionMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the DynoSession entity.
+// If the DynoSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DynoSessionMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *DynoSessionMutation) ResetTitle() {
+	m.title = nil
+}
+
+// SetNotes sets the "notes" field.
+func (m *DynoSessionMutation) SetNotes(s string) {
+	m.notes = &s
+}
+
+// Notes returns the value of the "notes" field in the mutation.
+func (m *DynoSessionMutation) Notes() (r string, exists bool) {
+	v := m.notes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotes returns the old "notes" field's value of the DynoSession entity.
+// If the DynoSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DynoSessionMutation) OldNotes(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotes: %w", err)
+	}
+	return oldValue.Notes, nil
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (m *DynoSessionMutation) ClearNotes() {
+	m.notes = nil
+	m.clearedFields[dynosession.FieldNotes] = struct{}{}
+}
+
+// NotesCleared returns if the "notes" field was cleared in this mutation.
+func (m *DynoSessionMutation) NotesCleared() bool {
+	_, ok := m.clearedFields[dynosession.FieldNotes]
+	return ok
+}
+
+// ResetNotes resets all changes to the "notes" field.
+func (m *DynoSessionMutation) ResetNotes() {
+	m.notes = nil
+	delete(m.clearedFields, dynosession.FieldNotes)
+}
+
+// SetCarID sets the "car" edge to the Car entity by id.
+func (m *DynoSessionMutation) SetCarID(id uuid.UUID) {
+	m.car = &id
+}
+
+// ClearCar clears the "car" edge to the Car entity.
+func (m *DynoSessionMutation) ClearCar() {
+	m.clearedcar = true
+}
+
+// CarCleared reports if the "car" edge to the Car entity was cleared.
+func (m *DynoSessionMutation) CarCleared() bool {
+	return m.clearedcar
+}
+
+// CarID returns the "car" edge ID in the mutation.
+func (m *DynoSessionMutation) CarID() (id uuid.UUID, exists bool) {
+	if m.car != nil {
+		return *m.car, true
+	}
+	return
+}
+
+// CarIDs returns the "car" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CarID instead. It exists only for internal usage by the builders.
+func (m *DynoSessionMutation) CarIDs() (ids []uuid.UUID) {
+	if id := m.car; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCar resets all changes to the "car" edge.
+func (m *DynoSessionMutation) ResetCar() {
+	m.car = nil
+	m.clearedcar = false
+}
+
+// AddResultIDs adds the "results" edge to the DynoResult entity by ids.
+func (m *DynoSessionMutation) AddResultIDs(ids ...uuid.UUID) {
+	if m.results == nil {
+		m.results = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.results[ids[i]] = struct{}{}
+	}
+}
+
+// ClearResults clears the "results" edge to the DynoResult entity.
+func (m *DynoSessionMutation) ClearResults() {
+	m.clearedresults = true
+}
+
+// ResultsCleared reports if the "results" edge to the DynoResult entity was cleared.
+func (m *DynoSessionMutation) ResultsCleared() bool {
+	return m.clearedresults
+}
+
+// RemoveResultIDs removes the "results" edge to the DynoResult entity by IDs.
+func (m *DynoSessionMutation) RemoveResultIDs(ids ...uuid.UUID) {
+	if m.removedresults == nil {
+		m.removedresults = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.results, ids[i])
+		m.removedresults[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedResults returns the removed IDs of the "results" edge to the DynoResult entity.
+func (m *DynoSessionMutation) RemovedResultsIDs() (ids []uuid.UUID) {
+	for id := range m.removedresults {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResultsIDs returns the "results" edge IDs in the mutation.
+func (m *DynoSessionMutation) ResultsIDs() (ids []uuid.UUID) {
+	for id := range m.results {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetResults resets all changes to the "results" edge.
+func (m *DynoSessionMutation) ResetResults() {
+	m.results = nil
+	m.clearedresults = false
+	m.removedresults = nil
+}
+
+// Where appends a list predicates to the DynoSessionMutation builder.
+func (m *DynoSessionMutation) Where(ps ...predicate.DynoSession) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DynoSessionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DynoSessionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DynoSession, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DynoSessionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DynoSessionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (DynoSession).
+func (m *DynoSessionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DynoSessionMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.create_time != nil {
+		fields = append(fields, dynosession.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, dynosession.FieldUpdateTime)
+	}
+	if m.title != nil {
+		fields = append(fields, dynosession.FieldTitle)
+	}
+	if m.notes != nil {
+		fields = append(fields, dynosession.FieldNotes)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DynoSessionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case dynosession.FieldCreateTime:
+		return m.CreateTime()
+	case dynosession.FieldUpdateTime:
+		return m.UpdateTime()
+	case dynosession.FieldTitle:
+		return m.Title()
+	case dynosession.FieldNotes:
+		return m.Notes()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DynoSessionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case dynosession.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case dynosession.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case dynosession.FieldTitle:
+		return m.OldTitle(ctx)
+	case dynosession.FieldNotes:
+		return m.OldNotes(ctx)
+	}
+	return nil, fmt.Errorf("unknown DynoSession field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DynoSessionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case dynosession.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case dynosession.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case dynosession.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	case dynosession.FieldNotes:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotes(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DynoSession field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DynoSessionMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DynoSessionMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DynoSessionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown DynoSession numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DynoSessionMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(dynosession.FieldNotes) {
+		fields = append(fields, dynosession.FieldNotes)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DynoSessionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DynoSessionMutation) ClearField(name string) error {
+	switch name {
+	case dynosession.FieldNotes:
+		m.ClearNotes()
+		return nil
+	}
+	return fmt.Errorf("unknown DynoSession nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DynoSessionMutation) ResetField(name string) error {
+	switch name {
+	case dynosession.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case dynosession.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case dynosession.FieldTitle:
+		m.ResetTitle()
+		return nil
+	case dynosession.FieldNotes:
+		m.ResetNotes()
+		return nil
+	}
+	return fmt.Errorf("unknown DynoSession field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DynoSessionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.car != nil {
+		edges = append(edges, dynosession.EdgeCar)
+	}
+	if m.results != nil {
+		edges = append(edges, dynosession.EdgeResults)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DynoSessionMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case dynosession.EdgeCar:
+		if id := m.car; id != nil {
+			return []ent.Value{*id}
+		}
+	case dynosession.EdgeResults:
+		ids := make([]ent.Value, 0, len(m.results))
+		for id := range m.results {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DynoSessionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedresults != nil {
+		edges = append(edges, dynosession.EdgeResults)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DynoSessionMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case dynosession.EdgeResults:
+		ids := make([]ent.Value, 0, len(m.removedresults))
+		for id := range m.removedresults {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DynoSessionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedcar {
+		edges = append(edges, dynosession.EdgeCar)
+	}
+	if m.clearedresults {
+		edges = append(edges, dynosession.EdgeResults)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DynoSessionMutation) EdgeCleared(name string) bool {
+	switch name {
+	case dynosession.EdgeCar:
+		return m.clearedcar
+	case dynosession.EdgeResults:
+		return m.clearedresults
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DynoSessionMutation) ClearEdge(name string) error {
+	switch name {
+	case dynosession.EdgeCar:
+		m.ClearCar()
+		return nil
+	}
+	return fmt.Errorf("unknown DynoSession unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DynoSessionMutation) ResetEdge(name string) error {
+	switch name {
+	case dynosession.EdgeCar:
+		m.ResetCar()
+		return nil
+	case dynosession.EdgeResults:
+		m.ResetResults()
+		return nil
+	}
+	return fmt.Errorf("unknown DynoSession edge %s", name)
 }
 
 // FuelUpMutation represents an operation that mutates the FuelUp nodes in the graph.
@@ -5877,6 +7349,8 @@ type ProfileMutation struct {
 	distance_unit         *profile.DistanceUnit
 	fuel_consumption_unit *profile.FuelConsumptionUnit
 	temperature_unit      *profile.TemperatureUnit
+	power_unit            *profile.PowerUnit
+	torque_unit           *profile.TorqueUnit
 	visibility            *profile.Visibility
 	clearedFields         map[string]struct{}
 	user                  *uuid.UUID
@@ -6503,6 +7977,104 @@ func (m *ProfileMutation) ResetTemperatureUnit() {
 	delete(m.clearedFields, profile.FieldTemperatureUnit)
 }
 
+// SetPowerUnit sets the "power_unit" field.
+func (m *ProfileMutation) SetPowerUnit(pu profile.PowerUnit) {
+	m.power_unit = &pu
+}
+
+// PowerUnit returns the value of the "power_unit" field in the mutation.
+func (m *ProfileMutation) PowerUnit() (r profile.PowerUnit, exists bool) {
+	v := m.power_unit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPowerUnit returns the old "power_unit" field's value of the Profile entity.
+// If the Profile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProfileMutation) OldPowerUnit(ctx context.Context) (v *profile.PowerUnit, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPowerUnit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPowerUnit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPowerUnit: %w", err)
+	}
+	return oldValue.PowerUnit, nil
+}
+
+// ClearPowerUnit clears the value of the "power_unit" field.
+func (m *ProfileMutation) ClearPowerUnit() {
+	m.power_unit = nil
+	m.clearedFields[profile.FieldPowerUnit] = struct{}{}
+}
+
+// PowerUnitCleared returns if the "power_unit" field was cleared in this mutation.
+func (m *ProfileMutation) PowerUnitCleared() bool {
+	_, ok := m.clearedFields[profile.FieldPowerUnit]
+	return ok
+}
+
+// ResetPowerUnit resets all changes to the "power_unit" field.
+func (m *ProfileMutation) ResetPowerUnit() {
+	m.power_unit = nil
+	delete(m.clearedFields, profile.FieldPowerUnit)
+}
+
+// SetTorqueUnit sets the "torque_unit" field.
+func (m *ProfileMutation) SetTorqueUnit(pu profile.TorqueUnit) {
+	m.torque_unit = &pu
+}
+
+// TorqueUnit returns the value of the "torque_unit" field in the mutation.
+func (m *ProfileMutation) TorqueUnit() (r profile.TorqueUnit, exists bool) {
+	v := m.torque_unit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTorqueUnit returns the old "torque_unit" field's value of the Profile entity.
+// If the Profile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProfileMutation) OldTorqueUnit(ctx context.Context) (v *profile.TorqueUnit, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTorqueUnit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTorqueUnit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTorqueUnit: %w", err)
+	}
+	return oldValue.TorqueUnit, nil
+}
+
+// ClearTorqueUnit clears the value of the "torque_unit" field.
+func (m *ProfileMutation) ClearTorqueUnit() {
+	m.torque_unit = nil
+	m.clearedFields[profile.FieldTorqueUnit] = struct{}{}
+}
+
+// TorqueUnitCleared returns if the "torque_unit" field was cleared in this mutation.
+func (m *ProfileMutation) TorqueUnitCleared() bool {
+	_, ok := m.clearedFields[profile.FieldTorqueUnit]
+	return ok
+}
+
+// ResetTorqueUnit resets all changes to the "torque_unit" field.
+func (m *ProfileMutation) ResetTorqueUnit() {
+	m.torque_unit = nil
+	delete(m.clearedFields, profile.FieldTorqueUnit)
+}
+
 // SetVisibility sets the "visibility" field.
 func (m *ProfileMutation) SetVisibility(pr profile.Visibility) {
 	m.visibility = &pr
@@ -6612,7 +8184,7 @@ func (m *ProfileMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProfileMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 14)
 	if m.create_time != nil {
 		fields = append(fields, profile.FieldCreateTime)
 	}
@@ -6645,6 +8217,12 @@ func (m *ProfileMutation) Fields() []string {
 	}
 	if m.temperature_unit != nil {
 		fields = append(fields, profile.FieldTemperatureUnit)
+	}
+	if m.power_unit != nil {
+		fields = append(fields, profile.FieldPowerUnit)
+	}
+	if m.torque_unit != nil {
+		fields = append(fields, profile.FieldTorqueUnit)
 	}
 	if m.visibility != nil {
 		fields = append(fields, profile.FieldVisibility)
@@ -6679,6 +8257,10 @@ func (m *ProfileMutation) Field(name string) (ent.Value, bool) {
 		return m.FuelConsumptionUnit()
 	case profile.FieldTemperatureUnit:
 		return m.TemperatureUnit()
+	case profile.FieldPowerUnit:
+		return m.PowerUnit()
+	case profile.FieldTorqueUnit:
+		return m.TorqueUnit()
 	case profile.FieldVisibility:
 		return m.Visibility()
 	}
@@ -6712,6 +8294,10 @@ func (m *ProfileMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldFuelConsumptionUnit(ctx)
 	case profile.FieldTemperatureUnit:
 		return m.OldTemperatureUnit(ctx)
+	case profile.FieldPowerUnit:
+		return m.OldPowerUnit(ctx)
+	case profile.FieldTorqueUnit:
+		return m.OldTorqueUnit(ctx)
 	case profile.FieldVisibility:
 		return m.OldVisibility(ctx)
 	}
@@ -6800,6 +8386,20 @@ func (m *ProfileMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTemperatureUnit(v)
 		return nil
+	case profile.FieldPowerUnit:
+		v, ok := value.(profile.PowerUnit)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPowerUnit(v)
+		return nil
+	case profile.FieldTorqueUnit:
+		v, ok := value.(profile.TorqueUnit)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTorqueUnit(v)
+		return nil
 	case profile.FieldVisibility:
 		v, ok := value.(profile.Visibility)
 		if !ok {
@@ -6864,6 +8464,12 @@ func (m *ProfileMutation) ClearedFields() []string {
 	if m.FieldCleared(profile.FieldTemperatureUnit) {
 		fields = append(fields, profile.FieldTemperatureUnit)
 	}
+	if m.FieldCleared(profile.FieldPowerUnit) {
+		fields = append(fields, profile.FieldPowerUnit)
+	}
+	if m.FieldCleared(profile.FieldTorqueUnit) {
+		fields = append(fields, profile.FieldTorqueUnit)
+	}
 	return fields
 }
 
@@ -6905,6 +8511,12 @@ func (m *ProfileMutation) ClearField(name string) error {
 	case profile.FieldTemperatureUnit:
 		m.ClearTemperatureUnit()
 		return nil
+	case profile.FieldPowerUnit:
+		m.ClearPowerUnit()
+		return nil
+	case profile.FieldTorqueUnit:
+		m.ClearTorqueUnit()
+		return nil
 	}
 	return fmt.Errorf("unknown Profile nullable field %s", name)
 }
@@ -6945,6 +8557,12 @@ func (m *ProfileMutation) ResetField(name string) error {
 		return nil
 	case profile.FieldTemperatureUnit:
 		m.ResetTemperatureUnit()
+		return nil
+	case profile.FieldPowerUnit:
+		m.ResetPowerUnit()
+		return nil
+	case profile.FieldTorqueUnit:
+		m.ResetTorqueUnit()
 		return nil
 	case profile.FieldVisibility:
 		m.ResetVisibility()

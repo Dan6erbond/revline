@@ -211,7 +211,7 @@ export default function Documents() {
 
   return (
     <CarLayout>
-      <div className="p-4 flex flex-col gap-4">
+      <div className="p-4 flex flex-col gap-8 max-w-screen-xl mx-auto">
         <h1 className="text-3xl">Documents</h1>
         <Table isHeaderSticky>
           <TableHeader columns={columns}>

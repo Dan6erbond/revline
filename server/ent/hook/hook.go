@@ -57,6 +57,30 @@ func (f DragSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DragSessionMutation", m)
 }
 
+// The DynoResultFunc type is an adapter to allow the use of ordinary
+// function as DynoResult mutator.
+type DynoResultFunc func(context.Context, *ent.DynoResultMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DynoResultFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DynoResultMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DynoResultMutation", m)
+}
+
+// The DynoSessionFunc type is an adapter to allow the use of ordinary
+// function as DynoSession mutator.
+type DynoSessionFunc func(context.Context, *ent.DynoSessionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DynoSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DynoSessionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DynoSessionMutation", m)
+}
+
 // The FuelUpFunc type is an adapter to allow the use of ordinary
 // function as FuelUp mutator.
 type FuelUpFunc func(context.Context, *ent.FuelUpMutation) (ent.Value, error)

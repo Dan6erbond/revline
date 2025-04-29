@@ -35,6 +35,10 @@ type Documents = {
     "\n  query GetDragSessions($id: ID!) {\n    car(id: $id) {\n      id\n      dragSessions {\n        id\n        title\n        notes\n        results {\n          id\n        }\n      }\n    }\n  }\n": typeof types.GetDragSessionsDocument,
     "\n  query GetDragSession($id: ID!) {\n    dragSession(id: $id) {\n      id\n      title\n      notes\n      results {\n        id\n        unit\n        value\n        result\n      }\n    }\n  }\n": typeof types.GetDragSessionDocument,
     "\n  mutation CreateDragResult($input: CreateDragResultInput!) {\n    createDragResult(input: $input) {\n      id\n      unit\n      value\n      result\n    }\n  }\n": typeof types.CreateDragResultDocument,
+    "\n  mutation CreateDynoSession($input: CreateDynoSessionInput!) {\n    createDynoSession(input: $input) {\n      id\n      title\n      notes\n    }\n  }\n": typeof types.CreateDynoSessionDocument,
+    "\n  query GetDynoSessions($id: ID!) {\n    car(id: $id) {\n      id\n      dynoSessions {\n        id\n        title\n        notes\n        results {\n          id\n        }\n      }\n    }\n  }\n": typeof types.GetDynoSessionsDocument,
+    "\n  query GetDynoSession($id: ID!) {\n    dynoSession(id: $id) {\n      id\n      title\n      notes\n      results {\n        id\n        rpm\n        powerKw\n        torqueNm\n      }\n    }\n  }\n": typeof types.GetDynoSessionDocument,
+    "\n  mutation CreateDynoResult($input: CreateDynoResultInput!) {\n    createDynoResult(input: $input) {\n      id\n      rpm\n      powerKw\n      torqueNm\n    }\n  }\n": typeof types.CreateDynoResultDocument,
     "\n  query GetProfile {\n    me {\n      id\n      profile {\n        id\n        username\n        firstName\n        lastName\n        currencyCode\n        fuelVolumeUnit\n        distanceUnit\n        fuelConsumptionUnit\n        temperatureUnit\n        pictureUrl\n      }\n    }\n  }\n": typeof types.GetProfileDocument,
     "\n  mutation UpdateProfile($input: UpdateProfileInput!) {\n    updateProfile(input: $input) {\n      id\n      username\n      firstName\n      lastName\n      currencyCode\n      fuelVolumeUnit\n      distanceUnit\n      fuelConsumptionUnit\n      temperatureUnit\n    }\n  }\n": typeof types.UpdateProfileDocument,
     "\n  mutation UploadProfilePicture($input: UploadProfilePictureInput!) {\n    uploadProfilePicture(input: $input) {\n      id\n      pictureUrl\n    }\n  }\n": typeof types.UploadProfilePictureDocument,
@@ -67,6 +71,10 @@ const documents: Documents = {
     "\n  query GetDragSessions($id: ID!) {\n    car(id: $id) {\n      id\n      dragSessions {\n        id\n        title\n        notes\n        results {\n          id\n        }\n      }\n    }\n  }\n": types.GetDragSessionsDocument,
     "\n  query GetDragSession($id: ID!) {\n    dragSession(id: $id) {\n      id\n      title\n      notes\n      results {\n        id\n        unit\n        value\n        result\n      }\n    }\n  }\n": types.GetDragSessionDocument,
     "\n  mutation CreateDragResult($input: CreateDragResultInput!) {\n    createDragResult(input: $input) {\n      id\n      unit\n      value\n      result\n    }\n  }\n": types.CreateDragResultDocument,
+    "\n  mutation CreateDynoSession($input: CreateDynoSessionInput!) {\n    createDynoSession(input: $input) {\n      id\n      title\n      notes\n    }\n  }\n": types.CreateDynoSessionDocument,
+    "\n  query GetDynoSessions($id: ID!) {\n    car(id: $id) {\n      id\n      dynoSessions {\n        id\n        title\n        notes\n        results {\n          id\n        }\n      }\n    }\n  }\n": types.GetDynoSessionsDocument,
+    "\n  query GetDynoSession($id: ID!) {\n    dynoSession(id: $id) {\n      id\n      title\n      notes\n      results {\n        id\n        rpm\n        powerKw\n        torqueNm\n      }\n    }\n  }\n": types.GetDynoSessionDocument,
+    "\n  mutation CreateDynoResult($input: CreateDynoResultInput!) {\n    createDynoResult(input: $input) {\n      id\n      rpm\n      powerKw\n      torqueNm\n    }\n  }\n": types.CreateDynoResultDocument,
     "\n  query GetProfile {\n    me {\n      id\n      profile {\n        id\n        username\n        firstName\n        lastName\n        currencyCode\n        fuelVolumeUnit\n        distanceUnit\n        fuelConsumptionUnit\n        temperatureUnit\n        pictureUrl\n      }\n    }\n  }\n": types.GetProfileDocument,
     "\n  mutation UpdateProfile($input: UpdateProfileInput!) {\n    updateProfile(input: $input) {\n      id\n      username\n      firstName\n      lastName\n      currencyCode\n      fuelVolumeUnit\n      distanceUnit\n      fuelConsumptionUnit\n      temperatureUnit\n    }\n  }\n": types.UpdateProfileDocument,
     "\n  mutation UploadProfilePicture($input: UploadProfilePictureInput!) {\n    uploadProfilePicture(input: $input) {\n      id\n      pictureUrl\n    }\n  }\n": types.UploadProfilePictureDocument,
@@ -176,6 +184,22 @@ export function graphql(source: "\n  query GetDragSession($id: ID!) {\n    dragS
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation CreateDragResult($input: CreateDragResultInput!) {\n    createDragResult(input: $input) {\n      id\n      unit\n      value\n      result\n    }\n  }\n"): (typeof documents)["\n  mutation CreateDragResult($input: CreateDragResultInput!) {\n    createDragResult(input: $input) {\n      id\n      unit\n      value\n      result\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateDynoSession($input: CreateDynoSessionInput!) {\n    createDynoSession(input: $input) {\n      id\n      title\n      notes\n    }\n  }\n"): (typeof documents)["\n  mutation CreateDynoSession($input: CreateDynoSessionInput!) {\n    createDynoSession(input: $input) {\n      id\n      title\n      notes\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetDynoSessions($id: ID!) {\n    car(id: $id) {\n      id\n      dynoSessions {\n        id\n        title\n        notes\n        results {\n          id\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetDynoSessions($id: ID!) {\n    car(id: $id) {\n      id\n      dynoSessions {\n        id\n        title\n        notes\n        results {\n          id\n        }\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetDynoSession($id: ID!) {\n    dynoSession(id: $id) {\n      id\n      title\n      notes\n      results {\n        id\n        rpm\n        powerKw\n        torqueNm\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetDynoSession($id: ID!) {\n    dynoSession(id: $id) {\n      id\n      title\n      notes\n      results {\n        id\n        rpm\n        powerKw\n        torqueNm\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateDynoResult($input: CreateDynoResultInput!) {\n    createDynoResult(input: $input) {\n      id\n      rpm\n      powerKw\n      torqueNm\n    }\n  }\n"): (typeof documents)["\n  mutation CreateDynoResult($input: CreateDynoResultInput!) {\n    createDynoResult(input: $input) {\n      id\n      rpm\n      powerKw\n      torqueNm\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

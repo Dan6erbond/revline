@@ -64,13 +64,15 @@ type CarEdges struct {
 	Media []*Media `json:"media,omitempty"`
 	// Documents holds the value of the documents edge.
 	Documents []*Document `json:"documents,omitempty"`
+	// DynoSessions holds the value of the dyno_sessions edge.
+	DynoSessions []*DynoSession `json:"dyno_sessions,omitempty"`
 	// BannerImage holds the value of the banner_image edge.
 	BannerImage *Media `json:"banner_image,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [10]bool
+	loadedTypes [11]bool
 	// totalCount holds the count of the edges above.
-	totalCount [10]map[string]int
+	totalCount [11]map[string]int
 
 	namedDragSessions     map[string][]*DragSession
 	namedFuelUps          map[string][]*FuelUp
@@ -80,6 +82,7 @@ type CarEdges struct {
 	namedServiceSchedules map[string][]*ServiceSchedule
 	namedMedia            map[string][]*Media
 	namedDocuments        map[string][]*Document
+	namedDynoSessions     map[string][]*DynoSession
 }
 
 // OwnerOrErr returns the Owner value or an error if the edge
@@ -165,12 +168,21 @@ func (e CarEdges) DocumentsOrErr() ([]*Document, error) {
 	return nil, &NotLoadedError{edge: "documents"}
 }
 
+// DynoSessionsOrErr returns the DynoSessions value or an error if the edge
+// was not loaded in eager-loading.
+func (e CarEdges) DynoSessionsOrErr() ([]*DynoSession, error) {
+	if e.loadedTypes[9] {
+		return e.DynoSessions, nil
+	}
+	return nil, &NotLoadedError{edge: "dyno_sessions"}
+}
+
 // BannerImageOrErr returns the BannerImage value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e CarEdges) BannerImageOrErr() (*Media, error) {
 	if e.BannerImage != nil {
 		return e.BannerImage, nil
-	} else if e.loadedTypes[9] {
+	} else if e.loadedTypes[10] {
 		return nil, &NotFoundError{label: media.Label}
 	}
 	return nil, &NotLoadedError{edge: "banner_image"}
@@ -337,6 +349,11 @@ func (c *Car) QueryMedia() *MediaQuery {
 // QueryDocuments queries the "documents" edge of the Car entity.
 func (c *Car) QueryDocuments() *DocumentQuery {
 	return NewCarClient(c.config).QueryDocuments(c)
+}
+
+// QueryDynoSessions queries the "dyno_sessions" edge of the Car entity.
+func (c *Car) QueryDynoSessions() *DynoSessionQuery {
+	return NewCarClient(c.config).QueryDynoSessions(c)
 }
 
 // QueryBannerImage queries the "banner_image" edge of the Car entity.
@@ -593,6 +610,30 @@ func (c *Car) appendNamedDocuments(name string, edges ...*Document) {
 		c.Edges.namedDocuments[name] = []*Document{}
 	} else {
 		c.Edges.namedDocuments[name] = append(c.Edges.namedDocuments[name], edges...)
+	}
+}
+
+// NamedDynoSessions returns the DynoSessions named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (c *Car) NamedDynoSessions(name string) ([]*DynoSession, error) {
+	if c.Edges.namedDynoSessions == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := c.Edges.namedDynoSessions[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (c *Car) appendNamedDynoSessions(name string, edges ...*DynoSession) {
+	if c.Edges.namedDynoSessions == nil {
+		c.Edges.namedDynoSessions = make(map[string][]*DynoSession)
+	}
+	if len(edges) == 0 {
+		c.Edges.namedDynoSessions[name] = []*DynoSession{}
+	} else {
+		c.Edges.namedDynoSessions[name] = append(c.Edges.namedDynoSessions[name], edges...)
 	}
 }
 

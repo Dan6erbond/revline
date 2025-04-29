@@ -112,6 +112,53 @@ var (
 			},
 		},
 	}
+	// DynoResultsColumns holds the columns for the "dyno_results" table.
+	DynoResultsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "rpm", Type: field.TypeInt},
+		{Name: "power_kw", Type: field.TypeFloat64},
+		{Name: "torque_nm", Type: field.TypeFloat64},
+		{Name: "dyno_session_results", Type: field.TypeUUID},
+	}
+	// DynoResultsTable holds the schema information for the "dyno_results" table.
+	DynoResultsTable = &schema.Table{
+		Name:       "dyno_results",
+		Columns:    DynoResultsColumns,
+		PrimaryKey: []*schema.Column{DynoResultsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "dyno_results_dyno_sessions_results",
+				Columns:    []*schema.Column{DynoResultsColumns[6]},
+				RefColumns: []*schema.Column{DynoSessionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// DynoSessionsColumns holds the columns for the "dyno_sessions" table.
+	DynoSessionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "title", Type: field.TypeString},
+		{Name: "notes", Type: field.TypeString, Nullable: true},
+		{Name: "car_dyno_sessions", Type: field.TypeUUID},
+	}
+	// DynoSessionsTable holds the schema information for the "dyno_sessions" table.
+	DynoSessionsTable = &schema.Table{
+		Name:       "dyno_sessions",
+		Columns:    DynoSessionsColumns,
+		PrimaryKey: []*schema.Column{DynoSessionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "dyno_sessions_cars_dyno_sessions",
+				Columns:    []*schema.Column{DynoSessionsColumns[5]},
+				RefColumns: []*schema.Column{CarsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// FuelUpsColumns holds the columns for the "fuel_ups" table.
 	FuelUpsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -206,6 +253,8 @@ var (
 		{Name: "distance_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"kilometers", "miles"}, SchemaType: map[string]string{"postgres": "distance_unit"}},
 		{Name: "fuel_consumption_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"mpg", "imp_mpg", "kpl", "lp100k"}, SchemaType: map[string]string{"postgres": "fuel_consumption_unit"}},
 		{Name: "temperature_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"celsius", "fahrenheit"}, SchemaType: map[string]string{"postgres": "temperature_unit"}},
+		{Name: "power_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"metric_horsepower", "mech_horsepower", "kilowatts", "imp_horsepower", "electric_horsepower"}, SchemaType: map[string]string{"postgres": "power_unit"}},
+		{Name: "torque_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"newton_meters", "pound_feet", "kilogram_meter"}, SchemaType: map[string]string{"postgres": "torque_unit"}},
 		{Name: "visibility", Type: field.TypeEnum, Enums: []string{"public", "private"}, Default: "private"},
 		{Name: "user_profile", Type: field.TypeUUID, Unique: true},
 	}
@@ -217,7 +266,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "profiles_users_profile",
-				Columns:    []*schema.Column{ProfilesColumns[13]},
+				Columns:    []*schema.Column{ProfilesColumns[15]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -385,6 +434,8 @@ var (
 		DocumentsTable,
 		DragResultsTable,
 		DragSessionsTable,
+		DynoResultsTable,
+		DynoSessionsTable,
 		FuelUpsTable,
 		MediaTable,
 		OdometerReadingsTable,
@@ -404,6 +455,8 @@ func init() {
 	DocumentsTable.ForeignKeys[0].RefTable = CarsTable
 	DragResultsTable.ForeignKeys[0].RefTable = DragSessionsTable
 	DragSessionsTable.ForeignKeys[0].RefTable = CarsTable
+	DynoResultsTable.ForeignKeys[0].RefTable = DynoSessionsTable
+	DynoSessionsTable.ForeignKeys[0].RefTable = CarsTable
 	FuelUpsTable.ForeignKeys[0].RefTable = CarsTable
 	FuelUpsTable.ForeignKeys[1].RefTable = OdometerReadingsTable
 	MediaTable.ForeignKeys[0].RefTable = CarsTable

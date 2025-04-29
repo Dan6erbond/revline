@@ -10,6 +10,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynoresult"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -154,6 +156,19 @@ func (c *CarQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphq
 				return err
 			}
 			c.WithNamedDocuments(alias, func(wq *DocumentQuery) {
+				*wq = *query
+			})
+
+		case "dynoSessions":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&DynoSessionClient{config: c.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, dynosessionImplementors)...); err != nil {
+				return err
+			}
+			c.WithNamedDynoSessions(alias, func(wq *DynoSessionQuery) {
 				*wq = *query
 			})
 
@@ -541,6 +556,210 @@ func newDragSessionPaginateArgs(rv map[string]any) *dragsessionPaginateArgs {
 	}
 	if v, ok := rv[whereField].(*DragSessionWhereInput); ok {
 		args.opts = append(args.opts, WithDragSessionFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (dr *DynoResultQuery) CollectFields(ctx context.Context, satisfies ...string) (*DynoResultQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return dr, nil
+	}
+	if err := dr.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return dr, nil
+}
+
+func (dr *DynoResultQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(dynoresult.Columns))
+		selectedFields = []string{dynoresult.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+
+		case "session":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&DynoSessionClient{config: dr.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, dynosessionImplementors)...); err != nil {
+				return err
+			}
+			dr.withSession = query
+		case "createTime":
+			if _, ok := fieldSeen[dynoresult.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, dynoresult.FieldCreateTime)
+				fieldSeen[dynoresult.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[dynoresult.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, dynoresult.FieldUpdateTime)
+				fieldSeen[dynoresult.FieldUpdateTime] = struct{}{}
+			}
+		case "rpm":
+			if _, ok := fieldSeen[dynoresult.FieldRpm]; !ok {
+				selectedFields = append(selectedFields, dynoresult.FieldRpm)
+				fieldSeen[dynoresult.FieldRpm] = struct{}{}
+			}
+		case "powerKw":
+			if _, ok := fieldSeen[dynoresult.FieldPowerKw]; !ok {
+				selectedFields = append(selectedFields, dynoresult.FieldPowerKw)
+				fieldSeen[dynoresult.FieldPowerKw] = struct{}{}
+			}
+		case "torqueNm":
+			if _, ok := fieldSeen[dynoresult.FieldTorqueNm]; !ok {
+				selectedFields = append(selectedFields, dynoresult.FieldTorqueNm)
+				fieldSeen[dynoresult.FieldTorqueNm] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		dr.Select(selectedFields...)
+	}
+	return nil
+}
+
+type dynoresultPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []DynoResultPaginateOption
+}
+
+func newDynoResultPaginateArgs(rv map[string]any) *dynoresultPaginateArgs {
+	args := &dynoresultPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*DynoResultWhereInput); ok {
+		args.opts = append(args.opts, WithDynoResultFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (ds *DynoSessionQuery) CollectFields(ctx context.Context, satisfies ...string) (*DynoSessionQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return ds, nil
+	}
+	if err := ds.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return ds, nil
+}
+
+func (ds *DynoSessionQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(dynosession.Columns))
+		selectedFields = []string{dynosession.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+
+		case "car":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&CarClient{config: ds.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, carImplementors)...); err != nil {
+				return err
+			}
+			ds.withCar = query
+
+		case "results":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&DynoResultClient{config: ds.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, dynoresultImplementors)...); err != nil {
+				return err
+			}
+			ds.WithNamedResults(alias, func(wq *DynoResultQuery) {
+				*wq = *query
+			})
+		case "createTime":
+			if _, ok := fieldSeen[dynosession.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, dynosession.FieldCreateTime)
+				fieldSeen[dynosession.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[dynosession.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, dynosession.FieldUpdateTime)
+				fieldSeen[dynosession.FieldUpdateTime] = struct{}{}
+			}
+		case "title":
+			if _, ok := fieldSeen[dynosession.FieldTitle]; !ok {
+				selectedFields = append(selectedFields, dynosession.FieldTitle)
+				fieldSeen[dynosession.FieldTitle] = struct{}{}
+			}
+		case "notes":
+			if _, ok := fieldSeen[dynosession.FieldNotes]; !ok {
+				selectedFields = append(selectedFields, dynosession.FieldNotes)
+				fieldSeen[dynosession.FieldNotes] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		ds.Select(selectedFields...)
+	}
+	return nil
+}
+
+type dynosessionPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []DynoSessionPaginateOption
+}
+
+func newDynoSessionPaginateArgs(rv map[string]any) *dynosessionPaginateArgs {
+	args := &dynosessionPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*DynoSessionWhereInput); ok {
+		args.opts = append(args.opts, WithDynoSessionFilter(v.Filter))
 	}
 	return args
 }
@@ -958,6 +1177,16 @@ func (pr *ProfileQuery) collectField(ctx context.Context, oneNode bool, opCtx *g
 			if _, ok := fieldSeen[profile.FieldTemperatureUnit]; !ok {
 				selectedFields = append(selectedFields, profile.FieldTemperatureUnit)
 				fieldSeen[profile.FieldTemperatureUnit] = struct{}{}
+			}
+		case "powerUnit":
+			if _, ok := fieldSeen[profile.FieldPowerUnit]; !ok {
+				selectedFields = append(selectedFields, profile.FieldPowerUnit)
+				fieldSeen[profile.FieldPowerUnit] = struct{}{}
+			}
+		case "torqueUnit":
+			if _, ok := fieldSeen[profile.FieldTorqueUnit]; !ok {
+				selectedFields = append(selectedFields, profile.FieldTorqueUnit)
+				fieldSeen[profile.FieldTorqueUnit] = struct{}{}
 			}
 		case "visibility":
 			if _, ok := fieldSeen[profile.FieldVisibility]; !ok {

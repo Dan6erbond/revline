@@ -1,6 +1,7 @@
 import {
   Button,
   Card,
+  CardBody,
   CardFooter,
   CardHeader,
   Chip,
@@ -16,10 +17,10 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { Gauge, Plus, Timer } from "lucide-react";
 import { useMutation, useSuspenseQuery } from "@apollo/client";
 
 import { DragResultUnit } from "@/gql/graphql";
-import { Plus } from "lucide-react";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
 
@@ -152,7 +153,7 @@ export default function Session() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 max-w-screen-xl mx-auto">
       <h2 className="text-2xl">{data?.dragSession?.title}</h2>
       <form>
         <Textarea
@@ -168,14 +169,40 @@ export default function Session() {
           <Plus />
         </Button>
       </div>
-      {data.dragSession?.results?.map((r) => (
-        <Card key={r.id}>
-          <CardHeader>
-            {resolveDragResultType(r.unit, r.value) ?? `0-${r.value} ${r.unit}`}
-          </CardHeader>
-          <CardFooter>{r.result}s</CardFooter>
-        </Card>
-      ))}
+      {data.dragSession?.results
+        ?.toSorted((a, b) => a.result - b.result)
+        .map((r, index) => {
+          const label =
+            resolveDragResultType(r.unit, r.value) ?? `0-${r.value} ${r.unit}`;
+
+          return (
+            <Card
+              key={r.id}
+              className="bg-primary-50/5 border border-primary-100 rounded-xl shadow hover:shadow-md transition-all duration-200"
+            >
+              <CardHeader className="pb-0">
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Gauge className="w-4 h-4 text-primary-500" />
+                    <span>{label}</span>
+                  </div>
+                  <span className="text-xs">#{index + 1}</span>
+                </div>
+              </CardHeader>
+
+              <CardBody className="flex items-center justify-center py-6">
+                <div className="text-3xl font-semibold text-primary-700 flex items-center gap-2">
+                  <Timer className="w-5 h-5" />
+                  {r.result.toFixed(2)}s
+                </div>
+              </CardBody>
+
+              <CardFooter className="text-xs text-muted-foreground text-right pt-0">
+                Run ID: {r.id.slice(0, 8)}
+              </CardFooter>
+            </Card>
+          );
+        })}
 
       <Modal
         isOpen={isOpen}

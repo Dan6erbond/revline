@@ -112,6 +112,18 @@ func (c *Car) Documents(ctx context.Context) (result []*Document, err error) {
 	return result, err
 }
 
+func (c *Car) DynoSessions(ctx context.Context) (result []*DynoSession, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = c.NamedDynoSessions(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = c.Edges.DynoSessionsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = c.QueryDynoSessions().All(ctx)
+	}
+	return result, err
+}
+
 func (c *Car) BannerImage(ctx context.Context) (*Media, error) {
 	result, err := c.Edges.BannerImageOrErr()
 	if IsNotLoaded(err) {
@@ -145,6 +157,34 @@ func (ds *DragSession) Car(ctx context.Context) (*Car, error) {
 }
 
 func (ds *DragSession) Results(ctx context.Context) (result []*DragResult, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = ds.NamedResults(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = ds.Edges.ResultsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = ds.QueryResults().All(ctx)
+	}
+	return result, err
+}
+
+func (dr *DynoResult) Session(ctx context.Context) (*DynoSession, error) {
+	result, err := dr.Edges.SessionOrErr()
+	if IsNotLoaded(err) {
+		result, err = dr.QuerySession().Only(ctx)
+	}
+	return result, err
+}
+
+func (ds *DynoSession) Car(ctx context.Context) (*Car, error) {
+	result, err := ds.Edges.CarOrErr()
+	if IsNotLoaded(err) {
+		result, err = ds.QueryCar().Only(ctx)
+	}
+	return result, err
+}
+
+func (ds *DynoSession) Results(ctx context.Context) (result []*DynoResult, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = ds.NamedResults(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {

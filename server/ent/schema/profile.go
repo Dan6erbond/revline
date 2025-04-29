@@ -73,6 +73,26 @@ func (Profile) Fields() []ent.Field {
 			).
 			Optional().
 			Nillable(),
+		field.Enum("power_unit").
+			Values("metric_horsepower", "mech_horsepower", "kilowatts", "imp_horsepower", "electric_horsepower").
+			SchemaType(map[string]string{
+				dialect.Postgres: "power_unit",
+			}).
+			Annotations(
+				entgql.Type("PowerUnit"),
+			).
+			Optional().
+			Nillable(),
+		field.Enum("torque_unit").
+			Values("newton_meters", "pound_feet", "kilogram_meter").
+			SchemaType(map[string]string{
+				dialect.Postgres: "torque_unit",
+			}).
+			Annotations(
+				entgql.Type("TorqueUnit"),
+			).
+			Optional().
+			Nillable(),
 		field.Enum("visibility").
 			Values("public", "private").
 			Default("private"),

@@ -49,6 +49,8 @@ const (
 	EdgeMedia = "media"
 	// EdgeDocuments holds the string denoting the documents edge name in mutations.
 	EdgeDocuments = "documents"
+	// EdgeDynoSessions holds the string denoting the dyno_sessions edge name in mutations.
+	EdgeDynoSessions = "dyno_sessions"
 	// EdgeBannerImage holds the string denoting the banner_image edge name in mutations.
 	EdgeBannerImage = "banner_image"
 	// Table holds the table name of the car in the database.
@@ -116,6 +118,13 @@ const (
 	DocumentsInverseTable = "documents"
 	// DocumentsColumn is the table column denoting the documents relation/edge.
 	DocumentsColumn = "car_documents"
+	// DynoSessionsTable is the table that holds the dyno_sessions relation/edge.
+	DynoSessionsTable = "dyno_sessions"
+	// DynoSessionsInverseTable is the table name for the DynoSession entity.
+	// It exists in this package in order to avoid circular dependency with the "dynosession" package.
+	DynoSessionsInverseTable = "dyno_sessions"
+	// DynoSessionsColumn is the table column denoting the dyno_sessions relation/edge.
+	DynoSessionsColumn = "car_dyno_sessions"
 	// BannerImageTable is the table that holds the banner_image relation/edge.
 	BannerImageTable = "cars"
 	// BannerImageInverseTable is the table name for the Media entity.
@@ -338,6 +347,20 @@ func ByDocuments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByDynoSessionsCount orders the results by dyno_sessions count.
+func ByDynoSessionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDynoSessionsStep(), opts...)
+	}
+}
+
+// ByDynoSessions orders the results by dyno_sessions terms.
+func ByDynoSessions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDynoSessionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByBannerImageField orders the results by banner_image field.
 func ByBannerImageField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -405,6 +428,13 @@ func newDocumentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DocumentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, DocumentsTable, DocumentsColumn),
+	)
+}
+func newDynoSessionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DynoSessionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, DynoSessionsTable, DynoSessionsColumn),
 	)
 }
 func newBannerImageStep() *sqlgraph.Step {

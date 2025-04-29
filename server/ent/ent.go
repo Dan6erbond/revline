@@ -16,6 +16,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynoresult"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -88,6 +90,8 @@ func checkColumn(table, column string) error {
 			document.Table:        document.ValidColumn,
 			dragresult.Table:      dragresult.ValidColumn,
 			dragsession.Table:     dragsession.ValidColumn,
+			dynoresult.Table:      dynoresult.ValidColumn,
+			dynosession.Table:     dynosession.ValidColumn,
 			fuelup.Table:          fuelup.ValidColumn,
 			media.Table:           media.ValidColumn,
 			odometerreading.Table: odometerreading.ValidColumn,

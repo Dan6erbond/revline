@@ -11,6 +11,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynoresult"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -190,6 +192,10 @@ type CarWhereInput struct {
 	// "documents" edge predicates.
 	HasDocuments     *bool                 `json:"hasDocuments,omitempty"`
 	HasDocumentsWith []*DocumentWhereInput `json:"hasDocumentsWith,omitempty"`
+
+	// "dyno_sessions" edge predicates.
+	HasDynoSessions     *bool                    `json:"hasDynoSessions,omitempty"`
+	HasDynoSessionsWith []*DynoSessionWhereInput `json:"hasDynoSessionsWith,omitempty"`
 
 	// "banner_image" edge predicates.
 	HasBannerImage     *bool              `json:"hasBannerImage,omitempty"`
@@ -750,6 +756,24 @@ func (i *CarWhereInput) P() (predicate.Car, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, car.HasDocumentsWith(with...))
+	}
+	if i.HasDynoSessions != nil {
+		p := car.HasDynoSessions()
+		if !*i.HasDynoSessions {
+			p = car.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasDynoSessionsWith) > 0 {
+		with := make([]predicate.DynoSession, 0, len(i.HasDynoSessionsWith))
+		for _, w := range i.HasDynoSessionsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasDynoSessionsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, car.HasDynoSessionsWith(with...))
 	}
 	if i.HasBannerImage != nil {
 		p := car.HasBannerImage()
@@ -1696,6 +1720,674 @@ func (i *DragSessionWhereInput) P() (predicate.DragSession, error) {
 		return predicates[0], nil
 	default:
 		return dragsession.And(predicates...), nil
+	}
+}
+
+// DynoResultWhereInput represents a where input for filtering DynoResult queries.
+type DynoResultWhereInput struct {
+	Predicates []predicate.DynoResult  `json:"-"`
+	Not        *DynoResultWhereInput   `json:"not,omitempty"`
+	Or         []*DynoResultWhereInput `json:"or,omitempty"`
+	And        []*DynoResultWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *uuid.UUID  `json:"id,omitempty"`
+	IDNEQ   *uuid.UUID  `json:"idNEQ,omitempty"`
+	IDIn    []uuid.UUID `json:"idIn,omitempty"`
+	IDNotIn []uuid.UUID `json:"idNotIn,omitempty"`
+	IDGT    *uuid.UUID  `json:"idGT,omitempty"`
+	IDGTE   *uuid.UUID  `json:"idGTE,omitempty"`
+	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
+	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
+
+	// "create_time" field predicates.
+	CreateTime      *time.Time  `json:"createTime,omitempty"`
+	CreateTimeNEQ   *time.Time  `json:"createTimeNEQ,omitempty"`
+	CreateTimeIn    []time.Time `json:"createTimeIn,omitempty"`
+	CreateTimeNotIn []time.Time `json:"createTimeNotIn,omitempty"`
+	CreateTimeGT    *time.Time  `json:"createTimeGT,omitempty"`
+	CreateTimeGTE   *time.Time  `json:"createTimeGTE,omitempty"`
+	CreateTimeLT    *time.Time  `json:"createTimeLT,omitempty"`
+	CreateTimeLTE   *time.Time  `json:"createTimeLTE,omitempty"`
+
+	// "update_time" field predicates.
+	UpdateTime      *time.Time  `json:"updateTime,omitempty"`
+	UpdateTimeNEQ   *time.Time  `json:"updateTimeNEQ,omitempty"`
+	UpdateTimeIn    []time.Time `json:"updateTimeIn,omitempty"`
+	UpdateTimeNotIn []time.Time `json:"updateTimeNotIn,omitempty"`
+	UpdateTimeGT    *time.Time  `json:"updateTimeGT,omitempty"`
+	UpdateTimeGTE   *time.Time  `json:"updateTimeGTE,omitempty"`
+	UpdateTimeLT    *time.Time  `json:"updateTimeLT,omitempty"`
+	UpdateTimeLTE   *time.Time  `json:"updateTimeLTE,omitempty"`
+
+	// "rpm" field predicates.
+	Rpm      *int  `json:"rpm,omitempty"`
+	RpmNEQ   *int  `json:"rpmNEQ,omitempty"`
+	RpmIn    []int `json:"rpmIn,omitempty"`
+	RpmNotIn []int `json:"rpmNotIn,omitempty"`
+	RpmGT    *int  `json:"rpmGT,omitempty"`
+	RpmGTE   *int  `json:"rpmGTE,omitempty"`
+	RpmLT    *int  `json:"rpmLT,omitempty"`
+	RpmLTE   *int  `json:"rpmLTE,omitempty"`
+
+	// "power_kw" field predicates.
+	PowerKw      *float64  `json:"powerKw,omitempty"`
+	PowerKwNEQ   *float64  `json:"powerKwNEQ,omitempty"`
+	PowerKwIn    []float64 `json:"powerKwIn,omitempty"`
+	PowerKwNotIn []float64 `json:"powerKwNotIn,omitempty"`
+	PowerKwGT    *float64  `json:"powerKwGT,omitempty"`
+	PowerKwGTE   *float64  `json:"powerKwGTE,omitempty"`
+	PowerKwLT    *float64  `json:"powerKwLT,omitempty"`
+	PowerKwLTE   *float64  `json:"powerKwLTE,omitempty"`
+
+	// "torque_nm" field predicates.
+	TorqueNm      *float64  `json:"torqueNm,omitempty"`
+	TorqueNmNEQ   *float64  `json:"torqueNmNEQ,omitempty"`
+	TorqueNmIn    []float64 `json:"torqueNmIn,omitempty"`
+	TorqueNmNotIn []float64 `json:"torqueNmNotIn,omitempty"`
+	TorqueNmGT    *float64  `json:"torqueNmGT,omitempty"`
+	TorqueNmGTE   *float64  `json:"torqueNmGTE,omitempty"`
+	TorqueNmLT    *float64  `json:"torqueNmLT,omitempty"`
+	TorqueNmLTE   *float64  `json:"torqueNmLTE,omitempty"`
+
+	// "session" edge predicates.
+	HasSession     *bool                    `json:"hasSession,omitempty"`
+	HasSessionWith []*DynoSessionWhereInput `json:"hasSessionWith,omitempty"`
+}
+
+// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
+func (i *DynoResultWhereInput) AddPredicates(predicates ...predicate.DynoResult) {
+	i.Predicates = append(i.Predicates, predicates...)
+}
+
+// Filter applies the DynoResultWhereInput filter on the DynoResultQuery builder.
+func (i *DynoResultWhereInput) Filter(q *DynoResultQuery) (*DynoResultQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		if err == ErrEmptyDynoResultWhereInput {
+			return q, nil
+		}
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// ErrEmptyDynoResultWhereInput is returned in case the DynoResultWhereInput is empty.
+var ErrEmptyDynoResultWhereInput = errors.New("ent: empty predicate DynoResultWhereInput")
+
+// P returns a predicate for filtering dynoresults.
+// An error is returned if the input is empty or invalid.
+func (i *DynoResultWhereInput) P() (predicate.DynoResult, error) {
+	var predicates []predicate.DynoResult
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'not'", err)
+		}
+		predicates = append(predicates, dynoresult.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'or'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.DynoResult, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'or'", err)
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, dynoresult.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'and'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.DynoResult, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'and'", err)
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, dynoresult.And(and...))
+	}
+	predicates = append(predicates, i.Predicates...)
+	if i.ID != nil {
+		predicates = append(predicates, dynoresult.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, dynoresult.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, dynoresult.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, dynoresult.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, dynoresult.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, dynoresult.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, dynoresult.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, dynoresult.IDLTE(*i.IDLTE))
+	}
+	if i.CreateTime != nil {
+		predicates = append(predicates, dynoresult.CreateTimeEQ(*i.CreateTime))
+	}
+	if i.CreateTimeNEQ != nil {
+		predicates = append(predicates, dynoresult.CreateTimeNEQ(*i.CreateTimeNEQ))
+	}
+	if len(i.CreateTimeIn) > 0 {
+		predicates = append(predicates, dynoresult.CreateTimeIn(i.CreateTimeIn...))
+	}
+	if len(i.CreateTimeNotIn) > 0 {
+		predicates = append(predicates, dynoresult.CreateTimeNotIn(i.CreateTimeNotIn...))
+	}
+	if i.CreateTimeGT != nil {
+		predicates = append(predicates, dynoresult.CreateTimeGT(*i.CreateTimeGT))
+	}
+	if i.CreateTimeGTE != nil {
+		predicates = append(predicates, dynoresult.CreateTimeGTE(*i.CreateTimeGTE))
+	}
+	if i.CreateTimeLT != nil {
+		predicates = append(predicates, dynoresult.CreateTimeLT(*i.CreateTimeLT))
+	}
+	if i.CreateTimeLTE != nil {
+		predicates = append(predicates, dynoresult.CreateTimeLTE(*i.CreateTimeLTE))
+	}
+	if i.UpdateTime != nil {
+		predicates = append(predicates, dynoresult.UpdateTimeEQ(*i.UpdateTime))
+	}
+	if i.UpdateTimeNEQ != nil {
+		predicates = append(predicates, dynoresult.UpdateTimeNEQ(*i.UpdateTimeNEQ))
+	}
+	if len(i.UpdateTimeIn) > 0 {
+		predicates = append(predicates, dynoresult.UpdateTimeIn(i.UpdateTimeIn...))
+	}
+	if len(i.UpdateTimeNotIn) > 0 {
+		predicates = append(predicates, dynoresult.UpdateTimeNotIn(i.UpdateTimeNotIn...))
+	}
+	if i.UpdateTimeGT != nil {
+		predicates = append(predicates, dynoresult.UpdateTimeGT(*i.UpdateTimeGT))
+	}
+	if i.UpdateTimeGTE != nil {
+		predicates = append(predicates, dynoresult.UpdateTimeGTE(*i.UpdateTimeGTE))
+	}
+	if i.UpdateTimeLT != nil {
+		predicates = append(predicates, dynoresult.UpdateTimeLT(*i.UpdateTimeLT))
+	}
+	if i.UpdateTimeLTE != nil {
+		predicates = append(predicates, dynoresult.UpdateTimeLTE(*i.UpdateTimeLTE))
+	}
+	if i.Rpm != nil {
+		predicates = append(predicates, dynoresult.RpmEQ(*i.Rpm))
+	}
+	if i.RpmNEQ != nil {
+		predicates = append(predicates, dynoresult.RpmNEQ(*i.RpmNEQ))
+	}
+	if len(i.RpmIn) > 0 {
+		predicates = append(predicates, dynoresult.RpmIn(i.RpmIn...))
+	}
+	if len(i.RpmNotIn) > 0 {
+		predicates = append(predicates, dynoresult.RpmNotIn(i.RpmNotIn...))
+	}
+	if i.RpmGT != nil {
+		predicates = append(predicates, dynoresult.RpmGT(*i.RpmGT))
+	}
+	if i.RpmGTE != nil {
+		predicates = append(predicates, dynoresult.RpmGTE(*i.RpmGTE))
+	}
+	if i.RpmLT != nil {
+		predicates = append(predicates, dynoresult.RpmLT(*i.RpmLT))
+	}
+	if i.RpmLTE != nil {
+		predicates = append(predicates, dynoresult.RpmLTE(*i.RpmLTE))
+	}
+	if i.PowerKw != nil {
+		predicates = append(predicates, dynoresult.PowerKwEQ(*i.PowerKw))
+	}
+	if i.PowerKwNEQ != nil {
+		predicates = append(predicates, dynoresult.PowerKwNEQ(*i.PowerKwNEQ))
+	}
+	if len(i.PowerKwIn) > 0 {
+		predicates = append(predicates, dynoresult.PowerKwIn(i.PowerKwIn...))
+	}
+	if len(i.PowerKwNotIn) > 0 {
+		predicates = append(predicates, dynoresult.PowerKwNotIn(i.PowerKwNotIn...))
+	}
+	if i.PowerKwGT != nil {
+		predicates = append(predicates, dynoresult.PowerKwGT(*i.PowerKwGT))
+	}
+	if i.PowerKwGTE != nil {
+		predicates = append(predicates, dynoresult.PowerKwGTE(*i.PowerKwGTE))
+	}
+	if i.PowerKwLT != nil {
+		predicates = append(predicates, dynoresult.PowerKwLT(*i.PowerKwLT))
+	}
+	if i.PowerKwLTE != nil {
+		predicates = append(predicates, dynoresult.PowerKwLTE(*i.PowerKwLTE))
+	}
+	if i.TorqueNm != nil {
+		predicates = append(predicates, dynoresult.TorqueNmEQ(*i.TorqueNm))
+	}
+	if i.TorqueNmNEQ != nil {
+		predicates = append(predicates, dynoresult.TorqueNmNEQ(*i.TorqueNmNEQ))
+	}
+	if len(i.TorqueNmIn) > 0 {
+		predicates = append(predicates, dynoresult.TorqueNmIn(i.TorqueNmIn...))
+	}
+	if len(i.TorqueNmNotIn) > 0 {
+		predicates = append(predicates, dynoresult.TorqueNmNotIn(i.TorqueNmNotIn...))
+	}
+	if i.TorqueNmGT != nil {
+		predicates = append(predicates, dynoresult.TorqueNmGT(*i.TorqueNmGT))
+	}
+	if i.TorqueNmGTE != nil {
+		predicates = append(predicates, dynoresult.TorqueNmGTE(*i.TorqueNmGTE))
+	}
+	if i.TorqueNmLT != nil {
+		predicates = append(predicates, dynoresult.TorqueNmLT(*i.TorqueNmLT))
+	}
+	if i.TorqueNmLTE != nil {
+		predicates = append(predicates, dynoresult.TorqueNmLTE(*i.TorqueNmLTE))
+	}
+
+	if i.HasSession != nil {
+		p := dynoresult.HasSession()
+		if !*i.HasSession {
+			p = dynoresult.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasSessionWith) > 0 {
+		with := make([]predicate.DynoSession, 0, len(i.HasSessionWith))
+		for _, w := range i.HasSessionWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasSessionWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, dynoresult.HasSessionWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, ErrEmptyDynoResultWhereInput
+	case 1:
+		return predicates[0], nil
+	default:
+		return dynoresult.And(predicates...), nil
+	}
+}
+
+// DynoSessionWhereInput represents a where input for filtering DynoSession queries.
+type DynoSessionWhereInput struct {
+	Predicates []predicate.DynoSession  `json:"-"`
+	Not        *DynoSessionWhereInput   `json:"not,omitempty"`
+	Or         []*DynoSessionWhereInput `json:"or,omitempty"`
+	And        []*DynoSessionWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *uuid.UUID  `json:"id,omitempty"`
+	IDNEQ   *uuid.UUID  `json:"idNEQ,omitempty"`
+	IDIn    []uuid.UUID `json:"idIn,omitempty"`
+	IDNotIn []uuid.UUID `json:"idNotIn,omitempty"`
+	IDGT    *uuid.UUID  `json:"idGT,omitempty"`
+	IDGTE   *uuid.UUID  `json:"idGTE,omitempty"`
+	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
+	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
+
+	// "create_time" field predicates.
+	CreateTime      *time.Time  `json:"createTime,omitempty"`
+	CreateTimeNEQ   *time.Time  `json:"createTimeNEQ,omitempty"`
+	CreateTimeIn    []time.Time `json:"createTimeIn,omitempty"`
+	CreateTimeNotIn []time.Time `json:"createTimeNotIn,omitempty"`
+	CreateTimeGT    *time.Time  `json:"createTimeGT,omitempty"`
+	CreateTimeGTE   *time.Time  `json:"createTimeGTE,omitempty"`
+	CreateTimeLT    *time.Time  `json:"createTimeLT,omitempty"`
+	CreateTimeLTE   *time.Time  `json:"createTimeLTE,omitempty"`
+
+	// "update_time" field predicates.
+	UpdateTime      *time.Time  `json:"updateTime,omitempty"`
+	UpdateTimeNEQ   *time.Time  `json:"updateTimeNEQ,omitempty"`
+	UpdateTimeIn    []time.Time `json:"updateTimeIn,omitempty"`
+	UpdateTimeNotIn []time.Time `json:"updateTimeNotIn,omitempty"`
+	UpdateTimeGT    *time.Time  `json:"updateTimeGT,omitempty"`
+	UpdateTimeGTE   *time.Time  `json:"updateTimeGTE,omitempty"`
+	UpdateTimeLT    *time.Time  `json:"updateTimeLT,omitempty"`
+	UpdateTimeLTE   *time.Time  `json:"updateTimeLTE,omitempty"`
+
+	// "title" field predicates.
+	Title             *string  `json:"title,omitempty"`
+	TitleNEQ          *string  `json:"titleNEQ,omitempty"`
+	TitleIn           []string `json:"titleIn,omitempty"`
+	TitleNotIn        []string `json:"titleNotIn,omitempty"`
+	TitleGT           *string  `json:"titleGT,omitempty"`
+	TitleGTE          *string  `json:"titleGTE,omitempty"`
+	TitleLT           *string  `json:"titleLT,omitempty"`
+	TitleLTE          *string  `json:"titleLTE,omitempty"`
+	TitleContains     *string  `json:"titleContains,omitempty"`
+	TitleHasPrefix    *string  `json:"titleHasPrefix,omitempty"`
+	TitleHasSuffix    *string  `json:"titleHasSuffix,omitempty"`
+	TitleEqualFold    *string  `json:"titleEqualFold,omitempty"`
+	TitleContainsFold *string  `json:"titleContainsFold,omitempty"`
+
+	// "notes" field predicates.
+	Notes             *string  `json:"notes,omitempty"`
+	NotesNEQ          *string  `json:"notesNEQ,omitempty"`
+	NotesIn           []string `json:"notesIn,omitempty"`
+	NotesNotIn        []string `json:"notesNotIn,omitempty"`
+	NotesGT           *string  `json:"notesGT,omitempty"`
+	NotesGTE          *string  `json:"notesGTE,omitempty"`
+	NotesLT           *string  `json:"notesLT,omitempty"`
+	NotesLTE          *string  `json:"notesLTE,omitempty"`
+	NotesContains     *string  `json:"notesContains,omitempty"`
+	NotesHasPrefix    *string  `json:"notesHasPrefix,omitempty"`
+	NotesHasSuffix    *string  `json:"notesHasSuffix,omitempty"`
+	NotesIsNil        bool     `json:"notesIsNil,omitempty"`
+	NotesNotNil       bool     `json:"notesNotNil,omitempty"`
+	NotesEqualFold    *string  `json:"notesEqualFold,omitempty"`
+	NotesContainsFold *string  `json:"notesContainsFold,omitempty"`
+
+	// "car" edge predicates.
+	HasCar     *bool            `json:"hasCar,omitempty"`
+	HasCarWith []*CarWhereInput `json:"hasCarWith,omitempty"`
+
+	// "results" edge predicates.
+	HasResults     *bool                   `json:"hasResults,omitempty"`
+	HasResultsWith []*DynoResultWhereInput `json:"hasResultsWith,omitempty"`
+}
+
+// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
+func (i *DynoSessionWhereInput) AddPredicates(predicates ...predicate.DynoSession) {
+	i.Predicates = append(i.Predicates, predicates...)
+}
+
+// Filter applies the DynoSessionWhereInput filter on the DynoSessionQuery builder.
+func (i *DynoSessionWhereInput) Filter(q *DynoSessionQuery) (*DynoSessionQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		if err == ErrEmptyDynoSessionWhereInput {
+			return q, nil
+		}
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// ErrEmptyDynoSessionWhereInput is returned in case the DynoSessionWhereInput is empty.
+var ErrEmptyDynoSessionWhereInput = errors.New("ent: empty predicate DynoSessionWhereInput")
+
+// P returns a predicate for filtering dynosessions.
+// An error is returned if the input is empty or invalid.
+func (i *DynoSessionWhereInput) P() (predicate.DynoSession, error) {
+	var predicates []predicate.DynoSession
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'not'", err)
+		}
+		predicates = append(predicates, dynosession.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'or'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.DynoSession, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'or'", err)
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, dynosession.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'and'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.DynoSession, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'and'", err)
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, dynosession.And(and...))
+	}
+	predicates = append(predicates, i.Predicates...)
+	if i.ID != nil {
+		predicates = append(predicates, dynosession.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, dynosession.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, dynosession.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, dynosession.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, dynosession.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, dynosession.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, dynosession.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, dynosession.IDLTE(*i.IDLTE))
+	}
+	if i.CreateTime != nil {
+		predicates = append(predicates, dynosession.CreateTimeEQ(*i.CreateTime))
+	}
+	if i.CreateTimeNEQ != nil {
+		predicates = append(predicates, dynosession.CreateTimeNEQ(*i.CreateTimeNEQ))
+	}
+	if len(i.CreateTimeIn) > 0 {
+		predicates = append(predicates, dynosession.CreateTimeIn(i.CreateTimeIn...))
+	}
+	if len(i.CreateTimeNotIn) > 0 {
+		predicates = append(predicates, dynosession.CreateTimeNotIn(i.CreateTimeNotIn...))
+	}
+	if i.CreateTimeGT != nil {
+		predicates = append(predicates, dynosession.CreateTimeGT(*i.CreateTimeGT))
+	}
+	if i.CreateTimeGTE != nil {
+		predicates = append(predicates, dynosession.CreateTimeGTE(*i.CreateTimeGTE))
+	}
+	if i.CreateTimeLT != nil {
+		predicates = append(predicates, dynosession.CreateTimeLT(*i.CreateTimeLT))
+	}
+	if i.CreateTimeLTE != nil {
+		predicates = append(predicates, dynosession.CreateTimeLTE(*i.CreateTimeLTE))
+	}
+	if i.UpdateTime != nil {
+		predicates = append(predicates, dynosession.UpdateTimeEQ(*i.UpdateTime))
+	}
+	if i.UpdateTimeNEQ != nil {
+		predicates = append(predicates, dynosession.UpdateTimeNEQ(*i.UpdateTimeNEQ))
+	}
+	if len(i.UpdateTimeIn) > 0 {
+		predicates = append(predicates, dynosession.UpdateTimeIn(i.UpdateTimeIn...))
+	}
+	if len(i.UpdateTimeNotIn) > 0 {
+		predicates = append(predicates, dynosession.UpdateTimeNotIn(i.UpdateTimeNotIn...))
+	}
+	if i.UpdateTimeGT != nil {
+		predicates = append(predicates, dynosession.UpdateTimeGT(*i.UpdateTimeGT))
+	}
+	if i.UpdateTimeGTE != nil {
+		predicates = append(predicates, dynosession.UpdateTimeGTE(*i.UpdateTimeGTE))
+	}
+	if i.UpdateTimeLT != nil {
+		predicates = append(predicates, dynosession.UpdateTimeLT(*i.UpdateTimeLT))
+	}
+	if i.UpdateTimeLTE != nil {
+		predicates = append(predicates, dynosession.UpdateTimeLTE(*i.UpdateTimeLTE))
+	}
+	if i.Title != nil {
+		predicates = append(predicates, dynosession.TitleEQ(*i.Title))
+	}
+	if i.TitleNEQ != nil {
+		predicates = append(predicates, dynosession.TitleNEQ(*i.TitleNEQ))
+	}
+	if len(i.TitleIn) > 0 {
+		predicates = append(predicates, dynosession.TitleIn(i.TitleIn...))
+	}
+	if len(i.TitleNotIn) > 0 {
+		predicates = append(predicates, dynosession.TitleNotIn(i.TitleNotIn...))
+	}
+	if i.TitleGT != nil {
+		predicates = append(predicates, dynosession.TitleGT(*i.TitleGT))
+	}
+	if i.TitleGTE != nil {
+		predicates = append(predicates, dynosession.TitleGTE(*i.TitleGTE))
+	}
+	if i.TitleLT != nil {
+		predicates = append(predicates, dynosession.TitleLT(*i.TitleLT))
+	}
+	if i.TitleLTE != nil {
+		predicates = append(predicates, dynosession.TitleLTE(*i.TitleLTE))
+	}
+	if i.TitleContains != nil {
+		predicates = append(predicates, dynosession.TitleContains(*i.TitleContains))
+	}
+	if i.TitleHasPrefix != nil {
+		predicates = append(predicates, dynosession.TitleHasPrefix(*i.TitleHasPrefix))
+	}
+	if i.TitleHasSuffix != nil {
+		predicates = append(predicates, dynosession.TitleHasSuffix(*i.TitleHasSuffix))
+	}
+	if i.TitleEqualFold != nil {
+		predicates = append(predicates, dynosession.TitleEqualFold(*i.TitleEqualFold))
+	}
+	if i.TitleContainsFold != nil {
+		predicates = append(predicates, dynosession.TitleContainsFold(*i.TitleContainsFold))
+	}
+	if i.Notes != nil {
+		predicates = append(predicates, dynosession.NotesEQ(*i.Notes))
+	}
+	if i.NotesNEQ != nil {
+		predicates = append(predicates, dynosession.NotesNEQ(*i.NotesNEQ))
+	}
+	if len(i.NotesIn) > 0 {
+		predicates = append(predicates, dynosession.NotesIn(i.NotesIn...))
+	}
+	if len(i.NotesNotIn) > 0 {
+		predicates = append(predicates, dynosession.NotesNotIn(i.NotesNotIn...))
+	}
+	if i.NotesGT != nil {
+		predicates = append(predicates, dynosession.NotesGT(*i.NotesGT))
+	}
+	if i.NotesGTE != nil {
+		predicates = append(predicates, dynosession.NotesGTE(*i.NotesGTE))
+	}
+	if i.NotesLT != nil {
+		predicates = append(predicates, dynosession.NotesLT(*i.NotesLT))
+	}
+	if i.NotesLTE != nil {
+		predicates = append(predicates, dynosession.NotesLTE(*i.NotesLTE))
+	}
+	if i.NotesContains != nil {
+		predicates = append(predicates, dynosession.NotesContains(*i.NotesContains))
+	}
+	if i.NotesHasPrefix != nil {
+		predicates = append(predicates, dynosession.NotesHasPrefix(*i.NotesHasPrefix))
+	}
+	if i.NotesHasSuffix != nil {
+		predicates = append(predicates, dynosession.NotesHasSuffix(*i.NotesHasSuffix))
+	}
+	if i.NotesIsNil {
+		predicates = append(predicates, dynosession.NotesIsNil())
+	}
+	if i.NotesNotNil {
+		predicates = append(predicates, dynosession.NotesNotNil())
+	}
+	if i.NotesEqualFold != nil {
+		predicates = append(predicates, dynosession.NotesEqualFold(*i.NotesEqualFold))
+	}
+	if i.NotesContainsFold != nil {
+		predicates = append(predicates, dynosession.NotesContainsFold(*i.NotesContainsFold))
+	}
+
+	if i.HasCar != nil {
+		p := dynosession.HasCar()
+		if !*i.HasCar {
+			p = dynosession.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasCarWith) > 0 {
+		with := make([]predicate.Car, 0, len(i.HasCarWith))
+		for _, w := range i.HasCarWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasCarWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, dynosession.HasCarWith(with...))
+	}
+	if i.HasResults != nil {
+		p := dynosession.HasResults()
+		if !*i.HasResults {
+			p = dynosession.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasResultsWith) > 0 {
+		with := make([]predicate.DynoResult, 0, len(i.HasResultsWith))
+		for _, w := range i.HasResultsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasResultsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, dynosession.HasResultsWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, ErrEmptyDynoSessionWhereInput
+	case 1:
+		return predicates[0], nil
+	default:
+		return dynosession.And(predicates...), nil
 	}
 }
 
@@ -2912,6 +3604,22 @@ type ProfileWhereInput struct {
 	TemperatureUnitIsNil  bool                      `json:"temperatureUnitIsNil,omitempty"`
 	TemperatureUnitNotNil bool                      `json:"temperatureUnitNotNil,omitempty"`
 
+	// "power_unit" field predicates.
+	PowerUnit       *profile.PowerUnit  `json:"powerUnit,omitempty"`
+	PowerUnitNEQ    *profile.PowerUnit  `json:"powerUnitNEQ,omitempty"`
+	PowerUnitIn     []profile.PowerUnit `json:"powerUnitIn,omitempty"`
+	PowerUnitNotIn  []profile.PowerUnit `json:"powerUnitNotIn,omitempty"`
+	PowerUnitIsNil  bool                `json:"powerUnitIsNil,omitempty"`
+	PowerUnitNotNil bool                `json:"powerUnitNotNil,omitempty"`
+
+	// "torque_unit" field predicates.
+	TorqueUnit       *profile.TorqueUnit  `json:"torqueUnit,omitempty"`
+	TorqueUnitNEQ    *profile.TorqueUnit  `json:"torqueUnitNEQ,omitempty"`
+	TorqueUnitIn     []profile.TorqueUnit `json:"torqueUnitIn,omitempty"`
+	TorqueUnitNotIn  []profile.TorqueUnit `json:"torqueUnitNotIn,omitempty"`
+	TorqueUnitIsNil  bool                 `json:"torqueUnitIsNil,omitempty"`
+	TorqueUnitNotNil bool                 `json:"torqueUnitNotNil,omitempty"`
+
 	// "visibility" field predicates.
 	Visibility      *profile.Visibility  `json:"visibility,omitempty"`
 	VisibilityNEQ   *profile.Visibility  `json:"visibilityNEQ,omitempty"`
@@ -3317,6 +4025,42 @@ func (i *ProfileWhereInput) P() (predicate.Profile, error) {
 	}
 	if i.TemperatureUnitNotNil {
 		predicates = append(predicates, profile.TemperatureUnitNotNil())
+	}
+	if i.PowerUnit != nil {
+		predicates = append(predicates, profile.PowerUnitEQ(*i.PowerUnit))
+	}
+	if i.PowerUnitNEQ != nil {
+		predicates = append(predicates, profile.PowerUnitNEQ(*i.PowerUnitNEQ))
+	}
+	if len(i.PowerUnitIn) > 0 {
+		predicates = append(predicates, profile.PowerUnitIn(i.PowerUnitIn...))
+	}
+	if len(i.PowerUnitNotIn) > 0 {
+		predicates = append(predicates, profile.PowerUnitNotIn(i.PowerUnitNotIn...))
+	}
+	if i.PowerUnitIsNil {
+		predicates = append(predicates, profile.PowerUnitIsNil())
+	}
+	if i.PowerUnitNotNil {
+		predicates = append(predicates, profile.PowerUnitNotNil())
+	}
+	if i.TorqueUnit != nil {
+		predicates = append(predicates, profile.TorqueUnitEQ(*i.TorqueUnit))
+	}
+	if i.TorqueUnitNEQ != nil {
+		predicates = append(predicates, profile.TorqueUnitNEQ(*i.TorqueUnitNEQ))
+	}
+	if len(i.TorqueUnitIn) > 0 {
+		predicates = append(predicates, profile.TorqueUnitIn(i.TorqueUnitIn...))
+	}
+	if len(i.TorqueUnitNotIn) > 0 {
+		predicates = append(predicates, profile.TorqueUnitNotIn(i.TorqueUnitNotIn...))
+	}
+	if i.TorqueUnitIsNil {
+		predicates = append(predicates, profile.TorqueUnitIsNil())
+	}
+	if i.TorqueUnitNotNil {
+		predicates = append(predicates, profile.TorqueUnitNotNil())
 	}
 	if i.Visibility != nil {
 		predicates = append(predicates, profile.VisibilityEQ(*i.Visibility))

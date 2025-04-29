@@ -1,7 +1,6 @@
 import { Button, Input, Textarea } from "@heroui/react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
-import React from "react";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useMutation } from "@apollo/client";
@@ -50,7 +49,10 @@ export default function Create() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex flex-col gap-4 max-w-screen-xl mx-auto"
+    >
       <h2 className="text-2xl">Create a session</h2>
       <Input
         label="Title"

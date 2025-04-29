@@ -641,6 +641,66 @@ func TemperatureUnitNotNil() predicate.Profile {
 	return predicate.Profile(sql.FieldNotNull(FieldTemperatureUnit))
 }
 
+// PowerUnitEQ applies the EQ predicate on the "power_unit" field.
+func PowerUnitEQ(v PowerUnit) predicate.Profile {
+	return predicate.Profile(sql.FieldEQ(FieldPowerUnit, v))
+}
+
+// PowerUnitNEQ applies the NEQ predicate on the "power_unit" field.
+func PowerUnitNEQ(v PowerUnit) predicate.Profile {
+	return predicate.Profile(sql.FieldNEQ(FieldPowerUnit, v))
+}
+
+// PowerUnitIn applies the In predicate on the "power_unit" field.
+func PowerUnitIn(vs ...PowerUnit) predicate.Profile {
+	return predicate.Profile(sql.FieldIn(FieldPowerUnit, vs...))
+}
+
+// PowerUnitNotIn applies the NotIn predicate on the "power_unit" field.
+func PowerUnitNotIn(vs ...PowerUnit) predicate.Profile {
+	return predicate.Profile(sql.FieldNotIn(FieldPowerUnit, vs...))
+}
+
+// PowerUnitIsNil applies the IsNil predicate on the "power_unit" field.
+func PowerUnitIsNil() predicate.Profile {
+	return predicate.Profile(sql.FieldIsNull(FieldPowerUnit))
+}
+
+// PowerUnitNotNil applies the NotNil predicate on the "power_unit" field.
+func PowerUnitNotNil() predicate.Profile {
+	return predicate.Profile(sql.FieldNotNull(FieldPowerUnit))
+}
+
+// TorqueUnitEQ applies the EQ predicate on the "torque_unit" field.
+func TorqueUnitEQ(v TorqueUnit) predicate.Profile {
+	return predicate.Profile(sql.FieldEQ(FieldTorqueUnit, v))
+}
+
+// TorqueUnitNEQ applies the NEQ predicate on the "torque_unit" field.
+func TorqueUnitNEQ(v TorqueUnit) predicate.Profile {
+	return predicate.Profile(sql.FieldNEQ(FieldTorqueUnit, v))
+}
+
+// TorqueUnitIn applies the In predicate on the "torque_unit" field.
+func TorqueUnitIn(vs ...TorqueUnit) predicate.Profile {
+	return predicate.Profile(sql.FieldIn(FieldTorqueUnit, vs...))
+}
+
+// TorqueUnitNotIn applies the NotIn predicate on the "torque_unit" field.
+func TorqueUnitNotIn(vs ...TorqueUnit) predicate.Profile {
+	return predicate.Profile(sql.FieldNotIn(FieldTorqueUnit, vs...))
+}
+
+// TorqueUnitIsNil applies the IsNil predicate on the "torque_unit" field.
+func TorqueUnitIsNil() predicate.Profile {
+	return predicate.Profile(sql.FieldIsNull(FieldTorqueUnit))
+}
+
+// TorqueUnitNotNil applies the NotNil predicate on the "torque_unit" field.
+func TorqueUnitNotNil() predicate.Profile {
+	return predicate.Profile(sql.FieldNotNull(FieldTorqueUnit))
+}
+
 // VisibilityEQ applies the EQ predicate on the "visibility" field.
 func VisibilityEQ(v Visibility) predicate.Profile {
 	return predicate.Profile(sql.FieldEQ(FieldVisibility, v))

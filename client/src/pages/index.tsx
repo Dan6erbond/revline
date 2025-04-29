@@ -23,7 +23,7 @@ export default function Home() {
   return (
     <>
       <RootNavbar />
-      <main className="p-8">
+      <main className="p-8 max-w-screen-xl mx-auto">
         <div className="flex justify-end mb-4 md:mb-8">
           <Button as={Link} href="/cars/create" startContent={<Plus />}>
             Add Car

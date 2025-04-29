@@ -30,6 +30,7 @@ type CreateCarInput struct {
 	ServiceScheduleIDs []uuid.UUID
 	MediumIDs          []uuid.UUID
 	DocumentIDs        []uuid.UUID
+	DynoSessionIDs     []uuid.UUID
 	BannerImageID      *uuid.UUID
 }
 
@@ -84,6 +85,9 @@ func (i *CreateCarInput) Mutate(m *CarMutation) {
 	if v := i.DocumentIDs; len(v) > 0 {
 		m.AddDocumentIDs(v...)
 	}
+	if v := i.DynoSessionIDs; len(v) > 0 {
+		m.AddDynoSessionIDs(v...)
+	}
 	if v := i.BannerImageID; v != nil {
 		m.SetBannerImageID(*v)
 	}
@@ -135,6 +139,9 @@ type UpdateCarInput struct {
 	ClearDocuments           bool
 	AddDocumentIDs           []uuid.UUID
 	RemoveDocumentIDs        []uuid.UUID
+	ClearDynoSessions        bool
+	AddDynoSessionIDs        []uuid.UUID
+	RemoveDynoSessionIDs     []uuid.UUID
 	ClearBannerImage         bool
 	BannerImageID            *uuid.UUID
 }
@@ -254,6 +261,15 @@ func (i *UpdateCarInput) Mutate(m *CarMutation) {
 	}
 	if v := i.RemoveDocumentIDs; len(v) > 0 {
 		m.RemoveDocumentIDs(v...)
+	}
+	if i.ClearDynoSessions {
+		m.ClearDynoSessions()
+	}
+	if v := i.AddDynoSessionIDs; len(v) > 0 {
+		m.AddDynoSessionIDs(v...)
+	}
+	if v := i.RemoveDynoSessionIDs; len(v) > 0 {
+		m.RemoveDynoSessionIDs(v...)
 	}
 	if i.ClearBannerImage {
 		m.ClearBannerImage()
@@ -503,6 +519,162 @@ func (c *DragSessionUpdate) SetInput(i UpdateDragSessionInput) *DragSessionUpdat
 
 // SetInput applies the change-set in the UpdateDragSessionInput on the DragSessionUpdateOne builder.
 func (c *DragSessionUpdateOne) SetInput(i UpdateDragSessionInput) *DragSessionUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateDynoResultInput represents a mutation input for creating dynoresults.
+type CreateDynoResultInput struct {
+	CreateTime *time.Time
+	UpdateTime *time.Time
+	Rpm        int
+	PowerKw    float64
+	TorqueNm   float64
+	SessionID  uuid.UUID
+}
+
+// Mutate applies the CreateDynoResultInput on the DynoResultMutation builder.
+func (i *CreateDynoResultInput) Mutate(m *DynoResultMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	m.SetRpm(i.Rpm)
+	m.SetPowerKw(i.PowerKw)
+	m.SetTorqueNm(i.TorqueNm)
+	m.SetSessionID(i.SessionID)
+}
+
+// SetInput applies the change-set in the CreateDynoResultInput on the DynoResultCreate builder.
+func (c *DynoResultCreate) SetInput(i CreateDynoResultInput) *DynoResultCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateDynoResultInput represents a mutation input for updating dynoresults.
+type UpdateDynoResultInput struct {
+	UpdateTime *time.Time
+	Rpm        *int
+	PowerKw    *float64
+	TorqueNm   *float64
+	SessionID  *uuid.UUID
+}
+
+// Mutate applies the UpdateDynoResultInput on the DynoResultMutation builder.
+func (i *UpdateDynoResultInput) Mutate(m *DynoResultMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.Rpm; v != nil {
+		m.SetRpm(*v)
+	}
+	if v := i.PowerKw; v != nil {
+		m.SetPowerKw(*v)
+	}
+	if v := i.TorqueNm; v != nil {
+		m.SetTorqueNm(*v)
+	}
+	if v := i.SessionID; v != nil {
+		m.SetSessionID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateDynoResultInput on the DynoResultUpdate builder.
+func (c *DynoResultUpdate) SetInput(i UpdateDynoResultInput) *DynoResultUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateDynoResultInput on the DynoResultUpdateOne builder.
+func (c *DynoResultUpdateOne) SetInput(i UpdateDynoResultInput) *DynoResultUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateDynoSessionInput represents a mutation input for creating dynosessions.
+type CreateDynoSessionInput struct {
+	CreateTime *time.Time
+	UpdateTime *time.Time
+	Title      string
+	Notes      *string
+	CarID      uuid.UUID
+	ResultIDs  []uuid.UUID
+}
+
+// Mutate applies the CreateDynoSessionInput on the DynoSessionMutation builder.
+func (i *CreateDynoSessionInput) Mutate(m *DynoSessionMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	m.SetTitle(i.Title)
+	if v := i.Notes; v != nil {
+		m.SetNotes(*v)
+	}
+	m.SetCarID(i.CarID)
+	if v := i.ResultIDs; len(v) > 0 {
+		m.AddResultIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the CreateDynoSessionInput on the DynoSessionCreate builder.
+func (c *DynoSessionCreate) SetInput(i CreateDynoSessionInput) *DynoSessionCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateDynoSessionInput represents a mutation input for updating dynosessions.
+type UpdateDynoSessionInput struct {
+	UpdateTime      *time.Time
+	Title           *string
+	ClearNotes      bool
+	Notes           *string
+	CarID           *uuid.UUID
+	ClearResults    bool
+	AddResultIDs    []uuid.UUID
+	RemoveResultIDs []uuid.UUID
+}
+
+// Mutate applies the UpdateDynoSessionInput on the DynoSessionMutation builder.
+func (i *UpdateDynoSessionInput) Mutate(m *DynoSessionMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.Title; v != nil {
+		m.SetTitle(*v)
+	}
+	if i.ClearNotes {
+		m.ClearNotes()
+	}
+	if v := i.Notes; v != nil {
+		m.SetNotes(*v)
+	}
+	if v := i.CarID; v != nil {
+		m.SetCarID(*v)
+	}
+	if i.ClearResults {
+		m.ClearResults()
+	}
+	if v := i.AddResultIDs; len(v) > 0 {
+		m.AddResultIDs(v...)
+	}
+	if v := i.RemoveResultIDs; len(v) > 0 {
+		m.RemoveResultIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the UpdateDynoSessionInput on the DynoSessionUpdate builder.
+func (c *DynoSessionUpdate) SetInput(i UpdateDynoSessionInput) *DynoSessionUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateDynoSessionInput on the DynoSessionUpdateOne builder.
+func (c *DynoSessionUpdateOne) SetInput(i UpdateDynoSessionInput) *DynoSessionUpdateOne {
 	i.Mutate(c.Mutation())
 	return c
 }
@@ -797,6 +969,8 @@ type CreateProfileInput struct {
 	DistanceUnit        *profile.DistanceUnit
 	FuelConsumptionUnit *profile.FuelConsumptionUnit
 	TemperatureUnit     *profile.TemperatureUnit
+	PowerUnit           *profile.PowerUnit
+	TorqueUnit          *profile.TorqueUnit
 	Visibility          *profile.Visibility
 	UserID              uuid.UUID
 }
@@ -833,6 +1007,12 @@ func (i *CreateProfileInput) Mutate(m *ProfileMutation) {
 	if v := i.TemperatureUnit; v != nil {
 		m.SetTemperatureUnit(*v)
 	}
+	if v := i.PowerUnit; v != nil {
+		m.SetPowerUnit(*v)
+	}
+	if v := i.TorqueUnit; v != nil {
+		m.SetTorqueUnit(*v)
+	}
 	if v := i.Visibility; v != nil {
 		m.SetVisibility(*v)
 	}
@@ -864,6 +1044,10 @@ type UpdateProfileInput struct {
 	FuelConsumptionUnit      *profile.FuelConsumptionUnit
 	ClearTemperatureUnit     bool
 	TemperatureUnit          *profile.TemperatureUnit
+	ClearPowerUnit           bool
+	PowerUnit                *profile.PowerUnit
+	ClearTorqueUnit          bool
+	TorqueUnit               *profile.TorqueUnit
 	Visibility               *profile.Visibility
 	UserID                   *uuid.UUID
 }
@@ -920,6 +1104,18 @@ func (i *UpdateProfileInput) Mutate(m *ProfileMutation) {
 	}
 	if v := i.TemperatureUnit; v != nil {
 		m.SetTemperatureUnit(*v)
+	}
+	if i.ClearPowerUnit {
+		m.ClearPowerUnit()
+	}
+	if v := i.PowerUnit; v != nil {
+		m.SetPowerUnit(*v)
+	}
+	if i.ClearTorqueUnit {
+		m.ClearTorqueUnit()
+	}
+	if v := i.TorqueUnit; v != nil {
+		m.SetTorqueUnit(*v)
 	}
 	if v := i.Visibility; v != nil {
 		m.SetVisibility(*v)

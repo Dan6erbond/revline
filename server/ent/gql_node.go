@@ -12,6 +12,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynoresult"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -48,6 +50,16 @@ var dragsessionImplementors = []string{"DragSession", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
 func (*DragSession) IsNode() {}
+
+var dynoresultImplementors = []string{"DynoResult", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*DynoResult) IsNode() {}
+
+var dynosessionImplementors = []string{"DynoSession", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*DynoSession) IsNode() {}
 
 var fuelupImplementors = []string{"FuelUp", "Node"}
 
@@ -179,6 +191,24 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 			Where(dragsession.ID(id))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
 			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, dragsessionImplementors...); err != nil {
+				return nil, err
+			}
+		}
+		return query.Only(ctx)
+	case dynoresult.Table:
+		query := c.DynoResult.Query().
+			Where(dynoresult.ID(id))
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, dynoresultImplementors...); err != nil {
+				return nil, err
+			}
+		}
+		return query.Only(ctx)
+	case dynosession.Table:
+		query := c.DynoSession.Query().
+			Where(dynosession.ID(id))
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, dynosessionImplementors...); err != nil {
 				return nil, err
 			}
 		}
@@ -380,6 +410,38 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		query := c.DragSession.Query().
 			Where(dragsession.IDIn(ids...))
 		query, err := query.CollectFields(ctx, dragsessionImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case dynoresult.Table:
+		query := c.DynoResult.Query().
+			Where(dynoresult.IDIn(ids...))
+		query, err := query.CollectFields(ctx, dynoresultImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case dynosession.Table:
+		query := c.DynoSession.Query().
+			Where(dynosession.IDIn(ids...))
+		query, err := query.CollectFields(ctx, dynosessionImplementors...)
 		if err != nil {
 			return nil, err
 		}

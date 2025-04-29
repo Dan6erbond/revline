@@ -433,6 +433,16 @@ func (r *mutationResolver) CreateDragResult(ctx context.Context, input ent.Creat
 	return r.entClient.DragResult.Create().SetInput(input).Save(ctx)
 }
 
+// CreateDynoSession is the resolver for the createDynoSession field.
+func (r *mutationResolver) CreateDynoSession(ctx context.Context, input ent.CreateDynoSessionInput) (*ent.DynoSession, error) {
+	return r.entClient.DynoSession.Create().SetInput(input).Save(ctx)
+}
+
+// CreateDynoResult is the resolver for the createDynoResult field.
+func (r *mutationResolver) CreateDynoResult(ctx context.Context, input ent.CreateDynoResultInput) (*ent.DynoResult, error) {
+	return r.entClient.DynoResult.Create().SetInput(input).Save(ctx)
+}
+
 // Car is the resolver for the car field.
 func (r *queryResolver) Car(ctx context.Context, id string) (*ent.Car, error) {
 	uid, err := uuid.Parse(id)
@@ -453,6 +463,17 @@ func (r *queryResolver) DragSession(ctx context.Context, id string) (*ent.DragSe
 	}
 
 	return r.entClient.DragSession.Get(ctx, uid)
+}
+
+// DynoSession is the resolver for the dynoSession field.
+func (r *queryResolver) DynoSession(ctx context.Context, id string) (*ent.DynoSession, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.DynoSession.Get(ctx, uid)
 }
 
 // Document is the resolver for the document field.
