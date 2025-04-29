@@ -23,7 +23,7 @@ RUN apk update && \
 RUN curl -sSf https://atlasgo.sh | sh
 
 RUN mkdir migrations
-COPY --from=builder /revline/ent/migrate/migrations/ ./migrations/
+COPY --from=builder /revline/ent/migrate/migrations/ ./ent/migrate/migrations/
 
 COPY --from=builder /revline/revline .
 
