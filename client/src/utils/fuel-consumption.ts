@@ -7,7 +7,7 @@ export function getFuelConsumption(lpk: number, unit: FuelConsumptionUnit) {
   switch (unit) {
     case FuelConsumptionUnit.Mpg:
       return lpk * 100 * LP100K_TO_MPG;
-    case FuelConsumptionUnit.MpgImperial:
+    case FuelConsumptionUnit.ImpMpg:
       return lpk * 100 * LP100K_TO_IMPG;
     default:
       return lpk * 100;
