@@ -9,7 +9,6 @@ import (
 	"github.com/Dan6erbond/revline/ent"
 	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/Dan6erbond/revline/internal"
-	"github.com/go-chi/chi"
 	goJwt "github.com/golang-jwt/jwt/v5"
 	"github.com/hashicorp/cap/jwt"
 	"go.uber.org/zap"
@@ -174,14 +173,12 @@ func ForContext(ctx context.Context) *ent.User {
 	return raw
 }
 
-func RegisterMiddleware(router *chi.Mux, entClient *ent.Client, config internal.Config, logger *zap.Logger) error {
+func NewMiddleware(entClient *ent.Client, config internal.Config, logger *zap.Logger) (func(http.Handler) http.Handler, error) {
 	mw, err := Middleware(entClient, config, logger.Named("middleware"))
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	router.Use(mw)
-
-	return nil
+	return mw, nil
 }

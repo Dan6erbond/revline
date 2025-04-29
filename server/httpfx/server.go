@@ -10,7 +10,9 @@ import (
 	"go.uber.org/fx"
 )
 
-func NewRouter(lc fx.Lifecycle, config internal.Config) *chi.Mux {
+var NewRouterParamTags = fx.ParamTags("", "", `group:"middlewares"`)
+
+func NewRouter(lc fx.Lifecycle, config internal.Config, mws []func(http.Handler) http.Handler) *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
@@ -24,9 +26,11 @@ func NewRouter(lc fx.Lifecycle, config internal.Config) *chi.Mux {
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+	router.Use(mws...)
+
+	router.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Ping"))
+		w.Write([]byte("ok"))
 	})
 
 	lc.Append(fx.StartHook(func() {
