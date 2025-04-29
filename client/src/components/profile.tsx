@@ -6,6 +6,7 @@ import {
   Input,
   Select,
   SelectItem,
+  cn,
 } from "@heroui/react";
 import {
   ChangeEvent,
@@ -232,7 +233,26 @@ export default function ProfileForm() {
           <div className="relative inline-flex">
             {/* Drop area */}
             <div
-              className="cursor-pointer group border-background has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 relative flex size-16 items-center justify-center overflow-hidden rounded-full border border-dashed has-disabled:pointer-events-none has-disabled:opacity-50 has-[img]:border-none has-[input:focus]:ring-[3px]"
+              className={cn(
+                "cursor-pointer",
+                "group",
+                "border-background",
+                "has-[input:focus]:border-ring",
+                "has-[input:focus]:ring-ring/50",
+                "relative",
+                "flex",
+                "size-16",
+                "items-center",
+                "justify-center",
+                "overflow-hidden",
+                "rounded-full",
+                "border",
+                "border-dashed",
+                "has-disabled:pointer-events-none",
+                "has-disabled:opacity-50",
+                "has-[img]:border-none",
+                "has-[input:focus]:ring-[3px]"
+              )}
               role="button"
               onClick={openFileDialog}
               onDragEnter={handleDragEnter}
@@ -244,13 +264,35 @@ export default function ProfileForm() {
                 data?.me?.profile?.pictureUrl ? "Change image" : "Upload image"
               }
             >
-              <Image
-                className="size-full object-cover"
-                src={data?.me?.profile?.pictureUrl ?? undefined}
-                alt={data?.me?.profile?.username ?? undefined}
-                removeWrapper
-              />
-              <div className="absolute h-full w-full items-center justify-center z-20 hidden group-data-[dragging=true]:flex group-hover:flex group-hover:bg-secondary/20 group-data-[dragging=true]:bg-secondary/20 transition-colors">
+              {data?.me.profile?.pictureUrl && (
+                <Image
+                  className="size-full object-cover"
+                  src={data.me.profile.pictureUrl ?? undefined}
+                  alt={data.me.profile.username ?? undefined}
+                  removeWrapper
+                />
+              )}
+              <div
+                className={cn(
+                  "absolute",
+                  "h-full",
+                  "w-full",
+                  "items-center",
+                  "justify-center",
+                  "z-20",
+                  "transition-colors",
+                  data?.me?.profile?.pictureUrl
+                    ? [
+                        "hidden",
+                        "group-data-[dragging=true]:flex",
+                        "group-data-[dragging=true]:bg-secondary/20",
+                        "group-data-[dragging=true]:flex",
+                      ]
+                    : ["bg-secondary/20", "flex"],
+                  "group-hover:flex",
+                  "group-hover:bg-secondary/20"
+                )}
+              >
                 <div aria-hidden="true" className="text-black">
                   <CircleUserRound className="size-4 opacity-60" />
                 </div>

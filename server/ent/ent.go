@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
@@ -84,6 +85,7 @@ func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			car.Table:             car.ValidColumn,
+			document.Table:        document.ValidColumn,
 			dragresult.Table:      dragresult.ValidColumn,
 			dragsession.Table:     dragsession.ValidColumn,
 			fuelup.Table:          fuelup.ValidColumn,

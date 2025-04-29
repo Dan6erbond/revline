@@ -11,16 +11,17 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-d", "zitadel", "-U", "postgres"]
-      interval: '10s'
-      timeout: '30s'
+      test: "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"
+      interval: "10s"
+      timeout: "30s"
       retries: 5
-      start_period: '20s'
+      start_period: "20s"
   s3:
     image: quay.io/minio/minio
+    restart: unless-stopped
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9003:9000"
+      - "9004:9001"
     volumes:
       - s3:/.minio
     command: server /.minio --console-address :9001

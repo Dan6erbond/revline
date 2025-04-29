@@ -1,4 +1,6 @@
 import "@/styles/globals.css";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
 
 import type { AppProps } from "next/app";
 import AuthenticatedApolloProvider from "@/apollo-client/provider";
@@ -6,7 +8,13 @@ import { HeroUIProvider } from "@heroui/react";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import { SessionProvider } from "next-auth/react";
+import { pdfjs } from "react-pdf";
 import { useRouter } from "next/router";
+
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url
+).toString();
 
 const inter = Inter({ subsets: ["latin"] });
 

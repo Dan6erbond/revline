@@ -14,13 +14,32 @@ extend type Media {
   url: String!
 }
 
+type FileMetadata @goModel(model: "github.com/minio/minio-go/v7.ObjectInfo") {
+  etag: String!
+  key: String!
+  size: Int!
+  contentType: String!
+  expires: Time
+}
+
+extend type Document {
+  url: String!
+  metadata: FileMetadata
+}
+
 extend type Query {
   car(id: ID!): Car!
   dragSession(id: ID!): DragSession!
+  document(id: ID!): Document!
 }
 
 type UploadMediaResult {
   media: Media!
+  uploadUrl: String!
+}
+
+type UploadDocumentResult {
+  document: Document!
   uploadUrl: String!
 }
 
@@ -37,6 +56,7 @@ extend type Mutation {
   createCar(input: CreateCarInput!): Car! @loggedIn
   uploadBannerImage(input: CreateMediaInput!): UploadMediaResult! @loggedIn
   uploadMedia(input: CreateMediaInput!): UploadMediaResult! @loggedIn
+  uploadDocument(input: CreateDocumentInput!): UploadDocumentResult! @loggedIn
   createFuelUp(input: CreateFuelUpInput!): FuelUp! @loggedIn
   createOdometerReading(input: CreateOdometerReadingInput!): OdometerReading!
     @loggedIn

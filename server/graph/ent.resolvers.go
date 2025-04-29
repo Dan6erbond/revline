@@ -7,6 +7,9 @@ package graph
 // Car returns CarResolver implementation.
 func (r *Resolver) Car() CarResolver { return &carResolver{r} }
 
+// Document returns DocumentResolver implementation.
+func (r *Resolver) Document() DocumentResolver { return &documentResolver{r} }
+
 // Media returns MediaResolver implementation.
 func (r *Resolver) Media() MediaResolver { return &mediaResolver{r} }
 
@@ -24,6 +27,7 @@ func (r *Resolver) CreateServiceLogInput() CreateServiceLogInputResolver {
 }
 
 type carResolver struct{ *Resolver }
+type documentResolver struct{ *Resolver }
 type mediaResolver struct{ *Resolver }
 type profileResolver struct{ *Resolver }
 type createFuelUpInputResolver struct{ *Resolver }

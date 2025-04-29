@@ -17,6 +17,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
 	"github.com/Dan6erbond/revline/graph/model"
 	"github.com/google/uuid"
+	minio "github.com/minio/minio-go/v7"
 )
 
 // BannerImageURL is the resolver for the bannerImageUrl field.
@@ -214,6 +215,67 @@ func (r *carResolver) UpcomingServices(ctx context.Context, obj *ent.Car) ([]*mo
 }
 
 // URL is the resolver for the url field.
+func (r *documentResolver) URL(ctx context.Context, obj *ent.Document) (string, error) {
+	car, err := obj.Car(ctx)
+
+	if err != nil {
+		return "", err
+	}
+
+	owner, err := car.Owner(ctx)
+
+	if err != nil {
+		return "", err
+	}
+
+	objectName := fmt.Sprintf("users/%s/cars/%s/documents/%s", owner.ID, car.ID, obj.ID)
+
+	url, err := r.s3Client.PresignedGetObject(ctx, r.config.S3.Bucket, objectName, time.Hour, nil)
+
+	if err != nil {
+		return "", err
+	}
+
+	return url.String(), err
+}
+
+// Metadata is the resolver for the metadata field.
+func (r *documentResolver) Metadata(ctx context.Context, obj *ent.Document) (*minio.ObjectInfo, error) {
+	car, err := obj.Car(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	owner, err := car.Owner(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	objectName := fmt.Sprintf("users/%s/cars/%s/documents/%s", owner.ID, car.ID, obj.ID)
+
+	object, err := r.s3Client.GetObject(ctx, r.config.S3.Bucket, objectName, minio.GetObjectOptions{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := object.Stat()
+
+	if err != nil {
+		if err, ok := err.(minio.ErrorResponse); ok && (err.Code == "NoSuchKey") {
+			//nolint:nilnil
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return &info, err
+}
+
+// URL is the resolver for the url field.
 func (r *mediaResolver) URL(ctx context.Context, obj *ent.Media) (string, error) {
 	car, err := obj.Car(ctx)
 
@@ -288,7 +350,7 @@ func (r *mutationResolver) UploadMedia(ctx context.Context, input ent.CreateMedi
 		return nil, err
 	}
 
-	media, err := r.entClient.Media.Create().SetCar(car).Save(ctx)
+	media, err := r.entClient.Media.Create().SetInput(input).Save(ctx)
 
 	if err != nil {
 		return nil, err
@@ -303,6 +365,33 @@ func (r *mutationResolver) UploadMedia(ctx context.Context, input ent.CreateMedi
 	}
 
 	return &model.UploadMediaResult{media, url.String()}, nil
+}
+
+// UploadDocument is the resolver for the uploadDocument field.
+func (r *mutationResolver) UploadDocument(ctx context.Context, input ent.CreateDocumentInput) (*model.UploadDocumentResult, error) {
+	user := auth.ForContext(ctx)
+
+	car, err := r.entClient.Car.Get(ctx, *input.CarID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	document, err := r.entClient.Document.Create().SetInput(input).Save(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	objectName := fmt.Sprintf("users/%s/cars/%s/documents/%s", user.ID, car.ID, document.ID)
+
+	url, err := r.s3Client.PresignedPutObject(ctx, r.config.S3.Bucket, objectName, time.Hour)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.UploadDocumentResult{document, url.String()}, nil
 }
 
 // CreateFuelUp is the resolver for the createFuelUp field.
@@ -364,6 +453,17 @@ func (r *queryResolver) DragSession(ctx context.Context, id string) (*ent.DragSe
 	}
 
 	return r.entClient.DragSession.Get(ctx, uid)
+}
+
+// Document is the resolver for the document field.
+func (r *queryResolver) Document(ctx context.Context, id string) (*ent.Document, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.Document.Get(ctx, uid)
 }
 
 // OdometerReading is the resolver for the odometerReading field.

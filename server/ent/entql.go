@@ -4,6 +4,7 @@ package ent
 
 import (
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
@@ -24,7 +25,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 11)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 12)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   car.Table,
@@ -48,6 +49,23 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   document.Table,
+			Columns: document.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: document.FieldID,
+			},
+		},
+		Type: "Document",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			document.FieldCreateTime: {Type: field.TypeTime, Column: document.FieldCreateTime},
+			document.FieldUpdateTime: {Type: field.TypeTime, Column: document.FieldUpdateTime},
+			document.FieldName:       {Type: field.TypeString, Column: document.FieldName},
+			document.FieldTags:       {Type: field.TypeJSON, Column: document.FieldTags},
+		},
+	}
+	graph.Nodes[2] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   dragresult.Table,
 			Columns: dragresult.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -64,7 +82,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			dragresult.FieldResult:     {Type: field.TypeFloat64, Column: dragresult.FieldResult},
 		},
 	}
-	graph.Nodes[2] = &sqlgraph.Node{
+	graph.Nodes[3] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   dragsession.Table,
 			Columns: dragsession.Columns,
@@ -81,7 +99,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			dragsession.FieldNotes:      {Type: field.TypeString, Column: dragsession.FieldNotes},
 		},
 	}
-	graph.Nodes[3] = &sqlgraph.Node{
+	graph.Nodes[4] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   fuelup.Table,
 			Columns: fuelup.Columns,
@@ -104,7 +122,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			fuelup.FieldNotes:        {Type: field.TypeString, Column: fuelup.FieldNotes},
 		},
 	}
-	graph.Nodes[4] = &sqlgraph.Node{
+	graph.Nodes[5] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   media.Table,
 			Columns: media.Columns,
@@ -119,7 +137,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			media.FieldUpdateTime: {Type: field.TypeTime, Column: media.FieldUpdateTime},
 		},
 	}
-	graph.Nodes[5] = &sqlgraph.Node{
+	graph.Nodes[6] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   odometerreading.Table,
 			Columns: odometerreading.Columns,
@@ -136,7 +154,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			odometerreading.FieldNotes:      {Type: field.TypeString, Column: odometerreading.FieldNotes},
 		},
 	}
-	graph.Nodes[6] = &sqlgraph.Node{
+	graph.Nodes[7] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   profile.Table,
 			Columns: profile.Columns,
@@ -161,7 +179,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			profile.FieldVisibility:          {Type: field.TypeEnum, Column: profile.FieldVisibility},
 		},
 	}
-	graph.Nodes[7] = &sqlgraph.Node{
+	graph.Nodes[8] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   serviceitem.Table,
 			Columns: serviceitem.Columns,
@@ -182,7 +200,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			serviceitem.FieldTags:                  {Type: field.TypeJSON, Column: serviceitem.FieldTags},
 		},
 	}
-	graph.Nodes[8] = &sqlgraph.Node{
+	graph.Nodes[9] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   servicelog.Table,
 			Columns: servicelog.Columns,
@@ -200,7 +218,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			servicelog.FieldNotes:         {Type: field.TypeString, Column: servicelog.FieldNotes},
 		},
 	}
-	graph.Nodes[9] = &sqlgraph.Node{
+	graph.Nodes[10] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   serviceschedule.Table,
 			Columns: serviceschedule.Columns,
@@ -222,7 +240,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			serviceschedule.FieldArchived:          {Type: field.TypeBool, Column: serviceschedule.FieldArchived},
 		},
 	}
-	graph.Nodes[10] = &sqlgraph.Node{
+	graph.Nodes[11] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
@@ -335,6 +353,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Media",
 	)
 	graph.MustAddE(
+		"documents",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.DocumentsTable,
+			Columns: []string{car.DocumentsColumn},
+			Bidi:    false,
+		},
+		"Car",
+		"Document",
+	)
+	graph.MustAddE(
 		"banner_image",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -345,6 +375,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Car",
 		"Media",
+	)
+	graph.MustAddE(
+		"car",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.CarTable,
+			Columns: []string{document.CarColumn},
+			Bidi:    false,
+		},
+		"Document",
+		"Car",
 	)
 	graph.MustAddE(
 		"session",
@@ -811,6 +853,20 @@ func (f *CarFilter) WhereHasMediaWith(preds ...predicate.Media) {
 	})))
 }
 
+// WhereHasDocuments applies a predicate to check if query has an edge documents.
+func (f *CarFilter) WhereHasDocuments() {
+	f.Where(entql.HasEdge("documents"))
+}
+
+// WhereHasDocumentsWith applies a predicate to check if query has an edge documents with a given conditions (other predicates).
+func (f *CarFilter) WhereHasDocumentsWith(preds ...predicate.Document) {
+	f.Where(entql.HasEdgeWith("documents", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // WhereHasBannerImage applies a predicate to check if query has an edge banner_image.
 func (f *CarFilter) WhereHasBannerImage() {
 	f.Where(entql.HasEdge("banner_image"))
@@ -819,6 +875,80 @@ func (f *CarFilter) WhereHasBannerImage() {
 // WhereHasBannerImageWith applies a predicate to check if query has an edge banner_image with a given conditions (other predicates).
 func (f *CarFilter) WhereHasBannerImageWith(preds ...predicate.Media) {
 	f.Where(entql.HasEdgeWith("banner_image", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (dq *DocumentQuery) addPredicate(pred func(s *sql.Selector)) {
+	dq.predicates = append(dq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the DocumentQuery builder.
+func (dq *DocumentQuery) Filter() *DocumentFilter {
+	return &DocumentFilter{config: dq.config, predicateAdder: dq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *DocumentMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the DocumentMutation builder.
+func (m *DocumentMutation) Filter() *DocumentFilter {
+	return &DocumentFilter{config: m.config, predicateAdder: m}
+}
+
+// DocumentFilter provides a generic filtering capability at runtime for DocumentQuery.
+type DocumentFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *DocumentFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *DocumentFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(document.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *DocumentFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(document.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *DocumentFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(document.FieldUpdateTime))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *DocumentFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(document.FieldName))
+}
+
+// WhereTags applies the entql json.RawMessage predicate on the tags field.
+func (f *DocumentFilter) WhereTags(p entql.BytesP) {
+	f.Where(p.Field(document.FieldTags))
+}
+
+// WhereHasCar applies a predicate to check if query has an edge car.
+func (f *DocumentFilter) WhereHasCar() {
+	f.Where(entql.HasEdge("car"))
+}
+
+// WhereHasCarWith applies a predicate to check if query has an edge car with a given conditions (other predicates).
+func (f *DocumentFilter) WhereHasCarWith(preds ...predicate.Car) {
+	f.Where(entql.HasEdgeWith("car", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -854,7 +984,7 @@ type DragResultFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *DragResultFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -933,7 +1063,7 @@ type DragSessionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *DragSessionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1021,7 +1151,7 @@ type FuelUpFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *FuelUpFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1139,7 +1269,7 @@ type MediaFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *MediaFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1203,7 +1333,7 @@ type OdometerReadingFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OdometerReadingFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[5].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1305,7 +1435,7 @@ type ProfileFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ProfileFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[6].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1419,7 +1549,7 @@ type ServiceItemFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ServiceItemFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[7].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1541,7 +1671,7 @@ type ServiceLogFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ServiceLogFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[8].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1662,7 +1792,7 @@ type ServiceScheduleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ServiceScheduleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[9].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -1789,7 +1919,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[10].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[11].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

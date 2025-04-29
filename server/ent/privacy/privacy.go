@@ -135,6 +135,30 @@ func (f CarMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) e
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.CarMutation", m)
 }
 
+// The DocumentQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type DocumentQueryRuleFunc func(context.Context, *ent.DocumentQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f DocumentQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.DocumentQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.DocumentQuery", q)
+}
+
+// The DocumentMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type DocumentMutationRuleFunc func(context.Context, *ent.DocumentMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f DocumentMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.DocumentMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.DocumentMutation", m)
+}
+
 // The DragResultQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type DragResultQueryRuleFunc func(context.Context, *ent.DragResultQuery) error
@@ -412,6 +436,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
 	case *ent.CarQuery:
 		return q.Filter(), nil
+	case *ent.DocumentQuery:
+		return q.Filter(), nil
 	case *ent.DragResultQuery:
 		return q.Filter(), nil
 	case *ent.DragSessionQuery:
@@ -440,6 +466,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
 	case *ent.CarMutation:
+		return m.Filter(), nil
+	case *ent.DocumentMutation:
 		return m.Filter(), nil
 	case *ent.DragResultMutation:
 		return m.Filter(), nil

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
@@ -43,6 +44,29 @@ func init() {
 	carDescID := carFields[0].Descriptor()
 	// car.DefaultID holds the default value on creation for the id field.
 	car.DefaultID = carDescID.Default.(func() uuid.UUID)
+	documentMixin := schema.Document{}.Mixin()
+	documentMixinFields0 := documentMixin[0].Fields()
+	_ = documentMixinFields0
+	documentFields := schema.Document{}.Fields()
+	_ = documentFields
+	// documentDescCreateTime is the schema descriptor for create_time field.
+	documentDescCreateTime := documentMixinFields0[0].Descriptor()
+	// document.DefaultCreateTime holds the default value on creation for the create_time field.
+	document.DefaultCreateTime = documentDescCreateTime.Default.(func() time.Time)
+	// documentDescUpdateTime is the schema descriptor for update_time field.
+	documentDescUpdateTime := documentMixinFields0[1].Descriptor()
+	// document.DefaultUpdateTime holds the default value on creation for the update_time field.
+	document.DefaultUpdateTime = documentDescUpdateTime.Default.(func() time.Time)
+	// document.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	document.UpdateDefaultUpdateTime = documentDescUpdateTime.UpdateDefault.(func() time.Time)
+	// documentDescTags is the schema descriptor for tags field.
+	documentDescTags := documentFields[2].Descriptor()
+	// document.DefaultTags holds the default value on creation for the tags field.
+	document.DefaultTags = documentDescTags.Default.([]string)
+	// documentDescID is the schema descriptor for id field.
+	documentDescID := documentFields[0].Descriptor()
+	// document.DefaultID holds the default value on creation for the id field.
+	document.DefaultID = documentDescID.Default.(func() uuid.UUID)
 	dragresultMixin := schema.DragResult{}.Mixin()
 	dragresultMixinFields0 := dragresultMixin[0].Fields()
 	_ = dragresultMixinFields0

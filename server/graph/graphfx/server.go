@@ -23,6 +23,10 @@ func NewServer(resolver *graph.Resolver, entClient *ent.Client) *handler.Server 
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})
+	srv.AddTransport(transport.GRAPHQL{})
+	srv.AddTransport(transport.MultipartForm{})
+	srv.AddTransport(transport.MultipartMixed{})
+	srv.AddTransport(transport.UrlEncodedForm{})
 
 	srv.SetQueryCache(lru.New[*ast.QueryDocument](1000))
 

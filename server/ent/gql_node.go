@@ -9,6 +9,7 @@ import (
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
@@ -32,6 +33,11 @@ var carImplementors = []string{"Car", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
 func (*Car) IsNode() {}
+
+var documentImplementors = []string{"Document", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*Document) IsNode() {}
 
 var dragresultImplementors = []string{"DragResult", "Node"}
 
@@ -146,6 +152,15 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 			Where(car.ID(id))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
 			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, carImplementors...); err != nil {
+				return nil, err
+			}
+		}
+		return query.Only(ctx)
+	case document.Table:
+		query := c.Document.Query().
+			Where(document.ID(id))
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, documentImplementors...); err != nil {
 				return nil, err
 			}
 		}
@@ -317,6 +332,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		query := c.Car.Query().
 			Where(car.IDIn(ids...))
 		query, err := query.CollectFields(ctx, carImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case document.Table:
+		query := c.Document.Query().
+			Where(document.IDIn(ids...))
+		query, err := query.CollectFields(ctx, documentImplementors...)
 		if err != nil {
 			return nil, err
 		}

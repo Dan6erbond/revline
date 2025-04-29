@@ -7,6 +7,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
@@ -143,6 +144,19 @@ func (c *CarQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphq
 				*wq = *query
 			})
 
+		case "documents":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&DocumentClient{config: c.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, documentImplementors)...); err != nil {
+				return err
+			}
+			c.WithNamedDocuments(alias, func(wq *DocumentQuery) {
+				*wq = *query
+			})
+
 		case "bannerImage":
 			var (
 				alias = field.Alias
@@ -230,6 +244,99 @@ func newCarPaginateArgs(rv map[string]any) *carPaginateArgs {
 	}
 	if v, ok := rv[whereField].(*CarWhereInput); ok {
 		args.opts = append(args.opts, WithCarFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (d *DocumentQuery) CollectFields(ctx context.Context, satisfies ...string) (*DocumentQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return d, nil
+	}
+	if err := d.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return d, nil
+}
+
+func (d *DocumentQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(document.Columns))
+		selectedFields = []string{document.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+
+		case "car":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&CarClient{config: d.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, carImplementors)...); err != nil {
+				return err
+			}
+			d.withCar = query
+		case "createTime":
+			if _, ok := fieldSeen[document.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, document.FieldCreateTime)
+				fieldSeen[document.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[document.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, document.FieldUpdateTime)
+				fieldSeen[document.FieldUpdateTime] = struct{}{}
+			}
+		case "name":
+			if _, ok := fieldSeen[document.FieldName]; !ok {
+				selectedFields = append(selectedFields, document.FieldName)
+				fieldSeen[document.FieldName] = struct{}{}
+			}
+		case "tags":
+			if _, ok := fieldSeen[document.FieldTags]; !ok {
+				selectedFields = append(selectedFields, document.FieldTags)
+				fieldSeen[document.FieldTags] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		d.Select(selectedFields...)
+	}
+	return nil
+}
+
+type documentPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []DocumentPaginateOption
+}
+
+func newDocumentPaginateArgs(rv map[string]any) *documentPaginateArgs {
+	args := &documentPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*DocumentWhereInput); ok {
+		args.opts = append(args.opts, WithDocumentFilter(v.Filter))
 	}
 	return args
 }

@@ -100,10 +100,30 @@ func (c *Car) Media(ctx context.Context) (result []*Media, err error) {
 	return result, err
 }
 
+func (c *Car) Documents(ctx context.Context) (result []*Document, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = c.NamedDocuments(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = c.Edges.DocumentsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = c.QueryDocuments().All(ctx)
+	}
+	return result, err
+}
+
 func (c *Car) BannerImage(ctx context.Context) (*Media, error) {
 	result, err := c.Edges.BannerImageOrErr()
 	if IsNotLoaded(err) {
 		result, err = c.QueryBannerImage().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (d *Document) Car(ctx context.Context) (*Car, error) {
+	result, err := d.Edges.CarOrErr()
+	if IsNotLoaded(err) {
+		result, err = d.QueryCar().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }

@@ -9,6 +9,9 @@ import (
 // Car is the predicate function for car builders.
 type Car func(*sql.Selector)
 
+// Document is the predicate function for document builders.
+type Document func(*sql.Selector)
+
 // DragResult is the predicate function for dragresult builders.
 type DragResult func(*sql.Selector)
 

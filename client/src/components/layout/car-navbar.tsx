@@ -40,6 +40,11 @@ export default function CarNavbar() {
       href: `/cars/${router.query.id}/gallery`,
       active: router.pathname.startsWith("/cars/[id]/gallery"),
     },
+    {
+      name: "Documents",
+      href: `/cars/${router.query.id}/documents`,
+      active: router.pathname.startsWith("/cars/[id]/documents"),
+    },
   ];
 
   return (

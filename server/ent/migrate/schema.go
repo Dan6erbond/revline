@@ -42,6 +42,29 @@ var (
 			},
 		},
 	}
+	// DocumentsColumns holds the columns for the "documents" table.
+	DocumentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "name", Type: field.TypeString},
+		{Name: "tags", Type: field.TypeJSON},
+		{Name: "car_documents", Type: field.TypeUUID, Nullable: true},
+	}
+	// DocumentsTable holds the schema information for the "documents" table.
+	DocumentsTable = &schema.Table{
+		Name:       "documents",
+		Columns:    DocumentsColumns,
+		PrimaryKey: []*schema.Column{DocumentsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "documents_cars_documents",
+				Columns:    []*schema.Column{DocumentsColumns[5]},
+				RefColumns: []*schema.Column{CarsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// DragResultsColumns holds the columns for the "drag_results" table.
 	DragResultsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -359,6 +382,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		CarsTable,
+		DocumentsTable,
 		DragResultsTable,
 		DragSessionsTable,
 		FuelUpsTable,
@@ -377,6 +401,7 @@ var (
 func init() {
 	CarsTable.ForeignKeys[0].RefTable = MediaTable
 	CarsTable.ForeignKeys[1].RefTable = UsersTable
+	DocumentsTable.ForeignKeys[0].RefTable = CarsTable
 	DragResultsTable.ForeignKeys[0].RefTable = DragSessionsTable
 	DragSessionsTable.ForeignKeys[0].RefTable = CarsTable
 	FuelUpsTable.ForeignKeys[0].RefTable = CarsTable

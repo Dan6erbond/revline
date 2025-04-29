@@ -1,0 +1,103 @@
+import {
+  Button,
+  DrawerBody,
+  DrawerFooter,
+  DrawerHeader,
+  Image,
+  Pagination,
+} from "@heroui/react";
+import { Document, Page } from "react-pdf";
+import { FragmentType, graphql, useFragment } from "@/gql";
+
+import { useState } from "react";
+import { useSuspenseQuery } from "@apollo/client";
+
+const PreviewFields = graphql(`
+  fragment PreviewFields on Document {
+    id
+    name
+    url
+    metadata {
+      contentType
+      size
+    }
+  }
+`);
+
+function Preview({ docRef }: { docRef: FragmentType<typeof PreviewFields> }) {
+  const document = useFragment(PreviewFields, docRef);
+
+  const [numPages, setNumPages] = useState<number>();
+  const [pageNumber, setPageNumber] = useState<number>(1);
+
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
+    setNumPages(numPages);
+  }
+
+  if (document.metadata?.contentType === "application/pdf") {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="max-w-full overflow-x-auto p-4">
+          <Document file={document.url} onLoadSuccess={onDocumentLoadSuccess}>
+            <Page pageNumber={pageNumber} />
+          </Document>
+        </div>
+        {numPages !== undefined && (
+          <Pagination
+            total={numPages}
+            page={pageNumber}
+            onChange={setPageNumber}
+            showControls
+            className="self-center"
+          />
+        )}
+      </div>
+    );
+  } else if (document.metadata?.contentType.startsWith("image/")) {
+    return <Image src={document.url} alt={document.name} />;
+  }
+
+  return <>No preview available...</>;
+}
+
+const getDocument = graphql(`
+  query GetDocument($id: ID!) {
+    document(id: $id) {
+      id
+      name
+      url
+      tags
+      metadata {
+        contentType
+        size
+      }
+      ...PreviewFields
+    }
+  }
+`);
+
+export default function Details({
+  onClose,
+  id,
+}: {
+  onClose(): void;
+  id: string;
+}) {
+  const { data } = useSuspenseQuery(getDocument, { variables: { id } });
+
+  return (
+    <>
+      <DrawerHeader className="flex flex-col gap-1">
+        {data.document.name}
+      </DrawerHeader>
+      <DrawerBody>
+        <Preview docRef={data.document} />
+      </DrawerBody>
+      <DrawerFooter>
+        <Button color="danger" variant="light" onPress={onClose}>
+          Close
+        </Button>
+      </DrawerFooter>
+    </>
+  );
+}

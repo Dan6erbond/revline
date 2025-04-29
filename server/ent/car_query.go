@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
@@ -40,6 +41,7 @@ type CarQuery struct {
 	withServiceLogs           *ServiceLogQuery
 	withServiceSchedules      *ServiceScheduleQuery
 	withMedia                 *MediaQuery
+	withDocuments             *DocumentQuery
 	withBannerImage           *MediaQuery
 	withFKs                   bool
 	modifiers                 []func(*sql.Selector)
@@ -51,6 +53,7 @@ type CarQuery struct {
 	withNamedServiceLogs      map[string]*ServiceLogQuery
 	withNamedServiceSchedules map[string]*ServiceScheduleQuery
 	withNamedMedia            map[string]*MediaQuery
+	withNamedDocuments        map[string]*DocumentQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -256,6 +259,28 @@ func (cq *CarQuery) QueryMedia() *MediaQuery {
 			sqlgraph.From(car.Table, car.FieldID, selector),
 			sqlgraph.To(media.Table, media.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, car.MediaTable, car.MediaColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDocuments chains the current query on the "documents" edge.
+func (cq *CarQuery) QueryDocuments() *DocumentQuery {
+	query := (&DocumentClient{config: cq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, selector),
+			sqlgraph.To(document.Table, document.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.DocumentsTable, car.DocumentsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -485,6 +510,7 @@ func (cq *CarQuery) Clone() *CarQuery {
 		withServiceLogs:      cq.withServiceLogs.Clone(),
 		withServiceSchedules: cq.withServiceSchedules.Clone(),
 		withMedia:            cq.withMedia.Clone(),
+		withDocuments:        cq.withDocuments.Clone(),
 		withBannerImage:      cq.withBannerImage.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
@@ -580,6 +606,17 @@ func (cq *CarQuery) WithMedia(opts ...func(*MediaQuery)) *CarQuery {
 	return cq
 }
 
+// WithDocuments tells the query-builder to eager-load the nodes that are connected to
+// the "documents" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CarQuery) WithDocuments(opts ...func(*DocumentQuery)) *CarQuery {
+	query := (&DocumentClient{config: cq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withDocuments = query
+	return cq
+}
+
 // WithBannerImage tells the query-builder to eager-load the nodes that are connected to
 // the "banner_image" edge. The optional arguments are used to configure the query builder of the edge.
 func (cq *CarQuery) WithBannerImage(opts ...func(*MediaQuery)) *CarQuery {
@@ -670,7 +707,7 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 		nodes       = []*Car{}
 		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
-		loadedTypes = [9]bool{
+		loadedTypes = [10]bool{
 			cq.withOwner != nil,
 			cq.withDragSessions != nil,
 			cq.withFuelUps != nil,
@@ -679,6 +716,7 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 			cq.withServiceLogs != nil,
 			cq.withServiceSchedules != nil,
 			cq.withMedia != nil,
+			cq.withDocuments != nil,
 			cq.withBannerImage != nil,
 		}
 	)
@@ -764,6 +802,13 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 			return nil, err
 		}
 	}
+	if query := cq.withDocuments; query != nil {
+		if err := cq.loadDocuments(ctx, query, nodes,
+			func(n *Car) { n.Edges.Documents = []*Document{} },
+			func(n *Car, e *Document) { n.Edges.Documents = append(n.Edges.Documents, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := cq.withBannerImage; query != nil {
 		if err := cq.loadBannerImage(ctx, query, nodes, nil,
 			func(n *Car, e *Media) { n.Edges.BannerImage = e }); err != nil {
@@ -816,6 +861,13 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 		if err := cq.loadMedia(ctx, query, nodes,
 			func(n *Car) { n.appendNamedMedia(name) },
 			func(n *Car, e *Media) { n.appendNamedMedia(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range cq.withNamedDocuments {
+		if err := cq.loadDocuments(ctx, query, nodes,
+			func(n *Car) { n.appendNamedDocuments(name) },
+			func(n *Car, e *Document) { n.appendNamedDocuments(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1076,6 +1128,37 @@ func (cq *CarQuery) loadMedia(ctx context.Context, query *MediaQuery, nodes []*C
 	}
 	return nil
 }
+func (cq *CarQuery) loadDocuments(ctx context.Context, query *DocumentQuery, nodes []*Car, init func(*Car), assign func(*Car, *Document)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Car)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(car.DocumentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.car_documents
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "car_documents" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "car_documents" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 func (cq *CarQuery) loadBannerImage(ctx context.Context, query *MediaQuery, nodes []*Car, init func(*Car), assign func(*Car, *Media)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Car)
@@ -1288,6 +1371,20 @@ func (cq *CarQuery) WithNamedMedia(name string, opts ...func(*MediaQuery)) *CarQ
 		cq.withNamedMedia = make(map[string]*MediaQuery)
 	}
 	cq.withNamedMedia[name] = query
+	return cq
+}
+
+// WithNamedDocuments tells the query-builder to eager-load the nodes that are connected to the "documents"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (cq *CarQuery) WithNamedDocuments(name string, opts ...func(*DocumentQuery)) *CarQuery {
+	query := (&DocumentClient{config: cq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if cq.withNamedDocuments == nil {
+		cq.withNamedDocuments = make(map[string]*DocumentQuery)
+	}
+	cq.withNamedDocuments[name] = query
 	return cq
 }
 

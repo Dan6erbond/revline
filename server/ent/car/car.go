@@ -47,6 +47,8 @@ const (
 	EdgeServiceSchedules = "service_schedules"
 	// EdgeMedia holds the string denoting the media edge name in mutations.
 	EdgeMedia = "media"
+	// EdgeDocuments holds the string denoting the documents edge name in mutations.
+	EdgeDocuments = "documents"
 	// EdgeBannerImage holds the string denoting the banner_image edge name in mutations.
 	EdgeBannerImage = "banner_image"
 	// Table holds the table name of the car in the database.
@@ -107,6 +109,13 @@ const (
 	MediaInverseTable = "media"
 	// MediaColumn is the table column denoting the media relation/edge.
 	MediaColumn = "car_media"
+	// DocumentsTable is the table that holds the documents relation/edge.
+	DocumentsTable = "documents"
+	// DocumentsInverseTable is the table name for the Document entity.
+	// It exists in this package in order to avoid circular dependency with the "document" package.
+	DocumentsInverseTable = "documents"
+	// DocumentsColumn is the table column denoting the documents relation/edge.
+	DocumentsColumn = "car_documents"
 	// BannerImageTable is the table that holds the banner_image relation/edge.
 	BannerImageTable = "cars"
 	// BannerImageInverseTable is the table name for the Media entity.
@@ -315,6 +324,20 @@ func ByMedia(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByDocumentsCount orders the results by documents count.
+func ByDocumentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDocumentsStep(), opts...)
+	}
+}
+
+// ByDocuments orders the results by documents terms.
+func ByDocuments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDocumentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByBannerImageField orders the results by banner_image field.
 func ByBannerImageField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -375,6 +398,13 @@ func newMediaStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MediaInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, MediaTable, MediaColumn),
+	)
+}
+func newDocumentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DocumentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, DocumentsTable, DocumentsColumn),
 	)
 }
 func newBannerImageStep() *sqlgraph.Step {

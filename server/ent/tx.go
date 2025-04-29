@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Car is the client for interacting with the Car builders.
 	Car *CarClient
+	// Document is the client for interacting with the Document builders.
+	Document *DocumentClient
 	// DragResult is the client for interacting with the DragResult builders.
 	DragResult *DragResultClient
 	// DragSession is the client for interacting with the DragSession builders.
@@ -166,6 +168,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Car = NewCarClient(tx.config)
+	tx.Document = NewDocumentClient(tx.config)
 	tx.DragResult = NewDragResultClient(tx.config)
 	tx.DragSession = NewDragSessionClient(tx.config)
 	tx.FuelUp = NewFuelUpClient(tx.config)

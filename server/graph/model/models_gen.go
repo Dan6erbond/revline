@@ -15,6 +15,11 @@ type UpcomingService struct {
 	NextDueDate *time.Time           `json:"nextDueDate,omitempty"`
 }
 
+type UploadDocumentResult struct {
+	Document  *ent.Document `json:"document"`
+	UploadURL string        `json:"uploadUrl"`
+}
+
 type UploadMediaResult struct {
 	Media     *ent.Media `json:"media"`
 	UploadURL string     `json:"uploadUrl"`

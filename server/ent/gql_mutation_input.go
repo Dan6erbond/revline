@@ -29,6 +29,7 @@ type CreateCarInput struct {
 	ServiceLogIDs      []uuid.UUID
 	ServiceScheduleIDs []uuid.UUID
 	MediumIDs          []uuid.UUID
+	DocumentIDs        []uuid.UUID
 	BannerImageID      *uuid.UUID
 }
 
@@ -80,6 +81,9 @@ func (i *CreateCarInput) Mutate(m *CarMutation) {
 	if v := i.MediumIDs; len(v) > 0 {
 		m.AddMediumIDs(v...)
 	}
+	if v := i.DocumentIDs; len(v) > 0 {
+		m.AddDocumentIDs(v...)
+	}
 	if v := i.BannerImageID; v != nil {
 		m.SetBannerImageID(*v)
 	}
@@ -128,6 +132,9 @@ type UpdateCarInput struct {
 	ClearMedia               bool
 	AddMediumIDs             []uuid.UUID
 	RemoveMediumIDs          []uuid.UUID
+	ClearDocuments           bool
+	AddDocumentIDs           []uuid.UUID
+	RemoveDocumentIDs        []uuid.UUID
 	ClearBannerImage         bool
 	BannerImageID            *uuid.UUID
 }
@@ -239,6 +246,15 @@ func (i *UpdateCarInput) Mutate(m *CarMutation) {
 	if v := i.RemoveMediumIDs; len(v) > 0 {
 		m.RemoveMediumIDs(v...)
 	}
+	if i.ClearDocuments {
+		m.ClearDocuments()
+	}
+	if v := i.AddDocumentIDs; len(v) > 0 {
+		m.AddDocumentIDs(v...)
+	}
+	if v := i.RemoveDocumentIDs; len(v) > 0 {
+		m.RemoveDocumentIDs(v...)
+	}
 	if i.ClearBannerImage {
 		m.ClearBannerImage()
 	}
@@ -255,6 +271,82 @@ func (c *CarUpdate) SetInput(i UpdateCarInput) *CarUpdate {
 
 // SetInput applies the change-set in the UpdateCarInput on the CarUpdateOne builder.
 func (c *CarUpdateOne) SetInput(i UpdateCarInput) *CarUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateDocumentInput represents a mutation input for creating documents.
+type CreateDocumentInput struct {
+	CreateTime *time.Time
+	UpdateTime *time.Time
+	Name       string
+	Tags       []string
+	CarID      *uuid.UUID
+}
+
+// Mutate applies the CreateDocumentInput on the DocumentMutation builder.
+func (i *CreateDocumentInput) Mutate(m *DocumentMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	m.SetName(i.Name)
+	if v := i.Tags; v != nil {
+		m.SetTags(v)
+	}
+	if v := i.CarID; v != nil {
+		m.SetCarID(*v)
+	}
+}
+
+// SetInput applies the change-set in the CreateDocumentInput on the DocumentCreate builder.
+func (c *DocumentCreate) SetInput(i CreateDocumentInput) *DocumentCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateDocumentInput represents a mutation input for updating documents.
+type UpdateDocumentInput struct {
+	UpdateTime *time.Time
+	Name       *string
+	Tags       []string
+	AppendTags []string
+	ClearCar   bool
+	CarID      *uuid.UUID
+}
+
+// Mutate applies the UpdateDocumentInput on the DocumentMutation builder.
+func (i *UpdateDocumentInput) Mutate(m *DocumentMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.Name; v != nil {
+		m.SetName(*v)
+	}
+	if v := i.Tags; v != nil {
+		m.SetTags(v)
+	}
+	if i.AppendTags != nil {
+		m.AppendTags(i.Tags)
+	}
+	if i.ClearCar {
+		m.ClearCar()
+	}
+	if v := i.CarID; v != nil {
+		m.SetCarID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateDocumentInput on the DocumentUpdate builder.
+func (c *DocumentUpdate) SetInput(i UpdateDocumentInput) *DocumentUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateDocumentInput on the DocumentUpdateOne builder.
+func (c *DocumentUpdateOne) SetInput(i UpdateDocumentInput) *DocumentUpdateOne {
 	i.Mutate(c.Mutation())
 	return c
 }
