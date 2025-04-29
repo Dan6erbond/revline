@@ -93,7 +93,7 @@ export default function Service() {
             <CardBody className="flex flex-col gap-2">
               <p>Items</p>
               <ul className="list-disc ml-4">
-                {us.schedule.items.map((i) => (
+                {us.schedule.items?.map((i) => (
                   <li key={i.id}>
                     <p>{i.label}</p>
                     <p className="text-sm text-default-400">{i.notes}</p>
