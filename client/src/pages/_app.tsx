@@ -11,10 +11,7 @@ import { SessionProvider } from "next-auth/react";
 import { pdfjs } from "react-pdf";
 import { useRouter } from "next/router";
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
-).toString();
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const inter = Inter({ subsets: ["latin"] });
 
