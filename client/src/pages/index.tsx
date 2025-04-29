@@ -58,7 +58,7 @@ export default function Home() {
               href={`/cars/${car.id}/maintenance`}
               className="overflow-hidden bg-primary-50/5 backdrop-blur hover:shadow-lg transition-shadow rounded-xl group"
             >
-              <div className="relative h-[200px] w-full">
+              <CardHeader className="relative h-[200px] w-full p-0">
                 <Image
                   src={car.bannerImageUrl ?? "/placeholder.png"}
                   alt={car.name}
@@ -74,7 +74,7 @@ export default function Home() {
                     {car.make} {car.model} {car.year}
                   </p>
                 </div>
-              </div>
+              </CardHeader>
 
               <CardBody className="text-sm text-muted-foreground grid grid-cols-2 gap-2 px-4 pt-3">
                 <div className="flex items-center gap-2">
