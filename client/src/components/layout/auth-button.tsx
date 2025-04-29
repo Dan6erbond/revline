@@ -19,7 +19,7 @@ const getMe = graphql(`
       profile {
         id
         username
-        profilePictureUrl
+        pictureUrl
       }
     }
   }
@@ -38,7 +38,7 @@ export default function AuthButton() {
           color="secondary"
           name={data.me.profile?.username ?? undefined}
           size="sm"
-          src={data.me.profile?.profilePictureUrl ?? undefined}
+          src={data.me.profile?.pictureUrl ?? undefined}
         />
       </DropdownTrigger>
       <DropdownMenu aria-label="Profile Actions" variant="flat">

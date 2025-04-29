@@ -1,9 +1,0 @@
-type UpcomingService {
-  schedule: ServiceSchedule!
-  nextDueKm: Int
-  nextDueDate: Date
-}
-
-extend type Car {
-  upcomingServices: [UpcomingService!]!
-}

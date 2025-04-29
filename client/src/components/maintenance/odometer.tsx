@@ -49,7 +49,7 @@ const getOdometerReadings = graphql(`
       odometerReadings {
         id
         readingKm
-        createdAt
+        createTime
         notes
       }
     }
@@ -59,8 +59,6 @@ const getOdometerReadings = graphql(`
 type Inputs = {
   readingKm: number;
   notes: string;
-  locationLat: number;
-  locationLng: number;
 };
 
 const createOdometerReading = graphql(`
@@ -68,7 +66,7 @@ const createOdometerReading = graphql(`
     createOdometerReading(input: $input) {
       id
       readingKm
-      createdAt
+      createTime
       notes
     }
   }
@@ -76,7 +74,7 @@ const createOdometerReading = graphql(`
 
 const columns = [
   { key: "readingKm", label: "Reading" },
-  { key: "createdAt", label: "Created At" },
+  { key: "createdTime", label: "Created At" },
   { key: "notes", label: "Notes" },
 ];
 
@@ -108,7 +106,7 @@ export default function Odometer() {
           car: {
             ...data.car,
             odometerReadings: [
-              ...data.car.odometerReadings,
+              ...(data.car.odometerReadings ?? []),
               res.data.createOdometerReading,
             ],
           },
@@ -117,18 +115,12 @@ export default function Odometer() {
     },
   });
 
-  const onSubmit: SubmitHandler<Inputs> = ({
-    readingKm,
-    locationLat,
-    locationLng,
-  }) => {
+  const onSubmit: SubmitHandler<Inputs> = ({ readingKm }) => {
     mutate({
       variables: {
         input: {
-          carId: getQueryParam(router.query.id)!,
+          carID: getQueryParam(router.query.id)!,
           readingKm: getKilometers(readingKm, distanceUnit),
-          locationLat,
-          locationLng,
         },
       },
     }).then(({ data }) => {
@@ -151,14 +143,14 @@ export default function Odometer() {
       <div className="h-[250] md:h-[350] lg:h-[450] bg-primary-50/30 backdrop-blur-2xl rounded-lg px-4 md:px-8 py-8 md:py-12 light">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
-            data={data?.car?.odometerReadings.map((or) => ({
+            data={data?.car?.odometerReadings?.map((or) => ({
               ...or,
-              createdAt: new Date(or.createdAt).toLocaleDateString(),
+              createdTime: new Date(or.createTime).toLocaleDateString(),
               reading: getDistance(or.readingKm, distanceUnit),
             }))}
           >
             <XAxis
-              dataKey="createdAt"
+              dataKey="createdTime"
               tick={{ fill: "hsl(var(--heroui-foreground))" }}
               stroke="hsl(var(--heroui-foreground))"
             />
@@ -205,7 +197,7 @@ export default function Odometer() {
                 distanceUnit
               ).toLocaleString()} ${distanceUnits[distanceUnit]}`}</TableCell>
               <TableCell>
-                {new Date(or.createdAt).toLocaleDateString()}
+                {new Date(or.createTime).toLocaleDateString()}
               </TableCell>
               <TableCell>{or.notes}</TableCell>
             </TableRow>

@@ -59,20 +59,16 @@ const getUpcomingServices = graphql(`
             id
             label
             notes
-            estimatedDuration
+            estimatedMinutes
             defaultIntervalKm
             defaultIntervalMonths
             tags
-            createdAt
-            updatedAt
           }
           repeatEveryKm
           repeatEveryMonths
           startsAtKm
-          startsAtDate
+          startsAtMonths
           archived
-          createdAt
-          updatedAt
         }
       }
     }

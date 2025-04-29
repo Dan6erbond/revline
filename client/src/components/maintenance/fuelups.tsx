@@ -80,15 +80,13 @@ const getFuelUps = graphql(`
         amountLiters
         cost
         fuelCategory
-        octane
+        octaneRating
         odometerReading {
           id
           readingKm
         }
         notes
         isFullTank
-        locationLat
-        locationLng
       }
       averageConsumptionLitersPerKm
     }
@@ -102,12 +100,10 @@ type Inputs = {
   cost: number;
   relativeCost: number;
   fuelCategory: FuelCategory;
-  octane: OctaneRating;
+  octaneRating: OctaneRating;
   odometerKm: number;
   notes: string;
   isFullTank: boolean;
-  locationLat: number;
-  locationLng: number;
 };
 
 const createFuelUp = graphql(`
@@ -119,15 +115,13 @@ const createFuelUp = graphql(`
       amountLiters
       cost
       fuelCategory
-      octane
+      octaneRating
       odometerReading {
         id
         readingKm
       }
       notes
       isFullTank
-      locationLat
-      locationLng
     }
   }
 `);
@@ -186,7 +180,7 @@ export default function FuelUps() {
           ...data,
           car: {
             ...data.car,
-            fuelUps: [...data.car.fuelUps, res.data.createFuelUp],
+            fuelUps: [...(data.car.fuelUps ?? []), res.data.createFuelUp],
           },
         },
       });
@@ -199,28 +193,24 @@ export default function FuelUps() {
     amount,
     cost,
     fuelCategory,
-    octane,
+    octaneRating,
     odometerKm,
     notes,
     isFullTank,
-    locationLat,
-    locationLng,
   }) => {
     mutate({
       variables: {
         input: {
-          carId: getQueryParam(router.query.id)!,
+          carID: getQueryParam(router.query.id)!,
           occurredAt: occurredAt.toDate().toISOString(),
           station,
           amountLiters: getLiters(amount, fuelVolumeUnit),
           cost,
           fuelCategory,
-          octane,
+          octaneRating,
           odometerKm: getKilometers(odometerKm, distanceUnit),
           notes,
           isFullTank,
-          locationLat,
-          locationLng,
         },
       },
     }).then(({ data }) => {
@@ -235,7 +225,7 @@ export default function FuelUps() {
       <div className="flex flex-col gap-4 md:gap-8 pt-4 md:pt-8">
         <div className="flex justify-between">
           <div>
-            {data?.car?.averageConsumptionLitersPerKm && (
+            {data?.car.averageConsumptionLitersPerKm && (
               <Card>
                 <CardHeader>Average consumption</CardHeader>
                 <CardBody>
@@ -261,7 +251,7 @@ export default function FuelUps() {
         <div className="h-[250] md:h-[350] lg:h-[450] bg-primary-50/30 backdrop-blur-2xl rounded-lg px-4 md:px-8 py-8 md:py-12 light">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
-              data={data?.car?.fuelUps.map((fu) => ({
+              data={data?.car.fuelUps?.map((fu) => ({
                 ...fu,
                 occurredAt: new Date(fu.occurredAt).toLocaleDateString(),
                 relativeCost: fu.cost / fu.amountLiters,
@@ -347,7 +337,7 @@ export default function FuelUps() {
                 </TableCell>
                 <TableCell>{`${fu.fuelCategory}${
                   fu.fuelCategory === FuelCategory.Petrol
-                    ? " (" + fu.octane + ")"
+                    ? " (" + fu.octaneRating + ")"
                     : ""
                 }`}</TableCell>
                 <TableCell>
@@ -489,12 +479,14 @@ export default function FuelUps() {
                     <Select
                       label="Octane rating"
                       endContent={<Percent />}
-                      {...register("octane")}
+                      {...register("octaneRating")}
                       variant="bordered"
                     >
-                      {Object.entries(OctaneRating).map(([label, octane]) => (
-                        <SelectItem key={octane}>{label}</SelectItem>
-                      ))}
+                      {Object.entries(OctaneRating).map(
+                        ([label, octaneRating]) => (
+                          <SelectItem key={octaneRating}>{label}</SelectItem>
+                        )
+                      )}
                     </Select>
                   )}
                   <Controller

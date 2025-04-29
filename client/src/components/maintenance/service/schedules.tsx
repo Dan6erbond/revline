@@ -1,6 +1,5 @@
 import {
   Button,
-  DatePicker,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -27,7 +26,6 @@ import { getDistance, getKilometers } from "@/utils/distance";
 import { useMutation, useQuery } from "@apollo/client";
 
 import { DistanceUnit } from "@/gql/graphql";
-import { ZonedDateTime } from "@internationalized/date";
 import { distanceUnits } from "@/literals";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
@@ -52,20 +50,16 @@ const getServiceSchedules = graphql(`
           id
           label
           notes
-          estimatedDuration
+          estimatedMinutes
           defaultIntervalKm
           defaultIntervalMonths
           tags
-          createdAt
-          updatedAt
         }
         repeatEveryKm
         repeatEveryMonths
         startsAtKm
-        startsAtDate
+        startsAtMonths
         archived
-        createdAt
-        updatedAt
       }
     }
   }
@@ -86,12 +80,10 @@ const getServiceItems = graphql(`
         id
         label
         notes
-        estimatedDuration
+        estimatedMinutes
         defaultIntervalKm
         defaultIntervalMonths
         tags
-        createdAt
-        updatedAt
       }
     }
   }
@@ -103,7 +95,7 @@ type Inputs = {
   repeatEveryKm?: number;
   repeatEveryMonths?: number;
   startsAtKm?: number;
-  startsAtDate?: ZonedDateTime;
+  startsAtMonths?: number;
   serviceItemIds: string[];
 };
 
@@ -117,20 +109,16 @@ const createServiceSchedule = graphql(`
         id
         label
         notes
-        estimatedDuration
+        estimatedMinutes
         defaultIntervalKm
         defaultIntervalMonths
         tags
-        createdAt
-        updatedAt
       }
       repeatEveryKm
       repeatEveryMonths
       startsAtKm
-      startsAtDate
+      startsAtMonths
       archived
-      createdAt
-      updatedAt
     }
   }
 `);
@@ -140,8 +128,8 @@ const columns = [
   { key: "notes", label: "Notes" },
   { key: "repeatEvery", label: "Repeat every" },
   { key: "repeatEveryMonths", label: "Repeat every" },
-  { key: "startsAtKm", label: "Starts at km" },
-  { key: "startsAtDate", label: "Starts at date" },
+  { key: "startsAtKm", label: "Starts at" },
+  { key: "startsAtMonths", label: "Starts at" },
   { key: "serviceItemIds", label: "Items" },
   { key: "archived", label: "Archived" },
 ];
@@ -183,7 +171,7 @@ export default function Schedules() {
           car: {
             ...data.car,
             serviceSchedules: [
-              ...data.car.serviceSchedules,
+              ...(data.car.serviceSchedules ?? []),
               res.data.createServiceSchedule,
             ],
           },
@@ -198,13 +186,13 @@ export default function Schedules() {
     repeatEveryKm,
     repeatEveryMonths,
     startsAtKm,
-    startsAtDate,
+    startsAtMonths,
     serviceItemIds,
   }) => {
     mutate({
       variables: {
         input: {
-          carId: getQueryParam(router.query.id)!,
+          carID: getQueryParam(router.query.id)!,
           title,
           notes,
           repeatEveryKm:
@@ -212,9 +200,12 @@ export default function Schedules() {
               ? getKilometers(repeatEveryKm, distanceUnit)
               : null,
           repeatEveryMonths,
-          startsAtKm,
-          startsAtDate: startsAtDate?.toDate().toISOString(),
-          serviceItemIds,
+          startsAtKm:
+            startsAtKm != null
+              ? getKilometers(startsAtKm, distanceUnit)
+              : null,
+          startsAtMonths,
+          itemIDs: serviceItemIds,
         },
       },
     }).then(({ data }) => {
@@ -263,12 +254,17 @@ export default function Schedules() {
                 <TableCell>
                   {sl.repeatEveryMonths && `${sl.repeatEveryMonths} months`}
                 </TableCell>
-                <TableCell>{sl.startsAtKm}</TableCell>
                 <TableCell>
-                  {sl.startsAtDate &&
-                    new Date(sl.startsAtDate).toLocaleDateString()}
+                  {sl.startsAtKm &&
+                    `${getDistance(
+                      sl.startsAtKm,
+                      distanceUnit
+                    ).toLocaleString()} ${distanceUnits[distanceUnit]}`}
                 </TableCell>
-                <TableCell>{sl.items.map((i) => i.label).join(", ")}</TableCell>
+                <TableCell>{sl.startsAtMonths}</TableCell>
+                <TableCell>
+                  {sl.items?.map((i) => i.label).join(", ")}
+                </TableCell>
                 <TableCell>{sl.archived}</TableCell>
               </TableRow>
             )}
@@ -303,14 +299,14 @@ export default function Schedules() {
                           <div>
                             <p className="text-sm text-default-700">
                               {
-                                serviceItems?.car?.serviceItems.find(
+                                serviceItems?.car?.serviceItems?.find(
                                   (si) => si.id === id
                                 )?.label
                               }
                             </p>
                             <p className="text-xs text-default-400">
                               {
-                                serviceItems?.car?.serviceItems.find(
+                                serviceItems?.car?.serviceItems?.find(
                                   (si) => si.id === id
                                 )?.notes
                               }
@@ -344,7 +340,7 @@ export default function Schedules() {
                         </Button>
                       </DropdownTrigger>
                       <DropdownMenu
-                        items={serviceItems?.car?.serviceItems.filter(
+                        items={serviceItems?.car?.serviceItems?.filter(
                           (si) => !serviceItemIds.includes(si.id)
                         )}
                       >
@@ -402,7 +398,7 @@ export default function Schedules() {
                     render={({ field: { onChange, ...field } }) => (
                       <NumberInput
                         label="Starts at"
-                        endContent={"km"}
+                        endContent={distanceUnits[distanceUnit]}
                         {...field}
                         onValueChange={onChange}
                         variant="bordered"
@@ -410,14 +406,14 @@ export default function Schedules() {
                     )}
                   />
                   <Controller
-                    name="startsAtDate"
+                    name="startsAtMonths"
                     control={control}
-                    render={({ field }) => (
-                      <DatePicker
-                        hideTimeZone
-                        showMonthAndYearPickers
+                    render={({ field: { onChange, ...field } }) => (
+                      <NumberInput
                         label="Starts at"
+                        endContent={"months"}
                         {...field}
+                        onValueChange={onChange}
                         variant="bordered"
                       />
                     )}

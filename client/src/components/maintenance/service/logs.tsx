@@ -54,20 +54,16 @@ const getServiceLogs = graphql(`
           id
           readingKm
           notes
-          createdAt
-          updatedAt
         }
         notes
         items {
           id
           label
           notes
-          estimatedDuration
+          estimatedMinutes
           defaultIntervalKm
           defaultIntervalMonths
           tags
-          createdAt
-          updatedAt
         }
         schedule {
           id
@@ -76,14 +72,10 @@ const getServiceLogs = graphql(`
           repeatEveryKm
           repeatEveryMonths
           startsAtKm
-          startsAtDate
+          startsAtMonths
           archived
-          createdAt
-          updatedAt
         }
         performedBy
-        createdAt
-        updatedAt
       }
     }
   }
@@ -104,12 +96,10 @@ const getServiceItems = graphql(`
         id
         label
         notes
-        estimatedDuration
+        estimatedMinutes
         defaultIntervalKm
         defaultIntervalMonths
         tags
-        createdAt
-        updatedAt
       }
     }
   }
@@ -134,20 +124,16 @@ const getServiceSchedules = graphql(`
           id
           label
           notes
-          estimatedDuration
+          estimatedMinutes
           defaultIntervalKm
           defaultIntervalMonths
           tags
-          createdAt
-          updatedAt
         }
         repeatEveryKm
         repeatEveryMonths
         startsAtKm
-        startsAtDate
+        startsAtMonths
         archived
-        createdAt
-        updatedAt
       }
     }
   }
@@ -171,20 +157,16 @@ const createServiceLog = graphql(`
         id
         readingKm
         notes
-        createdAt
-        updatedAt
       }
       notes
       items {
         id
         label
         notes
-        estimatedDuration
+        estimatedMinutes
         defaultIntervalKm
         defaultIntervalMonths
         tags
-        createdAt
-        updatedAt
       }
       schedule {
         id
@@ -193,14 +175,10 @@ const createServiceLog = graphql(`
         repeatEveryKm
         repeatEveryMonths
         startsAtKm
-        startsAtDate
+        startsAtMonths
         archived
-        createdAt
-        updatedAt
       }
       performedBy
-      createdAt
-      updatedAt
     }
   }
 `);
@@ -247,7 +225,7 @@ export default function Logs() {
 
   const selectedSchedule = useMemo(
     () =>
-      serviceSchedules?.car?.serviceSchedules.find((s) => s.id === scheduleId),
+      serviceSchedules?.car?.serviceSchedules?.find((s) => s.id === scheduleId),
     [serviceSchedules, scheduleId]
   );
 
@@ -262,7 +240,10 @@ export default function Logs() {
           ...data,
           car: {
             ...data.car,
-            serviceLogs: [...data.car.serviceLogs, res.data.createServiceLog],
+            serviceLogs: [
+              ...(data.car.serviceLogs ?? []),
+              res.data.createServiceLog,
+            ],
           },
         },
       });
@@ -280,13 +261,13 @@ export default function Logs() {
     mutate({
       variables: {
         input: {
-          carId: getQueryParam(router.query.id)!,
+          carID: getQueryParam(router.query.id)!,
           datePerformed: datePerformed.toDate().toISOString(),
           odometerKm: getKilometers(odometerKm, distanceUnit),
           performedBy,
           notes,
-          serviceItemIds,
-          scheduleId,
+          itemIDs: serviceItemIds,
+          scheduleID: scheduleId || null,
         },
       },
     }).then(({ data }) => {
@@ -333,7 +314,9 @@ export default function Logs() {
                       distanceUnit
                     ).toLocaleString()}
                 </TableCell>
-                <TableCell>{sl.items.map((i) => i.label).join(", ")}</TableCell>
+                <TableCell>
+                  {sl.items?.map((i) => i.label).join(", ")}
+                </TableCell>
                 <TableCell>{sl.schedule?.title}</TableCell>
                 <TableCell>{sl.notes}</TableCell>
                 <TableCell>{sl.performedBy}</TableCell>
@@ -384,7 +367,7 @@ export default function Logs() {
                     )}
                   />
                   <Select
-                    items={serviceSchedules?.car?.serviceSchedules}
+                    items={serviceSchedules?.car?.serviceSchedules ?? []}
                     label="Schedule"
                     {...register("scheduleId")}
                     variant="bordered"
@@ -412,7 +395,7 @@ export default function Logs() {
                       </span>
                       <p>Items</p>
                       <ul>
-                        {selectedSchedule.items.map(({ id, label, notes }) => (
+                        {selectedSchedule.items?.map(({ id, label, notes }) => (
                           <li key={id} className="flex justify-between">
                             <div>
                               <p className="text-sm text-default-700">
@@ -435,14 +418,14 @@ export default function Logs() {
                             <div>
                               <p className="text-sm text-default-700">
                                 {
-                                  serviceItems?.car?.serviceItems.find(
+                                  serviceItems?.car?.serviceItems?.find(
                                     (si) => si.id === id
                                   )?.label
                                 }
                               </p>
                               <p className="text-xs text-default-400">
                                 {
-                                  serviceItems?.car?.serviceItems.find(
+                                  serviceItems?.car?.serviceItems?.find(
                                     (si) => si.id === id
                                   )?.notes
                                 }
@@ -476,7 +459,7 @@ export default function Logs() {
                           </Button>
                         </DropdownTrigger>
                         <DropdownMenu
-                          items={serviceItems?.car?.serviceItems.filter(
+                          items={serviceItems?.car?.serviceItems?.filter(
                             (si) => !serviceItemIds.includes(si.id)
                           )}
                         >

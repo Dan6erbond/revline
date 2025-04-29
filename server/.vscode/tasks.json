@@ -1,0 +1,43 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run atlas diff",
+      "type": "shell",
+      "command": "atlas migrate diff ${input:migration_name} --dir 'file://ent/migrate/migrations' --to 'ent://ent/schema' --dev-url 'postgresql://postgres:postgres@localhost:5432/atlas?search_path=public&sslmode=disable'",
+      "problemMatcher": []
+    },
+    {
+      "label": "Create new Ent model",
+      "type": "shell",
+      "command": "go run -mod=mod entgo.io/ent/cmd/ent new ${input:model_name}",
+      "problemMatcher": []
+    },
+    {
+      "label": "Add atlas migration manually",
+      "type": "shell",
+      "command": "atlas migrate hash --dir 'file://ent/migrate/migrations' && atlas migrate new ${input:migration_name} --dir 'file://ent/migrate/migrations'",
+      "problemMatcher": []
+    },
+    {
+      "label": "Regenerate Atlas integrity file",
+      "type": "shell",
+      "command": "atlas migrate hash --dir 'file://ent/migrate/migrations'",
+      "problemMatcher": []
+    },
+  ],
+  "inputs": [
+    {
+      "id": "migration_name",
+      "description": "Enter a name for the migration",
+      "default": "",
+      "type": "promptString"
+    },
+    {
+      "id": "model_name",
+      "description": "Enter a name for Ent schema",
+      "default": "",
+      "type": "promptString"
+    },
+  ],
+}

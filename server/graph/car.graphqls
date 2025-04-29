@@ -1,0 +1,49 @@
+type UpcomingService {
+  schedule: ServiceSchedule!
+  nextDueKm: Float
+  nextDueDate: Time
+}
+
+extend type Car {
+  bannerImageUrl: String
+  averageConsumptionLitersPerKm: Float!
+  upcomingServices: [UpcomingService!]!
+}
+
+extend type Media {
+  url: String!
+}
+
+extend type Query {
+  car(id: ID!): Car!
+  dragSession(id: ID!): DragSession!
+}
+
+type UploadMediaResult {
+  media: Media!
+  uploadUrl: String!
+}
+
+extend input CreateFuelUpInput {
+  odometerReading: CreateOdometerReadingInput
+  odometerKm: Float
+}
+
+extend input CreateServiceLogInput {
+  odometerKm: Float
+}
+
+extend type Mutation {
+  createCar(input: CreateCarInput!): Car! @loggedIn
+  uploadBannerImage(input: CreateMediaInput!): UploadMediaResult! @loggedIn
+  uploadMedia(input: CreateMediaInput!): UploadMediaResult! @loggedIn
+  createFuelUp(input: CreateFuelUpInput!): FuelUp! @loggedIn
+  createOdometerReading(input: CreateOdometerReadingInput!): OdometerReading!
+    @loggedIn
+  createServiceItem(input: CreateServiceItemInput!): ServiceItem! @loggedIn
+  createServiceSchedule(input: CreateServiceScheduleInput!): ServiceSchedule!
+    @loggedIn
+  createServiceLog(input: CreateServiceLogInput!): ServiceLog! @loggedIn
+  createDragSession(input: CreateDragSessionInput!): DragSession! @loggedIn
+  createDragResult(input: CreateDragResultInput!): DragResult! @loggedIn
+}

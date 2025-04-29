@@ -7,10 +7,12 @@ import { useQuery } from "@apollo/client";
 
 const getGarage = graphql(`
   query GetGarage {
-    cars {
-      id
-      name
-      bannerImageUrl
+    me {
+      cars {
+        id
+        name
+        bannerImageUrl
+      }
     }
   }
 `);
@@ -28,7 +30,7 @@ export default function Home() {
           </Button>
         </div>
         <div className="grid gap-4 md:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {data?.cars.map((car) => (
+          {data?.me.cars?.map((car) => (
             <Card
               key={car.id}
               isPressable

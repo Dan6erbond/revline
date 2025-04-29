@@ -16,21 +16,17 @@ const getGallery = graphql(`
       media {
         id
         url
-        createdAt
-        updatedAt
       }
     }
   }
 `);
 
 const uploadMedia = graphql(`
-  mutation UploadMedia($input: UploadMediaInput!) {
+  mutation UploadMedia($input: CreateMediaInput!) {
     uploadMedia(input: $input) {
       media {
         id
         url
-        createdAt
-        updatedAt
       }
       uploadUrl
     }
@@ -88,7 +84,7 @@ export default function Gallery() {
       const res = await mutate({
         variables: {
           input: {
-            carId: getQueryParam(router.query.id) as string,
+            carID: getQueryParam(router.query.id) as string,
           },
         },
       });
@@ -173,7 +169,7 @@ export default function Gallery() {
       <div className="p-4 flex flex-col gap-4">
         <h1 className="text-3xl">Gallery</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {data?.car?.media.map((m) => (
+          {data?.car?.media?.map((m) => (
             <div className="p-4 h-[400px]" key={m.id}>
               <Image
                 src={m.url}

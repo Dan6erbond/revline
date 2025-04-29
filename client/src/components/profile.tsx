@@ -61,7 +61,7 @@ const getProfile = graphql(`
         distanceUnit
         fuelConsumptionUnit
         temperatureUnit
-        profilePictureUrl
+        pictureUrl
       }
     }
   }
@@ -87,7 +87,7 @@ const uploadProfilePicture = graphql(`
   mutation UploadProfilePicture($input: UploadProfilePictureInput!) {
     uploadProfilePicture(input: $input) {
       id
-      profilePictureUrl
+      pictureUrl
     }
   }
 `);
@@ -241,14 +241,12 @@ export default function ProfileForm() {
               onDrop={handleDrop}
               data-dragging={isDragging || undefined}
               aria-label={
-                data?.me?.profile?.profilePictureUrl
-                  ? "Change image"
-                  : "Upload image"
+                data?.me?.profile?.pictureUrl ? "Change image" : "Upload image"
               }
             >
               <Image
                 className="size-full object-cover"
-                src={data?.me?.profile?.profilePictureUrl ?? undefined}
+                src={data?.me?.profile?.pictureUrl ?? undefined}
                 alt={data?.me?.profile?.username ?? undefined}
                 removeWrapper
               />

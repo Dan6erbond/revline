@@ -1,0 +1,34 @@
+directive @goTag(
+  key: String!
+  value: String
+) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+
+directive @goExtraField(
+  name: String
+  type: String!
+  overrideTags: String
+  description: String
+) repeatable on OBJECT | INPUT_OBJECT
+
+scalar Upload
+
+directive @loggedIn on FIELD_DEFINITION
+
+type Query {
+  me: User! @loggedIn
+}
+
+extend type Profile {
+  pictureUrl: String
+}
+
+input UploadProfilePictureInput {
+  picture: Upload
+}
+
+type Mutation {
+  updateProfile(input: UpdateProfileInput!): Profile! @loggedIn
+  uploadProfilePicture(input: UploadProfilePictureInput): Profile! @loggedIn
+}
+
+# type Subscription

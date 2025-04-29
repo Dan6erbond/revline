@@ -126,7 +126,10 @@ export default function Session() {
           ...data,
           dragSession: {
             ...data.dragSession,
-            results: [...data.dragSession.results, res.data.createDragResult],
+            results: [
+              ...(data.dragSession.results ?? []),
+              res.data.createDragResult,
+            ],
           },
         },
       });
@@ -137,7 +140,7 @@ export default function Session() {
     mutate({
       variables: {
         input: {
-          sessionId: router.query.tab![1],
+          sessionID: router.query.tab![1],
           unit,
           value,
           result,
@@ -165,7 +168,7 @@ export default function Session() {
           <Plus />
         </Button>
       </div>
-      {data.dragSession?.results.map((r) => (
+      {data.dragSession?.results?.map((r) => (
         <Card key={r.id}>
           <CardHeader>
             {resolveDragResultType(r.unit, r.value) ?? `0-${r.value} ${r.unit}`}

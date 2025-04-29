@@ -1,23 +1,35 @@
-# Use the official Node.js image as the base image
-FROM node:23-alpine
+FROM golang:1.24-alpine AS builder
 
-# Set the working directory inside the container
-WORKDIR /usr/src/app
+WORKDIR /revline
 
-# Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
+COPY . ./
 
-# Install the application dependencies
-RUN npm install
+RUN apk update && \
+  apk upgrade -U && \
+  apk add build-base libwebp-dev
 
-# Copy the rest of the application files
-COPY . .
+RUN go mod download
 
-# Build the NestJS application
-RUN npm run build
+RUN CGO_ENABLED=1 go build -o revline .
 
-# Expose the application port
-EXPOSE 3000
+FROM alpine:latest
 
-# Command to run the application
-CMD ["node", "dist/src/main"]
+WORKDIR /revline
+
+RUN apk update && \
+  apk upgrade -U && \
+  apk add --no-cache ca-certificates libwebp-dev curl
+
+RUN curl -sSf https://atlasgo.sh | sh
+
+RUN mkdir migrations
+COPY --from=builder /revline/ent/migrate/migrations/ ./migrations/
+
+COPY --from=builder /revline/revline .
+
+ENV PORT=4000
+ENV HOST=0.0.0.0
+
+EXPOSE 4000
+
+CMD [ "./revline" ]

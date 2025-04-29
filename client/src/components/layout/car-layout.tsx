@@ -37,7 +37,7 @@ const getCarBanner = graphql(`
 `);
 
 const uploadBannerImage = graphql(`
-  mutation UploadBannerImage($input: UploadMediaInput!) {
+  mutation UploadBannerImage($input: CreateMediaInput!) {
     uploadBannerImage(input: $input) {
       media {
         id
@@ -93,7 +93,7 @@ export default function CarLayout({ children }: { children?: ReactNode }) {
     mutate({
       variables: {
         input: {
-          carId: getQueryParam(router.query.id) as string,
+          carID: getQueryParam(router.query.id) as string,
         },
       },
     }).then(async ({ data }) => {

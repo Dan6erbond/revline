@@ -2,7 +2,7 @@ import { Button, Input, Textarea } from "@heroui/react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import React from "react";
-import { getQueryParam } from "../../../utils/router";
+import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useMutation } from "@apollo/client";
 import { useRouter } from "next/router";
@@ -35,7 +35,7 @@ export default function Create() {
     mutate({
       variables: {
         input: {
-          carId: getQueryParam(router.query.id)!,
+          carID: getQueryParam(router.query.id)!,
           title,
           notes,
         },

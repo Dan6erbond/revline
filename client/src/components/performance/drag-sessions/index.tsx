@@ -11,9 +11,9 @@ import React, { Suspense } from "react";
 import Create from "./create";
 import { Plus } from "lucide-react";
 import Session from "./session";
-import { getQueryParam } from "../../../utils/router";
-import { graphql } from "../../../gql";
-import { isUUID } from "../../../utils/is-uuid";
+import { getQueryParam } from "@/utils/router";
+import { graphql } from "@/gql";
+import { isUUID } from "@/utils/is-uuid";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
 
@@ -63,11 +63,11 @@ export default function DragSessions() {
           Add
         </Button>
       </div>
-      {data?.car?.dragSessions.map((session) => (
+      {data?.car.dragSessions?.map((session) => (
         <Card key={session.id}>
           <CardHeader>{session.title}</CardHeader>
           <CardBody>{session.notes}</CardBody>
-          <CardFooter>{session.results.length} results</CardFooter>
+          <CardFooter>{session.results?.length} results</CardFooter>
         </Card>
       ))}
     </div>

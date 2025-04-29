@@ -12,8 +12,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     jwt: ({ token, account }) => {
       if (account) {
-        token.idToken = account.id_token;
-        token.accessToken = account.access_token;
+        if (account.provider === "zitadel") {
+          token.accessToken = account.id_token;
+        } else {
+          token.accessToken = account.access_token;
+        }
         token.refreshToken = account.refresh_token;
       }
 
@@ -26,7 +29,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const { data } = await buildClient({
           current: async () => ({
             ...session,
-            accessToken: token.idToken,
+            accessToken: token.accessToken,
           }),
         }).query({
           query: graphql(`
@@ -44,7 +47,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       }
 
-      return { ...session, user, accessToken: token.idToken };
+      return { ...session, user, accessToken: token.accessToken };
     },
     signIn: async () => {
       /* if (account) {

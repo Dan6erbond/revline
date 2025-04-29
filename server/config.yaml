@@ -1,0 +1,14 @@
+databaseUrl: postgresql://postgres:postgres@localhost:5432/revline
+auth:
+  providers:
+    - name: zitadel
+      type: oidc
+      issuerUrl: https://dev-zjslvu.us1.zitadel.cloud
+      emailClaim: email
+s3:
+  endpoint: localhost:9000
+  bucket: revline
+  accessKey: minioadmin
+  secretAccessKey: minioadmin
+  useSsl: false
+  region: local

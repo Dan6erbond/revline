@@ -42,12 +42,10 @@ const getServiceItems = graphql(`
         id
         label
         notes
-        estimatedDuration
+        estimatedMinutes
         defaultIntervalKm
         defaultIntervalMonths
         tags
-        createdAt
-        updatedAt
       }
     }
   }
@@ -56,7 +54,7 @@ const getServiceItems = graphql(`
 type Inputs = {
   label: string;
   notes?: string | null;
-  estimatedDuration?: number;
+  estimatedMinutes?: number;
   defaultIntervalKm?: number;
   defaultIntervalMonths?: number;
 };
@@ -67,19 +65,17 @@ const createServiceItem = graphql(`
       id
       label
       notes
-      estimatedDuration
+      estimatedMinutes
       defaultIntervalKm
       defaultIntervalMonths
       tags
-      createdAt
-      updatedAt
     }
   }
 `);
 
 const columns = [
   { key: "label", label: "Label" },
-  { key: "estimatedDuration", label: "Duration (min)" },
+  { key: "estimatedMinutes", label: "Duration (min)" },
   { key: "defaultInterval", label: "Default interval" },
   { key: "defaultIntervalMonths", label: "Default interval (months)" },
   { key: "tags", label: "Tags" },
@@ -114,7 +110,7 @@ export default function Items() {
           car: {
             ...data.car,
             serviceItems: [
-              ...data.car.serviceItems,
+              ...(data.car.serviceItems ?? []),
               res.data.createServiceItem,
             ],
           },
@@ -126,17 +122,17 @@ export default function Items() {
   const onSubmit: SubmitHandler<Inputs> = ({
     label,
     notes,
-    estimatedDuration,
+    estimatedMinutes,
     defaultIntervalKm,
     defaultIntervalMonths,
   }) => {
     mutate({
       variables: {
         input: {
-          carId: getQueryParam(router.query.id)!,
+          carID: getQueryParam(router.query.id)!,
           label,
           notes,
-          estimatedDuration,
+          estimatedMinutes,
           defaultIntervalKm:
             defaultIntervalKm != null
               ? getKilometers(defaultIntervalKm, distanceUnit)
@@ -179,7 +175,7 @@ export default function Items() {
             {(si) => (
               <TableRow key={si.id}>
                 <TableCell>{si.label}</TableCell>
-                <TableCell>{si.estimatedDuration}</TableCell>
+                <TableCell>{si.estimatedMinutes}</TableCell>
                 <TableCell>
                   {si.defaultIntervalKm != null &&
                     `${getDistance(
@@ -217,7 +213,7 @@ export default function Items() {
                   />
                   <Controller
                     control={control}
-                    name="estimatedDuration"
+                    name="estimatedMinutes"
                     render={({ field: { onChange, ...field } }) => (
                       <NumberInput
                         label="Estimated duration"

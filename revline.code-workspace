@@ -17,9 +17,20 @@
         "server": "localhost",
         "port": 5432,
         "driver": "PostgreSQL",
+        "name": "atlas",
+        "group": "revline",
+        "database": "atlas",
+        "username": "postgres"
+      },
+      {
+        "previewLimit": 50,
+        "server": "localhost",
+        "port": 5432,
+        "driver": "PostgreSQL",
         "name": "revline",
         "database": "revline",
-        "username": "postgres"
+        "username": "postgres",
+        "group": "revline"
       }
     ]
   }
