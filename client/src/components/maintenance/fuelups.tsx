@@ -226,14 +226,19 @@ export default function FuelUps() {
         <div className="flex justify-between">
           <div>
             {data?.car.averageConsumptionLitersPerKm && (
-              <Card>
-                <CardHeader>Average consumption</CardHeader>
-                <CardBody>
+              <Card className="bg-primary-50/5 border border-border rounded-xl shadow-sm">
+                <CardHeader className="flex items-center gap-3 pb-1">
+                  <Fuel className="text-primary w-5 h-5" />
+                  <h4 className="text-md font-medium">Average Consumption</h4>
+                </CardHeader>
+                <CardBody className="pt-1 text-2xl font-semibold text-foreground">
                   {getFuelConsumption(
                     data.car.averageConsumptionLitersPerKm,
                     fuelConsumptionUnit
                   ).toLocaleString()}{" "}
-                  {fuelConsumptionUnitsShort[fuelConsumptionUnit]}
+                  <span className="text-muted-foreground text-base font-normal">
+                    {fuelConsumptionUnitsShort[fuelConsumptionUnit]}
+                  </span>
                 </CardBody>
               </Card>
             )}

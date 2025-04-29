@@ -69,7 +69,7 @@ export default function DynoSessions() {
           as={Link}
           isPressable
           href={`/cars/${router.query.id}/performance/dyno-sessions/${session.id}`}
-          className="hover:shadow-lg transition-shadow duration-200 group bg-primary-50/10 backdrop-blur-md rounded-xl p-4"
+          className="hover:shadow-lg transition-shadow duration-200 group bg-primary-50/5 backdrop-blur-md rounded-xl p-4"
         >
           <CardHeader className="text-lg font-semibold flex items-center justify-between">
             <span>{session.title}</span>
