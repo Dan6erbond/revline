@@ -24,6 +24,11 @@ func NewRouter(lc fx.Lifecycle, config internal.Config) *chi.Mux {
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Ping"))
+	})
+
 	lc.Append(fx.StartHook(func() {
 		go http.ListenAndServe(fmt.Sprintf("%s:%d", config.Host, config.Port), router)
 	}))
