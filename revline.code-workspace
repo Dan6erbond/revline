@@ -8,6 +8,9 @@
     },
     {
       "path": "server"
+    },
+    {
+      "path": "website"
     }
   ],
   "settings": {
