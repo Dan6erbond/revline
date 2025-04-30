@@ -77,5 +77,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
       return true;
     },
+    redirect: ({ url, baseUrl }) => {
+      return url ?? baseUrl + basePath;
+    },
   },
 });
