@@ -3,8 +3,10 @@ import Zitadel from "next-auth/providers/zitadel";
 import { buildClient } from "./apollo-client";
 import { graphql } from "./gql";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  basePath: `${process.env.BASE_PATH ?? ""}/api/auth`,
+const basePath = process.env.BASE_PATH ?? "";
+
+export const { auth, handlers, signIn, signOut } = NextAuth({
+  basePath: `${basePath}/api/auth`,
   providers: [
     Zitadel({
       issuer: process.env.AUTH_ZITADEL_ISSUER,
