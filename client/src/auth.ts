@@ -80,7 +80,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     redirect: ({ url, baseUrl }) => {
       const u = new URL(url, baseUrl);
 
-      if (!u.pathname.startsWith("basePath")) {
+      if (!u.pathname.startsWith(basePath)) {
         u.pathname = basePath + u.pathname;
       }
 
