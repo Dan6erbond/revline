@@ -38,6 +38,7 @@ export default function App({
       `}</style>
       <Head>
         <title>Revline 1</title>
+        <meta name="apple-mobile-web-app-title" content="Revline 1" />
       </Head>
       <SessionProvider
         session={session}
