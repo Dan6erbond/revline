@@ -80,9 +80,9 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     redirect: ({ url, baseUrl }) => {
       const u = new URL(url, baseUrl);
 
-      if (!u.pathname.startsWith(basePath)) {
-        u.pathname = basePath + u.pathname;
-      }
+      const path = u.pathname.replace(new RegExp(`^(${basePath})+`), "");
+
+      u.pathname = basePath + (path.startsWith("/") ? "" : "/") + path;
 
       return u.toString();
     },
