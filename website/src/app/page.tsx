@@ -54,7 +54,7 @@ export default function Home() {
               <Button
                 size="lg"
                 as="a"
-                href="/app/api/auth/signin/zitadel"
+                href="https://revline.one/app/api/auth/signin"
                 className="bg-white text-black hover:bg-gray-200 transition-colors flex items-center gap-2"
               >
                 Log In <ArrowRight className="w-4 h-4" />
