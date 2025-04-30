@@ -60,7 +60,7 @@ export default function Home() {
               href={href(`/cars/${car.id}/maintenance`)}
               className="overflow-hidden bg-primary-50/5 backdrop-blur hover:shadow-lg transition-shadow rounded-xl group"
             >
-              <CardHeader className="relative h-[200px] w-full p-0">
+              <CardHeader className="relative h-[200px] w-full p-0 overflow-hidden">
                 <Image
                   src={car.bannerImageUrl ?? "/placeholder.png"}
                   alt={car.name}
