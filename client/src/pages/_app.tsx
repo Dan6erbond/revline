@@ -39,7 +39,10 @@ export default function App({
       <Head>
         <title>Revline 1</title>
       </Head>
-      <SessionProvider session={session} basePath={router.basePath}>
+      <SessionProvider
+        session={session}
+        basePath={router.basePath ? router.basePath + "/api/auth" : undefined}
+      >
         <AuthenticatedApolloProvider>
           <Component {...pageProps} />
         </AuthenticatedApolloProvider>
