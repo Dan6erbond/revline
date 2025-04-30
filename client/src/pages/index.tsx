@@ -11,6 +11,7 @@ import { ChevronRight, Flame, Gauge, Plus } from "lucide-react";
 
 import RootNavbar from "@/components/layout/root-navbar";
 import { graphql } from "@/gql";
+import { useHref } from "@/utils/use-href";
 import { useQuery } from "@apollo/client";
 
 const getGarage = graphql(`
@@ -38,6 +39,8 @@ const getGarage = graphql(`
 `);
 
 export default function Home() {
+  const href = useHref();
+
   const { data } = useQuery(getGarage);
 
   return (
@@ -60,7 +63,7 @@ export default function Home() {
             >
               <CardHeader className="relative h-[200px] w-full p-0 overflow-hidden">
                 <Image
-                  src={car.bannerImageUrl ?? "/placeholder.png"}
+                  src={car.bannerImageUrl ?? href("/placeholder.png")}
                   alt={car.name}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 rounded-none"
                   removeWrapper
