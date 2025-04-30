@@ -28,7 +28,6 @@ import Details from "@/components/documents/details";
 import FileIcon from "@/components/file-icon";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
-import { useHref } from "@/utils/use-href";
 import { useRouter } from "next/router";
 
 const getDocuments = graphql(`
@@ -72,7 +71,6 @@ const columns = [
 
 export default function Documents() {
   const router = useRouter();
-  const href = useHref();
 
   const client = useApolloClient();
 
@@ -236,9 +234,7 @@ export default function Documents() {
                 <TableCell>{doc.name}</TableCell>
                 <TableCell>{doc.tags.join(", ")}</TableCell>
                 <TableCell>
-                  <Link
-                    href={href(`/cars/${router.query.id}/documents/${doc.id}`)}
-                  >
+                  <Link href={`/cars/${router.query.id}/documents/${doc.id}`}>
                     <Eye />
                   </Link>
                 </TableCell>

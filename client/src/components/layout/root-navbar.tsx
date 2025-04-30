@@ -11,13 +11,11 @@ import {
 
 import AuthButton from "./auth-button";
 import Wordmark from "../wordmark";
-import { useHref } from "@/utils/use-href";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
 export default function RootNavbar() {
   const router = useRouter();
-  const getHref = useHref();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -36,7 +34,7 @@ export default function RootNavbar() {
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           className="sm:hidden"
         />
-        <NavbarBrand as={Link} href={getHref("/")}>
+        <NavbarBrand as={Link} href={"/"}>
           <Wordmark />
         </NavbarBrand>
       </NavbarContent>
@@ -46,7 +44,7 @@ export default function RootNavbar() {
             <Link
               aria-current={active ? "page" : false}
               color={active ? "primary" : "foreground"}
-              href={getHref(href)}
+              href={href}
             >
               {name}
             </Link>
@@ -63,7 +61,7 @@ export default function RootNavbar() {
             <Link
               className="w-full"
               color={active ? "primary" : "foreground"}
-              href={getHref(href)}
+              href={href}
               size="lg"
             >
               {name}

@@ -11,13 +11,11 @@ import {
 
 import AuthButton from "./auth-button";
 import Wordmark from "../wordmark";
-import { useHref } from "@/utils/use-href";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
 export default function CarNavbar() {
   const router = useRouter();
-  const getHref = useHref();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -66,7 +64,7 @@ export default function CarNavbar() {
             <Link
               aria-current={active ? "page" : false}
               color={active ? "primary" : "foreground"}
-              href={getHref(href)}
+              href={href}
             >
               {name}
             </Link>
@@ -83,7 +81,7 @@ export default function CarNavbar() {
             <Link
               className="w-full"
               color={active ? "primary" : "foreground"}
-              href={getHref(href)}
+              href={href}
               size="lg"
             >
               {name}

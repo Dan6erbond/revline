@@ -7,7 +7,6 @@ import Logs from "./logs";
 import Schedules from "./schedules";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
-import { useHref } from "@/utils/use-href";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
 
@@ -78,7 +77,6 @@ const getUpcomingServices = graphql(`
 
 export default function Service() {
   const router = useRouter();
-  const href = useHref();
 
   const { data } = useQuery(getUpcomingServices, {
     variables: { id: getQueryParam(router.query.id) as string },
@@ -127,7 +125,7 @@ export default function Service() {
                 <span>{label}</span>
               </div>
             }
-            href={href(`/cars/${router.query.id}/maintenance/service/${id}`)}
+            href={`/cars/${router.query.id}/maintenance/service/${id}`}
             isDisabled={disabled}
           >
             {Component && <Component />}

@@ -24,7 +24,6 @@ import CarNavbar from "./car-navbar";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { uploadFile } from "@/utils/upload-file";
-import { useHref } from "@/utils/use-href";
 import { useRouter } from "next/router";
 
 const getCarBanner = graphql(`
@@ -50,7 +49,6 @@ const uploadBannerImage = graphql(`
 
 export default function CarLayout({ children }: { children?: ReactNode }) {
   const router = useRouter();
-  const href = useHref();
 
   const { data, refetch } = useQuery(getCarBanner, {
     variables: { id: getQueryParam(router.query.id) as string },
@@ -163,7 +161,7 @@ export default function CarLayout({ children }: { children?: ReactNode }) {
       <div className="sticky h-14 md:h-18 top-16 -mt-14 md:-mt-18 w-full z-20 bg-zinc-900/70 backdrop-blur-sm p-2 md:p-4 flex gap-4">
         <Button
           as={Link}
-          href={href(`/cars/${getQueryParam(router.query.id)}`)}
+          href={`/cars/${getQueryParam(router.query.id)}`}
           isIconOnly
         >
           <ArrowLeft />
