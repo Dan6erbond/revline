@@ -25,6 +25,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+ARG BASE_PATH=""
 ARG NEXT_PUBLIC_GRAPHQL_URL
 
 RUN npm run build
@@ -33,6 +34,7 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
+ARG BASE_PATH=""
 ARG NEXT_PUBLIC_GRAPHQL_URL
 
 ENV NODE_ENV=production

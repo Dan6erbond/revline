@@ -20,9 +20,10 @@ export default function App({
   pageProps: { session, ...pageProps },
 }: AppProps) {
   const router = useRouter();
+  const useHref = (href: string) => (process.env.BASE_PATH ?? "") + href;
 
   return (
-    <HeroUIProvider navigate={router.push}>
+    <HeroUIProvider navigate={router.push} useHref={useHref}>
       <Script
         defer
         src="https://cloud.umami.is/script.js"
