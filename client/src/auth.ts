@@ -4,6 +4,7 @@ import { buildClient } from "./apollo-client";
 import { graphql } from "./gql";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  basePath: process.env.BASE_PATH,
   providers: [
     Zitadel({
       issuer: process.env.AUTH_ZITADEL_ISSUER,
