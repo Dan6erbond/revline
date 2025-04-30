@@ -14,6 +14,7 @@ import { Suspense } from "react";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { isUUID } from "@/utils/is-uuid";
+import { useHref } from "@/utils/use-href";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
 
@@ -35,6 +36,7 @@ const getDynoSessions = graphql(`
 
 export default function DynoSessions() {
   const router = useRouter();
+  const href = useHref();
 
   const { data } = useQuery(getDynoSessions, {
     variables: { id: getQueryParam(router.query.id) as string },
@@ -58,7 +60,9 @@ export default function DynoSessions() {
         <Button
           startContent={<Plus />}
           as={Link}
-          href={`/cars/${router.query.id}/performance/dyno-sessions/create`}
+          href={href(
+            `/cars/${router.query.id}/performance/dyno-sessions/create`
+          )}
         >
           Add
         </Button>
@@ -68,7 +72,9 @@ export default function DynoSessions() {
           key={session.id}
           as={Link}
           isPressable
-          href={`/cars/${router.query.id}/performance/dyno-sessions/${session.id}`}
+          href={href(
+            `/cars/${router.query.id}/performance/dyno-sessions/${session.id}`
+          )}
           className="hover:shadow-lg transition-shadow duration-200 group bg-primary-50/5 backdrop-blur-md rounded-xl p-4"
         >
           <CardHeader className="text-lg font-semibold flex items-center justify-between">

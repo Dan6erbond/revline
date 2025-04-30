@@ -9,6 +9,7 @@ import {
 import { signIn, signOut } from "next-auth/react";
 
 import { graphql } from "@/gql";
+import { useHref } from "@/utils/use-href";
 import { useQuery } from "@apollo/client";
 
 const getMe = graphql(`
@@ -26,6 +27,8 @@ const getMe = graphql(`
 `);
 
 export default function AuthButton() {
+  const href = useHref();
+
   const { data } = useQuery(getMe);
 
   return data?.me ? (
@@ -46,10 +49,10 @@ export default function AuthButton() {
           <p className="font-semibold">Signed in as</p>
           <p className="font-semibold">{data.me.email}</p>
         </DropdownItem>
-        <DropdownItem key="profile" href="/profile">
+        <DropdownItem key="profile" href={href("/profile")}>
           Profile
         </DropdownItem>
-        <DropdownItem key="subscription" href="/subscription">
+        <DropdownItem key="subscription" href={href("/subscription")}>
           Manage Subscription
         </DropdownItem>
         <DropdownItem key="logout" color="danger" onPress={() => signOut()}>

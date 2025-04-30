@@ -11,6 +11,7 @@ import { ChevronRight, Flame, Gauge, Plus } from "lucide-react";
 
 import RootNavbar from "@/components/layout/root-navbar";
 import { graphql } from "@/gql";
+import { useHref } from "@/utils/use-href";
 import { useQuery } from "@apollo/client";
 
 const getGarage = graphql(`
@@ -39,13 +40,14 @@ const getGarage = graphql(`
 
 export default function Home() {
   const { data } = useQuery(getGarage);
+  const href = useHref();
 
   return (
     <>
       <RootNavbar />
       <main className="p-8 max-w-screen-xl mx-auto">
         <div className="flex justify-end mb-8">
-          <Button as={Link} href="/cars/create" startContent={<Plus />}>
+          <Button as={Link} href={href("/cars/create")} startContent={<Plus />}>
             Add Car
           </Button>
         </div>
@@ -55,7 +57,7 @@ export default function Home() {
               key={car.id}
               isPressable
               as={Link}
-              href={`/cars/${car.id}/maintenance`}
+              href={href(`/cars/${car.id}/maintenance`)}
               className="overflow-hidden bg-primary-50/5 backdrop-blur hover:shadow-lg transition-shadow rounded-xl group"
             >
               <CardHeader className="relative h-[200px] w-full p-0">

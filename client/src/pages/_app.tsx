@@ -10,6 +10,7 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import { SessionProvider } from "next-auth/react";
 import { pdfjs } from "react-pdf";
+import { useHref } from "@/utils/use-href";
 import { useRouter } from "next/router";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -21,10 +22,10 @@ export default function App({
   pageProps: { session, ...pageProps },
 }: AppProps) {
   const router = useRouter();
-  const useHref = (href: string) => (process.env.BASE_PATH ?? "") + href;
+  const href = useHref();
 
   return (
-    <HeroUIProvider navigate={router.push} useHref={useHref}>
+    <HeroUIProvider navigate={router.push} useHref={href}>
       <Script
         defer
         src="https://cloud.umami.is/script.js"
@@ -38,7 +39,7 @@ export default function App({
       <Head>
         <title>Revline 1</title>
       </Head>
-      <SessionProvider session={session}>
+      <SessionProvider session={session} basePath={router.basePath}>
         <AuthenticatedApolloProvider>
           <Component {...pageProps} />
         </AuthenticatedApolloProvider>

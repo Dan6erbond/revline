@@ -6,6 +6,7 @@ import CarLayout from "@/components/layout/car-layout";
 import DragSessions from "@/components/performance/drag-sessions";
 import DynoSessions from "@/components/performance/dyno-sessions";
 import { getQueryParam } from "@/utils/router";
+import { useHref } from "@/utils/use-href";
 import { useRouter } from "next/router";
 
 const tabs: {
@@ -35,6 +36,7 @@ const tabs: {
 
 export default function Performance() {
   const router = useRouter();
+  const href = useHref();
 
   return (
     <CarLayout>
@@ -54,7 +56,7 @@ export default function Performance() {
                 <span>{label}</span>
               </div>
             }
-            href={`/cars/${router.query.id}/performance/${id}`}
+            href={href(`/cars/${router.query.id}/performance/${id}`)}
             isDisabled={Component == null}
           >
             <div className="p-4 md:p-8">{Component && <Component />}</div>

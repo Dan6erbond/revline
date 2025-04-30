@@ -7,6 +7,7 @@ import FuelUps from "@/components/maintenance/fuelups";
 import Odometer from "@/components/maintenance/odometer";
 import Service from "@/components/maintenance/service";
 import { getQueryParam } from "@/utils/router";
+import { useHref } from "../../../../utils/use-href";
 import { useRouter } from "next/router";
 
 const tabs: {
@@ -37,6 +38,7 @@ const tabs: {
 
 export default function Maintenance() {
   const router = useRouter();
+  const href = useHref();
 
   return (
     <CarLayout>
@@ -56,7 +58,7 @@ export default function Maintenance() {
                 <span>{label}</span>
               </div>
             }
-            href={`/cars/${router.query.id}/maintenance/${id}`}
+            href={href(`/cars/${router.query.id}/maintenance/${id}`)}
             isDisabled={Component == null}
           >
             <div className="p-4 md:p-8">{Component && <Component />}</div>
