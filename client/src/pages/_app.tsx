@@ -4,6 +4,7 @@ import "react-pdf/dist/Page/TextLayer.css";
 
 import type { AppProps } from "next/app";
 import AuthenticatedApolloProvider from "@/apollo-client/provider";
+import Head from "next/head";
 import { HeroUIProvider } from "@heroui/react";
 import { Inter } from "next/font/google";
 import Script from "next/script";
@@ -34,6 +35,9 @@ export default function App({
           font-family: ${inter.style.fontFamily};
         }
       `}</style>
+      <Head>
+        <title>Revline 1</title>
+      </Head>
       <SessionProvider session={session}>
         <AuthenticatedApolloProvider>
           <Component {...pageProps} />
