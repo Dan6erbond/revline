@@ -44,7 +44,7 @@ export default function Home() {
           {/* Text Content */}
           <div className="space-y-6">
             <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight tracking-tight">
-              🏁 Revline 1 — Built for DIY Mechanics & Enthusiasts
+              🏁 Revline 1 — Built for DIY Mechanics & Car Enthusiasts
             </h1>
             <p className="text-lg sm:text-xl text-gray-300 max-w-md">
               Track your builds. Show off your rides. Stay ahead in your garage
