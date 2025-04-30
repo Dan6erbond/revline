@@ -2,7 +2,6 @@ import { ArrowLeft, ImageUp, Upload, X } from "lucide-react";
 import {
   Button,
   Image,
-  Link,
   Modal,
   ModalBody,
   ModalContent,
@@ -21,6 +20,7 @@ import {
 import { useMutation, useQuery } from "@apollo/client";
 
 import CarNavbar from "./car-navbar";
+import Link from "next/link";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { uploadFile } from "@/utils/upload-file";

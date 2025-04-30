@@ -10,6 +10,7 @@ import {
 } from "@heroui/react";
 
 import AuthButton from "./auth-button";
+import NextLink from "next/link";
 import Wordmark from "../wordmark";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -54,20 +55,20 @@ export default function CarNavbar() {
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           className="sm:hidden"
         />
-        <NavbarBrand as={Link} href="/">
+        <NavbarBrand as={NextLink} href="/">
           <Wordmark />
         </NavbarBrand>
       </NavbarContent>
       <NavbarContent className="hidden sm:flex">
         {menuItems.map(({ name, href, active }) => (
           <NavbarItem key={name}>
-            <Link
+            <NextLink
               aria-current={active ? "page" : false}
               color={active ? "primary" : "foreground"}
               href={href}
             >
               {name}
-            </Link>
+            </NextLink>
           </NavbarItem>
         ))}
       </NavbarContent>
@@ -79,6 +80,7 @@ export default function CarNavbar() {
         {menuItems.map(({ name, active, href }) => (
           <NavbarMenuItem key={name}>
             <Link
+              as={NextLink}
               className="w-full"
               color={active ? "primary" : "foreground"}
               href={href}

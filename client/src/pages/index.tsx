@@ -5,10 +5,10 @@ import {
   CardFooter,
   CardHeader,
   Image,
-  Link,
 } from "@heroui/react";
 import { ChevronRight, Flame, Gauge, Plus } from "lucide-react";
 
+import Link from "next/link";
 import RootNavbar from "@/components/layout/root-navbar";
 import { graphql } from "@/gql";
 import { useHref } from "@/utils/use-href";
@@ -58,7 +58,7 @@ export default function Home() {
               key={car.id}
               isPressable
               as={Link}
-              href={href(`/cars/${car.id}/maintenance`)}
+              href={`/cars/${car.id}/maintenance`}
               className="overflow-hidden bg-primary-50/5 backdrop-blur hover:shadow-lg transition-shadow rounded-xl group"
             >
               <CardHeader className="relative h-[200px] w-full p-0 overflow-hidden">

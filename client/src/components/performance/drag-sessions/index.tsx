@@ -4,11 +4,11 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
-  Link,
 } from "@heroui/react";
 import { FileText, Plus, Timer } from "lucide-react";
 
 import Create from "./create";
+import Link from "next/link";
 import Session from "./session";
 import { Suspense } from "react";
 import { getQueryParam } from "@/utils/router";
