@@ -78,7 +78,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       return true;
     },
     redirect: ({ url, baseUrl }) => {
-      return url ?? baseUrl + basePath;
+      if (url.startsWith("/") && !url.startsWith(basePath))
+        return `${baseUrl}${basePath}${url}`;
+      else if (new URL(url).origin === baseUrl) return url;
+      return `${baseUrl}${basePath}`;
     },
   },
 });
