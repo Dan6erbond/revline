@@ -59,7 +59,15 @@ func Middleware(entClient *ent.Client, config internal.Config, logger *zap.Logge
 				return
 			}
 
-			tokenString := strings.Split(token[0], " ")[1]
+			parts := strings.Split(token[0], " ")
+
+			if len(parts) < 2 {
+				next.ServeHTTP(w, r)
+
+				return
+			}
+
+			tokenString := parts[1]
 
 			t, _, err := parser.ParseUnverified(tokenString, goJwt.MapClaims{})
 
