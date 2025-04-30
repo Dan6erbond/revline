@@ -39,6 +39,21 @@ export default function App({
       <Head>
         <title>Revline 1</title>
         <meta name="apple-mobile-web-app-title" content="Revline 1" />
+        <link
+          rel="icon"
+          type="image/png"
+          href={href("/favicon-96x96.png")}
+          sizes="96x96"
+        />
+        <link rel="icon" type="image/svg+xml" href={href("/favicon.svg")} />
+        <link rel="shortcut icon" href={href("/favicon.ico")} />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href={href("/apple-touch-icon.png")}
+        />
+        <meta name="apple-mobile-web-app-title" content="Revline 1" />
+        <link rel="manifest" href={href("/site.webmanifest")} />
       </Head>
       <SessionProvider
         session={session}
