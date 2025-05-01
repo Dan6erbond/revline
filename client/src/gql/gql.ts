@@ -47,7 +47,8 @@ type Documents = {
     "\n  mutation UploadDocument($input: CreateDocumentInput!) {\n    uploadDocument(input: $input) {\n      document {\n        id\n        name\n        tags\n        url\n      }\n      uploadUrl\n    }\n  }\n": typeof types.UploadDocumentDocument,
     "\n  query GetGallery($id: ID!) {\n    car(id: $id) {\n      id\n      media {\n        id\n        url\n      }\n    }\n  }\n": typeof types.GetGalleryDocument,
     "\n  mutation UploadMedia($input: CreateMediaInput!) {\n    uploadMedia(input: $input) {\n      media {\n        id\n        url\n      }\n      uploadUrl\n    }\n  }\n": typeof types.UploadMediaDocument,
-    "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n    }\n  }\n": typeof types.CreateCarDocument,
+    "\n  fragment NewCar on Car {\n    id\n    owner {\n      id\n    }\n  }\n": typeof types.NewCarFragmentDoc,
+    "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n      ...NewCar\n    }\n  }\n": typeof types.CreateCarDocument,
     "\n  query GetGarage {\n    me {\n      id\n      subscription {\n        id\n        tier\n      }\n      cars {\n        id\n        name\n        make\n        model\n        year\n        bannerImageUrl\n        averageConsumptionLitersPerKm\n        dragSessions {\n          id\n        }\n        upcomingServices {\n          schedule {\n            id\n          }\n        }\n      }\n    }\n  }\n": typeof types.GetGarageDocument,
     "\n  mutation CreateCheckoutSession($input: CreateCheckoutSessionInput!) {\n    createCheckoutSession(input: $input)\n  }\n": typeof types.CreateCheckoutSessionDocument,
     "\n  mutation CreateBillingPortalSession {\n    createBillingPortalSession\n  }\n": typeof types.CreateBillingPortalSessionDocument,
@@ -86,7 +87,8 @@ const documents: Documents = {
     "\n  mutation UploadDocument($input: CreateDocumentInput!) {\n    uploadDocument(input: $input) {\n      document {\n        id\n        name\n        tags\n        url\n      }\n      uploadUrl\n    }\n  }\n": types.UploadDocumentDocument,
     "\n  query GetGallery($id: ID!) {\n    car(id: $id) {\n      id\n      media {\n        id\n        url\n      }\n    }\n  }\n": types.GetGalleryDocument,
     "\n  mutation UploadMedia($input: CreateMediaInput!) {\n    uploadMedia(input: $input) {\n      media {\n        id\n        url\n      }\n      uploadUrl\n    }\n  }\n": types.UploadMediaDocument,
-    "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n    }\n  }\n": types.CreateCarDocument,
+    "\n  fragment NewCar on Car {\n    id\n    owner {\n      id\n    }\n  }\n": types.NewCarFragmentDoc,
+    "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n      ...NewCar\n    }\n  }\n": types.CreateCarDocument,
     "\n  query GetGarage {\n    me {\n      id\n      subscription {\n        id\n        tier\n      }\n      cars {\n        id\n        name\n        make\n        model\n        year\n        bannerImageUrl\n        averageConsumptionLitersPerKm\n        dragSessions {\n          id\n        }\n        upcomingServices {\n          schedule {\n            id\n          }\n        }\n      }\n    }\n  }\n": types.GetGarageDocument,
     "\n  mutation CreateCheckoutSession($input: CreateCheckoutSessionInput!) {\n    createCheckoutSession(input: $input)\n  }\n": types.CreateCheckoutSessionDocument,
     "\n  mutation CreateBillingPortalSession {\n    createBillingPortalSession\n  }\n": types.CreateBillingPortalSessionDocument,
@@ -241,7 +243,11 @@ export function graphql(source: "\n  mutation UploadMedia($input: CreateMediaInp
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n    }\n  }\n"];
+export function graphql(source: "\n  fragment NewCar on Car {\n    id\n    owner {\n      id\n    }\n  }\n"): (typeof documents)["\n  fragment NewCar on Car {\n    id\n    owner {\n      id\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n      ...NewCar\n    }\n  }\n"): (typeof documents)["\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n      ...NewCar\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

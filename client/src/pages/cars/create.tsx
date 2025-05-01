@@ -3,6 +3,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 
 import React from "react";
 import RootNavbar from "@/components/layout/root-navbar";
+import { User } from "../../gql/graphql";
 import { graphql } from "@/gql";
 import { useMutation } from "@apollo/client";
 import { useRouter } from "next/router";
@@ -15,10 +16,20 @@ type Inputs = {
   trim?: string | null;
 };
 
+const NewCar = graphql(`
+  fragment NewCar on Car {
+    id
+    owner {
+      id
+    }
+  }
+`);
+
 const createCar = graphql(`
   mutation CreateCar($input: CreateCarInput!) {
     createCar(input: $input) {
       id
+      ...NewCar
     }
   }
 `);
@@ -28,7 +39,26 @@ export default function CreateCar() {
 
   const { register, handleSubmit } = useForm<Inputs>();
 
-  const [mutate] = useMutation(createCar);
+  const [mutate] = useMutation(createCar, {
+    update: (cache, { data }) => {
+      if (!data?.createCar) return;
+
+      const newCarRef = cache.writeFragment({
+        data: data.createCar,
+        fragment: NewCar,
+        fragmentName: "NewCar",
+      });
+
+      cache.modify<User>({
+        id: cache.identify(data!.createCar!.owner!),
+        fields: {
+          cars: (existingCarRefs) => {
+            return [...(existingCarRefs ?? []), newCarRef];
+          },
+        },
+      });
+    },
+  });
 
   const onSubmit: SubmitHandler<Inputs> = ({ name, make, model, year }) => {
     mutate({

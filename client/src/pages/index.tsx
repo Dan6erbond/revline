@@ -65,7 +65,7 @@ export default function Home() {
             onPress={() => {
               if (
                 !data?.me.cars ||
-                data.me.cars?.length < 2 ||
+                data.me.cars?.length < 1 ||
                 (data?.me.subscription?.tier &&
                   [
                     (SubscriptionTier.Diy, SubscriptionTier.Enthusiast),
