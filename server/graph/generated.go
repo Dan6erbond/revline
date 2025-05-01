@@ -12460,14 +12460,11 @@ func (ec *executionContext) _SubscriptionPlan_stripeSubscriptionID(ctx context.C
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SubscriptionPlan_stripeSubscriptionID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -24470,7 +24467,7 @@ func (ec *executionContext) unmarshalInputSubscriptionPlanWhereInput(ctx context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "stripeSubscriptionID", "stripeSubscriptionIDNEQ", "stripeSubscriptionIDIn", "stripeSubscriptionIDNotIn", "stripeSubscriptionIDGT", "stripeSubscriptionIDGTE", "stripeSubscriptionIDLT", "stripeSubscriptionIDLTE", "stripeSubscriptionIDContains", "stripeSubscriptionIDHasPrefix", "stripeSubscriptionIDHasSuffix", "stripeSubscriptionIDEqualFold", "stripeSubscriptionIDContainsFold", "tier", "tierNEQ", "tierIn", "tierNotIn", "status", "statusNEQ", "statusIn", "statusNotIn", "canceledAt", "canceledAtNEQ", "canceledAtIn", "canceledAtNotIn", "canceledAtGT", "canceledAtGTE", "canceledAtLT", "canceledAtLTE", "canceledAtIsNil", "canceledAtNotNil", "cancelAtPeriodEnd", "cancelAtPeriodEndNEQ", "hasUser", "hasUserWith", "hasCheckoutSession", "hasCheckoutSessionWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "stripeSubscriptionID", "stripeSubscriptionIDNEQ", "stripeSubscriptionIDIn", "stripeSubscriptionIDNotIn", "stripeSubscriptionIDGT", "stripeSubscriptionIDGTE", "stripeSubscriptionIDLT", "stripeSubscriptionIDLTE", "stripeSubscriptionIDContains", "stripeSubscriptionIDHasPrefix", "stripeSubscriptionIDHasSuffix", "stripeSubscriptionIDIsNil", "stripeSubscriptionIDNotNil", "stripeSubscriptionIDEqualFold", "stripeSubscriptionIDContainsFold", "tier", "tierNEQ", "tierIn", "tierNotIn", "status", "statusNEQ", "statusIn", "statusNotIn", "canceledAt", "canceledAtNEQ", "canceledAtIn", "canceledAtNotIn", "canceledAtGT", "canceledAtGTE", "canceledAtLT", "canceledAtLTE", "canceledAtIsNil", "canceledAtNotNil", "cancelAtPeriodEnd", "cancelAtPeriodEndNEQ", "hasUser", "hasUserWith", "hasCheckoutSession", "hasCheckoutSessionWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -24743,6 +24740,20 @@ func (ec *executionContext) unmarshalInputSubscriptionPlanWhereInput(ctx context
 				return it, err
 			}
 			it.StripeSubscriptionIDHasSuffix = data
+		case "stripeSubscriptionIDIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeSubscriptionIDIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeSubscriptionIDIsNil = data
+		case "stripeSubscriptionIDNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeSubscriptionIDNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeSubscriptionIDNotNil = data
 		case "stripeSubscriptionIDEqualFold":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeSubscriptionIDEqualFold"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -29840,9 +29851,6 @@ func (ec *executionContext) _SubscriptionPlan(ctx context.Context, sel ast.Selec
 			}
 		case "stripeSubscriptionID":
 			out.Values[i] = ec._SubscriptionPlan_stripeSubscriptionID(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
 		case "tier":
 			out.Values[i] = ec._SubscriptionPlan_tier(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

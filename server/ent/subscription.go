@@ -25,7 +25,7 @@ type Subscription struct {
 	// UpdateTime holds the value of the "update_time" field.
 	UpdateTime time.Time `json:"update_time,omitempty"`
 	// StripeSubscriptionID holds the value of the "stripe_subscription_id" field.
-	StripeSubscriptionID string `json:"stripe_subscription_id,omitempty"`
+	StripeSubscriptionID *string `json:"stripe_subscription_id,omitempty"`
 	// Tier holds the value of the "tier" field.
 	Tier subscription.Tier `json:"tier,omitempty"`
 	// Status holds the value of the "status" field.
@@ -131,7 +131,8 @@ func (s *Subscription) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field stripe_subscription_id", values[i])
 			} else if value.Valid {
-				s.StripeSubscriptionID = value.String
+				s.StripeSubscriptionID = new(string)
+				*s.StripeSubscriptionID = value.String
 			}
 		case subscription.FieldTier:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -224,8 +225,10 @@ func (s *Subscription) String() string {
 	builder.WriteString("update_time=")
 	builder.WriteString(s.UpdateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("stripe_subscription_id=")
-	builder.WriteString(s.StripeSubscriptionID)
+	if v := s.StripeSubscriptionID; v != nil {
+		builder.WriteString("stripe_subscription_id=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("tier=")
 	builder.WriteString(fmt.Sprintf("%v", s.Tier))

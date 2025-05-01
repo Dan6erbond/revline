@@ -12928,7 +12928,7 @@ func (m *SubscriptionMutation) StripeSubscriptionID() (r string, exists bool) {
 // OldStripeSubscriptionID returns the old "stripe_subscription_id" field's value of the Subscription entity.
 // If the Subscription object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SubscriptionMutation) OldStripeSubscriptionID(ctx context.Context) (v string, err error) {
+func (m *SubscriptionMutation) OldStripeSubscriptionID(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldStripeSubscriptionID is only allowed on UpdateOne operations")
 	}
@@ -12942,9 +12942,22 @@ func (m *SubscriptionMutation) OldStripeSubscriptionID(ctx context.Context) (v s
 	return oldValue.StripeSubscriptionID, nil
 }
 
+// ClearStripeSubscriptionID clears the value of the "stripe_subscription_id" field.
+func (m *SubscriptionMutation) ClearStripeSubscriptionID() {
+	m.stripe_subscription_id = nil
+	m.clearedFields[subscription.FieldStripeSubscriptionID] = struct{}{}
+}
+
+// StripeSubscriptionIDCleared returns if the "stripe_subscription_id" field was cleared in this mutation.
+func (m *SubscriptionMutation) StripeSubscriptionIDCleared() bool {
+	_, ok := m.clearedFields[subscription.FieldStripeSubscriptionID]
+	return ok
+}
+
 // ResetStripeSubscriptionID resets all changes to the "stripe_subscription_id" field.
 func (m *SubscriptionMutation) ResetStripeSubscriptionID() {
 	m.stripe_subscription_id = nil
+	delete(m.clearedFields, subscription.FieldStripeSubscriptionID)
 }
 
 // SetTier sets the "tier" field.
@@ -13371,6 +13384,9 @@ func (m *SubscriptionMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *SubscriptionMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(subscription.FieldStripeSubscriptionID) {
+		fields = append(fields, subscription.FieldStripeSubscriptionID)
+	}
 	if m.FieldCleared(subscription.FieldCanceledAt) {
 		fields = append(fields, subscription.FieldCanceledAt)
 	}
@@ -13388,6 +13404,9 @@ func (m *SubscriptionMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *SubscriptionMutation) ClearField(name string) error {
 	switch name {
+	case subscription.FieldStripeSubscriptionID:
+		m.ClearStripeSubscriptionID()
+		return nil
 	case subscription.FieldCanceledAt:
 		m.ClearCanceledAt()
 		return nil

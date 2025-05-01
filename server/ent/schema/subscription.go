@@ -20,7 +20,7 @@ func (Subscription) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
-		field.String("stripe_subscription_id").NotEmpty().Unique(),
+		field.String("stripe_subscription_id").Optional().Nillable(),
 		field.Enum("tier").
 			Values("diy", "enthusiast").
 			Annotations(entgql.Type("SubscriptionTier")),

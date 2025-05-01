@@ -396,7 +396,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
-		{Name: "stripe_subscription_id", Type: field.TypeString, Unique: true},
+		{Name: "stripe_subscription_id", Type: field.TypeString, Nullable: true},
 		{Name: "tier", Type: field.TypeEnum, Enums: []string{"diy", "enthusiast"}},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "trialing", "canceled", "incomplete", "incomplete_expired", "past_due", "unpaid"}, Default: "incomplete"},
 		{Name: "canceled_at", Type: field.TypeTime, Nullable: true},

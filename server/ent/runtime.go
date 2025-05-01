@@ -334,10 +334,6 @@ func init() {
 	subscription.DefaultUpdateTime = subscriptionDescUpdateTime.Default.(func() time.Time)
 	// subscription.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	subscription.UpdateDefaultUpdateTime = subscriptionDescUpdateTime.UpdateDefault.(func() time.Time)
-	// subscriptionDescStripeSubscriptionID is the schema descriptor for stripe_subscription_id field.
-	subscriptionDescStripeSubscriptionID := subscriptionFields[1].Descriptor()
-	// subscription.StripeSubscriptionIDValidator is a validator for the "stripe_subscription_id" field. It is called by the builders before save.
-	subscription.StripeSubscriptionIDValidator = subscriptionDescStripeSubscriptionID.Validators[0].(func(string) error)
 	// subscriptionDescCancelAtPeriodEnd is the schema descriptor for cancel_at_period_end field.
 	subscriptionDescCancelAtPeriodEnd := subscriptionFields[5].Descriptor()
 	// subscription.DefaultCancelAtPeriodEnd holds the default value on creation for the cancel_at_period_end field.

@@ -95,8 +95,6 @@ var (
 	DefaultUpdateTime func() time.Time
 	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
 	UpdateDefaultUpdateTime func() time.Time
-	// StripeSubscriptionIDValidator is a validator for the "stripe_subscription_id" field. It is called by the builders before save.
-	StripeSubscriptionIDValidator func(string) error
 	// DefaultCancelAtPeriodEnd holds the default value on creation for the "cancel_at_period_end" field.
 	DefaultCancelAtPeriodEnd bool
 	// DefaultID holds the default value on creation for the "id" field.

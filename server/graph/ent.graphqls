@@ -2009,7 +2009,7 @@ type SubscriptionPlan @goModel(model: "github.com/Dan6erbond/revline/ent.Subscri
   id: ID!
   createTime: Time!
   updateTime: Time!
-  stripeSubscriptionID: String!
+  stripeSubscriptionID: String
   tier: SubscriptionTier!
   status: SubscriptionStatus!
   canceledAt: Time
@@ -2072,6 +2072,8 @@ input SubscriptionPlanWhereInput {
   stripeSubscriptionIDContains: String
   stripeSubscriptionIDHasPrefix: String
   stripeSubscriptionIDHasSuffix: String
+  stripeSubscriptionIDIsNil: Boolean
+  stripeSubscriptionIDNotNil: Boolean
   stripeSubscriptionIDEqualFold: String
   stripeSubscriptionIDContainsFold: String
   """

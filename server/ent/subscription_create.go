@@ -57,6 +57,14 @@ func (sc *SubscriptionCreate) SetStripeSubscriptionID(s string) *SubscriptionCre
 	return sc
 }
 
+// SetNillableStripeSubscriptionID sets the "stripe_subscription_id" field if the given value is not nil.
+func (sc *SubscriptionCreate) SetNillableStripeSubscriptionID(s *string) *SubscriptionCreate {
+	if s != nil {
+		sc.SetStripeSubscriptionID(*s)
+	}
+	return sc
+}
+
 // SetTier sets the "tier" field.
 func (sc *SubscriptionCreate) SetTier(s subscription.Tier) *SubscriptionCreate {
 	sc.mutation.SetTier(s)
@@ -214,14 +222,6 @@ func (sc *SubscriptionCreate) check() error {
 	if _, ok := sc.mutation.UpdateTime(); !ok {
 		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Subscription.update_time"`)}
 	}
-	if _, ok := sc.mutation.StripeSubscriptionID(); !ok {
-		return &ValidationError{Name: "stripe_subscription_id", err: errors.New(`ent: missing required field "Subscription.stripe_subscription_id"`)}
-	}
-	if v, ok := sc.mutation.StripeSubscriptionID(); ok {
-		if err := subscription.StripeSubscriptionIDValidator(v); err != nil {
-			return &ValidationError{Name: "stripe_subscription_id", err: fmt.Errorf(`ent: validator failed for field "Subscription.stripe_subscription_id": %w`, err)}
-		}
-	}
 	if _, ok := sc.mutation.Tier(); !ok {
 		return &ValidationError{Name: "tier", err: errors.New(`ent: missing required field "Subscription.tier"`)}
 	}
@@ -289,7 +289,7 @@ func (sc *SubscriptionCreate) createSpec() (*Subscription, *sqlgraph.CreateSpec)
 	}
 	if value, ok := sc.mutation.StripeSubscriptionID(); ok {
 		_spec.SetField(subscription.FieldStripeSubscriptionID, field.TypeString, value)
-		_node.StripeSubscriptionID = value
+		_node.StripeSubscriptionID = &value
 	}
 	if value, ok := sc.mutation.Tier(); ok {
 		_spec.SetField(subscription.FieldTier, field.TypeEnum, value)

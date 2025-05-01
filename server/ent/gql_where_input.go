@@ -6066,6 +6066,8 @@ type SubscriptionPlanWhereInput struct {
 	StripeSubscriptionIDContains     *string  `json:"stripeSubscriptionIDContains,omitempty"`
 	StripeSubscriptionIDHasPrefix    *string  `json:"stripeSubscriptionIDHasPrefix,omitempty"`
 	StripeSubscriptionIDHasSuffix    *string  `json:"stripeSubscriptionIDHasSuffix,omitempty"`
+	StripeSubscriptionIDIsNil        bool     `json:"stripeSubscriptionIDIsNil,omitempty"`
+	StripeSubscriptionIDNotNil       bool     `json:"stripeSubscriptionIDNotNil,omitempty"`
 	StripeSubscriptionIDEqualFold    *string  `json:"stripeSubscriptionIDEqualFold,omitempty"`
 	StripeSubscriptionIDContainsFold *string  `json:"stripeSubscriptionIDContainsFold,omitempty"`
 
@@ -6281,6 +6283,12 @@ func (i *SubscriptionPlanWhereInput) P() (predicate.Subscription, error) {
 	}
 	if i.StripeSubscriptionIDHasSuffix != nil {
 		predicates = append(predicates, subscription.StripeSubscriptionIDHasSuffix(*i.StripeSubscriptionIDHasSuffix))
+	}
+	if i.StripeSubscriptionIDIsNil {
+		predicates = append(predicates, subscription.StripeSubscriptionIDIsNil())
+	}
+	if i.StripeSubscriptionIDNotNil {
+		predicates = append(predicates, subscription.StripeSubscriptionIDNotNil())
 	}
 	if i.StripeSubscriptionIDEqualFold != nil {
 		predicates = append(predicates, subscription.StripeSubscriptionIDEqualFold(*i.StripeSubscriptionIDEqualFold))

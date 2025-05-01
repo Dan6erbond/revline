@@ -51,6 +51,12 @@ func (su *SubscriptionUpdate) SetNillableStripeSubscriptionID(s *string) *Subscr
 	return su
 }
 
+// ClearStripeSubscriptionID clears the value of the "stripe_subscription_id" field.
+func (su *SubscriptionUpdate) ClearStripeSubscriptionID() *SubscriptionUpdate {
+	su.mutation.ClearStripeSubscriptionID()
+	return su
+}
+
 // SetTier sets the "tier" field.
 func (su *SubscriptionUpdate) SetTier(s subscription.Tier) *SubscriptionUpdate {
 	su.mutation.SetTier(s)
@@ -198,11 +204,6 @@ func (su *SubscriptionUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (su *SubscriptionUpdate) check() error {
-	if v, ok := su.mutation.StripeSubscriptionID(); ok {
-		if err := subscription.StripeSubscriptionIDValidator(v); err != nil {
-			return &ValidationError{Name: "stripe_subscription_id", err: fmt.Errorf(`ent: validator failed for field "Subscription.stripe_subscription_id": %w`, err)}
-		}
-	}
 	if v, ok := su.mutation.Tier(); ok {
 		if err := subscription.TierValidator(v); err != nil {
 			return &ValidationError{Name: "tier", err: fmt.Errorf(`ent: validator failed for field "Subscription.tier": %w`, err)}
@@ -236,6 +237,9 @@ func (su *SubscriptionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := su.mutation.StripeSubscriptionID(); ok {
 		_spec.SetField(subscription.FieldStripeSubscriptionID, field.TypeString, value)
+	}
+	if su.mutation.StripeSubscriptionIDCleared() {
+		_spec.ClearField(subscription.FieldStripeSubscriptionID, field.TypeString)
 	}
 	if value, ok := su.mutation.Tier(); ok {
 		_spec.SetField(subscription.FieldTier, field.TypeEnum, value)
@@ -347,6 +351,12 @@ func (suo *SubscriptionUpdateOne) SetNillableStripeSubscriptionID(s *string) *Su
 	if s != nil {
 		suo.SetStripeSubscriptionID(*s)
 	}
+	return suo
+}
+
+// ClearStripeSubscriptionID clears the value of the "stripe_subscription_id" field.
+func (suo *SubscriptionUpdateOne) ClearStripeSubscriptionID() *SubscriptionUpdateOne {
+	suo.mutation.ClearStripeSubscriptionID()
 	return suo
 }
 
@@ -510,11 +520,6 @@ func (suo *SubscriptionUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (suo *SubscriptionUpdateOne) check() error {
-	if v, ok := suo.mutation.StripeSubscriptionID(); ok {
-		if err := subscription.StripeSubscriptionIDValidator(v); err != nil {
-			return &ValidationError{Name: "stripe_subscription_id", err: fmt.Errorf(`ent: validator failed for field "Subscription.stripe_subscription_id": %w`, err)}
-		}
-	}
 	if v, ok := suo.mutation.Tier(); ok {
 		if err := subscription.TierValidator(v); err != nil {
 			return &ValidationError{Name: "tier", err: fmt.Errorf(`ent: validator failed for field "Subscription.tier": %w`, err)}
@@ -565,6 +570,9 @@ func (suo *SubscriptionUpdateOne) sqlSave(ctx context.Context) (_node *Subscript
 	}
 	if value, ok := suo.mutation.StripeSubscriptionID(); ok {
 		_spec.SetField(subscription.FieldStripeSubscriptionID, field.TypeString, value)
+	}
+	if suo.mutation.StripeSubscriptionIDCleared() {
+		_spec.ClearField(subscription.FieldStripeSubscriptionID, field.TypeString)
 	}
 	if value, ok := suo.mutation.Tier(); ok {
 		_spec.SetField(subscription.FieldTier, field.TypeEnum, value)

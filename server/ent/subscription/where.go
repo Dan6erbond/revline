@@ -216,6 +216,16 @@ func StripeSubscriptionIDHasSuffix(v string) predicate.Subscription {
 	return predicate.Subscription(sql.FieldHasSuffix(FieldStripeSubscriptionID, v))
 }
 
+// StripeSubscriptionIDIsNil applies the IsNil predicate on the "stripe_subscription_id" field.
+func StripeSubscriptionIDIsNil() predicate.Subscription {
+	return predicate.Subscription(sql.FieldIsNull(FieldStripeSubscriptionID))
+}
+
+// StripeSubscriptionIDNotNil applies the NotNil predicate on the "stripe_subscription_id" field.
+func StripeSubscriptionIDNotNil() predicate.Subscription {
+	return predicate.Subscription(sql.FieldNotNull(FieldStripeSubscriptionID))
+}
+
 // StripeSubscriptionIDEqualFold applies the EqualFold predicate on the "stripe_subscription_id" field.
 func StripeSubscriptionIDEqualFold(v string) predicate.Subscription {
 	return predicate.Subscription(sql.FieldEqualFold(FieldStripeSubscriptionID, v))
