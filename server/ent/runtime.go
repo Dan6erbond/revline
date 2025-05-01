@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
@@ -19,6 +20,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/serviceitem"
 	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
+	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/google/uuid"
 )
@@ -46,6 +48,33 @@ func init() {
 	carDescID := carFields[0].Descriptor()
 	// car.DefaultID holds the default value on creation for the id field.
 	car.DefaultID = carDescID.Default.(func() uuid.UUID)
+	checkoutsessionMixin := schema.CheckoutSession{}.Mixin()
+	checkoutsessionMixinFields0 := checkoutsessionMixin[0].Fields()
+	_ = checkoutsessionMixinFields0
+	checkoutsessionFields := schema.CheckoutSession{}.Fields()
+	_ = checkoutsessionFields
+	// checkoutsessionDescCreateTime is the schema descriptor for create_time field.
+	checkoutsessionDescCreateTime := checkoutsessionMixinFields0[0].Descriptor()
+	// checkoutsession.DefaultCreateTime holds the default value on creation for the create_time field.
+	checkoutsession.DefaultCreateTime = checkoutsessionDescCreateTime.Default.(func() time.Time)
+	// checkoutsessionDescUpdateTime is the schema descriptor for update_time field.
+	checkoutsessionDescUpdateTime := checkoutsessionMixinFields0[1].Descriptor()
+	// checkoutsession.DefaultUpdateTime holds the default value on creation for the update_time field.
+	checkoutsession.DefaultUpdateTime = checkoutsessionDescUpdateTime.Default.(func() time.Time)
+	// checkoutsession.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	checkoutsession.UpdateDefaultUpdateTime = checkoutsessionDescUpdateTime.UpdateDefault.(func() time.Time)
+	// checkoutsessionDescStripePriceID is the schema descriptor for stripe_price_id field.
+	checkoutsessionDescStripePriceID := checkoutsessionFields[2].Descriptor()
+	// checkoutsession.StripePriceIDValidator is a validator for the "stripe_price_id" field. It is called by the builders before save.
+	checkoutsession.StripePriceIDValidator = checkoutsessionDescStripePriceID.Validators[0].(func(string) error)
+	// checkoutsessionDescCompleted is the schema descriptor for completed field.
+	checkoutsessionDescCompleted := checkoutsessionFields[4].Descriptor()
+	// checkoutsession.DefaultCompleted holds the default value on creation for the completed field.
+	checkoutsession.DefaultCompleted = checkoutsessionDescCompleted.Default.(bool)
+	// checkoutsessionDescID is the schema descriptor for id field.
+	checkoutsessionDescID := checkoutsessionFields[0].Descriptor()
+	// checkoutsession.DefaultID holds the default value on creation for the id field.
+	checkoutsession.DefaultID = checkoutsessionDescID.Default.(func() uuid.UUID)
 	documentMixin := schema.Document{}.Mixin()
 	documentMixinFields0 := documentMixin[0].Fields()
 	_ = documentMixinFields0
@@ -290,6 +319,33 @@ func init() {
 	servicescheduleDescID := servicescheduleFields[0].Descriptor()
 	// serviceschedule.DefaultID holds the default value on creation for the id field.
 	serviceschedule.DefaultID = servicescheduleDescID.Default.(func() uuid.UUID)
+	subscriptionMixin := schema.Subscription{}.Mixin()
+	subscriptionMixinFields0 := subscriptionMixin[0].Fields()
+	_ = subscriptionMixinFields0
+	subscriptionFields := schema.Subscription{}.Fields()
+	_ = subscriptionFields
+	// subscriptionDescCreateTime is the schema descriptor for create_time field.
+	subscriptionDescCreateTime := subscriptionMixinFields0[0].Descriptor()
+	// subscription.DefaultCreateTime holds the default value on creation for the create_time field.
+	subscription.DefaultCreateTime = subscriptionDescCreateTime.Default.(func() time.Time)
+	// subscriptionDescUpdateTime is the schema descriptor for update_time field.
+	subscriptionDescUpdateTime := subscriptionMixinFields0[1].Descriptor()
+	// subscription.DefaultUpdateTime holds the default value on creation for the update_time field.
+	subscription.DefaultUpdateTime = subscriptionDescUpdateTime.Default.(func() time.Time)
+	// subscription.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	subscription.UpdateDefaultUpdateTime = subscriptionDescUpdateTime.UpdateDefault.(func() time.Time)
+	// subscriptionDescStripeSubscriptionID is the schema descriptor for stripe_subscription_id field.
+	subscriptionDescStripeSubscriptionID := subscriptionFields[1].Descriptor()
+	// subscription.StripeSubscriptionIDValidator is a validator for the "stripe_subscription_id" field. It is called by the builders before save.
+	subscription.StripeSubscriptionIDValidator = subscriptionDescStripeSubscriptionID.Validators[0].(func(string) error)
+	// subscriptionDescCancelAtPeriodEnd is the schema descriptor for cancel_at_period_end field.
+	subscriptionDescCancelAtPeriodEnd := subscriptionFields[5].Descriptor()
+	// subscription.DefaultCancelAtPeriodEnd holds the default value on creation for the cancel_at_period_end field.
+	subscription.DefaultCancelAtPeriodEnd = subscriptionDescCancelAtPeriodEnd.Default.(bool)
+	// subscriptionDescID is the schema descriptor for id field.
+	subscriptionDescID := subscriptionFields[0].Descriptor()
+	// subscription.DefaultID holds the default value on creation for the id field.
+	subscription.DefaultID = subscriptionDescID.Default.(func() uuid.UUID)
 	userMixin := schema.User{}.Mixin()
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0

@@ -23,6 +23,26 @@ type Config struct {
 		UseSSL          bool
 		Region          string
 	}
+	Stripe struct {
+		SecretKey     string
+		WebhookSecret string
+		Products      struct {
+			DIY        Product
+			Enthusiast Product
+		}
+	}
+	PublicURL string
+}
+
+type Product struct {
+	ID     string
+	Prices struct {
+		Monthly Price
+	}
+}
+
+type Price struct {
+	ID string
 }
 
 func SetDefaults() {

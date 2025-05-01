@@ -17,6 +17,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
@@ -29,6 +30,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/serviceitem"
 	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
+	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/user"
 )
 
@@ -39,6 +41,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Car is the client for interacting with the Car builders.
 	Car *CarClient
+	// CheckoutSession is the client for interacting with the CheckoutSession builders.
+	CheckoutSession *CheckoutSessionClient
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
 	// DragResult is the client for interacting with the DragResult builders.
@@ -63,6 +67,8 @@ type Client struct {
 	ServiceLog *ServiceLogClient
 	// ServiceSchedule is the client for interacting with the ServiceSchedule builders.
 	ServiceSchedule *ServiceScheduleClient
+	// Subscription is the client for interacting with the Subscription builders.
+	Subscription *SubscriptionClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -77,6 +83,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Car = NewCarClient(c.config)
+	c.CheckoutSession = NewCheckoutSessionClient(c.config)
 	c.Document = NewDocumentClient(c.config)
 	c.DragResult = NewDragResultClient(c.config)
 	c.DragSession = NewDragSessionClient(c.config)
@@ -89,6 +96,7 @@ func (c *Client) init() {
 	c.ServiceItem = NewServiceItemClient(c.config)
 	c.ServiceLog = NewServiceLogClient(c.config)
 	c.ServiceSchedule = NewServiceScheduleClient(c.config)
+	c.Subscription = NewSubscriptionClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -183,6 +191,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:             ctx,
 		config:          cfg,
 		Car:             NewCarClient(cfg),
+		CheckoutSession: NewCheckoutSessionClient(cfg),
 		Document:        NewDocumentClient(cfg),
 		DragResult:      NewDragResultClient(cfg),
 		DragSession:     NewDragSessionClient(cfg),
@@ -195,6 +204,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ServiceItem:     NewServiceItemClient(cfg),
 		ServiceLog:      NewServiceLogClient(cfg),
 		ServiceSchedule: NewServiceScheduleClient(cfg),
+		Subscription:    NewSubscriptionClient(cfg),
 		User:            NewUserClient(cfg),
 	}, nil
 }
@@ -216,6 +226,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:             ctx,
 		config:          cfg,
 		Car:             NewCarClient(cfg),
+		CheckoutSession: NewCheckoutSessionClient(cfg),
 		Document:        NewDocumentClient(cfg),
 		DragResult:      NewDragResultClient(cfg),
 		DragSession:     NewDragSessionClient(cfg),
@@ -228,6 +239,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ServiceItem:     NewServiceItemClient(cfg),
 		ServiceLog:      NewServiceLogClient(cfg),
 		ServiceSchedule: NewServiceScheduleClient(cfg),
+		Subscription:    NewSubscriptionClient(cfg),
 		User:            NewUserClient(cfg),
 	}, nil
 }
@@ -258,9 +270,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Car, c.Document, c.DragResult, c.DragSession, c.DynoResult, c.DynoSession,
-		c.FuelUp, c.Media, c.OdometerReading, c.Profile, c.ServiceItem, c.ServiceLog,
-		c.ServiceSchedule, c.User,
+		c.Car, c.CheckoutSession, c.Document, c.DragResult, c.DragSession, c.DynoResult,
+		c.DynoSession, c.FuelUp, c.Media, c.OdometerReading, c.Profile, c.ServiceItem,
+		c.ServiceLog, c.ServiceSchedule, c.Subscription, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -270,9 +282,9 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Car, c.Document, c.DragResult, c.DragSession, c.DynoResult, c.DynoSession,
-		c.FuelUp, c.Media, c.OdometerReading, c.Profile, c.ServiceItem, c.ServiceLog,
-		c.ServiceSchedule, c.User,
+		c.Car, c.CheckoutSession, c.Document, c.DragResult, c.DragSession, c.DynoResult,
+		c.DynoSession, c.FuelUp, c.Media, c.OdometerReading, c.Profile, c.ServiceItem,
+		c.ServiceLog, c.ServiceSchedule, c.Subscription, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -283,6 +295,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *CarMutation:
 		return c.Car.mutate(ctx, m)
+	case *CheckoutSessionMutation:
+		return c.CheckoutSession.mutate(ctx, m)
 	case *DocumentMutation:
 		return c.Document.mutate(ctx, m)
 	case *DragResultMutation:
@@ -307,6 +321,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ServiceLog.mutate(ctx, m)
 	case *ServiceScheduleMutation:
 		return c.ServiceSchedule.mutate(ctx, m)
+	case *SubscriptionMutation:
+		return c.Subscription.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
@@ -620,6 +636,171 @@ func (c *CarClient) mutate(ctx context.Context, m *CarMutation) (Value, error) {
 		return (&CarDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Car mutation op: %q", m.Op())
+	}
+}
+
+// CheckoutSessionClient is a client for the CheckoutSession schema.
+type CheckoutSessionClient struct {
+	config
+}
+
+// NewCheckoutSessionClient returns a client for the CheckoutSession from the given config.
+func NewCheckoutSessionClient(c config) *CheckoutSessionClient {
+	return &CheckoutSessionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `checkoutsession.Hooks(f(g(h())))`.
+func (c *CheckoutSessionClient) Use(hooks ...Hook) {
+	c.hooks.CheckoutSession = append(c.hooks.CheckoutSession, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `checkoutsession.Intercept(f(g(h())))`.
+func (c *CheckoutSessionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.CheckoutSession = append(c.inters.CheckoutSession, interceptors...)
+}
+
+// Create returns a builder for creating a CheckoutSession entity.
+func (c *CheckoutSessionClient) Create() *CheckoutSessionCreate {
+	mutation := newCheckoutSessionMutation(c.config, OpCreate)
+	return &CheckoutSessionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CheckoutSession entities.
+func (c *CheckoutSessionClient) CreateBulk(builders ...*CheckoutSessionCreate) *CheckoutSessionCreateBulk {
+	return &CheckoutSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CheckoutSessionClient) MapCreateBulk(slice any, setFunc func(*CheckoutSessionCreate, int)) *CheckoutSessionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CheckoutSessionCreateBulk{err: fmt.Errorf("calling to CheckoutSessionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CheckoutSessionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CheckoutSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CheckoutSession.
+func (c *CheckoutSessionClient) Update() *CheckoutSessionUpdate {
+	mutation := newCheckoutSessionMutation(c.config, OpUpdate)
+	return &CheckoutSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CheckoutSessionClient) UpdateOne(cs *CheckoutSession) *CheckoutSessionUpdateOne {
+	mutation := newCheckoutSessionMutation(c.config, OpUpdateOne, withCheckoutSession(cs))
+	return &CheckoutSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CheckoutSessionClient) UpdateOneID(id uuid.UUID) *CheckoutSessionUpdateOne {
+	mutation := newCheckoutSessionMutation(c.config, OpUpdateOne, withCheckoutSessionID(id))
+	return &CheckoutSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CheckoutSession.
+func (c *CheckoutSessionClient) Delete() *CheckoutSessionDelete {
+	mutation := newCheckoutSessionMutation(c.config, OpDelete)
+	return &CheckoutSessionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CheckoutSessionClient) DeleteOne(cs *CheckoutSession) *CheckoutSessionDeleteOne {
+	return c.DeleteOneID(cs.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CheckoutSessionClient) DeleteOneID(id uuid.UUID) *CheckoutSessionDeleteOne {
+	builder := c.Delete().Where(checkoutsession.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CheckoutSessionDeleteOne{builder}
+}
+
+// Query returns a query builder for CheckoutSession.
+func (c *CheckoutSessionClient) Query() *CheckoutSessionQuery {
+	return &CheckoutSessionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCheckoutSession},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a CheckoutSession entity by its id.
+func (c *CheckoutSessionClient) Get(ctx context.Context, id uuid.UUID) (*CheckoutSession, error) {
+	return c.Query().Where(checkoutsession.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CheckoutSessionClient) GetX(ctx context.Context, id uuid.UUID) *CheckoutSession {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a CheckoutSession.
+func (c *CheckoutSessionClient) QueryUser(cs *CheckoutSession) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := cs.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(checkoutsession.Table, checkoutsession.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, checkoutsession.UserTable, checkoutsession.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(cs.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySubscription queries the subscription edge of a CheckoutSession.
+func (c *CheckoutSessionClient) QuerySubscription(cs *CheckoutSession) *SubscriptionQuery {
+	query := (&SubscriptionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := cs.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(checkoutsession.Table, checkoutsession.FieldID, id),
+			sqlgraph.To(subscription.Table, subscription.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, checkoutsession.SubscriptionTable, checkoutsession.SubscriptionColumn),
+		)
+		fromV = sqlgraph.Neighbors(cs.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *CheckoutSessionClient) Hooks() []Hook {
+	return c.hooks.CheckoutSession
+}
+
+// Interceptors returns the client interceptors.
+func (c *CheckoutSessionClient) Interceptors() []Interceptor {
+	return c.inters.CheckoutSession
+}
+
+func (c *CheckoutSessionClient) mutate(ctx context.Context, m *CheckoutSessionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CheckoutSessionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CheckoutSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CheckoutSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CheckoutSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown CheckoutSession mutation op: %q", m.Op())
 	}
 }
 
@@ -2603,6 +2784,171 @@ func (c *ServiceScheduleClient) mutate(ctx context.Context, m *ServiceScheduleMu
 	}
 }
 
+// SubscriptionClient is a client for the Subscription schema.
+type SubscriptionClient struct {
+	config
+}
+
+// NewSubscriptionClient returns a client for the Subscription from the given config.
+func NewSubscriptionClient(c config) *SubscriptionClient {
+	return &SubscriptionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `subscription.Hooks(f(g(h())))`.
+func (c *SubscriptionClient) Use(hooks ...Hook) {
+	c.hooks.Subscription = append(c.hooks.Subscription, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `subscription.Intercept(f(g(h())))`.
+func (c *SubscriptionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Subscription = append(c.inters.Subscription, interceptors...)
+}
+
+// Create returns a builder for creating a Subscription entity.
+func (c *SubscriptionClient) Create() *SubscriptionCreate {
+	mutation := newSubscriptionMutation(c.config, OpCreate)
+	return &SubscriptionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Subscription entities.
+func (c *SubscriptionClient) CreateBulk(builders ...*SubscriptionCreate) *SubscriptionCreateBulk {
+	return &SubscriptionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SubscriptionClient) MapCreateBulk(slice any, setFunc func(*SubscriptionCreate, int)) *SubscriptionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SubscriptionCreateBulk{err: fmt.Errorf("calling to SubscriptionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SubscriptionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SubscriptionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Subscription.
+func (c *SubscriptionClient) Update() *SubscriptionUpdate {
+	mutation := newSubscriptionMutation(c.config, OpUpdate)
+	return &SubscriptionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SubscriptionClient) UpdateOne(s *Subscription) *SubscriptionUpdateOne {
+	mutation := newSubscriptionMutation(c.config, OpUpdateOne, withSubscription(s))
+	return &SubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SubscriptionClient) UpdateOneID(id uuid.UUID) *SubscriptionUpdateOne {
+	mutation := newSubscriptionMutation(c.config, OpUpdateOne, withSubscriptionID(id))
+	return &SubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Subscription.
+func (c *SubscriptionClient) Delete() *SubscriptionDelete {
+	mutation := newSubscriptionMutation(c.config, OpDelete)
+	return &SubscriptionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SubscriptionClient) DeleteOne(s *Subscription) *SubscriptionDeleteOne {
+	return c.DeleteOneID(s.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SubscriptionClient) DeleteOneID(id uuid.UUID) *SubscriptionDeleteOne {
+	builder := c.Delete().Where(subscription.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SubscriptionDeleteOne{builder}
+}
+
+// Query returns a query builder for Subscription.
+func (c *SubscriptionClient) Query() *SubscriptionQuery {
+	return &SubscriptionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSubscription},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Subscription entity by its id.
+func (c *SubscriptionClient) Get(ctx context.Context, id uuid.UUID) (*Subscription, error) {
+	return c.Query().Where(subscription.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SubscriptionClient) GetX(ctx context.Context, id uuid.UUID) *Subscription {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a Subscription.
+func (c *SubscriptionClient) QueryUser(s *Subscription) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(subscription.Table, subscription.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, subscription.UserTable, subscription.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCheckoutSession queries the checkout_session edge of a Subscription.
+func (c *SubscriptionClient) QueryCheckoutSession(s *Subscription) *CheckoutSessionQuery {
+	query := (&CheckoutSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(subscription.Table, subscription.FieldID, id),
+			sqlgraph.To(checkoutsession.Table, checkoutsession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, subscription.CheckoutSessionTable, subscription.CheckoutSessionColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SubscriptionClient) Hooks() []Hook {
+	return c.hooks.Subscription
+}
+
+// Interceptors returns the client interceptors.
+func (c *SubscriptionClient) Interceptors() []Interceptor {
+	return c.inters.Subscription
+}
+
+func (c *SubscriptionClient) mutate(ctx context.Context, m *SubscriptionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SubscriptionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SubscriptionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SubscriptionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Subscription mutation op: %q", m.Op())
+	}
+}
+
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -2743,6 +3089,38 @@ func (c *UserClient) QueryProfile(u *User) *ProfileQuery {
 	return query
 }
 
+// QuerySubscriptions queries the subscriptions edge of a User.
+func (c *UserClient) QuerySubscriptions(u *User) *SubscriptionQuery {
+	query := (&SubscriptionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(subscription.Table, subscription.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.SubscriptionsTable, user.SubscriptionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCheckoutSessions queries the checkout_sessions edge of a User.
+func (c *UserClient) QueryCheckoutSessions(u *User) *CheckoutSessionQuery {
+	query := (&CheckoutSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(checkoutsession.Table, checkoutsession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.CheckoutSessionsTable, user.CheckoutSessionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -2771,13 +3149,13 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Car, Document, DragResult, DragSession, DynoResult, DynoSession, FuelUp, Media,
-		OdometerReading, Profile, ServiceItem, ServiceLog, ServiceSchedule,
-		User []ent.Hook
+		Car, CheckoutSession, Document, DragResult, DragSession, DynoResult,
+		DynoSession, FuelUp, Media, OdometerReading, Profile, ServiceItem, ServiceLog,
+		ServiceSchedule, Subscription, User []ent.Hook
 	}
 	inters struct {
-		Car, Document, DragResult, DragSession, DynoResult, DynoSession, FuelUp, Media,
-		OdometerReading, Profile, ServiceItem, ServiceLog, ServiceSchedule,
-		User []ent.Interceptor
+		Car, CheckoutSession, Document, DragResult, DragSession, DynoResult,
+		DynoSession, FuelUp, Media, OdometerReading, Profile, ServiceItem, ServiceLog,
+		ServiceSchedule, Subscription, User []ent.Interceptor
 	}
 )

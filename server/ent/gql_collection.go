@@ -7,6 +7,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
@@ -19,6 +20,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/serviceitem"
 	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
+	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/user"
 )
 
@@ -259,6 +261,125 @@ func newCarPaginateArgs(rv map[string]any) *carPaginateArgs {
 	}
 	if v, ok := rv[whereField].(*CarWhereInput); ok {
 		args.opts = append(args.opts, WithCarFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (cs *CheckoutSessionQuery) CollectFields(ctx context.Context, satisfies ...string) (*CheckoutSessionQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return cs, nil
+	}
+	if err := cs.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return cs, nil
+}
+
+func (cs *CheckoutSessionQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(checkoutsession.Columns))
+		selectedFields = []string{checkoutsession.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+
+		case "user":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&UserClient{config: cs.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, userImplementors)...); err != nil {
+				return err
+			}
+			cs.withUser = query
+
+		case "subscription":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&SubscriptionClient{config: cs.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, subscriptionImplementors)...); err != nil {
+				return err
+			}
+			cs.withSubscription = query
+		case "createTime":
+			if _, ok := fieldSeen[checkoutsession.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, checkoutsession.FieldCreateTime)
+				fieldSeen[checkoutsession.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[checkoutsession.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, checkoutsession.FieldUpdateTime)
+				fieldSeen[checkoutsession.FieldUpdateTime] = struct{}{}
+			}
+		case "stripeSessionID":
+			if _, ok := fieldSeen[checkoutsession.FieldStripeSessionID]; !ok {
+				selectedFields = append(selectedFields, checkoutsession.FieldStripeSessionID)
+				fieldSeen[checkoutsession.FieldStripeSessionID] = struct{}{}
+			}
+		case "stripePriceID":
+			if _, ok := fieldSeen[checkoutsession.FieldStripePriceID]; !ok {
+				selectedFields = append(selectedFields, checkoutsession.FieldStripePriceID)
+				fieldSeen[checkoutsession.FieldStripePriceID] = struct{}{}
+			}
+		case "mode":
+			if _, ok := fieldSeen[checkoutsession.FieldMode]; !ok {
+				selectedFields = append(selectedFields, checkoutsession.FieldMode)
+				fieldSeen[checkoutsession.FieldMode] = struct{}{}
+			}
+		case "completed":
+			if _, ok := fieldSeen[checkoutsession.FieldCompleted]; !ok {
+				selectedFields = append(selectedFields, checkoutsession.FieldCompleted)
+				fieldSeen[checkoutsession.FieldCompleted] = struct{}{}
+			}
+		case "completedAt":
+			if _, ok := fieldSeen[checkoutsession.FieldCompletedAt]; !ok {
+				selectedFields = append(selectedFields, checkoutsession.FieldCompletedAt)
+				fieldSeen[checkoutsession.FieldCompletedAt] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		cs.Select(selectedFields...)
+	}
+	return nil
+}
+
+type checkoutsessionPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []CheckoutSessionPaginateOption
+}
+
+func newCheckoutSessionPaginateArgs(rv map[string]any) *checkoutsessionPaginateArgs {
+	args := &checkoutsessionPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*CheckoutSessionWhereInput); ok {
+		args.opts = append(args.opts, WithCheckoutSessionFilter(v.Filter))
 	}
 	return args
 }
@@ -1651,6 +1772,125 @@ func newServiceSchedulePaginateArgs(rv map[string]any) *serviceschedulePaginateA
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (s *SubscriptionQuery) CollectFields(ctx context.Context, satisfies ...string) (*SubscriptionQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return s, nil
+	}
+	if err := s.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
+func (s *SubscriptionQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(subscription.Columns))
+		selectedFields = []string{subscription.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+
+		case "user":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&UserClient{config: s.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, userImplementors)...); err != nil {
+				return err
+			}
+			s.withUser = query
+
+		case "checkoutSession":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&CheckoutSessionClient{config: s.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, checkoutsessionImplementors)...); err != nil {
+				return err
+			}
+			s.withCheckoutSession = query
+		case "createTime":
+			if _, ok := fieldSeen[subscription.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, subscription.FieldCreateTime)
+				fieldSeen[subscription.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[subscription.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, subscription.FieldUpdateTime)
+				fieldSeen[subscription.FieldUpdateTime] = struct{}{}
+			}
+		case "stripeSubscriptionID":
+			if _, ok := fieldSeen[subscription.FieldStripeSubscriptionID]; !ok {
+				selectedFields = append(selectedFields, subscription.FieldStripeSubscriptionID)
+				fieldSeen[subscription.FieldStripeSubscriptionID] = struct{}{}
+			}
+		case "tier":
+			if _, ok := fieldSeen[subscription.FieldTier]; !ok {
+				selectedFields = append(selectedFields, subscription.FieldTier)
+				fieldSeen[subscription.FieldTier] = struct{}{}
+			}
+		case "status":
+			if _, ok := fieldSeen[subscription.FieldStatus]; !ok {
+				selectedFields = append(selectedFields, subscription.FieldStatus)
+				fieldSeen[subscription.FieldStatus] = struct{}{}
+			}
+		case "canceledAt":
+			if _, ok := fieldSeen[subscription.FieldCanceledAt]; !ok {
+				selectedFields = append(selectedFields, subscription.FieldCanceledAt)
+				fieldSeen[subscription.FieldCanceledAt] = struct{}{}
+			}
+		case "cancelAtPeriodEnd":
+			if _, ok := fieldSeen[subscription.FieldCancelAtPeriodEnd]; !ok {
+				selectedFields = append(selectedFields, subscription.FieldCancelAtPeriodEnd)
+				fieldSeen[subscription.FieldCancelAtPeriodEnd] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		s.Select(selectedFields...)
+	}
+	return nil
+}
+
+type subscriptionplanPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []SubscriptionPlanPaginateOption
+}
+
+func newSubscriptionPlanPaginateArgs(rv map[string]any) *subscriptionplanPaginateArgs {
+	args := &subscriptionplanPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*SubscriptionPlanWhereInput); ok {
+		args.opts = append(args.opts, WithSubscriptionPlanFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (u *UserQuery) CollectFields(ctx context.Context, satisfies ...string) (*UserQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
@@ -1695,6 +1935,32 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 				return err
 			}
 			u.withProfile = query
+
+		case "subscriptions":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&SubscriptionClient{config: u.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, subscriptionImplementors)...); err != nil {
+				return err
+			}
+			u.WithNamedSubscriptions(alias, func(wq *SubscriptionQuery) {
+				*wq = *query
+			})
+
+		case "checkoutSessions":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&CheckoutSessionClient{config: u.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, checkoutsessionImplementors)...); err != nil {
+				return err
+			}
+			u.WithNamedCheckoutSessions(alias, func(wq *CheckoutSessionQuery) {
+				*wq = *query
+			})
 		case "createTime":
 			if _, ok := fieldSeen[user.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, user.FieldCreateTime)
@@ -1709,6 +1975,11 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 			if _, ok := fieldSeen[user.FieldEmail]; !ok {
 				selectedFields = append(selectedFields, user.FieldEmail)
 				fieldSeen[user.FieldEmail] = struct{}{}
+			}
+		case "stripeCustomerID":
+			if _, ok := fieldSeen[user.FieldStripeCustomerID]; !ok {
+				selectedFields = append(selectedFields, user.FieldStripeCustomerID)
+				fieldSeen[user.FieldStripeCustomerID] = struct{}{}
 			}
 		case "id":
 		case "__typename":

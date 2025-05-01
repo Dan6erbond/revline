@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Car is the client for interacting with the Car builders.
 	Car *CarClient
+	// CheckoutSession is the client for interacting with the CheckoutSession builders.
+	CheckoutSession *CheckoutSessionClient
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
 	// DragResult is the client for interacting with the DragResult builders.
@@ -38,6 +40,8 @@ type Tx struct {
 	ServiceLog *ServiceLogClient
 	// ServiceSchedule is the client for interacting with the ServiceSchedule builders.
 	ServiceSchedule *ServiceScheduleClient
+	// Subscription is the client for interacting with the Subscription builders.
+	Subscription *SubscriptionClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -172,6 +176,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Car = NewCarClient(tx.config)
+	tx.CheckoutSession = NewCheckoutSessionClient(tx.config)
 	tx.Document = NewDocumentClient(tx.config)
 	tx.DragResult = NewDragResultClient(tx.config)
 	tx.DragSession = NewDragSessionClient(tx.config)
@@ -184,6 +189,7 @@ func (tx *Tx) init() {
 	tx.ServiceItem = NewServiceItemClient(tx.config)
 	tx.ServiceLog = NewServiceLogClient(tx.config)
 	tx.ServiceSchedule = NewServiceScheduleClient(tx.config)
+	tx.Subscription = NewSubscriptionClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

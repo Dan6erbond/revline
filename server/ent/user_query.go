@@ -13,8 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/Dan6erbond/revline/ent/profile"
+	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/google/uuid"
 )
@@ -22,15 +24,19 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx           *QueryContext
-	order         []user.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.User
-	withCars      *CarQuery
-	withProfile   *ProfileQuery
-	modifiers     []func(*sql.Selector)
-	loadTotal     []func(context.Context, []*User) error
-	withNamedCars map[string]*CarQuery
+	ctx                       *QueryContext
+	order                     []user.OrderOption
+	inters                    []Interceptor
+	predicates                []predicate.User
+	withCars                  *CarQuery
+	withProfile               *ProfileQuery
+	withSubscriptions         *SubscriptionQuery
+	withCheckoutSessions      *CheckoutSessionQuery
+	modifiers                 []func(*sql.Selector)
+	loadTotal                 []func(context.Context, []*User) error
+	withNamedCars             map[string]*CarQuery
+	withNamedSubscriptions    map[string]*SubscriptionQuery
+	withNamedCheckoutSessions map[string]*CheckoutSessionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -104,6 +110,50 @@ func (uq *UserQuery) QueryProfile() *ProfileQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(profile.Table, profile.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, user.ProfileTable, user.ProfileColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySubscriptions chains the current query on the "subscriptions" edge.
+func (uq *UserQuery) QuerySubscriptions() *SubscriptionQuery {
+	query := (&SubscriptionClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(subscription.Table, subscription.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.SubscriptionsTable, user.SubscriptionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCheckoutSessions chains the current query on the "checkout_sessions" edge.
+func (uq *UserQuery) QueryCheckoutSessions() *CheckoutSessionQuery {
+	query := (&CheckoutSessionClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(checkoutsession.Table, checkoutsession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.CheckoutSessionsTable, user.CheckoutSessionsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -298,13 +348,15 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:      uq.config,
-		ctx:         uq.ctx.Clone(),
-		order:       append([]user.OrderOption{}, uq.order...),
-		inters:      append([]Interceptor{}, uq.inters...),
-		predicates:  append([]predicate.User{}, uq.predicates...),
-		withCars:    uq.withCars.Clone(),
-		withProfile: uq.withProfile.Clone(),
+		config:               uq.config,
+		ctx:                  uq.ctx.Clone(),
+		order:                append([]user.OrderOption{}, uq.order...),
+		inters:               append([]Interceptor{}, uq.inters...),
+		predicates:           append([]predicate.User{}, uq.predicates...),
+		withCars:             uq.withCars.Clone(),
+		withProfile:          uq.withProfile.Clone(),
+		withSubscriptions:    uq.withSubscriptions.Clone(),
+		withCheckoutSessions: uq.withCheckoutSessions.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -330,6 +382,28 @@ func (uq *UserQuery) WithProfile(opts ...func(*ProfileQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withProfile = query
+	return uq
+}
+
+// WithSubscriptions tells the query-builder to eager-load the nodes that are connected to
+// the "subscriptions" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithSubscriptions(opts ...func(*SubscriptionQuery)) *UserQuery {
+	query := (&SubscriptionClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withSubscriptions = query
+	return uq
+}
+
+// WithCheckoutSessions tells the query-builder to eager-load the nodes that are connected to
+// the "checkout_sessions" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithCheckoutSessions(opts ...func(*CheckoutSessionQuery)) *UserQuery {
+	query := (&CheckoutSessionClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withCheckoutSessions = query
 	return uq
 }
 
@@ -411,9 +485,11 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [4]bool{
 			uq.withCars != nil,
 			uq.withProfile != nil,
+			uq.withSubscriptions != nil,
+			uq.withCheckoutSessions != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -450,10 +526,38 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
+	if query := uq.withSubscriptions; query != nil {
+		if err := uq.loadSubscriptions(ctx, query, nodes,
+			func(n *User) { n.Edges.Subscriptions = []*Subscription{} },
+			func(n *User, e *Subscription) { n.Edges.Subscriptions = append(n.Edges.Subscriptions, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withCheckoutSessions; query != nil {
+		if err := uq.loadCheckoutSessions(ctx, query, nodes,
+			func(n *User) { n.Edges.CheckoutSessions = []*CheckoutSession{} },
+			func(n *User, e *CheckoutSession) { n.Edges.CheckoutSessions = append(n.Edges.CheckoutSessions, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range uq.withNamedCars {
 		if err := uq.loadCars(ctx, query, nodes,
 			func(n *User) { n.appendNamedCars(name) },
 			func(n *User, e *Car) { n.appendNamedCars(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range uq.withNamedSubscriptions {
+		if err := uq.loadSubscriptions(ctx, query, nodes,
+			func(n *User) { n.appendNamedSubscriptions(name) },
+			func(n *User, e *Subscription) { n.appendNamedSubscriptions(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range uq.withNamedCheckoutSessions {
+		if err := uq.loadCheckoutSessions(ctx, query, nodes,
+			func(n *User) { n.appendNamedCheckoutSessions(name) },
+			func(n *User, e *CheckoutSession) { n.appendNamedCheckoutSessions(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -519,6 +623,68 @@ func (uq *UserQuery) loadProfile(ctx context.Context, query *ProfileQuery, nodes
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "user_profile" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadSubscriptions(ctx context.Context, query *SubscriptionQuery, nodes []*User, init func(*User), assign func(*User, *Subscription)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Subscription(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.SubscriptionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_subscriptions
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_subscriptions" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_subscriptions" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadCheckoutSessions(ctx context.Context, query *CheckoutSessionQuery, nodes []*User, init func(*User), assign func(*User, *CheckoutSession)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.CheckoutSession(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.CheckoutSessionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_checkout_sessions
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_checkout_sessions" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_checkout_sessions" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -620,6 +786,34 @@ func (uq *UserQuery) WithNamedCars(name string, opts ...func(*CarQuery)) *UserQu
 		uq.withNamedCars = make(map[string]*CarQuery)
 	}
 	uq.withNamedCars[name] = query
+	return uq
+}
+
+// WithNamedSubscriptions tells the query-builder to eager-load the nodes that are connected to the "subscriptions"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithNamedSubscriptions(name string, opts ...func(*SubscriptionQuery)) *UserQuery {
+	query := (&SubscriptionClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if uq.withNamedSubscriptions == nil {
+		uq.withNamedSubscriptions = make(map[string]*SubscriptionQuery)
+	}
+	uq.withNamedSubscriptions[name] = query
+	return uq
+}
+
+// WithNamedCheckoutSessions tells the query-builder to eager-load the nodes that are connected to the "checkout_sessions"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithNamedCheckoutSessions(name string, opts ...func(*CheckoutSessionQuery)) *UserQuery {
+	query := (&CheckoutSessionClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if uq.withNamedCheckoutSessions == nil {
+		uq.withNamedCheckoutSessions = make(map[string]*CheckoutSessionQuery)
+	}
+	uq.withNamedCheckoutSessions[name] = query
 	return uq
 }
 

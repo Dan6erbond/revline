@@ -19,6 +19,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.4
 	github.com/minio/minio-go/v7 v7.0.91
 	github.com/spf13/viper v1.20.1
+	github.com/stripe/stripe-go/v82 v82.1.0
 	github.com/vektah/gqlparser/v2 v2.5.25
 	go.uber.org/fx v1.23.0
 	go.uber.org/zap v1.26.0

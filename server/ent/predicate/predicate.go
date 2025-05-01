@@ -9,6 +9,9 @@ import (
 // Car is the predicate function for car builders.
 type Car func(*sql.Selector)
 
+// CheckoutSession is the predicate function for checkoutsession builders.
+type CheckoutSession func(*sql.Selector)
+
 // Document is the predicate function for document builders.
 type Document func(*sql.Selector)
 
@@ -44,6 +47,9 @@ type ServiceLog func(*sql.Selector)
 
 // ServiceSchedule is the predicate function for serviceschedule builders.
 type ServiceSchedule func(*sql.Selector)
+
+// Subscription is the predicate function for subscription builders.
+type Subscription func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

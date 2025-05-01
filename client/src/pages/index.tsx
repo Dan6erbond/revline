@@ -5,18 +5,27 @@ import {
   CardFooter,
   CardHeader,
   Image,
+  useDisclosure,
 } from "@heroui/react";
 import { ChevronRight, Flame, Gauge, Plus } from "lucide-react";
 
+import GateModal from "../components/subscription/gate-modal";
 import Link from "next/link";
 import RootNavbar from "@/components/layout/root-navbar";
+import { SubscriptionTier } from "../gql/graphql";
 import { graphql } from "@/gql";
 import { useHref } from "@/utils/use-href";
 import { useQuery } from "@apollo/client";
+import { useRouter } from "next/router";
 
 const getGarage = graphql(`
   query GetGarage {
     me {
+      id
+      subscription {
+        id
+        tier
+      }
       cars {
         id
         name
@@ -39,19 +48,41 @@ const getGarage = graphql(`
 `);
 
 export default function Home() {
+  const router = useRouter();
   const href = useHref();
 
   const { data } = useQuery(getGarage);
+
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   return (
     <>
       <RootNavbar />
       <main className="p-8 max-w-screen-xl mx-auto">
         <div className="flex justify-end mb-8">
-          <Button as={Link} href={"/cars/create"} startContent={<Plus />}>
+          <Button
+            startContent={<Plus />}
+            onPress={() => {
+              if (
+                !data?.me.cars ||
+                data.me.cars?.length < 2 ||
+                (data?.me.subscription?.tier &&
+                  [
+                    (SubscriptionTier.Diy, SubscriptionTier.Enthusiast),
+                  ].includes(data?.me.subscription?.tier))
+              ) {
+                router.push("/cars/create");
+              } else {
+                onOpen();
+              }
+            }}
+          >
             Add Car
           </Button>
         </div>
+
+        <GateModal isOpen={isOpen} onOpenChange={onOpenChange} />
+
         <div className="grid gap-4 md:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {data?.me.cars?.map((car) => (
             <Card

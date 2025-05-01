@@ -21,6 +21,18 @@ func (f CarFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CarMutation", m)
 }
 
+// The CheckoutSessionFunc type is an adapter to allow the use of ordinary
+// function as CheckoutSession mutator.
+type CheckoutSessionFunc func(context.Context, *ent.CheckoutSessionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CheckoutSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CheckoutSessionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CheckoutSessionMutation", m)
+}
+
 // The DocumentFunc type is an adapter to allow the use of ordinary
 // function as Document mutator.
 type DocumentFunc func(context.Context, *ent.DocumentMutation) (ent.Value, error)
@@ -163,6 +175,18 @@ func (f ServiceScheduleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ServiceScheduleMutation", m)
+}
+
+// The SubscriptionFunc type is an adapter to allow the use of ordinary
+// function as Subscription mutator.
+type SubscriptionFunc func(context.Context, *ent.SubscriptionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SubscriptionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SubscriptionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SubscriptionMutation", m)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary

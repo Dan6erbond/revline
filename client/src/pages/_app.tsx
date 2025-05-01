@@ -2,10 +2,11 @@ import "@/styles/globals.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
+import { HeroUIProvider, ToastProvider } from "@heroui/react";
+
 import type { AppProps } from "next/app";
 import AuthenticatedApolloProvider from "@/apollo-client/provider";
 import Head from "next/head";
-import { HeroUIProvider } from "@heroui/react";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import { SessionProvider } from "next-auth/react";
@@ -26,6 +27,7 @@ export default function App({
 
   return (
     <HeroUIProvider navigate={router.push} useHref={href}>
+      <ToastProvider />
       <Script
         defer
         src="https://cloud.umami.is/script.js"

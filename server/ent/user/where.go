@@ -71,6 +71,11 @@ func Email(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldEmail, v))
 }
 
+// StripeCustomerID applies equality check predicate on the "stripe_customer_id" field. It's identical to StripeCustomerIDEQ.
+func StripeCustomerID(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldStripeCustomerID, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreateTime, v))
@@ -216,6 +221,81 @@ func EmailContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldEmail, v))
 }
 
+// StripeCustomerIDEQ applies the EQ predicate on the "stripe_customer_id" field.
+func StripeCustomerIDEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldStripeCustomerID, v))
+}
+
+// StripeCustomerIDNEQ applies the NEQ predicate on the "stripe_customer_id" field.
+func StripeCustomerIDNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldStripeCustomerID, v))
+}
+
+// StripeCustomerIDIn applies the In predicate on the "stripe_customer_id" field.
+func StripeCustomerIDIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldStripeCustomerID, vs...))
+}
+
+// StripeCustomerIDNotIn applies the NotIn predicate on the "stripe_customer_id" field.
+func StripeCustomerIDNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldStripeCustomerID, vs...))
+}
+
+// StripeCustomerIDGT applies the GT predicate on the "stripe_customer_id" field.
+func StripeCustomerIDGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldStripeCustomerID, v))
+}
+
+// StripeCustomerIDGTE applies the GTE predicate on the "stripe_customer_id" field.
+func StripeCustomerIDGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldStripeCustomerID, v))
+}
+
+// StripeCustomerIDLT applies the LT predicate on the "stripe_customer_id" field.
+func StripeCustomerIDLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldStripeCustomerID, v))
+}
+
+// StripeCustomerIDLTE applies the LTE predicate on the "stripe_customer_id" field.
+func StripeCustomerIDLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldStripeCustomerID, v))
+}
+
+// StripeCustomerIDContains applies the Contains predicate on the "stripe_customer_id" field.
+func StripeCustomerIDContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldStripeCustomerID, v))
+}
+
+// StripeCustomerIDHasPrefix applies the HasPrefix predicate on the "stripe_customer_id" field.
+func StripeCustomerIDHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldStripeCustomerID, v))
+}
+
+// StripeCustomerIDHasSuffix applies the HasSuffix predicate on the "stripe_customer_id" field.
+func StripeCustomerIDHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldStripeCustomerID, v))
+}
+
+// StripeCustomerIDIsNil applies the IsNil predicate on the "stripe_customer_id" field.
+func StripeCustomerIDIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldStripeCustomerID))
+}
+
+// StripeCustomerIDNotNil applies the NotNil predicate on the "stripe_customer_id" field.
+func StripeCustomerIDNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldStripeCustomerID))
+}
+
+// StripeCustomerIDEqualFold applies the EqualFold predicate on the "stripe_customer_id" field.
+func StripeCustomerIDEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldStripeCustomerID, v))
+}
+
+// StripeCustomerIDContainsFold applies the ContainsFold predicate on the "stripe_customer_id" field.
+func StripeCustomerIDContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldStripeCustomerID, v))
+}
+
 // HasCars applies the HasEdge predicate on the "cars" edge.
 func HasCars() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -254,6 +334,52 @@ func HasProfile() predicate.User {
 func HasProfileWith(preds ...predicate.Profile) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newProfileStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSubscriptions applies the HasEdge predicate on the "subscriptions" edge.
+func HasSubscriptions() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, SubscriptionsTable, SubscriptionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSubscriptionsWith applies the HasEdge predicate on the "subscriptions" edge with a given conditions (other predicates).
+func HasSubscriptionsWith(preds ...predicate.Subscription) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newSubscriptionsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasCheckoutSessions applies the HasEdge predicate on the "checkout_sessions" edge.
+func HasCheckoutSessions() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, CheckoutSessionsTable, CheckoutSessionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCheckoutSessionsWith applies the HasEdge predicate on the "checkout_sessions" edge with a given conditions (other predicates).
+func HasCheckoutSessionsWith(preds ...predicate.CheckoutSession) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newCheckoutSessionsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

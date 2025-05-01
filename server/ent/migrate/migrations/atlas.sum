@@ -1,4 +1,4 @@
-h1:GU0XOfeaKLVwuTeJnYJF2GvBoO1/S4M1QEBym90kfYc=
+h1:JnIM5fl5RKmUaCxpHg4f2k4h+HvW6jOojUATIs8dQ78=
 20250428142459_add_users_profiles_cars.sql h1:KUQ7e8g1SjlO26kJHdPwC0NhBNVYWofUn/STqPPDpPU=
 20250428142829_add_drag_sessions.sql h1:HOGlzwcc/Ncy5wtQ9ZDkn9WVgSCLiP18GXT7cbUrAFg=
 20250428143856_add_fuel_ups_odometer_readings.sql h1:EsIOQcEnn6wSOvCV386ZMOCZ2Td5FsyecmPzAW8ir6o=
@@ -18,3 +18,4 @@ h1:GU0XOfeaKLVwuTeJnYJF2GvBoO1/S4M1QEBym90kfYc=
 20250429132301_add_power_unit.sql h1:Uz1VrzFH+6ossvJYhzG7JfIfJqEHg9soCuggzbC1blQ=
 20250429132427_add_torque_unit.sql h1:vjJcnT7CHZ+0RWJZhUlCKhszutVSbTLkckc9o/OWaF4=
 20250429133128_add_dyno_sessions.sql h1:WO3dO5o8bQQn3fti8WcUEpVAOBPC/dYJnKvzfrIx6og=
+20250501103253_add_subscriptions.sql h1:zZPLnqwldLMaWGV6vZNBsstdhZrM915qC3/tHFML4xE=

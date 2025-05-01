@@ -25,6 +25,8 @@ type User struct {
 	UpdateTime time.Time `json:"update_time,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
+	// StripeCustomerID holds the value of the "stripe_customer_id" field.
+	StripeCustomerID *string `json:"stripe_customer_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -37,13 +39,19 @@ type UserEdges struct {
 	Cars []*Car `json:"cars,omitempty"`
 	// Profile holds the value of the profile edge.
 	Profile *Profile `json:"profile,omitempty"`
+	// Subscriptions holds the value of the subscriptions edge.
+	Subscriptions []*Subscription `json:"subscriptions,omitempty"`
+	// CheckoutSessions holds the value of the checkout_sessions edge.
+	CheckoutSessions []*CheckoutSession `json:"checkout_sessions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [4]bool
 	// totalCount holds the count of the edges above.
-	totalCount [2]map[string]int
+	totalCount [4]map[string]int
 
-	namedCars map[string][]*Car
+	namedCars             map[string][]*Car
+	namedSubscriptions    map[string][]*Subscription
+	namedCheckoutSessions map[string][]*CheckoutSession
 }
 
 // CarsOrErr returns the Cars value or an error if the edge
@@ -66,12 +74,30 @@ func (e UserEdges) ProfileOrErr() (*Profile, error) {
 	return nil, &NotLoadedError{edge: "profile"}
 }
 
+// SubscriptionsOrErr returns the Subscriptions value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) SubscriptionsOrErr() ([]*Subscription, error) {
+	if e.loadedTypes[2] {
+		return e.Subscriptions, nil
+	}
+	return nil, &NotLoadedError{edge: "subscriptions"}
+}
+
+// CheckoutSessionsOrErr returns the CheckoutSessions value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) CheckoutSessionsOrErr() ([]*CheckoutSession, error) {
+	if e.loadedTypes[3] {
+		return e.CheckoutSessions, nil
+	}
+	return nil, &NotLoadedError{edge: "checkout_sessions"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldEmail:
+		case user.FieldEmail, user.FieldStripeCustomerID:
 			values[i] = new(sql.NullString)
 		case user.FieldCreateTime, user.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
@@ -116,6 +142,13 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Email = value.String
 			}
+		case user.FieldStripeCustomerID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field stripe_customer_id", values[i])
+			} else if value.Valid {
+				u.StripeCustomerID = new(string)
+				*u.StripeCustomerID = value.String
+			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
 		}
@@ -137,6 +170,16 @@ func (u *User) QueryCars() *CarQuery {
 // QueryProfile queries the "profile" edge of the User entity.
 func (u *User) QueryProfile() *ProfileQuery {
 	return NewUserClient(u.config).QueryProfile(u)
+}
+
+// QuerySubscriptions queries the "subscriptions" edge of the User entity.
+func (u *User) QuerySubscriptions() *SubscriptionQuery {
+	return NewUserClient(u.config).QuerySubscriptions(u)
+}
+
+// QueryCheckoutSessions queries the "checkout_sessions" edge of the User entity.
+func (u *User) QueryCheckoutSessions() *CheckoutSessionQuery {
+	return NewUserClient(u.config).QueryCheckoutSessions(u)
 }
 
 // Update returns a builder for updating this User.
@@ -170,6 +213,11 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("email=")
 	builder.WriteString(u.Email)
+	builder.WriteString(", ")
+	if v := u.StripeCustomerID; v != nil {
+		builder.WriteString("stripe_customer_id=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }
@@ -195,6 +243,54 @@ func (u *User) appendNamedCars(name string, edges ...*Car) {
 		u.Edges.namedCars[name] = []*Car{}
 	} else {
 		u.Edges.namedCars[name] = append(u.Edges.namedCars[name], edges...)
+	}
+}
+
+// NamedSubscriptions returns the Subscriptions named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (u *User) NamedSubscriptions(name string) ([]*Subscription, error) {
+	if u.Edges.namedSubscriptions == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := u.Edges.namedSubscriptions[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (u *User) appendNamedSubscriptions(name string, edges ...*Subscription) {
+	if u.Edges.namedSubscriptions == nil {
+		u.Edges.namedSubscriptions = make(map[string][]*Subscription)
+	}
+	if len(edges) == 0 {
+		u.Edges.namedSubscriptions[name] = []*Subscription{}
+	} else {
+		u.Edges.namedSubscriptions[name] = append(u.Edges.namedSubscriptions[name], edges...)
+	}
+}
+
+// NamedCheckoutSessions returns the CheckoutSessions named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (u *User) NamedCheckoutSessions(name string) ([]*CheckoutSession, error) {
+	if u.Edges.namedCheckoutSessions == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := u.Edges.namedCheckoutSessions[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (u *User) appendNamedCheckoutSessions(name string, edges ...*CheckoutSession) {
+	if u.Edges.namedCheckoutSessions == nil {
+		u.Edges.namedCheckoutSessions = make(map[string][]*CheckoutSession)
+	}
+	if len(edges) == 0 {
+		u.Edges.namedCheckoutSessions[name] = []*CheckoutSession{}
+	} else {
+		u.Edges.namedCheckoutSessions[name] = append(u.Edges.namedCheckoutSessions[name], edges...)
 	}
 }
 

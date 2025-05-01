@@ -7,7 +7,12 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/Dan6erbond/revline/ent"
+	"github.com/Dan6erbond/revline/ent/subscription"
 )
+
+type CreateCheckoutSessionInput struct {
+	Tier subscription.Tier `json:"tier"`
+}
 
 type UpcomingService struct {
 	Schedule    *ent.ServiceSchedule `json:"schedule"`

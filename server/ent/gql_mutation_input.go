@@ -1569,11 +1569,14 @@ func (c *ServiceScheduleUpdateOne) SetInput(i UpdateServiceScheduleInput) *Servi
 
 // CreateUserInput represents a mutation input for creating users.
 type CreateUserInput struct {
-	CreateTime *time.Time
-	UpdateTime *time.Time
-	Email      string
-	CarIDs     []uuid.UUID
-	ProfileID  *uuid.UUID
+	CreateTime         *time.Time
+	UpdateTime         *time.Time
+	Email              string
+	StripeCustomerID   *string
+	CarIDs             []uuid.UUID
+	ProfileID          *uuid.UUID
+	SubscriptionIDs    []uuid.UUID
+	CheckoutSessionIDs []uuid.UUID
 }
 
 // Mutate applies the CreateUserInput on the UserMutation builder.
@@ -1585,11 +1588,20 @@ func (i *CreateUserInput) Mutate(m *UserMutation) {
 		m.SetUpdateTime(*v)
 	}
 	m.SetEmail(i.Email)
+	if v := i.StripeCustomerID; v != nil {
+		m.SetStripeCustomerID(*v)
+	}
 	if v := i.CarIDs; len(v) > 0 {
 		m.AddCarIDs(v...)
 	}
 	if v := i.ProfileID; v != nil {
 		m.SetProfileID(*v)
+	}
+	if v := i.SubscriptionIDs; len(v) > 0 {
+		m.AddSubscriptionIDs(v...)
+	}
+	if v := i.CheckoutSessionIDs; len(v) > 0 {
+		m.AddCheckoutSessionIDs(v...)
 	}
 }
 
@@ -1601,13 +1613,21 @@ func (c *UserCreate) SetInput(i CreateUserInput) *UserCreate {
 
 // UpdateUserInput represents a mutation input for updating users.
 type UpdateUserInput struct {
-	UpdateTime   *time.Time
-	Email        *string
-	ClearCars    bool
-	AddCarIDs    []uuid.UUID
-	RemoveCarIDs []uuid.UUID
-	ClearProfile bool
-	ProfileID    *uuid.UUID
+	UpdateTime               *time.Time
+	Email                    *string
+	ClearStripeCustomerID    bool
+	StripeCustomerID         *string
+	ClearCars                bool
+	AddCarIDs                []uuid.UUID
+	RemoveCarIDs             []uuid.UUID
+	ClearProfile             bool
+	ProfileID                *uuid.UUID
+	ClearSubscriptions       bool
+	AddSubscriptionIDs       []uuid.UUID
+	RemoveSubscriptionIDs    []uuid.UUID
+	ClearCheckoutSessions    bool
+	AddCheckoutSessionIDs    []uuid.UUID
+	RemoveCheckoutSessionIDs []uuid.UUID
 }
 
 // Mutate applies the UpdateUserInput on the UserMutation builder.
@@ -1617,6 +1637,12 @@ func (i *UpdateUserInput) Mutate(m *UserMutation) {
 	}
 	if v := i.Email; v != nil {
 		m.SetEmail(*v)
+	}
+	if i.ClearStripeCustomerID {
+		m.ClearStripeCustomerID()
+	}
+	if v := i.StripeCustomerID; v != nil {
+		m.SetStripeCustomerID(*v)
 	}
 	if i.ClearCars {
 		m.ClearCars()
@@ -1632,6 +1658,24 @@ func (i *UpdateUserInput) Mutate(m *UserMutation) {
 	}
 	if v := i.ProfileID; v != nil {
 		m.SetProfileID(*v)
+	}
+	if i.ClearSubscriptions {
+		m.ClearSubscriptions()
+	}
+	if v := i.AddSubscriptionIDs; len(v) > 0 {
+		m.AddSubscriptionIDs(v...)
+	}
+	if v := i.RemoveSubscriptionIDs; len(v) > 0 {
+		m.RemoveSubscriptionIDs(v...)
+	}
+	if i.ClearCheckoutSessions {
+		m.ClearCheckoutSessions()
+	}
+	if v := i.AddCheckoutSessionIDs; len(v) > 0 {
+		m.AddCheckoutSessionIDs(v...)
+	}
+	if v := i.RemoveCheckoutSessionIDs; len(v) > 0 {
+		m.RemoveCheckoutSessionIDs(v...)
 	}
 }
 

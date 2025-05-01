@@ -9,6 +9,7 @@ import (
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
@@ -21,6 +22,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/serviceitem"
 	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
+	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-multierror"
@@ -35,6 +37,11 @@ var carImplementors = []string{"Car", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
 func (*Car) IsNode() {}
+
+var checkoutsessionImplementors = []string{"CheckoutSession", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*CheckoutSession) IsNode() {}
 
 var documentImplementors = []string{"Document", "Node"}
 
@@ -95,6 +102,11 @@ var servicescheduleImplementors = []string{"ServiceSchedule", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
 func (*ServiceSchedule) IsNode() {}
+
+var subscriptionImplementors = []string{"SubscriptionPlan", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*Subscription) IsNode() {}
 
 var userImplementors = []string{"User", "Node"}
 
@@ -164,6 +176,15 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 			Where(car.ID(id))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
 			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, carImplementors...); err != nil {
+				return nil, err
+			}
+		}
+		return query.Only(ctx)
+	case checkoutsession.Table:
+		query := c.CheckoutSession.Query().
+			Where(checkoutsession.ID(id))
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, checkoutsessionImplementors...); err != nil {
 				return nil, err
 			}
 		}
@@ -276,6 +297,15 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 			}
 		}
 		return query.Only(ctx)
+	case subscription.Table:
+		query := c.Subscription.Query().
+			Where(subscription.ID(id))
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, subscriptionImplementors...); err != nil {
+				return nil, err
+			}
+		}
+		return query.Only(ctx)
 	case user.Table:
 		query := c.User.Query().
 			Where(user.ID(id))
@@ -362,6 +392,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		query := c.Car.Query().
 			Where(car.IDIn(ids...))
 		query, err := query.CollectFields(ctx, carImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case checkoutsession.Table:
+		query := c.CheckoutSession.Query().
+			Where(checkoutsession.IDIn(ids...))
+		query, err := query.CollectFields(ctx, checkoutsessionImplementors...)
 		if err != nil {
 			return nil, err
 		}
@@ -554,6 +600,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		query := c.ServiceSchedule.Query().
 			Where(serviceschedule.IDIn(ids...))
 		query, err := query.CollectFields(ctx, servicescheduleImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case subscription.Table:
+		query := c.Subscription.Query().
+			Where(subscription.IDIn(ids...))
+		query, err := query.CollectFields(ctx, subscriptionImplementors...)
 		if err != nil {
 			return nil, err
 		}

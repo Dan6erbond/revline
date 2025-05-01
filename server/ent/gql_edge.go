@@ -132,6 +132,22 @@ func (c *Car) BannerImage(ctx context.Context) (*Media, error) {
 	return result, MaskNotFound(err)
 }
 
+func (cs *CheckoutSession) User(ctx context.Context) (*User, error) {
+	result, err := cs.Edges.UserOrErr()
+	if IsNotLoaded(err) {
+		result, err = cs.QueryUser().Only(ctx)
+	}
+	return result, err
+}
+
+func (cs *CheckoutSession) Subscription(ctx context.Context) (*Subscription, error) {
+	result, err := cs.Edges.SubscriptionOrErr()
+	if IsNotLoaded(err) {
+		result, err = cs.QuerySubscription().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (d *Document) Car(ctx context.Context) (*Car, error) {
 	result, err := d.Edges.CarOrErr()
 	if IsNotLoaded(err) {
@@ -352,6 +368,22 @@ func (ss *ServiceSchedule) Logs(ctx context.Context) (result []*ServiceLog, err 
 	return result, err
 }
 
+func (s *Subscription) User(ctx context.Context) (*User, error) {
+	result, err := s.Edges.UserOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryUser().Only(ctx)
+	}
+	return result, err
+}
+
+func (s *Subscription) CheckoutSession(ctx context.Context) (*CheckoutSession, error) {
+	result, err := s.Edges.CheckoutSessionOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryCheckoutSession().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (u *User) Cars(ctx context.Context) (result []*Car, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = u.NamedCars(graphql.GetFieldContext(ctx).Field.Alias)
@@ -370,4 +402,28 @@ func (u *User) Profile(ctx context.Context) (*Profile, error) {
 		result, err = u.QueryProfile().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (u *User) Subscriptions(ctx context.Context) (result []*Subscription, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = u.NamedSubscriptions(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = u.Edges.SubscriptionsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = u.QuerySubscriptions().All(ctx)
+	}
+	return result, err
+}
+
+func (u *User) CheckoutSessions(ctx context.Context) (result []*CheckoutSession, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = u.NamedCheckoutSessions(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = u.Edges.CheckoutSessionsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = u.QueryCheckoutSessions().All(ctx)
+	}
+	return result, err
 }

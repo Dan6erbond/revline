@@ -1,0 +1,12 @@
+extend type User {
+  subscription: SubscriptionPlan
+}
+
+input CreateCheckoutSessionInput {
+  tier: SubscriptionTier!
+}
+
+extend type Mutation {
+  createCheckoutSession(input: CreateCheckoutSessionInput!): String! @loggedIn
+  createBillingPortalSession: String! @loggedIn
+}

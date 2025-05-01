@@ -11,7 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/profile"
+	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/google/uuid"
 )
@@ -54,6 +56,20 @@ func (uc *UserCreate) SetNillableUpdateTime(t *time.Time) *UserCreate {
 // SetEmail sets the "email" field.
 func (uc *UserCreate) SetEmail(s string) *UserCreate {
 	uc.mutation.SetEmail(s)
+	return uc
+}
+
+// SetStripeCustomerID sets the "stripe_customer_id" field.
+func (uc *UserCreate) SetStripeCustomerID(s string) *UserCreate {
+	uc.mutation.SetStripeCustomerID(s)
+	return uc
+}
+
+// SetNillableStripeCustomerID sets the "stripe_customer_id" field if the given value is not nil.
+func (uc *UserCreate) SetNillableStripeCustomerID(s *string) *UserCreate {
+	if s != nil {
+		uc.SetStripeCustomerID(*s)
+	}
 	return uc
 }
 
@@ -103,6 +119,36 @@ func (uc *UserCreate) SetNillableProfileID(id *uuid.UUID) *UserCreate {
 // SetProfile sets the "profile" edge to the Profile entity.
 func (uc *UserCreate) SetProfile(p *Profile) *UserCreate {
 	return uc.SetProfileID(p.ID)
+}
+
+// AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
+func (uc *UserCreate) AddSubscriptionIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddSubscriptionIDs(ids...)
+	return uc
+}
+
+// AddSubscriptions adds the "subscriptions" edges to the Subscription entity.
+func (uc *UserCreate) AddSubscriptions(s ...*Subscription) *UserCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uc.AddSubscriptionIDs(ids...)
+}
+
+// AddCheckoutSessionIDs adds the "checkout_sessions" edge to the CheckoutSession entity by IDs.
+func (uc *UserCreate) AddCheckoutSessionIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddCheckoutSessionIDs(ids...)
+	return uc
+}
+
+// AddCheckoutSessions adds the "checkout_sessions" edges to the CheckoutSession entity.
+func (uc *UserCreate) AddCheckoutSessions(c ...*CheckoutSession) *UserCreate {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uc.AddCheckoutSessionIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -212,6 +258,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 		_node.Email = value
 	}
+	if value, ok := uc.mutation.StripeCustomerID(); ok {
+		_spec.SetField(user.FieldStripeCustomerID, field.TypeString, value)
+		_node.StripeCustomerID = &value
+	}
 	if nodes := uc.mutation.CarsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -237,6 +287,38 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(profile.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.SubscriptionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SubscriptionsTable,
+			Columns: []string{user.SubscriptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.CheckoutSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CheckoutSessionsTable,
+			Columns: []string{user.CheckoutSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(checkoutsession.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

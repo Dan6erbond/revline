@@ -21,6 +21,10 @@ func (User) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.String("email").Unique(),
+		field.String("stripe_customer_id").
+			Optional().
+			Nillable().
+			Unique(),
 	}
 }
 
@@ -30,6 +34,8 @@ func (User) Edges() []ent.Edge {
 		edge.To("cars", Car.Type),
 		edge.To("profile", Profile.Type).
 			Unique(),
+		edge.To("subscriptions", Subscription.Type),
+		edge.To("checkout_sessions", CheckoutSession.Type),
 	}
 }
 

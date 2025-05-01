@@ -12,6 +12,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
@@ -24,6 +25,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/serviceitem"
 	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
+	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/google/uuid"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -355,6 +357,255 @@ func (c *Car) ToEdge(order *CarOrder) *CarEdge {
 	return &CarEdge{
 		Node:   c,
 		Cursor: order.Field.toCursor(c),
+	}
+}
+
+// CheckoutSessionEdge is the edge representation of CheckoutSession.
+type CheckoutSessionEdge struct {
+	Node   *CheckoutSession `json:"node"`
+	Cursor Cursor           `json:"cursor"`
+}
+
+// CheckoutSessionConnection is the connection containing edges to CheckoutSession.
+type CheckoutSessionConnection struct {
+	Edges      []*CheckoutSessionEdge `json:"edges"`
+	PageInfo   PageInfo               `json:"pageInfo"`
+	TotalCount int                    `json:"totalCount"`
+}
+
+func (c *CheckoutSessionConnection) build(nodes []*CheckoutSession, pager *checkoutsessionPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *CheckoutSession
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *CheckoutSession {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *CheckoutSession {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*CheckoutSessionEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &CheckoutSessionEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// CheckoutSessionPaginateOption enables pagination customization.
+type CheckoutSessionPaginateOption func(*checkoutsessionPager) error
+
+// WithCheckoutSessionOrder configures pagination ordering.
+func WithCheckoutSessionOrder(order *CheckoutSessionOrder) CheckoutSessionPaginateOption {
+	if order == nil {
+		order = DefaultCheckoutSessionOrder
+	}
+	o := *order
+	return func(pager *checkoutsessionPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultCheckoutSessionOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithCheckoutSessionFilter configures pagination filter.
+func WithCheckoutSessionFilter(filter func(*CheckoutSessionQuery) (*CheckoutSessionQuery, error)) CheckoutSessionPaginateOption {
+	return func(pager *checkoutsessionPager) error {
+		if filter == nil {
+			return errors.New("CheckoutSessionQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type checkoutsessionPager struct {
+	reverse bool
+	order   *CheckoutSessionOrder
+	filter  func(*CheckoutSessionQuery) (*CheckoutSessionQuery, error)
+}
+
+func newCheckoutSessionPager(opts []CheckoutSessionPaginateOption, reverse bool) (*checkoutsessionPager, error) {
+	pager := &checkoutsessionPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultCheckoutSessionOrder
+	}
+	return pager, nil
+}
+
+func (p *checkoutsessionPager) applyFilter(query *CheckoutSessionQuery) (*CheckoutSessionQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *checkoutsessionPager) toCursor(cs *CheckoutSession) Cursor {
+	return p.order.Field.toCursor(cs)
+}
+
+func (p *checkoutsessionPager) applyCursors(query *CheckoutSessionQuery, after, before *Cursor) (*CheckoutSessionQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultCheckoutSessionOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *checkoutsessionPager) applyOrder(query *CheckoutSessionQuery) *CheckoutSessionQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultCheckoutSessionOrder.Field {
+		query = query.Order(DefaultCheckoutSessionOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *checkoutsessionPager) orderExpr(query *CheckoutSessionQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultCheckoutSessionOrder.Field {
+			b.Comma().Ident(DefaultCheckoutSessionOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to CheckoutSession.
+func (cs *CheckoutSessionQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...CheckoutSessionPaginateOption,
+) (*CheckoutSessionConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newCheckoutSessionPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if cs, err = pager.applyFilter(cs); err != nil {
+		return nil, err
+	}
+	conn := &CheckoutSessionConnection{Edges: []*CheckoutSessionEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := cs.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if cs, err = pager.applyCursors(cs, after, before); err != nil {
+		return nil, err
+	}
+	limit := paginateLimit(first, last)
+	if limit != 0 {
+		cs.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := cs.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	cs = pager.applyOrder(cs)
+	nodes, err := cs.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// CheckoutSessionOrderField defines the ordering field of CheckoutSession.
+type CheckoutSessionOrderField struct {
+	// Value extracts the ordering value from the given CheckoutSession.
+	Value    func(*CheckoutSession) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) checkoutsession.OrderOption
+	toCursor func(*CheckoutSession) Cursor
+}
+
+// CheckoutSessionOrder defines the ordering of CheckoutSession.
+type CheckoutSessionOrder struct {
+	Direction OrderDirection             `json:"direction"`
+	Field     *CheckoutSessionOrderField `json:"field"`
+}
+
+// DefaultCheckoutSessionOrder is the default ordering of CheckoutSession.
+var DefaultCheckoutSessionOrder = &CheckoutSessionOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &CheckoutSessionOrderField{
+		Value: func(cs *CheckoutSession) (ent.Value, error) {
+			return cs.ID, nil
+		},
+		column: checkoutsession.FieldID,
+		toTerm: checkoutsession.ByID,
+		toCursor: func(cs *CheckoutSession) Cursor {
+			return Cursor{ID: cs.ID}
+		},
+	},
+}
+
+// ToEdge converts CheckoutSession into CheckoutSessionEdge.
+func (cs *CheckoutSession) ToEdge(order *CheckoutSessionOrder) *CheckoutSessionEdge {
+	if order == nil {
+		order = DefaultCheckoutSessionOrder
+	}
+	return &CheckoutSessionEdge{
+		Node:   cs,
+		Cursor: order.Field.toCursor(cs),
 	}
 }
 
@@ -3343,6 +3594,258 @@ func (ss *ServiceSchedule) ToEdge(order *ServiceScheduleOrder) *ServiceScheduleE
 	return &ServiceScheduleEdge{
 		Node:   ss,
 		Cursor: order.Field.toCursor(ss),
+	}
+}
+
+// SubscriptionPlan is the type alias for Subscription.
+type SubscriptionPlan = Subscription
+
+// SubscriptionPlanEdge is the edge representation of SubscriptionPlan.
+type SubscriptionPlanEdge struct {
+	Node   *SubscriptionPlan `json:"node"`
+	Cursor Cursor            `json:"cursor"`
+}
+
+// SubscriptionPlanConnection is the connection containing edges to SubscriptionPlan.
+type SubscriptionPlanConnection struct {
+	Edges      []*SubscriptionPlanEdge `json:"edges"`
+	PageInfo   PageInfo                `json:"pageInfo"`
+	TotalCount int                     `json:"totalCount"`
+}
+
+func (c *SubscriptionPlanConnection) build(nodes []*SubscriptionPlan, pager *subscriptionplanPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *SubscriptionPlan
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *SubscriptionPlan {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *SubscriptionPlan {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*SubscriptionPlanEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &SubscriptionPlanEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// SubscriptionPlanPaginateOption enables pagination customization.
+type SubscriptionPlanPaginateOption func(*subscriptionplanPager) error
+
+// WithSubscriptionPlanOrder configures pagination ordering.
+func WithSubscriptionPlanOrder(order *SubscriptionPlanOrder) SubscriptionPlanPaginateOption {
+	if order == nil {
+		order = DefaultSubscriptionPlanOrder
+	}
+	o := *order
+	return func(pager *subscriptionplanPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultSubscriptionPlanOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithSubscriptionPlanFilter configures pagination filter.
+func WithSubscriptionPlanFilter(filter func(*SubscriptionQuery) (*SubscriptionQuery, error)) SubscriptionPlanPaginateOption {
+	return func(pager *subscriptionplanPager) error {
+		if filter == nil {
+			return errors.New("SubscriptionQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type subscriptionplanPager struct {
+	reverse bool
+	order   *SubscriptionPlanOrder
+	filter  func(*SubscriptionQuery) (*SubscriptionQuery, error)
+}
+
+func newSubscriptionPlanPager(opts []SubscriptionPlanPaginateOption, reverse bool) (*subscriptionplanPager, error) {
+	pager := &subscriptionplanPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultSubscriptionPlanOrder
+	}
+	return pager, nil
+}
+
+func (p *subscriptionplanPager) applyFilter(query *SubscriptionQuery) (*SubscriptionQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *subscriptionplanPager) toCursor(s *SubscriptionPlan) Cursor {
+	return p.order.Field.toCursor(s)
+}
+
+func (p *subscriptionplanPager) applyCursors(query *SubscriptionQuery, after, before *Cursor) (*SubscriptionQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultSubscriptionPlanOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *subscriptionplanPager) applyOrder(query *SubscriptionQuery) *SubscriptionQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultSubscriptionPlanOrder.Field {
+		query = query.Order(DefaultSubscriptionPlanOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *subscriptionplanPager) orderExpr(query *SubscriptionQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultSubscriptionPlanOrder.Field {
+			b.Comma().Ident(DefaultSubscriptionPlanOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to SubscriptionPlan.
+func (s *SubscriptionQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...SubscriptionPlanPaginateOption,
+) (*SubscriptionPlanConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newSubscriptionPlanPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if s, err = pager.applyFilter(s); err != nil {
+		return nil, err
+	}
+	conn := &SubscriptionPlanConnection{Edges: []*SubscriptionPlanEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := s.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if s, err = pager.applyCursors(s, after, before); err != nil {
+		return nil, err
+	}
+	limit := paginateLimit(first, last)
+	if limit != 0 {
+		s.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := s.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	s = pager.applyOrder(s)
+	nodes, err := s.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// SubscriptionPlanOrderField defines the ordering field of Subscription.
+type SubscriptionPlanOrderField struct {
+	// Value extracts the ordering value from the given Subscription.
+	Value    func(*SubscriptionPlan) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) subscription.OrderOption
+	toCursor func(*SubscriptionPlan) Cursor
+}
+
+// SubscriptionPlanOrder defines the ordering of Subscription.
+type SubscriptionPlanOrder struct {
+	Direction OrderDirection              `json:"direction"`
+	Field     *SubscriptionPlanOrderField `json:"field"`
+}
+
+// DefaultSubscriptionPlanOrder is the default ordering of Subscription.
+var DefaultSubscriptionPlanOrder = &SubscriptionPlanOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &SubscriptionPlanOrderField{
+		Value: func(s *SubscriptionPlan) (ent.Value, error) {
+			return s.ID, nil
+		},
+		column: subscription.FieldID,
+		toTerm: subscription.ByID,
+		toCursor: func(s *SubscriptionPlan) Cursor {
+			return Cursor{ID: s.ID}
+		},
+	},
+}
+
+// ToEdge converts SubscriptionPlan into SubscriptionPlanEdge.
+func (s *SubscriptionPlan) ToEdge(order *SubscriptionPlanOrder) *SubscriptionPlanEdge {
+	if order == nil {
+		order = DefaultSubscriptionPlanOrder
+	}
+	return &SubscriptionPlanEdge{
+		Node:   s,
+		Cursor: order.Field.toCursor(s),
 	}
 }
 

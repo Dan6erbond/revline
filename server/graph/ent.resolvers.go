@@ -16,6 +16,9 @@ func (r *Resolver) Media() MediaResolver { return &mediaResolver{r} }
 // Profile returns ProfileResolver implementation.
 func (r *Resolver) Profile() ProfileResolver { return &profileResolver{r} }
 
+// User returns UserResolver implementation.
+func (r *Resolver) User() UserResolver { return &userResolver{r} }
+
 // CreateFuelUpInput returns CreateFuelUpInputResolver implementation.
 func (r *Resolver) CreateFuelUpInput() CreateFuelUpInputResolver {
 	return &createFuelUpInputResolver{r}
@@ -30,5 +33,6 @@ type carResolver struct{ *Resolver }
 type documentResolver struct{ *Resolver }
 type mediaResolver struct{ *Resolver }
 type profileResolver struct{ *Resolver }
+type userResolver struct{ *Resolver }
 type createFuelUpInputResolver struct{ *Resolver }
 type createServiceLogInputResolver struct{ *Resolver }

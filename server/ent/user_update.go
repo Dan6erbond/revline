@@ -12,8 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/Dan6erbond/revline/ent/profile"
+	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/google/uuid"
 )
@@ -51,6 +53,26 @@ func (uu *UserUpdate) SetNillableEmail(s *string) *UserUpdate {
 	return uu
 }
 
+// SetStripeCustomerID sets the "stripe_customer_id" field.
+func (uu *UserUpdate) SetStripeCustomerID(s string) *UserUpdate {
+	uu.mutation.SetStripeCustomerID(s)
+	return uu
+}
+
+// SetNillableStripeCustomerID sets the "stripe_customer_id" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableStripeCustomerID(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetStripeCustomerID(*s)
+	}
+	return uu
+}
+
+// ClearStripeCustomerID clears the value of the "stripe_customer_id" field.
+func (uu *UserUpdate) ClearStripeCustomerID() *UserUpdate {
+	uu.mutation.ClearStripeCustomerID()
+	return uu
+}
+
 // AddCarIDs adds the "cars" edge to the Car entity by IDs.
 func (uu *UserUpdate) AddCarIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddCarIDs(ids...)
@@ -85,6 +107,36 @@ func (uu *UserUpdate) SetProfile(p *Profile) *UserUpdate {
 	return uu.SetProfileID(p.ID)
 }
 
+// AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
+func (uu *UserUpdate) AddSubscriptionIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddSubscriptionIDs(ids...)
+	return uu
+}
+
+// AddSubscriptions adds the "subscriptions" edges to the Subscription entity.
+func (uu *UserUpdate) AddSubscriptions(s ...*Subscription) *UserUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uu.AddSubscriptionIDs(ids...)
+}
+
+// AddCheckoutSessionIDs adds the "checkout_sessions" edge to the CheckoutSession entity by IDs.
+func (uu *UserUpdate) AddCheckoutSessionIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddCheckoutSessionIDs(ids...)
+	return uu
+}
+
+// AddCheckoutSessions adds the "checkout_sessions" edges to the CheckoutSession entity.
+func (uu *UserUpdate) AddCheckoutSessions(c ...*CheckoutSession) *UserUpdate {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uu.AddCheckoutSessionIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -115,6 +167,48 @@ func (uu *UserUpdate) RemoveCars(c ...*Car) *UserUpdate {
 func (uu *UserUpdate) ClearProfile() *UserUpdate {
 	uu.mutation.ClearProfile()
 	return uu
+}
+
+// ClearSubscriptions clears all "subscriptions" edges to the Subscription entity.
+func (uu *UserUpdate) ClearSubscriptions() *UserUpdate {
+	uu.mutation.ClearSubscriptions()
+	return uu
+}
+
+// RemoveSubscriptionIDs removes the "subscriptions" edge to Subscription entities by IDs.
+func (uu *UserUpdate) RemoveSubscriptionIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveSubscriptionIDs(ids...)
+	return uu
+}
+
+// RemoveSubscriptions removes "subscriptions" edges to Subscription entities.
+func (uu *UserUpdate) RemoveSubscriptions(s ...*Subscription) *UserUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uu.RemoveSubscriptionIDs(ids...)
+}
+
+// ClearCheckoutSessions clears all "checkout_sessions" edges to the CheckoutSession entity.
+func (uu *UserUpdate) ClearCheckoutSessions() *UserUpdate {
+	uu.mutation.ClearCheckoutSessions()
+	return uu
+}
+
+// RemoveCheckoutSessionIDs removes the "checkout_sessions" edge to CheckoutSession entities by IDs.
+func (uu *UserUpdate) RemoveCheckoutSessionIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveCheckoutSessionIDs(ids...)
+	return uu
+}
+
+// RemoveCheckoutSessions removes "checkout_sessions" edges to CheckoutSession entities.
+func (uu *UserUpdate) RemoveCheckoutSessions(c ...*CheckoutSession) *UserUpdate {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uu.RemoveCheckoutSessionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -167,6 +261,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.StripeCustomerID(); ok {
+		_spec.SetField(user.FieldStripeCustomerID, field.TypeString, value)
+	}
+	if uu.mutation.StripeCustomerIDCleared() {
+		_spec.ClearField(user.FieldStripeCustomerID, field.TypeString)
 	}
 	if uu.mutation.CarsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -242,6 +342,96 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.SubscriptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SubscriptionsTable,
+			Columns: []string{user.SubscriptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedSubscriptionsIDs(); len(nodes) > 0 && !uu.mutation.SubscriptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SubscriptionsTable,
+			Columns: []string{user.SubscriptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.SubscriptionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SubscriptionsTable,
+			Columns: []string{user.SubscriptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uu.mutation.CheckoutSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CheckoutSessionsTable,
+			Columns: []string{user.CheckoutSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(checkoutsession.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedCheckoutSessionsIDs(); len(nodes) > 0 && !uu.mutation.CheckoutSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CheckoutSessionsTable,
+			Columns: []string{user.CheckoutSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(checkoutsession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.CheckoutSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CheckoutSessionsTable,
+			Columns: []string{user.CheckoutSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(checkoutsession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -282,6 +472,26 @@ func (uuo *UserUpdateOne) SetNillableEmail(s *string) *UserUpdateOne {
 	return uuo
 }
 
+// SetStripeCustomerID sets the "stripe_customer_id" field.
+func (uuo *UserUpdateOne) SetStripeCustomerID(s string) *UserUpdateOne {
+	uuo.mutation.SetStripeCustomerID(s)
+	return uuo
+}
+
+// SetNillableStripeCustomerID sets the "stripe_customer_id" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableStripeCustomerID(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetStripeCustomerID(*s)
+	}
+	return uuo
+}
+
+// ClearStripeCustomerID clears the value of the "stripe_customer_id" field.
+func (uuo *UserUpdateOne) ClearStripeCustomerID() *UserUpdateOne {
+	uuo.mutation.ClearStripeCustomerID()
+	return uuo
+}
+
 // AddCarIDs adds the "cars" edge to the Car entity by IDs.
 func (uuo *UserUpdateOne) AddCarIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddCarIDs(ids...)
@@ -316,6 +526,36 @@ func (uuo *UserUpdateOne) SetProfile(p *Profile) *UserUpdateOne {
 	return uuo.SetProfileID(p.ID)
 }
 
+// AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
+func (uuo *UserUpdateOne) AddSubscriptionIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddSubscriptionIDs(ids...)
+	return uuo
+}
+
+// AddSubscriptions adds the "subscriptions" edges to the Subscription entity.
+func (uuo *UserUpdateOne) AddSubscriptions(s ...*Subscription) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uuo.AddSubscriptionIDs(ids...)
+}
+
+// AddCheckoutSessionIDs adds the "checkout_sessions" edge to the CheckoutSession entity by IDs.
+func (uuo *UserUpdateOne) AddCheckoutSessionIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddCheckoutSessionIDs(ids...)
+	return uuo
+}
+
+// AddCheckoutSessions adds the "checkout_sessions" edges to the CheckoutSession entity.
+func (uuo *UserUpdateOne) AddCheckoutSessions(c ...*CheckoutSession) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uuo.AddCheckoutSessionIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -346,6 +586,48 @@ func (uuo *UserUpdateOne) RemoveCars(c ...*Car) *UserUpdateOne {
 func (uuo *UserUpdateOne) ClearProfile() *UserUpdateOne {
 	uuo.mutation.ClearProfile()
 	return uuo
+}
+
+// ClearSubscriptions clears all "subscriptions" edges to the Subscription entity.
+func (uuo *UserUpdateOne) ClearSubscriptions() *UserUpdateOne {
+	uuo.mutation.ClearSubscriptions()
+	return uuo
+}
+
+// RemoveSubscriptionIDs removes the "subscriptions" edge to Subscription entities by IDs.
+func (uuo *UserUpdateOne) RemoveSubscriptionIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveSubscriptionIDs(ids...)
+	return uuo
+}
+
+// RemoveSubscriptions removes "subscriptions" edges to Subscription entities.
+func (uuo *UserUpdateOne) RemoveSubscriptions(s ...*Subscription) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uuo.RemoveSubscriptionIDs(ids...)
+}
+
+// ClearCheckoutSessions clears all "checkout_sessions" edges to the CheckoutSession entity.
+func (uuo *UserUpdateOne) ClearCheckoutSessions() *UserUpdateOne {
+	uuo.mutation.ClearCheckoutSessions()
+	return uuo
+}
+
+// RemoveCheckoutSessionIDs removes the "checkout_sessions" edge to CheckoutSession entities by IDs.
+func (uuo *UserUpdateOne) RemoveCheckoutSessionIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveCheckoutSessionIDs(ids...)
+	return uuo
+}
+
+// RemoveCheckoutSessions removes "checkout_sessions" edges to CheckoutSession entities.
+func (uuo *UserUpdateOne) RemoveCheckoutSessions(c ...*CheckoutSession) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uuo.RemoveCheckoutSessionIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -429,6 +711,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if value, ok := uuo.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 	}
+	if value, ok := uuo.mutation.StripeCustomerID(); ok {
+		_spec.SetField(user.FieldStripeCustomerID, field.TypeString, value)
+	}
+	if uuo.mutation.StripeCustomerIDCleared() {
+		_spec.ClearField(user.FieldStripeCustomerID, field.TypeString)
+	}
 	if uuo.mutation.CarsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -496,6 +784,96 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(profile.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.SubscriptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SubscriptionsTable,
+			Columns: []string{user.SubscriptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedSubscriptionsIDs(); len(nodes) > 0 && !uuo.mutation.SubscriptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SubscriptionsTable,
+			Columns: []string{user.SubscriptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.SubscriptionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SubscriptionsTable,
+			Columns: []string{user.SubscriptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.CheckoutSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CheckoutSessionsTable,
+			Columns: []string{user.CheckoutSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(checkoutsession.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedCheckoutSessionsIDs(); len(nodes) > 0 && !uuo.mutation.CheckoutSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CheckoutSessionsTable,
+			Columns: []string{user.CheckoutSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(checkoutsession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.CheckoutSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CheckoutSessionsTable,
+			Columns: []string{user.CheckoutSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(checkoutsession.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

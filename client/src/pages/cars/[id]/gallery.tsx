@@ -1,10 +1,11 @@
+import { Car, SubscriptionTier } from "@/gql/graphql";
 import { ChangeEvent, DragEvent, useCallback, useRef, useState } from "react";
 import { Image, Progress, Skeleton } from "@heroui/react";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
-import { Car } from "@/gql/graphql";
 import CarLayout from "@/components/layout/car-layout";
 import { ImageUp } from "lucide-react";
+import SubscriptionOverlay from "../../../components/subscription-overlay";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { uploadFile } from "@/utils/upload-file";
@@ -167,7 +168,8 @@ export default function Gallery() {
 
   return (
     <CarLayout>
-      <div className="p-4 flex flex-col gap-4 max-w-screen-xl mx-auto">
+      <div className="p-4 flex flex-col gap-4 max-w-screen-xl mx-auto relative min-h-[300px]">
+        <SubscriptionOverlay requiredTiers={[SubscriptionTier.Enthusiast]} />
         <h1 className="text-3xl">Gallery</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {data?.car?.media?.map((m) => (

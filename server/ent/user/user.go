@@ -21,10 +21,16 @@ const (
 	FieldUpdateTime = "update_time"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
+	// FieldStripeCustomerID holds the string denoting the stripe_customer_id field in the database.
+	FieldStripeCustomerID = "stripe_customer_id"
 	// EdgeCars holds the string denoting the cars edge name in mutations.
 	EdgeCars = "cars"
 	// EdgeProfile holds the string denoting the profile edge name in mutations.
 	EdgeProfile = "profile"
+	// EdgeSubscriptions holds the string denoting the subscriptions edge name in mutations.
+	EdgeSubscriptions = "subscriptions"
+	// EdgeCheckoutSessions holds the string denoting the checkout_sessions edge name in mutations.
+	EdgeCheckoutSessions = "checkout_sessions"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// CarsTable is the table that holds the cars relation/edge.
@@ -41,6 +47,20 @@ const (
 	ProfileInverseTable = "profiles"
 	// ProfileColumn is the table column denoting the profile relation/edge.
 	ProfileColumn = "user_profile"
+	// SubscriptionsTable is the table that holds the subscriptions relation/edge.
+	SubscriptionsTable = "subscriptions"
+	// SubscriptionsInverseTable is the table name for the Subscription entity.
+	// It exists in this package in order to avoid circular dependency with the "subscription" package.
+	SubscriptionsInverseTable = "subscriptions"
+	// SubscriptionsColumn is the table column denoting the subscriptions relation/edge.
+	SubscriptionsColumn = "user_subscriptions"
+	// CheckoutSessionsTable is the table that holds the checkout_sessions relation/edge.
+	CheckoutSessionsTable = "checkout_sessions"
+	// CheckoutSessionsInverseTable is the table name for the CheckoutSession entity.
+	// It exists in this package in order to avoid circular dependency with the "checkoutsession" package.
+	CheckoutSessionsInverseTable = "checkout_sessions"
+	// CheckoutSessionsColumn is the table column denoting the checkout_sessions relation/edge.
+	CheckoutSessionsColumn = "user_checkout_sessions"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -49,6 +69,7 @@ var Columns = []string{
 	FieldCreateTime,
 	FieldUpdateTime,
 	FieldEmail,
+	FieldStripeCustomerID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -95,6 +116,11 @@ func ByEmail(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEmail, opts...).ToFunc()
 }
 
+// ByStripeCustomerID orders the results by the stripe_customer_id field.
+func ByStripeCustomerID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStripeCustomerID, opts...).ToFunc()
+}
+
 // ByCarsCount orders the results by cars count.
 func ByCarsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -115,6 +141,34 @@ func ByProfileField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newProfileStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// BySubscriptionsCount orders the results by subscriptions count.
+func BySubscriptionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSubscriptionsStep(), opts...)
+	}
+}
+
+// BySubscriptions orders the results by subscriptions terms.
+func BySubscriptions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSubscriptionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByCheckoutSessionsCount orders the results by checkout_sessions count.
+func ByCheckoutSessionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCheckoutSessionsStep(), opts...)
+	}
+}
+
+// ByCheckoutSessions orders the results by checkout_sessions terms.
+func ByCheckoutSessions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCheckoutSessionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newCarsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -127,5 +181,19 @@ func newProfileStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ProfileInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, false, ProfileTable, ProfileColumn),
+	)
+}
+func newSubscriptionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SubscriptionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SubscriptionsTable, SubscriptionsColumn),
+	)
+}
+func newCheckoutSessionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CheckoutSessionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, CheckoutSessionsTable, CheckoutSessionsColumn),
 	)
 }

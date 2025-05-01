@@ -62,13 +62,14 @@ export default function CarNavbar() {
       <NavbarContent className="hidden sm:flex">
         {menuItems.map(({ name, href, active }) => (
           <NavbarItem key={name}>
-            <NextLink
+            <Link
+              as={NextLink}
               aria-current={active ? "page" : false}
               color={active ? "primary" : "foreground"}
               href={href}
             >
               {name}
-            </NextLink>
+            </Link>
           </NavbarItem>
         ))}
       </NavbarContent>
