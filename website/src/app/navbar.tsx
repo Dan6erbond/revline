@@ -22,10 +22,10 @@ export default function Navbar() {
       <NavbarContent justify="end">
         <Button
           as="a"
-          href="https://revline.one/app/api/auth/signin"
+          href="https://revline.one/app"
           className="bg-white text-black hover:bg-gray-200 transition-colors flex items-center gap-2"
         >
-          Log In <ArrowRight className="w-4 h-4" />
+          Go to App <ArrowRight className="w-4 h-4" />
         </Button>
       </NavbarContent>
     </HeroNavbar>
