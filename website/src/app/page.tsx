@@ -35,6 +35,7 @@ import { BentoGrid, BentoGridItem } from "./bento-grid";
 
 import FeaturesSection from "./features";
 import NextImage from "next/image";
+import Pricing from "./pricing";
 
 export default function Home() {
   return (
@@ -69,7 +70,7 @@ export default function Home() {
           <div className="relative aspect-video rounded-2xl overflow-hidden shadow-lg border border-gray-700">
             <Image
               as={NextImage}
-              src="/hero-screenshots.png"
+              src="/hero_screenshots.png"
               alt="Revline App UI"
               className="object-cover"
               fill
@@ -206,8 +207,17 @@ export default function Home() {
               description="Upload photos and videos from builds, track days, or show-offs."
               icon={<Camera className="w-6 h-6 text-primary" />}
               background={
-                <Card className="overflow-hidden w-full max-w-xs mx-auto">
-                  <div className="aspect-video bg-muted rounded-md" />
+                <Card className="overflow-hidden w-full max-w-xs mx-auto bottom-10">
+                  <div className="aspect-video bg-muted rounded-md relative">
+                    <Image
+                      as={NextImage}
+                      className="object-cover"
+                      src="/audi_s5.jpg"
+                      fill
+                      alt="Audi S5"
+                      removeWrapper
+                    />
+                  </div>
                   <CardBody className="text-sm text-content4-foreground">
                     Uploaded: IMG_420.jpg
                   </CardBody>
@@ -238,6 +248,8 @@ export default function Home() {
         </div>
       </section>
       <FeaturesSection />
+
+      <Pricing />
     </main>
   );
 }
