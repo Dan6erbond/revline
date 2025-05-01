@@ -55,7 +55,9 @@ func (r *mutationResolver) UploadProfilePicture(ctx context.Context, input *mode
 	profile, err := user.Profile(ctx)
 
 	if profile == nil {
-		if profile, err = r.entClient.Profile.Create().Save(ctx); err != nil {
+		if profile, err = r.entClient.Profile.Create().
+			SetUser(user).
+			Save(ctx); err != nil {
 			return nil, err
 		}
 	}
