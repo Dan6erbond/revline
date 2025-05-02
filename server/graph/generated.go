@@ -182,6 +182,7 @@ type ComplexityRoot struct {
 		Car        func(childComplexity int) int
 		CreateTime func(childComplexity int) int
 		ID         func(childComplexity int) int
+		Metadata   func(childComplexity int) int
 		URL        func(childComplexity int) int
 		UpdateTime func(childComplexity int) int
 	}
@@ -343,6 +344,7 @@ type DocumentResolver interface {
 }
 type MediaResolver interface {
 	URL(ctx context.Context, obj *ent.Media) (string, error)
+	Metadata(ctx context.Context, obj *ent.Media) (*minio.ObjectInfo, error)
 }
 type MutationResolver interface {
 	UpdateProfile(ctx context.Context, input ent.UpdateProfileInput) (*ent.Profile, error)
@@ -1034,6 +1036,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Media.ID(childComplexity), true
+
+	case "Media.metadata":
+		if e.complexity.Media.Metadata == nil {
+			break
+		}
+
+		return e.complexity.Media.Metadata(childComplexity), true
 
 	case "Media.url":
 		if e.complexity.Media.URL == nil {
@@ -3570,6 +3579,8 @@ func (ec *executionContext) fieldContext_Car_media(_ context.Context, field grap
 				return ec.fieldContext_Media_car(ctx, field)
 			case "url":
 				return ec.fieldContext_Media_url(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Media_metadata(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Media", field.Name)
 		},
@@ -3739,6 +3750,8 @@ func (ec *executionContext) fieldContext_Car_bannerImage(_ context.Context, fiel
 				return ec.fieldContext_Media_car(ctx, field)
 			case "url":
 				return ec.fieldContext_Media_url(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Media_metadata(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Media", field.Name)
 		},
@@ -7255,6 +7268,59 @@ func (ec *executionContext) fieldContext_Media_url(_ context.Context, field grap
 	return fc, nil
 }
 
+func (ec *executionContext) _Media_metadata(ctx context.Context, field graphql.CollectedField, obj *ent.Media) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Media_metadata(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Media().Metadata(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*minio.ObjectInfo)
+	fc.Result = res
+	return ec.marshalOFileMetadata2ᚖgithubᚗcomᚋminioᚋminioᚑgoᚋv7ᚐObjectInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Media_metadata(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Media",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "etag":
+				return ec.fieldContext_FileMetadata_etag(ctx, field)
+			case "key":
+				return ec.fieldContext_FileMetadata_key(ctx, field)
+			case "size":
+				return ec.fieldContext_FileMetadata_size(ctx, field)
+			case "contentType":
+				return ec.fieldContext_FileMetadata_contentType(ctx, field)
+			case "expires":
+				return ec.fieldContext_FileMetadata_expires(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type FileMetadata", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_updateProfile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_updateProfile(ctx, field)
 	if err != nil {
@@ -10462,6 +10528,8 @@ func (ec *executionContext) fieldContext_Query_media(ctx context.Context, field 
 				return ec.fieldContext_Media_car(ctx, field)
 			case "url":
 				return ec.fieldContext_Media_url(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Media_metadata(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Media", field.Name)
 		},
@@ -13195,6 +13263,8 @@ func (ec *executionContext) fieldContext_UploadMediaResult_media(_ context.Conte
 				return ec.fieldContext_Media_car(ctx, field)
 			case "url":
 				return ec.fieldContext_Media_url(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Media_metadata(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Media", field.Name)
 		},
@@ -28726,6 +28796,39 @@ func (ec *executionContext) _Media(ctx context.Context, sel ast.SelectionSet, ob
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "metadata":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Media_metadata(ctx, field, obj)
 				return res
 			}
 

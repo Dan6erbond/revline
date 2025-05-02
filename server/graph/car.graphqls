@@ -10,16 +10,17 @@ extend type Car {
   upcomingServices: [UpcomingService!]!
 }
 
-extend type Media {
-  url: String!
-}
-
 type FileMetadata @goModel(model: "github.com/minio/minio-go/v7.ObjectInfo") {
   etag: String!
   key: String!
   size: Int!
   contentType: String!
   expires: Time
+}
+
+extend type Media {
+  url: String!
+  metadata: FileMetadata
 }
 
 extend type Document {

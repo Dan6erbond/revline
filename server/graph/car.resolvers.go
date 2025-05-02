@@ -301,6 +301,42 @@ func (r *mediaResolver) URL(ctx context.Context, obj *ent.Media) (string, error)
 	return url.String(), err
 }
 
+// Metadata is the resolver for the metadata field.
+func (r *mediaResolver) Metadata(ctx context.Context, obj *ent.Media) (*minio.ObjectInfo, error) {
+	car, err := obj.Car(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	owner, err := car.Owner(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	objectName := fmt.Sprintf("users/%s/cars/%s/media/%s", owner.ID, car.ID, obj.ID)
+
+	object, err := r.s3Client.GetObject(ctx, r.config.S3.Bucket, objectName, minio.GetObjectOptions{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := object.Stat()
+
+	if err != nil {
+		if err, ok := err.(minio.ErrorResponse); ok && (err.Code == "NoSuchKey") {
+			//nolint:nilnil
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return &info, err
+}
+
 // CreateCar is the resolver for the createCar field.
 func (r *mutationResolver) CreateCar(ctx context.Context, input ent.CreateCarInput) (*ent.Car, error) {
 	user := auth.ForContext(ctx)
