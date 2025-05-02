@@ -42,7 +42,7 @@ export default async function Image({
         <div tw="flex items-center justify-between">
           <div tw="flex items-start">
             <img
-              src={profile?.pictureUrl}
+              src={profile?.pictureUrl ?? undefined}
               width={64}
               height={64}
               tw="rounded-full border border-gray-700"
