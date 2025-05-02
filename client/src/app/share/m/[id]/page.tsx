@@ -17,6 +17,7 @@ export async function generateMetadata({
   const { car, metadata } = data.media;
   const { name, owner } = car ?? {};
   const { profile } = owner ?? {};
+  const { username } = profile ?? {};
 
   let type = "Media";
 
@@ -27,7 +28,8 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${type} by ${name ?? profile?.username}`,
+    title: `${type} of ${name} by ${username} | Revline 1`,
+    description: `Check out this ${type.toLowerCase()} uploaded by ${username} showcasing their ${name}. Shared via Revline 1 - the community for car lovers and DIY enthusiasts.`,
   };
 }
 
