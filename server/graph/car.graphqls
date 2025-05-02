@@ -32,6 +32,7 @@ extend type Query {
   dragSession(id: ID!): DragSession!
   dynoSession(id: ID!): DynoSession!
   document(id: ID!): Document!
+  media(id: ID!): Media!
 }
 
 type UploadMediaResult {

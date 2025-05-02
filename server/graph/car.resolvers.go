@@ -14,6 +14,7 @@ import (
 	"github.com/Dan6erbond/revline/auth"
 	"github.com/Dan6erbond/revline/ent"
 	"github.com/Dan6erbond/revline/ent/fuelup"
+	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
 	"github.com/Dan6erbond/revline/graph/model"
 	"github.com/google/uuid"
@@ -485,6 +486,17 @@ func (r *queryResolver) Document(ctx context.Context, id string) (*ent.Document,
 	}
 
 	return r.entClient.Document.Get(ctx, uid)
+}
+
+// Media is the resolver for the media field.
+func (r *queryResolver) Media(ctx context.Context, id string) (*ent.Media, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.Media.Query().Where(media.IDEQ(uid)).First(ctx)
 }
 
 // OdometerReading is the resolver for the odometerReading field.
