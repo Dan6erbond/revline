@@ -15,7 +15,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(
     new URL(
-      (process.env.COOLIFY_FQDN ?? "http://localhost:3001").split(",")[0]
+      (process.env.COOLIFY_URL ?? "http://localhost:3001").split(",")[0]
     ).origin
   ),
   title: "Revline 1",
