@@ -1,9 +1,8 @@
 import { ImageResponse } from "next/og";
 import { getClient } from "@/apollo-client/server";
 import { getMedia } from "./query";
-
-// Route Segment Config
-export const runtime = "edge";
+import { join } from "node:path";
+import { readFile } from "node:fs/promises";
 
 export const size = {
   width: 1200,
@@ -17,6 +16,10 @@ export default async function Image({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const inter = await readFile(
+    join(process.cwd(), "assets/Inter_24pt-Medium.ttf")
+  );
+
   const client = getClient();
 
   const { id } = await params;
@@ -72,6 +75,14 @@ export default async function Image({
     ),
     {
       ...size,
+      fonts: [
+        {
+          name: "Inter",
+          data: inter,
+          style: "normal",
+          weight: 400,
+        },
+      ],
     }
   );
 }
