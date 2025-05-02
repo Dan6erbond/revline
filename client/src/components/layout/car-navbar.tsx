@@ -76,7 +76,7 @@ export default function CarNavbar() {
       </NavbarContent>
       <NavbarContent as="div" justify="end">
         <Suspense fallback={<Spinner />}>
-          <AuthButton />
+          <AuthButton path={router.asPath} />
         </Suspense>
       </NavbarContent>
 

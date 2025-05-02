@@ -14,7 +14,13 @@ import { Suspense, useState } from "react";
 import AuthButton from "./auth-button";
 import Wordmark from "../wordmark";
 
-export default function RootNavbar({ pathname }: { pathname: string | null }) {
+export default function RootNavbar({
+  pathname,
+  path,
+}: {
+  pathname: string | null;
+  path?: string;
+}) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const menuItems = [
@@ -51,7 +57,7 @@ export default function RootNavbar({ pathname }: { pathname: string | null }) {
       </NavbarContent>
       <NavbarContent as="div" justify="end">
         <Suspense fallback={<Spinner />}>
-          <AuthButton />
+          <AuthButton path={path ?? pathname} />
         </Suspense>
       </NavbarContent>
 

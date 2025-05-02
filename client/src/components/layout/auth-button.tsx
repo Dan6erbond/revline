@@ -28,7 +28,7 @@ const getMe = graphql(`
   }
 `);
 
-export default function AuthButton() {
+export default function AuthButton({ path }: { path?: string | null }) {
   const { data: session } = useSession();
   const { data } = useSuspenseQuery(getMe, session ? {} : skipToken);
 
@@ -69,7 +69,7 @@ export default function AuthButton() {
             ? Object.values(providerMap)[0].id
             : undefined,
           {
-            redirectTo: callbackUrl ?? "",
+            redirectTo: path ?? "",
           }
         )
       }
