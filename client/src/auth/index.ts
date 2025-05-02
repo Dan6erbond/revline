@@ -1,17 +1,13 @@
 import NextAuth from "next-auth";
-import Zitadel from "next-auth/providers/zitadel";
-import { buildClient } from "./apollo-client";
-import { graphql } from "./gql";
+import { buildClient } from "@/apollo-client";
+import { graphql } from "@/gql";
+import { providers } from "./providers";
 
 const basePath = process.env.BASE_PATH ?? "";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   basePath: `${basePath}/api/auth`,
-  providers: [
-    Zitadel({
-      issuer: process.env.AUTH_ZITADEL_ISSUER,
-    }),
-  ],
+  providers,
   callbacks: {
     jwt: ({ token, account }) => {
       if (account) {
@@ -83,5 +79,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
       return u.toString();
     },
+  },
+  pages: {
+    signIn: "/auth/signin",
   },
 });

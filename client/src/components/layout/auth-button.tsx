@@ -12,6 +12,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { skipToken, useSuspenseQuery } from "@apollo/client";
 
 import { graphql } from "@/gql";
+import { providerMap } from "@/auth/providers";
 
 const getMe = graphql(`
   query GetMeNavbar {
@@ -61,6 +62,19 @@ export default function AuthButton() {
       </DropdownMenu>
     </Dropdown>
   ) : (
-    <Button onPress={() => signIn("zitadel")}>Sign in</Button>
+    <Button
+      onPress={() =>
+        signIn(
+          Object.values(providerMap).length > 0
+            ? Object.values(providerMap)[0].id
+            : undefined,
+          {
+            redirectTo: callbackUrl ?? "",
+          }
+        )
+      }
+    >
+      Sign in
+    </Button>
   );
 }
