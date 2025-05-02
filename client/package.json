@@ -11,7 +11,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@apollo/client": "^3.13.7",
+    "@apollo/client": "^3.13.8",
+    "@apollo/client-integration-nextjs": "^0.12.2",
     "@heroui/react": "^2.8.0-beta.2",
     "@internationalized/date": "^3.7.0",
     "apollo-upload-client": "^18.0.1",

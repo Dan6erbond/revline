@@ -2,11 +2,14 @@ import ProfileForm from "@/components/profile";
 import RootNavbar from "@/components/layout/root-navbar";
 import { Skeleton } from "@heroui/react";
 import { Suspense } from "react";
+import { useRouter } from "next/router";
 
 export default function Profile() {
+  const router = useRouter();
+
   return (
     <>
-      <RootNavbar />
+      <RootNavbar pathname={router.pathname} />
       <Suspense
         fallback={
           <div className="flex flex-col gap-4 p-4 md:p-8 max-w-screen-xl mx-auto">

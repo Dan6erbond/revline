@@ -7,23 +7,21 @@ import {
   NavbarMenu,
   NavbarMenuItem,
   NavbarMenuToggle,
+  Spinner,
 } from "@heroui/react";
+import { Suspense, useState } from "react";
 
 import AuthButton from "./auth-button";
 import Wordmark from "../wordmark";
-import { useRouter } from "next/router";
-import { useState } from "react";
 
-export default function RootNavbar() {
-  const router = useRouter();
-
+export default function RootNavbar({ pathname }: { pathname: string | null }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const menuItems = [
     {
       name: "Garage",
       href: "/",
-      active: router.pathname === "/",
+      active: pathname === "/",
     },
   ];
 
@@ -52,7 +50,9 @@ export default function RootNavbar() {
         ))}
       </NavbarContent>
       <NavbarContent as="div" justify="end">
-        <AuthButton />
+        <Suspense fallback={<Spinner />}>
+          <AuthButton />
+        </Suspense>
       </NavbarContent>
 
       <NavbarMenu className="pt-4">

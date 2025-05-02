@@ -74,7 +74,7 @@ export default function CreateCar() {
 
   return (
     <>
-      <RootNavbar />
+      <RootNavbar pathname={router.pathname} />
       <div className="flex flex-col gap-4 p-4">
         <h1 className="text-2xl">Create Car</h1>
         <form

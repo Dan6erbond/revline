@@ -7,13 +7,14 @@ import {
   NavbarMenu,
   NavbarMenuItem,
   NavbarMenuToggle,
+  Spinner,
 } from "@heroui/react";
+import { Suspense, useState } from "react";
 
 import AuthButton from "./auth-button";
 import NextLink from "next/link";
 import Wordmark from "../wordmark";
 import { useRouter } from "next/router";
-import { useState } from "react";
 
 export default function CarNavbar() {
   const router = useRouter();
@@ -74,7 +75,9 @@ export default function CarNavbar() {
         ))}
       </NavbarContent>
       <NavbarContent as="div" justify="end">
-        <AuthButton />
+        <Suspense fallback={<Spinner />}>
+          <AuthButton />
+        </Suspense>
       </NavbarContent>
 
       <NavbarMenu className="pt-4">

@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Avatar,
   Button,
@@ -6,10 +8,10 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
-import { signIn, signOut } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { skipToken, useSuspenseQuery } from "@apollo/client";
 
 import { graphql } from "@/gql";
-import { useQuery } from "@apollo/client";
 
 const getMe = graphql(`
   query GetMeNavbar {
@@ -26,7 +28,8 @@ const getMe = graphql(`
 `);
 
 export default function AuthButton() {
-  const { data } = useQuery(getMe);
+  const { data: session } = useSession();
+  const { data } = useSuspenseQuery(getMe, session ? {} : skipToken);
 
   return data?.me ? (
     <Dropdown placement="bottom-end">

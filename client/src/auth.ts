@@ -30,10 +30,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
       if (!user.id) {
         const { data } = await buildClient({
-          current: async () => ({
-            ...session,
-            accessToken: token.accessToken,
-          }),
+          accessToken: token.accessToken,
         }).query({
           query: graphql(`
             query GetMe {

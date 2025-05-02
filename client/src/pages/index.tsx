@@ -57,7 +57,7 @@ export default function Home() {
 
   return (
     <>
-      <RootNavbar />
+      <RootNavbar pathname={router.pathname} />
       <main className="p-8 max-w-screen-xl mx-auto">
         <div className="flex justify-end mb-8">
           <Button

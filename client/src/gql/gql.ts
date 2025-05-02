@@ -14,10 +14,11 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
+    "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n        pictureUrl\n      }\n    }\n  }\n": typeof types.GetMeNavbarDocument,
+    "\n  query GetMedia($id: ID!) {\n    media(id: $id) {\n      id\n      url\n      car {\n        id\n        name\n        owner {\n          id\n          email\n          profile {\n            id\n            username\n            pictureUrl\n          }\n        }\n      }\n    }\n  }\n": typeof types.GetMediaDocument,
     "\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          ": typeof types.GetMeDocument,
     "\n  fragment PreviewFields on Document {\n    id\n    name\n    url\n    metadata {\n      contentType\n      size\n    }\n  }\n": typeof types.PreviewFieldsFragmentDoc,
     "\n  query GetDocument($id: ID!) {\n    document(id: $id) {\n      id\n      name\n      url\n      tags\n      metadata {\n        contentType\n        size\n      }\n      ...PreviewFields\n    }\n  }\n": typeof types.GetDocumentDocument,
-    "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n        pictureUrl\n      }\n    }\n  }\n": typeof types.GetMeNavbarDocument,
     "\n  query GetCarBanner($id: ID!) {\n    car(id: $id) {\n      id\n      name\n      bannerImageUrl\n    }\n  }\n": typeof types.GetCarBannerDocument,
     "\n  mutation UploadBannerImage($input: CreateMediaInput!) {\n    uploadBannerImage(input: $input) {\n      media {\n        id\n      }\n      uploadUrl\n    }\n  }\n": typeof types.UploadBannerImageDocument,
     "\n  query GetFuelUps($id: ID!) {\n    me {\n      id\n      profile {\n        id\n        fuelConsumptionUnit\n        currencyCode\n        distanceUnit\n        fuelVolumeUnit\n      }\n    }\n    car(id: $id) {\n      id\n      fuelUps {\n        id\n        occurredAt\n        station\n        amountLiters\n        cost\n        fuelCategory\n        octaneRating\n        odometerReading {\n          id\n          readingKm\n        }\n        notes\n        isFullTank\n      }\n      averageConsumptionLitersPerKm\n    }\n  }\n": typeof types.GetFuelUpsDocument,
@@ -31,6 +32,7 @@ type Documents = {
     "\n  query GetServiceSchedules($id: ID!) {\n    me {\n      id\n      profile {\n        id\n        distanceUnit\n      }\n    }\n    car(id: $id) {\n      id\n      serviceSchedules {\n        id\n        title\n        notes\n        items {\n          id\n          label\n          notes\n          estimatedMinutes\n          defaultIntervalKm\n          defaultIntervalMonths\n          tags\n        }\n        repeatEveryKm\n        repeatEveryMonths\n        startsAtKm\n        startsAtMonths\n        archived\n      }\n    }\n  }\n": typeof types.GetServiceSchedulesDocument,
     "\n  mutation CreateServiceLog($input: CreateServiceLogInput!) {\n    createServiceLog(input: $input) {\n      id\n      datePerformed\n      odometerReading {\n        id\n        readingKm\n        notes\n      }\n      notes\n      items {\n        id\n        label\n        notes\n        estimatedMinutes\n        defaultIntervalKm\n        defaultIntervalMonths\n        tags\n      }\n      schedule {\n        id\n        title\n        notes\n        repeatEveryKm\n        repeatEveryMonths\n        startsAtKm\n        startsAtMonths\n        archived\n      }\n      performedBy\n    }\n  }\n": typeof types.CreateServiceLogDocument,
     "\n  mutation CreateServiceSchedule($input: CreateServiceScheduleInput!) {\n    createServiceSchedule(input: $input) {\n      id\n      title\n      notes\n      items {\n        id\n        label\n        notes\n        estimatedMinutes\n        defaultIntervalKm\n        defaultIntervalMonths\n        tags\n      }\n      repeatEveryKm\n      repeatEveryMonths\n      startsAtKm\n      startsAtMonths\n      archived\n    }\n  }\n": typeof types.CreateServiceScheduleDocument,
+    "\n  fragment MediaItem on Media {\n    id\n    url\n  }\n": typeof types.MediaItemFragmentDoc,
     "\n  mutation CreateDragSession($input: CreateDragSessionInput!) {\n    createDragSession(input: $input) {\n      id\n      title\n      notes\n    }\n  }\n": typeof types.CreateDragSessionDocument,
     "\n  query GetDragSessions($id: ID!) {\n    car(id: $id) {\n      id\n      dragSessions {\n        id\n        title\n        notes\n        results {\n          id\n        }\n      }\n    }\n  }\n": typeof types.GetDragSessionsDocument,
     "\n  query GetDragSession($id: ID!) {\n    dragSession(id: $id) {\n      id\n      title\n      notes\n      results {\n        id\n        unit\n        value\n        result\n      }\n    }\n  }\n": typeof types.GetDragSessionDocument,
@@ -45,7 +47,7 @@ type Documents = {
     "\n  query GetSubscription {\n    me {\n      id\n      subscription {\n        id\n        tier\n      }\n    }\n  }\n": typeof types.GetSubscriptionDocument,
     "\n  query GetDocuments($id: ID!) {\n    car(id: $id) {\n      id\n      documents {\n        id\n        name\n        tags\n        url\n        metadata {\n          contentType\n          size\n        }\n      }\n    }\n  }\n": typeof types.GetDocumentsDocument,
     "\n  mutation UploadDocument($input: CreateDocumentInput!) {\n    uploadDocument(input: $input) {\n      document {\n        id\n        name\n        tags\n        url\n      }\n      uploadUrl\n    }\n  }\n": typeof types.UploadDocumentDocument,
-    "\n  query GetGallery($id: ID!) {\n    car(id: $id) {\n      id\n      media {\n        id\n        url\n      }\n    }\n  }\n": typeof types.GetGalleryDocument,
+    "\n  query GetGallery($id: ID!) {\n    car(id: $id) {\n      id\n      media {\n        id\n        ...MediaItem\n      }\n    }\n  }\n": typeof types.GetGalleryDocument,
     "\n  mutation UploadMedia($input: CreateMediaInput!) {\n    uploadMedia(input: $input) {\n      media {\n        id\n        url\n      }\n      uploadUrl\n    }\n  }\n": typeof types.UploadMediaDocument,
     "\n  fragment NewCar on Car {\n    id\n    owner {\n      id\n    }\n  }\n": typeof types.NewCarFragmentDoc,
     "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n      ...NewCar\n    }\n  }\n": typeof types.CreateCarDocument,
@@ -54,10 +56,11 @@ type Documents = {
     "\n  mutation CreateBillingPortalSession {\n    createBillingPortalSession\n  }\n": typeof types.CreateBillingPortalSessionDocument,
 };
 const documents: Documents = {
+    "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n        pictureUrl\n      }\n    }\n  }\n": types.GetMeNavbarDocument,
+    "\n  query GetMedia($id: ID!) {\n    media(id: $id) {\n      id\n      url\n      car {\n        id\n        name\n        owner {\n          id\n          email\n          profile {\n            id\n            username\n            pictureUrl\n          }\n        }\n      }\n    }\n  }\n": types.GetMediaDocument,
     "\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          ": types.GetMeDocument,
     "\n  fragment PreviewFields on Document {\n    id\n    name\n    url\n    metadata {\n      contentType\n      size\n    }\n  }\n": types.PreviewFieldsFragmentDoc,
     "\n  query GetDocument($id: ID!) {\n    document(id: $id) {\n      id\n      name\n      url\n      tags\n      metadata {\n        contentType\n        size\n      }\n      ...PreviewFields\n    }\n  }\n": types.GetDocumentDocument,
-    "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n        pictureUrl\n      }\n    }\n  }\n": types.GetMeNavbarDocument,
     "\n  query GetCarBanner($id: ID!) {\n    car(id: $id) {\n      id\n      name\n      bannerImageUrl\n    }\n  }\n": types.GetCarBannerDocument,
     "\n  mutation UploadBannerImage($input: CreateMediaInput!) {\n    uploadBannerImage(input: $input) {\n      media {\n        id\n      }\n      uploadUrl\n    }\n  }\n": types.UploadBannerImageDocument,
     "\n  query GetFuelUps($id: ID!) {\n    me {\n      id\n      profile {\n        id\n        fuelConsumptionUnit\n        currencyCode\n        distanceUnit\n        fuelVolumeUnit\n      }\n    }\n    car(id: $id) {\n      id\n      fuelUps {\n        id\n        occurredAt\n        station\n        amountLiters\n        cost\n        fuelCategory\n        octaneRating\n        odometerReading {\n          id\n          readingKm\n        }\n        notes\n        isFullTank\n      }\n      averageConsumptionLitersPerKm\n    }\n  }\n": types.GetFuelUpsDocument,
@@ -71,6 +74,7 @@ const documents: Documents = {
     "\n  query GetServiceSchedules($id: ID!) {\n    me {\n      id\n      profile {\n        id\n        distanceUnit\n      }\n    }\n    car(id: $id) {\n      id\n      serviceSchedules {\n        id\n        title\n        notes\n        items {\n          id\n          label\n          notes\n          estimatedMinutes\n          defaultIntervalKm\n          defaultIntervalMonths\n          tags\n        }\n        repeatEveryKm\n        repeatEveryMonths\n        startsAtKm\n        startsAtMonths\n        archived\n      }\n    }\n  }\n": types.GetServiceSchedulesDocument,
     "\n  mutation CreateServiceLog($input: CreateServiceLogInput!) {\n    createServiceLog(input: $input) {\n      id\n      datePerformed\n      odometerReading {\n        id\n        readingKm\n        notes\n      }\n      notes\n      items {\n        id\n        label\n        notes\n        estimatedMinutes\n        defaultIntervalKm\n        defaultIntervalMonths\n        tags\n      }\n      schedule {\n        id\n        title\n        notes\n        repeatEveryKm\n        repeatEveryMonths\n        startsAtKm\n        startsAtMonths\n        archived\n      }\n      performedBy\n    }\n  }\n": types.CreateServiceLogDocument,
     "\n  mutation CreateServiceSchedule($input: CreateServiceScheduleInput!) {\n    createServiceSchedule(input: $input) {\n      id\n      title\n      notes\n      items {\n        id\n        label\n        notes\n        estimatedMinutes\n        defaultIntervalKm\n        defaultIntervalMonths\n        tags\n      }\n      repeatEveryKm\n      repeatEveryMonths\n      startsAtKm\n      startsAtMonths\n      archived\n    }\n  }\n": types.CreateServiceScheduleDocument,
+    "\n  fragment MediaItem on Media {\n    id\n    url\n  }\n": types.MediaItemFragmentDoc,
     "\n  mutation CreateDragSession($input: CreateDragSessionInput!) {\n    createDragSession(input: $input) {\n      id\n      title\n      notes\n    }\n  }\n": types.CreateDragSessionDocument,
     "\n  query GetDragSessions($id: ID!) {\n    car(id: $id) {\n      id\n      dragSessions {\n        id\n        title\n        notes\n        results {\n          id\n        }\n      }\n    }\n  }\n": types.GetDragSessionsDocument,
     "\n  query GetDragSession($id: ID!) {\n    dragSession(id: $id) {\n      id\n      title\n      notes\n      results {\n        id\n        unit\n        value\n        result\n      }\n    }\n  }\n": types.GetDragSessionDocument,
@@ -85,7 +89,7 @@ const documents: Documents = {
     "\n  query GetSubscription {\n    me {\n      id\n      subscription {\n        id\n        tier\n      }\n    }\n  }\n": types.GetSubscriptionDocument,
     "\n  query GetDocuments($id: ID!) {\n    car(id: $id) {\n      id\n      documents {\n        id\n        name\n        tags\n        url\n        metadata {\n          contentType\n          size\n        }\n      }\n    }\n  }\n": types.GetDocumentsDocument,
     "\n  mutation UploadDocument($input: CreateDocumentInput!) {\n    uploadDocument(input: $input) {\n      document {\n        id\n        name\n        tags\n        url\n      }\n      uploadUrl\n    }\n  }\n": types.UploadDocumentDocument,
-    "\n  query GetGallery($id: ID!) {\n    car(id: $id) {\n      id\n      media {\n        id\n        url\n      }\n    }\n  }\n": types.GetGalleryDocument,
+    "\n  query GetGallery($id: ID!) {\n    car(id: $id) {\n      id\n      media {\n        id\n        ...MediaItem\n      }\n    }\n  }\n": types.GetGalleryDocument,
     "\n  mutation UploadMedia($input: CreateMediaInput!) {\n    uploadMedia(input: $input) {\n      media {\n        id\n        url\n      }\n      uploadUrl\n    }\n  }\n": types.UploadMediaDocument,
     "\n  fragment NewCar on Car {\n    id\n    owner {\n      id\n    }\n  }\n": types.NewCarFragmentDoc,
     "\n  mutation CreateCar($input: CreateCarInput!) {\n    createCar(input: $input) {\n      id\n      ...NewCar\n    }\n  }\n": types.CreateCarDocument,
@@ -111,6 +115,14 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n        pictureUrl\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n        pictureUrl\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetMedia($id: ID!) {\n    media(id: $id) {\n      id\n      url\n      car {\n        id\n        name\n        owner {\n          id\n          email\n          profile {\n            id\n            username\n            pictureUrl\n          }\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetMedia($id: ID!) {\n    media(id: $id) {\n      id\n      url\n      car {\n        id\n        name\n        owner {\n          id\n          email\n          profile {\n            id\n            username\n            pictureUrl\n          }\n        }\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          "): (typeof documents)["\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          "];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -120,10 +132,6 @@ export function graphql(source: "\n  fragment PreviewFields on Document {\n    i
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query GetDocument($id: ID!) {\n    document(id: $id) {\n      id\n      name\n      url\n      tags\n      metadata {\n        contentType\n        size\n      }\n      ...PreviewFields\n    }\n  }\n"): (typeof documents)["\n  query GetDocument($id: ID!) {\n    document(id: $id) {\n      id\n      name\n      url\n      tags\n      metadata {\n        contentType\n        size\n      }\n      ...PreviewFields\n    }\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n        pictureUrl\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n        pictureUrl\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -176,6 +184,10 @@ export function graphql(source: "\n  mutation CreateServiceLog($input: CreateSer
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation CreateServiceSchedule($input: CreateServiceScheduleInput!) {\n    createServiceSchedule(input: $input) {\n      id\n      title\n      notes\n      items {\n        id\n        label\n        notes\n        estimatedMinutes\n        defaultIntervalKm\n        defaultIntervalMonths\n        tags\n      }\n      repeatEveryKm\n      repeatEveryMonths\n      startsAtKm\n      startsAtMonths\n      archived\n    }\n  }\n"): (typeof documents)["\n  mutation CreateServiceSchedule($input: CreateServiceScheduleInput!) {\n    createServiceSchedule(input: $input) {\n      id\n      title\n      notes\n      items {\n        id\n        label\n        notes\n        estimatedMinutes\n        defaultIntervalKm\n        defaultIntervalMonths\n        tags\n      }\n      repeatEveryKm\n      repeatEveryMonths\n      startsAtKm\n      startsAtMonths\n      archived\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment MediaItem on Media {\n    id\n    url\n  }\n"): (typeof documents)["\n  fragment MediaItem on Media {\n    id\n    url\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -235,7 +247,7 @@ export function graphql(source: "\n  mutation UploadDocument($input: CreateDocum
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query GetGallery($id: ID!) {\n    car(id: $id) {\n      id\n      media {\n        id\n        url\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetGallery($id: ID!) {\n    car(id: $id) {\n      id\n      media {\n        id\n        url\n      }\n    }\n  }\n"];
+export function graphql(source: "\n  query GetGallery($id: ID!) {\n    car(id: $id) {\n      id\n      media {\n        id\n        ...MediaItem\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetGallery($id: ID!) {\n    car(id: $id) {\n      id\n      media {\n        id\n        ...MediaItem\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

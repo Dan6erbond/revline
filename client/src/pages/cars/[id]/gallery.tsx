@@ -1,11 +1,12 @@
 import { Car, SubscriptionTier } from "@/gql/graphql";
 import { ChangeEvent, DragEvent, useCallback, useRef, useState } from "react";
-import { Image, Progress, Skeleton } from "@heroui/react";
+import { Progress, Skeleton } from "@heroui/react";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
 import CarLayout from "@/components/layout/car-layout";
 import { ImageUp } from "lucide-react";
-import SubscriptionOverlay from "../../../components/subscription-overlay";
+import MediaItem from "@/components/media/item";
+import SubscriptionOverlay from "@/components/subscription-overlay";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { uploadFile } from "@/utils/upload-file";
@@ -17,7 +18,7 @@ const getGallery = graphql(`
       id
       media {
         id
-        url
+        ...MediaItem
       }
     }
   }
@@ -173,14 +174,7 @@ export default function Gallery() {
         <h1 className="text-3xl">Gallery</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {data?.car?.media?.map((m) => (
-            <div className="p-4 h-[400px]" key={m.id}>
-              <Image
-                src={m.url}
-                alt=""
-                className="object-cover h-full w-full"
-                removeWrapper
-              />
-            </div>
+            <MediaItem item={m} key={m.id} />
           ))}
           {uploadProgress.map((m) => (
             <div className="p-4 h-[400px] flex flex-col gap-2" key={m.id}>
