@@ -60,6 +60,18 @@ export default function Home() {
               >
                 Go to App <ArrowRight className="w-4 h-4" />
               </Button>
+              <a
+                href="https://www.producthunt.com/posts/revline-1?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-revline&#0045;1"
+                target="_blank"
+              >
+                <img
+                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=959506&theme=light&t=1746186614146"
+                  alt="Revline&#0032;1 - Track&#0032;your&#0032;build&#0044;&#0032;not&#0032;just&#0032;your&#0032;miles&#0046; | Product Hunt"
+                  style={{ width: 230, height: 48 }}
+                  width="230"
+                  height="48"
+                />
+              </a>
             </div>
           </div>
 
