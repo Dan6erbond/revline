@@ -13,7 +13,7 @@ export default function Media({ id }: { id: string }) {
   const { email, profile } = owner ?? {};
 
   return (
-    <div>
+    <div className="p-4 md:p-8">
       <Card className="max-w-xl mx-auto shadow-lg rounded-2xl bg-background border border-zinc-800">
         <CardHeader className="flex flex-col items-start space-y-2">
           <p className="text-primary text-xl">Shared Media</p>

@@ -79,7 +79,6 @@ export default function Session() {
   });
 
   const handleLegendClick = (e: Payload) => {
-    console.log(e);
     const key = e.dataKey === "powerKw" ? "power" : "torque";
     setVisible((prev) => ({ ...prev, [key]: !prev[key] }));
   };

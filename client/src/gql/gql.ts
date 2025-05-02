@@ -15,7 +15,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  */
 type Documents = {
     "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n        pictureUrl\n      }\n    }\n  }\n": typeof types.GetMeNavbarDocument,
-    "\n  query GetMedia($id: ID!) {\n    media(id: $id) {\n      id\n      url\n      car {\n        id\n        name\n        owner {\n          id\n          email\n          profile {\n            id\n            username\n            pictureUrl\n          }\n        }\n      }\n    }\n  }\n": typeof types.GetMediaDocument,
+    "\n  query GetMedia($id: ID!) {\n    media(id: $id) {\n      id\n      url\n      metadata {\n        contentType\n        size\n      }\n      car {\n        id\n        name\n        owner {\n          id\n          email\n          profile {\n            id\n            username\n            pictureUrl\n          }\n        }\n      }\n    }\n  }\n": typeof types.GetMediaDocument,
     "\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          ": typeof types.GetMeDocument,
     "\n  fragment PreviewFields on Document {\n    id\n    name\n    url\n    metadata {\n      contentType\n      size\n    }\n  }\n": typeof types.PreviewFieldsFragmentDoc,
     "\n  query GetDocument($id: ID!) {\n    document(id: $id) {\n      id\n      name\n      url\n      tags\n      metadata {\n        contentType\n        size\n      }\n      ...PreviewFields\n    }\n  }\n": typeof types.GetDocumentDocument,
@@ -57,7 +57,7 @@ type Documents = {
 };
 const documents: Documents = {
     "\n  query GetMeNavbar {\n    me {\n      id\n      email\n      profile {\n        id\n        username\n        pictureUrl\n      }\n    }\n  }\n": types.GetMeNavbarDocument,
-    "\n  query GetMedia($id: ID!) {\n    media(id: $id) {\n      id\n      url\n      car {\n        id\n        name\n        owner {\n          id\n          email\n          profile {\n            id\n            username\n            pictureUrl\n          }\n        }\n      }\n    }\n  }\n": types.GetMediaDocument,
+    "\n  query GetMedia($id: ID!) {\n    media(id: $id) {\n      id\n      url\n      metadata {\n        contentType\n        size\n      }\n      car {\n        id\n        name\n        owner {\n          id\n          email\n          profile {\n            id\n            username\n            pictureUrl\n          }\n        }\n      }\n    }\n  }\n": types.GetMediaDocument,
     "\n            query GetMe {\n              me {\n                id\n                email\n              }\n            }\n          ": types.GetMeDocument,
     "\n  fragment PreviewFields on Document {\n    id\n    name\n    url\n    metadata {\n      contentType\n      size\n    }\n  }\n": types.PreviewFieldsFragmentDoc,
     "\n  query GetDocument($id: ID!) {\n    document(id: $id) {\n      id\n      name\n      url\n      tags\n      metadata {\n        contentType\n        size\n      }\n      ...PreviewFields\n    }\n  }\n": types.GetDocumentDocument,
@@ -119,7 +119,7 @@ export function graphql(source: "\n  query GetMeNavbar {\n    me {\n      id\n  
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query GetMedia($id: ID!) {\n    media(id: $id) {\n      id\n      url\n      car {\n        id\n        name\n        owner {\n          id\n          email\n          profile {\n            id\n            username\n            pictureUrl\n          }\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetMedia($id: ID!) {\n    media(id: $id) {\n      id\n      url\n      car {\n        id\n        name\n        owner {\n          id\n          email\n          profile {\n            id\n            username\n            pictureUrl\n          }\n        }\n      }\n    }\n  }\n"];
+export function graphql(source: "\n  query GetMedia($id: ID!) {\n    media(id: $id) {\n      id\n      url\n      metadata {\n        contentType\n        size\n      }\n      car {\n        id\n        name\n        owner {\n          id\n          email\n          profile {\n            id\n            username\n            pictureUrl\n          }\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetMedia($id: ID!) {\n    media(id: $id) {\n      id\n      url\n      metadata {\n        contentType\n        size\n      }\n      car {\n        id\n        name\n        owner {\n          id\n          email\n          profile {\n            id\n            username\n            pictureUrl\n          }\n        }\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

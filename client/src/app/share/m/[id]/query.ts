@@ -5,6 +5,10 @@ export const getMedia = graphql(`
     media(id: $id) {
       id
       url
+      metadata {
+        contentType
+        size
+      }
       car {
         id
         name
