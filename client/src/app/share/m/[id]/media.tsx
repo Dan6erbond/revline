@@ -20,8 +20,8 @@ export default function Media({ id }: { id: string }) {
           <div className="flex items-center space-x-4">
             <Avatar
               className="w-10 h-10"
-              src={profile?.pictureUrl}
-              alt={profile?.username}
+              src={profile?.pictureUrl ?? undefined}
+              name={profile?.username ?? undefined}
             />
             <div className="text-content-1-foreground">
               <p className="font-medium">{profile?.username}</p>
