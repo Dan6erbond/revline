@@ -6,6 +6,7 @@
   "scripts": {
     "codegen": "graphql-codegen",
     "dev": "next dev --turbopack --port 3001",
+    "prebuild": "npm run codegen",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
