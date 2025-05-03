@@ -1,4 +1,4 @@
-import { ArrowLeft, ImageUp, Upload, X } from "lucide-react";
+import { ArrowLeft, Fuel, Gauge, ImageUp, Upload, X } from "lucide-react";
 import {
   Button,
   Image,
@@ -17,10 +17,14 @@ import {
   useRef,
   useState,
 } from "react";
+import { DistanceUnit, FuelConsumptionUnit } from "@/gql/graphql";
+import { distanceUnits, fuelConsumptionUnitsShort } from "@/literals";
 import { useMutation, useQuery } from "@apollo/client";
 
 import CarNavbar from "./car-navbar";
 import Link from "next/link";
+import { getDistance } from "@/utils/distance";
+import { getFuelConsumption } from "@/utils/fuel-consumption";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { uploadFile } from "@/utils/upload-file";
@@ -29,10 +33,20 @@ import { useRouter } from "next/router";
 
 const getCarBanner = graphql(`
   query GetCarBanner($id: ID!) {
+    me {
+      id
+      profile {
+        id
+        distanceUnit
+        fuelConsumptionUnit
+      }
+    }
     car(id: $id) {
       id
       name
       bannerImageUrl
+      averageConsumptionLitersPerKm
+      odometerKm
     }
   }
 `);
@@ -56,6 +70,10 @@ export default function CarLayout({ children }: { children?: ReactNode }) {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
   });
+
+  const distanceUnit = data?.me?.profile?.distanceUnit ?? DistanceUnit.Miles;
+  const fuelConsumptionUnit =
+    data?.me?.profile?.fuelConsumptionUnit ?? FuelConsumptionUnit.Mpg;
 
   const [mutate] = useMutation(uploadBannerImage);
 
@@ -169,6 +187,36 @@ export default function CarLayout({ children }: { children?: ReactNode }) {
           <ArrowLeft />
         </Button>
         <h2 className="text-3xl text-white">{data?.car?.name}</h2>
+        <div className="flex gap-4 items-center text-sm text-white/80 pl-2 pr-4">
+          {data?.car.odometerKm && (
+            <div className="flex items-center gap-1">
+              <Gauge className="w-4 h-4" />
+              <span>
+                {getDistance(
+                  data.car.odometerKm,
+                  distanceUnit
+                ).toLocaleString()}{" "}
+                {distanceUnits[distanceUnit]}
+              </span>
+            </div>
+          )}
+          {data?.car.averageConsumptionLitersPerKm && (
+            <div className="flex items-center gap-1">
+              <Fuel className="w-4 h-4" />
+              <span>
+                {getFuelConsumption(
+                  data.car.averageConsumptionLitersPerKm,
+                  fuelConsumptionUnit
+                )}{" "}
+                {fuelConsumptionUnitsShort[fuelConsumptionUnit]}
+              </span>
+            </div>
+          )}
+          {/* <div className="flex items-center gap-1">
+            <Wrench className="w-4 h-4" />
+            <span>Jan 15, 2025</span>
+          </div> */}
+        </div>
         <Button isIconOnly className="ml-auto" onPress={onOpen}>
           <Upload />
         </Button>

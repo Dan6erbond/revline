@@ -49,7 +49,7 @@ const getOdometerReadings = graphql(`
       odometerReadings {
         id
         readingKm
-        createTime
+        readingTime
         notes
       }
     }
@@ -66,7 +66,7 @@ const createOdometerReading = graphql(`
     createOdometerReading(input: $input) {
       id
       readingKm
-      createTime
+      readingTime
       notes
     }
   }
@@ -74,7 +74,7 @@ const createOdometerReading = graphql(`
 
 const columns = [
   { key: "readingKm", label: "Reading" },
-  { key: "createdTime", label: "Created At" },
+  { key: "readingTime", label: "Read at" },
   { key: "notes", label: "Notes" },
 ];
 
@@ -121,6 +121,7 @@ export default function Odometer() {
         input: {
           carID: getQueryParam(router.query.id)!,
           readingKm: getKilometers(readingKm, distanceUnit),
+          readingTime: new Date().toISOString(),
         },
       },
     }).then(({ data }) => {
@@ -143,11 +144,17 @@ export default function Odometer() {
       <div className="aspect-video min-h-[300px] rounded-2xl bg-primary/5 backdrop-blur-xl px-6 md:px-10 py-8 md:py-12 border border-primary/10 shadow-sm">
         <ResponsiveContainer>
           <ComposedChart
-            data={data?.car?.odometerReadings?.map((or) => ({
-              ...or,
-              createdTime: new Date(or.createTime).toLocaleDateString(),
-              reading: getDistance(or.readingKm, distanceUnit),
-            }))}
+            data={data?.car?.odometerReadings
+              ?.toSorted(
+                (a, b) =>
+                  new Date(b.readingTime).getTime() -
+                  new Date(a.readingTime).getTime()
+              )
+              .map((or) => ({
+                ...or,
+                createdTime: new Date(or.readingTime).toLocaleDateString(),
+                reading: getDistance(or.readingKm, distanceUnit),
+              }))}
             margin={{ top: 20, right: 30, bottom: 20, left: 0 }}
           >
             <XAxis
@@ -222,7 +229,13 @@ export default function Odometer() {
           )}
         </TableHeader>
         <TableBody
-          items={data?.car?.odometerReadings ?? []}
+          items={
+            data?.car?.odometerReadings?.toSorted(
+              (a, b) =>
+                new Date(b.readingTime).getTime() -
+                new Date(a.readingTime).getTime()
+            ) ?? []
+          }
           emptyContent={"No rows to display."}
         >
           {(or) => (
@@ -232,7 +245,7 @@ export default function Odometer() {
                 distanceUnit
               ).toLocaleString()} ${distanceUnits[distanceUnit]}`}</TableCell>
               <TableCell>
-                {new Date(or.createTime).toLocaleDateString()}
+                {new Date(or.readingTime).toLocaleDateString()}
               </TableCell>
               <TableCell>{or.notes}</TableCell>
             </TableRow>
