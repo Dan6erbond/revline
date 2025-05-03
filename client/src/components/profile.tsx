@@ -6,6 +6,7 @@ import {
   Input,
   Select,
   SelectItem,
+  addToast,
   cn,
 } from "@heroui/react";
 import {
@@ -17,6 +18,7 @@ import {
   useState,
 } from "react";
 import {
+  CheckCircle,
   CircleUserRound,
   Coins,
   Fuel,
@@ -28,7 +30,9 @@ import {
   DistanceUnit,
   FuelConsumptionUnit,
   FuelVolumeUnit,
+  PowerUnit,
   TemperatureUnit,
+  TorqueUnit,
 } from "@/gql/graphql";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { code, data as currencyCodes } from "currency-codes";
@@ -46,6 +50,8 @@ type Inputs = {
   distanceUnit: DistanceUnit;
   fuelConsumptionUnit: FuelConsumptionUnit;
   temperatureUnit: TemperatureUnit;
+  powerUnit: PowerUnit;
+  torqueUnit: TorqueUnit;
 };
 
 const getProfile = graphql(`
@@ -62,6 +68,8 @@ const getProfile = graphql(`
         distanceUnit
         fuelConsumptionUnit
         temperatureUnit
+        powerUnit
+        torqueUnit
         pictureUrl
       }
     }
@@ -80,6 +88,8 @@ const updateProfile = graphql(`
       distanceUnit
       fuelConsumptionUnit
       temperatureUnit
+      powerUnit
+      torqueUnit
     }
   }
 `);
@@ -110,7 +120,8 @@ export default function ProfileForm() {
     }
   }, [data, reset]);
 
-  const [mutateUpdateProfile] = useMutation(updateProfile);
+  const [mutateUpdateProfile, { loading: isUpdating }] =
+    useMutation(updateProfile);
   const [mutateUploadProfilePicture] = useMutation(uploadProfilePicture);
 
   const [isDragging, setIsDragging] = useState(false);
@@ -193,6 +204,8 @@ export default function ProfileForm() {
     distanceUnit,
     fuelConsumptionUnit,
     temperatureUnit,
+    powerUnit,
+    torqueUnit
   }) => {
     mutateUpdateProfile({
       variables: {
@@ -205,8 +218,19 @@ export default function ProfileForm() {
           distanceUnit,
           fuelConsumptionUnit,
           temperatureUnit,
+          powerUnit,
+          torqueUnit,
         },
       },
+    }).then(({ data }) => {
+      if (!data?.updateProfile) return;
+
+      addToast({
+        title: "Profile updated",
+        description: "Your profile changes have been saved successfully.",
+        color: "success",
+        icon: <CheckCircle color="hsl(var(--heroui-primary-700))" />,
+      });
     });
   };
 
@@ -224,7 +248,6 @@ export default function ProfileForm() {
 
   return (
     <form
-      id="fuel-up"
       className="flex flex-col gap-4 p-4 md:p-8 max-w-screen-xl mx-auto"
       onSubmit={handleSubmit(onSubmit)}
     >
@@ -377,9 +400,29 @@ export default function ProfileForm() {
           <SelectItem key={unit}>{label}</SelectItem>
         ))}
       </Select>
+      <Select
+        label="Power unit"
+        endContent={<Thermometer />}
+        {...register("powerUnit")}
+        variant="bordered"
+      >
+        {Object.entries(PowerUnit).map(([label, unit]) => (
+          <SelectItem key={unit}>{label}</SelectItem>
+        ))}
+      </Select>
+      <Select
+        label="Torque unit"
+        endContent={<Thermometer />}
+        {...register("torqueUnit")}
+        variant="bordered"
+      >
+        {Object.entries(TorqueUnit).map(([label, unit]) => (
+          <SelectItem key={unit}>{label}</SelectItem>
+        ))}
+      </Select>
       <div className="flex justify-end">
-        <Button color="primary" type="submit" form="fuel-up">
-          Action
+        <Button color="primary" type="submit" isLoading={isUpdating}>
+          Save
         </Button>
       </div>
     </form>
