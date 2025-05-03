@@ -24,6 +24,10 @@ import {
 } from "recharts";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Plus, Trash } from "lucide-react";
+import { PowerUnit, TorqueUnit } from "@/gql/graphql";
+import { getKilowatts, getPower } from "@/utils/power";
+import { getNm, getTorque } from "@/utils/torque";
+import { powerUnitsShort, torqueUnitsShort } from "@/literals";
 import { useMutation, useSuspenseQuery } from "@apollo/client";
 
 import type { Payload } from "recharts/types/component/DefaultLegendContent";
@@ -33,6 +37,14 @@ import { useState } from "react";
 
 const getDynoSession = graphql(`
   query GetDynoSession($id: ID!) {
+    me {
+      id
+      profile {
+        id
+        powerUnit
+        torqueUnit
+      }
+    }
     dynoSession(id: $id) {
       id
       title
@@ -72,6 +84,9 @@ export default function Session() {
       id: router.query.tab![1],
     },
   });
+
+  const powerUnit = data?.me?.profile?.powerUnit ?? PowerUnit.ImpHorsepower;
+  const torqueUnit = data?.me?.profile?.torqueUnit ?? TorqueUnit.PoundFeet;
 
   const [visible, setVisible] = useState({
     power: true,
@@ -118,8 +133,8 @@ export default function Session() {
         input: {
           sessionID: router.query.tab![1],
           rpm,
-          powerKw: power,
-          torqueNm: torque,
+          powerKw: getKilowatts(power, powerUnit),
+          torqueNm: getNm(torque, torqueUnit),
         },
       },
     }).then(() => {
@@ -151,7 +166,13 @@ export default function Session() {
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={
-              data.dynoSession.results?.toSorted((a, b) => a.rpm - b.rpm) ?? []
+              data.dynoSession.results
+                ?.toSorted((a, b) => a.rpm - b.rpm)
+                .map(({ rpm, powerKw, torqueNm }) => ({
+                  rpm,
+                  power: getPower(powerKw, powerUnit),
+                  torque: getTorque(torqueNm, torqueUnit),
+                })) ?? []
             }
           >
             <CartesianGrid strokeDasharray="3 3" className="stroke-zinc-200" />
@@ -169,7 +190,7 @@ export default function Session() {
               yAxisId="left"
               tick={{ fill: "hsl(var(--heroui-primary))" }}
               label={{
-                value: "Power (kW)",
+                value: `Power (${powerUnitsShort[powerUnit]})`,
                 angle: -90,
                 position: "insideLeft",
                 offset: 10,
@@ -181,7 +202,7 @@ export default function Session() {
               orientation="right"
               tick={{ fill: "hsl(var(--heroui-secondary-400))" }}
               label={{
-                value: "Torque (Nm)",
+                value: `Torque (${torqueUnitsShort[torqueUnit]})`,
                 angle: -90,
                 position: "insideRight",
                 offset: 10,
@@ -203,22 +224,22 @@ export default function Session() {
             <Line
               yAxisId="left"
               type="monotone"
-              dataKey="powerKw"
+              dataKey="power"
               stroke="hsl(var(--heroui-primary))"
               strokeWidth={2}
               dot={false}
-              name="Power (kW)"
+              name={`Power (${powerUnitsShort[powerUnit]})`}
               hide={!visible.power}
               strokeOpacity={visible.power ? 1 : 0}
             />
             <Line
               yAxisId="right"
               type="monotone"
-              dataKey="torqueNm"
+              dataKey="torque"
               stroke="hsl(var(--heroui-secondary-400))"
               strokeWidth={2}
               dot={false}
-              name="Torque (Nm)"
+              name={`Torque (${torqueUnitsShort[torqueUnit]})`}
               hide={!visible.torque}
               strokeOpacity={visible.torque ? 1 : 0}
             />
@@ -244,8 +265,14 @@ export default function Session() {
                 </Button>
               </CardHeader>
               <CardFooter className="flex flex-col gap-2 items-start min-w-[200px]">
-                <p>{r.powerKw} kW</p>
-                <p>{r.torqueNm} Nm</p>
+                <p>
+                  {getPower(r.powerKw, powerUnit).toLocaleString()}{" "}
+                  {powerUnitsShort[powerUnit]}
+                </p>
+                <p>
+                  {getTorque(r.torqueNm, torqueUnit).toLocaleString()}{" "}
+                  {torqueUnitsShort[torqueUnit]}
+                </p>
               </CardFooter>
             </Card>
           ))}
@@ -271,6 +298,7 @@ export default function Session() {
                     name="rpm"
                     render={({ field: { onChange, ...field } }) => (
                       <NumberInput
+                        label="RPM"
                         endContent={"RPM"}
                         {...field}
                         onValueChange={onChange}
@@ -284,7 +312,7 @@ export default function Session() {
                     render={({ field: { onChange, ...field } }) => (
                       <NumberInput
                         label="Power"
-                        endContent={"kW"}
+                        endContent={powerUnitsShort[powerUnit]}
                         {...field}
                         onValueChange={onChange}
                         variant="bordered"
@@ -297,7 +325,7 @@ export default function Session() {
                     render={({ field: { onChange, ...field } }) => (
                       <NumberInput
                         label="Torque"
-                        endContent={"Nm"}
+                        endContent={torqueUnitsShort[torqueUnit]}
                         {...field}
                         onValueChange={onChange}
                         variant="bordered"
@@ -311,7 +339,7 @@ export default function Session() {
                   Close
                 </Button>
                 <Button color="primary" type="submit" form="result-form">
-                  Action
+                  Save
                 </Button>
               </ModalFooter>
             </>
