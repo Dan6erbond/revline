@@ -207,10 +207,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "OdometerReading",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			odometerreading.FieldCreateTime: {Type: field.TypeTime, Column: odometerreading.FieldCreateTime},
-			odometerreading.FieldUpdateTime: {Type: field.TypeTime, Column: odometerreading.FieldUpdateTime},
-			odometerreading.FieldReadingKm:  {Type: field.TypeFloat64, Column: odometerreading.FieldReadingKm},
-			odometerreading.FieldNotes:      {Type: field.TypeString, Column: odometerreading.FieldNotes},
+			odometerreading.FieldCreateTime:  {Type: field.TypeTime, Column: odometerreading.FieldCreateTime},
+			odometerreading.FieldUpdateTime:  {Type: field.TypeTime, Column: odometerreading.FieldUpdateTime},
+			odometerreading.FieldReadingKm:   {Type: field.TypeFloat64, Column: odometerreading.FieldReadingKm},
+			odometerreading.FieldReadingTime: {Type: field.TypeTime, Column: odometerreading.FieldReadingTime},
+			odometerreading.FieldNotes:       {Type: field.TypeString, Column: odometerreading.FieldNotes},
 		},
 	}
 	graph.Nodes[10] = &sqlgraph.Node{
@@ -1843,6 +1844,11 @@ func (f *OdometerReadingFilter) WhereUpdateTime(p entql.TimeP) {
 // WhereReadingKm applies the entql float64 predicate on the reading_km field.
 func (f *OdometerReadingFilter) WhereReadingKm(p entql.Float64P) {
 	f.Where(p.Field(odometerreading.FieldReadingKm))
+}
+
+// WhereReadingTime applies the entql time.Time predicate on the reading_time field.
+func (f *OdometerReadingFilter) WhereReadingTime(p entql.TimeP) {
+	f.Where(p.Field(odometerreading.FieldReadingTime))
 }
 
 // WhereNotes applies the entql string predicate on the notes field.

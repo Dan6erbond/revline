@@ -868,6 +868,7 @@ type CreateOdometerReadingInput struct {
 	CreateTime   *time.Time
 	UpdateTime   *time.Time
 	ReadingKm    float64
+	ReadingTime  time.Time
 	Notes        *string
 	CarID        uuid.UUID
 	FuelUpID     *uuid.UUID
@@ -883,6 +884,7 @@ func (i *CreateOdometerReadingInput) Mutate(m *OdometerReadingMutation) {
 		m.SetUpdateTime(*v)
 	}
 	m.SetReadingKm(i.ReadingKm)
+	m.SetReadingTime(i.ReadingTime)
 	if v := i.Notes; v != nil {
 		m.SetNotes(*v)
 	}
@@ -905,6 +907,7 @@ func (c *OdometerReadingCreate) SetInput(i CreateOdometerReadingInput) *Odometer
 type UpdateOdometerReadingInput struct {
 	UpdateTime      *time.Time
 	ReadingKm       *float64
+	ReadingTime     *time.Time
 	ClearNotes      bool
 	Notes           *string
 	CarID           *uuid.UUID
@@ -921,6 +924,9 @@ func (i *UpdateOdometerReadingInput) Mutate(m *OdometerReadingMutation) {
 	}
 	if v := i.ReadingKm; v != nil {
 		m.SetReadingKm(*v)
+	}
+	if v := i.ReadingTime; v != nil {
+		m.SetReadingTime(*v)
 	}
 	if i.ClearNotes {
 		m.ClearNotes()

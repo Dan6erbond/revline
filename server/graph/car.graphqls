@@ -8,6 +8,7 @@ extend type Car {
   bannerImageUrl: String
   averageConsumptionLitersPerKm: Float!
   upcomingServices: [UpcomingService!]!
+  odometerKm: Float!
 }
 
 type FileMetadata @goModel(model: "github.com/minio/minio-go/v7.ObjectInfo") {
@@ -47,7 +48,6 @@ type UploadDocumentResult {
 }
 
 extend input CreateFuelUpInput {
-  odometerReading: CreateOdometerReadingInput
   odometerKm: Float
 }
 

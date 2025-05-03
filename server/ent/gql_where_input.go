@@ -3584,6 +3584,16 @@ type OdometerReadingWhereInput struct {
 	ReadingKmLT    *float64  `json:"readingKmLT,omitempty"`
 	ReadingKmLTE   *float64  `json:"readingKmLTE,omitempty"`
 
+	// "reading_time" field predicates.
+	ReadingTime      *time.Time  `json:"readingTime,omitempty"`
+	ReadingTimeNEQ   *time.Time  `json:"readingTimeNEQ,omitempty"`
+	ReadingTimeIn    []time.Time `json:"readingTimeIn,omitempty"`
+	ReadingTimeNotIn []time.Time `json:"readingTimeNotIn,omitempty"`
+	ReadingTimeGT    *time.Time  `json:"readingTimeGT,omitempty"`
+	ReadingTimeGTE   *time.Time  `json:"readingTimeGTE,omitempty"`
+	ReadingTimeLT    *time.Time  `json:"readingTimeLT,omitempty"`
+	ReadingTimeLTE   *time.Time  `json:"readingTimeLTE,omitempty"`
+
 	// "notes" field predicates.
 	Notes             *string  `json:"notes,omitempty"`
 	NotesNEQ          *string  `json:"notesNEQ,omitempty"`
@@ -3780,6 +3790,30 @@ func (i *OdometerReadingWhereInput) P() (predicate.OdometerReading, error) {
 	}
 	if i.ReadingKmLTE != nil {
 		predicates = append(predicates, odometerreading.ReadingKmLTE(*i.ReadingKmLTE))
+	}
+	if i.ReadingTime != nil {
+		predicates = append(predicates, odometerreading.ReadingTimeEQ(*i.ReadingTime))
+	}
+	if i.ReadingTimeNEQ != nil {
+		predicates = append(predicates, odometerreading.ReadingTimeNEQ(*i.ReadingTimeNEQ))
+	}
+	if len(i.ReadingTimeIn) > 0 {
+		predicates = append(predicates, odometerreading.ReadingTimeIn(i.ReadingTimeIn...))
+	}
+	if len(i.ReadingTimeNotIn) > 0 {
+		predicates = append(predicates, odometerreading.ReadingTimeNotIn(i.ReadingTimeNotIn...))
+	}
+	if i.ReadingTimeGT != nil {
+		predicates = append(predicates, odometerreading.ReadingTimeGT(*i.ReadingTimeGT))
+	}
+	if i.ReadingTimeGTE != nil {
+		predicates = append(predicates, odometerreading.ReadingTimeGTE(*i.ReadingTimeGTE))
+	}
+	if i.ReadingTimeLT != nil {
+		predicates = append(predicates, odometerreading.ReadingTimeLT(*i.ReadingTimeLT))
+	}
+	if i.ReadingTimeLTE != nil {
+		predicates = append(predicates, odometerreading.ReadingTimeLTE(*i.ReadingTimeLTE))
 	}
 	if i.Notes != nil {
 		predicates = append(predicates, odometerreading.NotesEQ(*i.Notes))

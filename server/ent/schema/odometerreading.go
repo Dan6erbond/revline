@@ -21,6 +21,7 @@ func (OdometerReading) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.Float("reading_km"),
+		field.Time("reading_time"),
 		field.String("notes").
 			Optional().
 			Nillable(),

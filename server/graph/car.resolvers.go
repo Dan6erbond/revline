@@ -11,10 +11,12 @@ import (
 	"slices"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/Dan6erbond/revline/auth"
 	"github.com/Dan6erbond/revline/ent"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
 	"github.com/Dan6erbond/revline/graph/model"
 	"github.com/google/uuid"
@@ -213,6 +215,21 @@ func (r *carResolver) UpcomingServices(ctx context.Context, obj *ent.Car) ([]*mo
 	})
 
 	return upcoming, nil
+}
+
+// OdometerKm is the resolver for the odometerKm field.
+func (r *carResolver) OdometerKm(ctx context.Context, obj *ent.Car) (float64, error) {
+	reading, err := obj.QueryOdometerReadings().Order(odometerreading.ByReadingTime(sql.OrderDesc())).First(ctx)
+
+	if ent.IsNotFound(err) {
+		return 0, nil
+	}
+
+	if err != nil {
+		return 0, nil
+	}
+
+	return reading.ReadingKm, nil
 }
 
 // URL is the resolver for the url field.
@@ -535,31 +552,16 @@ func (r *queryResolver) Media(ctx context.Context, id string) (*ent.Media, error
 	return r.entClient.Media.Query().Where(media.IDEQ(uid)).First(ctx)
 }
 
-// OdometerReading is the resolver for the odometerReading field.
-func (r *createFuelUpInputResolver) OdometerReading(ctx context.Context, obj *ent.CreateFuelUpInput, data *ent.CreateOdometerReadingInput) error {
-	if data != nil {
-		c := ent.FromContext(ctx)
-
-		or, err := c.OdometerReading.Create().SetInput(*data).Save(ctx)
-
-		if err != nil {
-			return err
-		}
-
-		obj.OdometerReadingID = &or.ID
-
-		return err
-	}
-
-	return nil
-}
-
 // OdometerKm is the resolver for the odometerKm field.
 func (r *createFuelUpInputResolver) OdometerKm(ctx context.Context, obj *ent.CreateFuelUpInput, data *float64) error {
 	if data != nil {
 		c := ent.FromContext(ctx)
 
-		or, err := c.OdometerReading.Create().SetCarID(obj.CarID).SetReadingKm(*data).Save(ctx)
+		or, err := c.OdometerReading.Create().
+			SetCarID(obj.CarID).
+			SetReadingKm(*data).
+			SetReadingTime(obj.OccurredAt).
+			Save(ctx)
 
 		if err != nil {
 			return err
@@ -578,7 +580,11 @@ func (r *createServiceLogInputResolver) OdometerKm(ctx context.Context, obj *ent
 	if data != nil {
 		c := ent.FromContext(ctx)
 
-		or, err := c.OdometerReading.Create().SetCarID(obj.CarID).SetReadingKm(*data).Save(ctx)
+		or, err := c.OdometerReading.Create().
+			SetCarID(obj.CarID).
+			SetReadingKm(*data).
+			SetReadingTime(obj.DatePerformed).
+			Save(ctx)
 
 		if err != nil {
 			return err

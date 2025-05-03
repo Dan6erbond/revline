@@ -78,6 +78,7 @@ type ComplexityRoot struct {
 		Media                         func(childComplexity int) int
 		Model                         func(childComplexity int) int
 		Name                          func(childComplexity int) int
+		OdometerKm                    func(childComplexity int) int
 		OdometerReadings              func(childComplexity int) int
 		Owner                         func(childComplexity int) int
 		ServiceItems                  func(childComplexity int) int
@@ -208,14 +209,15 @@ type ComplexityRoot struct {
 	}
 
 	OdometerReading struct {
-		Car        func(childComplexity int) int
-		CreateTime func(childComplexity int) int
-		FuelUp     func(childComplexity int) int
-		ID         func(childComplexity int) int
-		Notes      func(childComplexity int) int
-		ReadingKm  func(childComplexity int) int
-		ServiceLog func(childComplexity int) int
-		UpdateTime func(childComplexity int) int
+		Car         func(childComplexity int) int
+		CreateTime  func(childComplexity int) int
+		FuelUp      func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Notes       func(childComplexity int) int
+		ReadingKm   func(childComplexity int) int
+		ReadingTime func(childComplexity int) int
+		ServiceLog  func(childComplexity int) int
+		UpdateTime  func(childComplexity int) int
 	}
 
 	Profile struct {
@@ -337,6 +339,7 @@ type CarResolver interface {
 	BannerImageURL(ctx context.Context, obj *ent.Car) (*string, error)
 	AverageConsumptionLitersPerKm(ctx context.Context, obj *ent.Car) (float64, error)
 	UpcomingServices(ctx context.Context, obj *ent.Car) ([]*model.UpcomingService, error)
+	OdometerKm(ctx context.Context, obj *ent.Car) (float64, error)
 }
 type DocumentResolver interface {
 	URL(ctx context.Context, obj *ent.Document) (string, error)
@@ -381,7 +384,6 @@ type UserResolver interface {
 }
 
 type CreateFuelUpInputResolver interface {
-	OdometerReading(ctx context.Context, obj *ent.CreateFuelUpInput, data *ent.CreateOdometerReadingInput) error
 	OdometerKm(ctx context.Context, obj *ent.CreateFuelUpInput, data *float64) error
 }
 type CreateServiceLogInputResolver interface {
@@ -497,6 +499,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Car.Name(childComplexity), true
+
+	case "Car.odometerKm":
+		if e.complexity.Car.OdometerKm == nil {
+			break
+		}
+
+		return e.complexity.Car.OdometerKm(childComplexity), true
 
 	case "Car.odometerReadings":
 		if e.complexity.Car.OdometerReadings == nil {
@@ -1298,6 +1307,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.OdometerReading.ReadingKm(childComplexity), true
+
+	case "OdometerReading.readingTime":
+		if e.complexity.OdometerReading.ReadingTime == nil {
+			break
+		}
+
+		return e.complexity.OdometerReading.ReadingTime(childComplexity), true
 
 	case "OdometerReading.serviceLog":
 		if e.complexity.OdometerReading.ServiceLog == nil {
@@ -3319,6 +3335,8 @@ func (ec *executionContext) fieldContext_Car_odometerReadings(_ context.Context,
 				return ec.fieldContext_OdometerReading_updateTime(ctx, field)
 			case "readingKm":
 				return ec.fieldContext_OdometerReading_readingKm(ctx, field)
+			case "readingTime":
+				return ec.fieldContext_OdometerReading_readingTime(ctx, field)
 			case "notes":
 				return ec.fieldContext_OdometerReading_notes(ctx, field)
 			case "car":
@@ -3891,6 +3909,50 @@ func (ec *executionContext) fieldContext_Car_upcomingServices(_ context.Context,
 				return ec.fieldContext_UpcomingService_nextDueDate(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type UpcomingService", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Car_odometerKm(ctx context.Context, field graphql.CollectedField, obj *ent.Car) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Car_odometerKm(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Car().OdometerKm(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Car_odometerKm(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Car",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4673,6 +4735,8 @@ func (ec *executionContext) fieldContext_Document_car(_ context.Context, field g
 				return ec.fieldContext_Car_averageConsumptionLitersPerKm(ctx, field)
 			case "upcomingServices":
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
+			case "odometerKm":
+				return ec.fieldContext_Car_odometerKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -5403,6 +5467,8 @@ func (ec *executionContext) fieldContext_DragSession_car(_ context.Context, fiel
 				return ec.fieldContext_Car_averageConsumptionLitersPerKm(ctx, field)
 			case "upcomingServices":
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
+			case "odometerKm":
+				return ec.fieldContext_Car_odometerKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -6093,6 +6159,8 @@ func (ec *executionContext) fieldContext_DynoSession_car(_ context.Context, fiel
 				return ec.fieldContext_Car_averageConsumptionLitersPerKm(ctx, field)
 			case "upcomingServices":
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
+			case "odometerKm":
+				return ec.fieldContext_Car_odometerKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -6937,6 +7005,8 @@ func (ec *executionContext) fieldContext_FuelUp_car(_ context.Context, field gra
 				return ec.fieldContext_Car_averageConsumptionLitersPerKm(ctx, field)
 			case "upcomingServices":
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
+			case "odometerKm":
+				return ec.fieldContext_Car_odometerKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -6988,6 +7058,8 @@ func (ec *executionContext) fieldContext_FuelUp_odometerReading(_ context.Contex
 				return ec.fieldContext_OdometerReading_updateTime(ctx, field)
 			case "readingKm":
 				return ec.fieldContext_OdometerReading_readingKm(ctx, field)
+			case "readingTime":
+				return ec.fieldContext_OdometerReading_readingTime(ctx, field)
 			case "notes":
 				return ec.fieldContext_OdometerReading_notes(ctx, field)
 			case "car":
@@ -7217,6 +7289,8 @@ func (ec *executionContext) fieldContext_Media_car(_ context.Context, field grap
 				return ec.fieldContext_Car_averageConsumptionLitersPerKm(ctx, field)
 			case "upcomingServices":
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
+			case "odometerKm":
+				return ec.fieldContext_Car_odometerKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -7650,6 +7724,8 @@ func (ec *executionContext) fieldContext_Mutation_createCar(ctx context.Context,
 				return ec.fieldContext_Car_averageConsumptionLitersPerKm(ctx, field)
 			case "upcomingServices":
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
+			case "odometerKm":
+				return ec.fieldContext_Car_odometerKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -8091,6 +8167,8 @@ func (ec *executionContext) fieldContext_Mutation_createOdometerReading(ctx cont
 				return ec.fieldContext_OdometerReading_updateTime(ctx, field)
 			case "readingKm":
 				return ec.fieldContext_OdometerReading_readingKm(ctx, field)
+			case "readingTime":
+				return ec.fieldContext_OdometerReading_readingTime(ctx, field)
 			case "notes":
 				return ec.fieldContext_OdometerReading_notes(ctx, field)
 			case "car":
@@ -9115,6 +9193,50 @@ func (ec *executionContext) fieldContext_OdometerReading_readingKm(_ context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _OdometerReading_readingTime(ctx context.Context, field graphql.CollectedField, obj *ent.OdometerReading) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OdometerReading_readingTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ReadingTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OdometerReading_readingTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OdometerReading",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _OdometerReading_notes(ctx context.Context, field graphql.CollectedField, obj *ent.OdometerReading) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_OdometerReading_notes(ctx, field)
 	if err != nil {
@@ -9241,6 +9363,8 @@ func (ec *executionContext) fieldContext_OdometerReading_car(_ context.Context, 
 				return ec.fieldContext_Car_averageConsumptionLitersPerKm(ctx, field)
 			case "upcomingServices":
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
+			case "odometerKm":
+				return ec.fieldContext_Car_odometerKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -10246,6 +10370,8 @@ func (ec *executionContext) fieldContext_Query_car(ctx context.Context, field gr
 				return ec.fieldContext_Car_averageConsumptionLitersPerKm(ctx, field)
 			case "upcomingServices":
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
+			case "odometerKm":
+				return ec.fieldContext_Car_odometerKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -11148,6 +11274,8 @@ func (ec *executionContext) fieldContext_ServiceItem_car(_ context.Context, fiel
 				return ec.fieldContext_Car_averageConsumptionLitersPerKm(ctx, field)
 			case "upcomingServices":
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
+			case "odometerKm":
+				return ec.fieldContext_Car_odometerKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -11630,6 +11758,8 @@ func (ec *executionContext) fieldContext_ServiceLog_car(_ context.Context, field
 				return ec.fieldContext_Car_averageConsumptionLitersPerKm(ctx, field)
 			case "upcomingServices":
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
+			case "odometerKm":
+				return ec.fieldContext_Car_odometerKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -11817,6 +11947,8 @@ func (ec *executionContext) fieldContext_ServiceLog_odometerReading(_ context.Co
 				return ec.fieldContext_OdometerReading_updateTime(ctx, field)
 			case "readingKm":
 				return ec.fieldContext_OdometerReading_readingKm(ctx, field)
+			case "readingTime":
+				return ec.fieldContext_OdometerReading_readingTime(ctx, field)
 			case "notes":
 				return ec.fieldContext_OdometerReading_notes(ctx, field)
 			case "car":
@@ -12342,6 +12474,8 @@ func (ec *executionContext) fieldContext_ServiceSchedule_car(_ context.Context, 
 				return ec.fieldContext_Car_averageConsumptionLitersPerKm(ctx, field)
 			case "upcomingServices":
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
+			case "odometerKm":
+				return ec.fieldContext_Car_odometerKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -13615,6 +13749,8 @@ func (ec *executionContext) fieldContext_User_cars(_ context.Context, field grap
 				return ec.fieldContext_Car_averageConsumptionLitersPerKm(ctx, field)
 			case "upcomingServices":
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
+			case "odometerKm":
+				return ec.fieldContext_Car_odometerKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -17816,7 +17952,7 @@ func (ec *executionContext) unmarshalInputCreateFuelUpInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "occurredAt", "station", "amountLiters", "cost", "fuelCategory", "octaneRating", "isFullTank", "notes", "carID", "odometerReadingID", "odometerReading", "odometerKm"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "occurredAt", "station", "amountLiters", "cost", "fuelCategory", "octaneRating", "isFullTank", "notes", "carID", "odometerReadingID", "odometerKm"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -17907,15 +18043,6 @@ func (ec *executionContext) unmarshalInputCreateFuelUpInput(ctx context.Context,
 				return it, err
 			}
 			it.OdometerReadingID = data
-		case "odometerReading":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("odometerReading"))
-			data, err := ec.unmarshalOCreateOdometerReadingInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐCreateOdometerReadingInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			if err = ec.resolvers.CreateFuelUpInput().OdometerReading(ctx, &it, data); err != nil {
-				return it, err
-			}
 		case "odometerKm":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("odometerKm"))
 			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
@@ -17979,7 +18106,7 @@ func (ec *executionContext) unmarshalInputCreateOdometerReadingInput(ctx context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "readingKm", "notes", "carID", "fuelUpID", "serviceLogID"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "readingKm", "readingTime", "notes", "carID", "fuelUpID", "serviceLogID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -18007,6 +18134,13 @@ func (ec *executionContext) unmarshalInputCreateOdometerReadingInput(ctx context
 				return it, err
 			}
 			it.ReadingKm = data
+		case "readingTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("readingTime"))
+			data, err := ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ReadingTime = data
 		case "notes":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -21377,7 +21511,7 @@ func (ec *executionContext) unmarshalInputOdometerReadingWhereInput(ctx context.
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "readingKm", "readingKmNEQ", "readingKmIn", "readingKmNotIn", "readingKmGT", "readingKmGTE", "readingKmLT", "readingKmLTE", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasFuelUp", "hasFuelUpWith", "hasServiceLog", "hasServiceLogWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "readingKm", "readingKmNEQ", "readingKmIn", "readingKmNotIn", "readingKmGT", "readingKmGTE", "readingKmLT", "readingKmLTE", "readingTime", "readingTimeNEQ", "readingTimeIn", "readingTimeNotIn", "readingTimeGT", "readingTimeGTE", "readingTimeLT", "readingTimeLTE", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasFuelUp", "hasFuelUpWith", "hasServiceLog", "hasServiceLogWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -21629,6 +21763,62 @@ func (ec *executionContext) unmarshalInputOdometerReadingWhereInput(ctx context.
 				return it, err
 			}
 			it.ReadingKmLTE = data
+		case "readingTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("readingTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ReadingTime = data
+		case "readingTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("readingTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ReadingTimeNEQ = data
+		case "readingTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("readingTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ReadingTimeIn = data
+		case "readingTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("readingTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ReadingTimeNotIn = data
+		case "readingTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("readingTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ReadingTimeGT = data
+		case "readingTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("readingTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ReadingTimeGTE = data
+		case "readingTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("readingTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ReadingTimeLT = data
+		case "readingTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("readingTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ReadingTimeLTE = data
 		case "notes":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -25927,7 +26117,7 @@ func (ec *executionContext) unmarshalInputUpdateOdometerReadingInput(ctx context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "readingKm", "notes", "clearNotes", "carID", "fuelUpID", "clearFuelUp", "serviceLogID", "clearServiceLog"}
+	fieldsInOrder := [...]string{"updateTime", "readingKm", "readingTime", "notes", "clearNotes", "carID", "fuelUpID", "clearFuelUp", "serviceLogID", "clearServiceLog"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -25948,6 +26138,13 @@ func (ec *executionContext) unmarshalInputUpdateOdometerReadingInput(ctx context
 				return it, err
 			}
 			it.ReadingKm = data
+		case "readingTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("readingTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ReadingTime = data
 		case "notes":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -27745,6 +27942,42 @@ func (ec *executionContext) _Car(ctx context.Context, sel ast.SelectionSet, obj 
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "odometerKm":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Car_odometerKm(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -29064,6 +29297,11 @@ func (ec *executionContext) _OdometerReading(ctx context.Context, sel ast.Select
 			}
 		case "readingKm":
 			out.Values[i] = ec._OdometerReading_readingKm(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "readingTime":
+			out.Values[i] = ec._OdometerReading_readingTime(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -32119,14 +32357,6 @@ func (ec *executionContext) unmarshalOCheckoutSessionWhereInput2ᚖgithubᚗcom�
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputCheckoutSessionWhereInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOCreateOdometerReadingInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐCreateOdometerReadingInput(ctx context.Context, v any) (*ent.CreateOdometerReadingInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputCreateOdometerReadingInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

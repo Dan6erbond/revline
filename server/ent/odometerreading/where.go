@@ -71,6 +71,11 @@ func ReadingKm(v float64) predicate.OdometerReading {
 	return predicate.OdometerReading(sql.FieldEQ(FieldReadingKm, v))
 }
 
+// ReadingTime applies equality check predicate on the "reading_time" field. It's identical to ReadingTimeEQ.
+func ReadingTime(v time.Time) predicate.OdometerReading {
+	return predicate.OdometerReading(sql.FieldEQ(FieldReadingTime, v))
+}
+
 // Notes applies equality check predicate on the "notes" field. It's identical to NotesEQ.
 func Notes(v string) predicate.OdometerReading {
 	return predicate.OdometerReading(sql.FieldEQ(FieldNotes, v))
@@ -194,6 +199,46 @@ func ReadingKmLT(v float64) predicate.OdometerReading {
 // ReadingKmLTE applies the LTE predicate on the "reading_km" field.
 func ReadingKmLTE(v float64) predicate.OdometerReading {
 	return predicate.OdometerReading(sql.FieldLTE(FieldReadingKm, v))
+}
+
+// ReadingTimeEQ applies the EQ predicate on the "reading_time" field.
+func ReadingTimeEQ(v time.Time) predicate.OdometerReading {
+	return predicate.OdometerReading(sql.FieldEQ(FieldReadingTime, v))
+}
+
+// ReadingTimeNEQ applies the NEQ predicate on the "reading_time" field.
+func ReadingTimeNEQ(v time.Time) predicate.OdometerReading {
+	return predicate.OdometerReading(sql.FieldNEQ(FieldReadingTime, v))
+}
+
+// ReadingTimeIn applies the In predicate on the "reading_time" field.
+func ReadingTimeIn(vs ...time.Time) predicate.OdometerReading {
+	return predicate.OdometerReading(sql.FieldIn(FieldReadingTime, vs...))
+}
+
+// ReadingTimeNotIn applies the NotIn predicate on the "reading_time" field.
+func ReadingTimeNotIn(vs ...time.Time) predicate.OdometerReading {
+	return predicate.OdometerReading(sql.FieldNotIn(FieldReadingTime, vs...))
+}
+
+// ReadingTimeGT applies the GT predicate on the "reading_time" field.
+func ReadingTimeGT(v time.Time) predicate.OdometerReading {
+	return predicate.OdometerReading(sql.FieldGT(FieldReadingTime, v))
+}
+
+// ReadingTimeGTE applies the GTE predicate on the "reading_time" field.
+func ReadingTimeGTE(v time.Time) predicate.OdometerReading {
+	return predicate.OdometerReading(sql.FieldGTE(FieldReadingTime, v))
+}
+
+// ReadingTimeLT applies the LT predicate on the "reading_time" field.
+func ReadingTimeLT(v time.Time) predicate.OdometerReading {
+	return predicate.OdometerReading(sql.FieldLT(FieldReadingTime, v))
+}
+
+// ReadingTimeLTE applies the LTE predicate on the "reading_time" field.
+func ReadingTimeLTE(v time.Time) predicate.OdometerReading {
+	return predicate.OdometerReading(sql.FieldLTE(FieldReadingTime, v))
 }
 
 // NotesEQ applies the EQ predicate on the "notes" field.

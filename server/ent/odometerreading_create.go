@@ -58,6 +58,12 @@ func (orc *OdometerReadingCreate) SetReadingKm(f float64) *OdometerReadingCreate
 	return orc
 }
 
+// SetReadingTime sets the "reading_time" field.
+func (orc *OdometerReadingCreate) SetReadingTime(t time.Time) *OdometerReadingCreate {
+	orc.mutation.SetReadingTime(t)
+	return orc
+}
+
 // SetNotes sets the "notes" field.
 func (orc *OdometerReadingCreate) SetNotes(s string) *OdometerReadingCreate {
 	orc.mutation.SetNotes(s)
@@ -195,6 +201,9 @@ func (orc *OdometerReadingCreate) check() error {
 	if _, ok := orc.mutation.ReadingKm(); !ok {
 		return &ValidationError{Name: "reading_km", err: errors.New(`ent: missing required field "OdometerReading.reading_km"`)}
 	}
+	if _, ok := orc.mutation.ReadingTime(); !ok {
+		return &ValidationError{Name: "reading_time", err: errors.New(`ent: missing required field "OdometerReading.reading_time"`)}
+	}
 	if len(orc.mutation.CarIDs()) == 0 {
 		return &ValidationError{Name: "car", err: errors.New(`ent: missing required edge "OdometerReading.car"`)}
 	}
@@ -244,6 +253,10 @@ func (orc *OdometerReadingCreate) createSpec() (*OdometerReading, *sqlgraph.Crea
 	if value, ok := orc.mutation.ReadingKm(); ok {
 		_spec.SetField(odometerreading.FieldReadingKm, field.TypeFloat64, value)
 		_node.ReadingKm = value
+	}
+	if value, ok := orc.mutation.ReadingTime(); ok {
+		_spec.SetField(odometerreading.FieldReadingTime, field.TypeTime, value)
+		_node.ReadingTime = value
 	}
 	if value, ok := orc.mutation.Notes(); ok {
 		_spec.SetField(odometerreading.FieldNotes, field.TypeString, value)

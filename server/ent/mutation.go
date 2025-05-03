@@ -7432,6 +7432,7 @@ type OdometerReadingMutation struct {
 	update_time        *time.Time
 	reading_km         *float64
 	addreading_km      *float64
+	reading_time       *time.Time
 	notes              *string
 	clearedFields      map[string]struct{}
 	car                *uuid.UUID
@@ -7677,6 +7678,42 @@ func (m *OdometerReadingMutation) ResetReadingKm() {
 	m.addreading_km = nil
 }
 
+// SetReadingTime sets the "reading_time" field.
+func (m *OdometerReadingMutation) SetReadingTime(t time.Time) {
+	m.reading_time = &t
+}
+
+// ReadingTime returns the value of the "reading_time" field in the mutation.
+func (m *OdometerReadingMutation) ReadingTime() (r time.Time, exists bool) {
+	v := m.reading_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReadingTime returns the old "reading_time" field's value of the OdometerReading entity.
+// If the OdometerReading object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OdometerReadingMutation) OldReadingTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReadingTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReadingTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReadingTime: %w", err)
+	}
+	return oldValue.ReadingTime, nil
+}
+
+// ResetReadingTime resets all changes to the "reading_time" field.
+func (m *OdometerReadingMutation) ResetReadingTime() {
+	m.reading_time = nil
+}
+
 // SetNotes sets the "notes" field.
 func (m *OdometerReadingMutation) SetNotes(s string) {
 	m.notes = &s
@@ -7877,7 +7914,7 @@ func (m *OdometerReadingMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OdometerReadingMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.create_time != nil {
 		fields = append(fields, odometerreading.FieldCreateTime)
 	}
@@ -7886,6 +7923,9 @@ func (m *OdometerReadingMutation) Fields() []string {
 	}
 	if m.reading_km != nil {
 		fields = append(fields, odometerreading.FieldReadingKm)
+	}
+	if m.reading_time != nil {
+		fields = append(fields, odometerreading.FieldReadingTime)
 	}
 	if m.notes != nil {
 		fields = append(fields, odometerreading.FieldNotes)
@@ -7904,6 +7944,8 @@ func (m *OdometerReadingMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdateTime()
 	case odometerreading.FieldReadingKm:
 		return m.ReadingKm()
+	case odometerreading.FieldReadingTime:
+		return m.ReadingTime()
 	case odometerreading.FieldNotes:
 		return m.Notes()
 	}
@@ -7921,6 +7963,8 @@ func (m *OdometerReadingMutation) OldField(ctx context.Context, name string) (en
 		return m.OldUpdateTime(ctx)
 	case odometerreading.FieldReadingKm:
 		return m.OldReadingKm(ctx)
+	case odometerreading.FieldReadingTime:
+		return m.OldReadingTime(ctx)
 	case odometerreading.FieldNotes:
 		return m.OldNotes(ctx)
 	}
@@ -7952,6 +7996,13 @@ func (m *OdometerReadingMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetReadingKm(v)
+		return nil
+	case odometerreading.FieldReadingTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReadingTime(v)
 		return nil
 	case odometerreading.FieldNotes:
 		v, ok := value.(string)
@@ -8041,6 +8092,9 @@ func (m *OdometerReadingMutation) ResetField(name string) error {
 		return nil
 	case odometerreading.FieldReadingKm:
 		m.ResetReadingKm()
+		return nil
+	case odometerreading.FieldReadingTime:
+		m.ResetReadingTime()
 		return nil
 	case odometerreading.FieldNotes:
 		m.ResetNotes()

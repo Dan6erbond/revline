@@ -248,6 +248,7 @@ var (
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "reading_km", Type: field.TypeFloat64},
+		{Name: "reading_time", Type: field.TypeTime},
 		{Name: "notes", Type: field.TypeString, Nullable: true},
 		{Name: "car_odometer_readings", Type: field.TypeUUID},
 	}
@@ -259,7 +260,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "odometer_readings_cars_odometer_readings",
-				Columns:    []*schema.Column{OdometerReadingsColumns[5]},
+				Columns:    []*schema.Column{OdometerReadingsColumns[6]},
 				RefColumns: []*schema.Column{CarsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

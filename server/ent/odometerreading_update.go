@@ -59,6 +59,20 @@ func (oru *OdometerReadingUpdate) AddReadingKm(f float64) *OdometerReadingUpdate
 	return oru
 }
 
+// SetReadingTime sets the "reading_time" field.
+func (oru *OdometerReadingUpdate) SetReadingTime(t time.Time) *OdometerReadingUpdate {
+	oru.mutation.SetReadingTime(t)
+	return oru
+}
+
+// SetNillableReadingTime sets the "reading_time" field if the given value is not nil.
+func (oru *OdometerReadingUpdate) SetNillableReadingTime(t *time.Time) *OdometerReadingUpdate {
+	if t != nil {
+		oru.SetReadingTime(*t)
+	}
+	return oru
+}
+
 // SetNotes sets the "notes" field.
 func (oru *OdometerReadingUpdate) SetNotes(s string) *OdometerReadingUpdate {
 	oru.mutation.SetNotes(s)
@@ -216,6 +230,9 @@ func (oru *OdometerReadingUpdate) sqlSave(ctx context.Context) (n int, err error
 	if value, ok := oru.mutation.AddedReadingKm(); ok {
 		_spec.AddField(odometerreading.FieldReadingKm, field.TypeFloat64, value)
 	}
+	if value, ok := oru.mutation.ReadingTime(); ok {
+		_spec.SetField(odometerreading.FieldReadingTime, field.TypeTime, value)
+	}
 	if value, ok := oru.mutation.Notes(); ok {
 		_spec.SetField(odometerreading.FieldNotes, field.TypeString, value)
 	}
@@ -353,6 +370,20 @@ func (oruo *OdometerReadingUpdateOne) SetNillableReadingKm(f *float64) *Odometer
 // AddReadingKm adds f to the "reading_km" field.
 func (oruo *OdometerReadingUpdateOne) AddReadingKm(f float64) *OdometerReadingUpdateOne {
 	oruo.mutation.AddReadingKm(f)
+	return oruo
+}
+
+// SetReadingTime sets the "reading_time" field.
+func (oruo *OdometerReadingUpdateOne) SetReadingTime(t time.Time) *OdometerReadingUpdateOne {
+	oruo.mutation.SetReadingTime(t)
+	return oruo
+}
+
+// SetNillableReadingTime sets the "reading_time" field if the given value is not nil.
+func (oruo *OdometerReadingUpdateOne) SetNillableReadingTime(t *time.Time) *OdometerReadingUpdateOne {
+	if t != nil {
+		oruo.SetReadingTime(*t)
+	}
 	return oruo
 }
 
@@ -542,6 +573,9 @@ func (oruo *OdometerReadingUpdateOne) sqlSave(ctx context.Context) (_node *Odome
 	}
 	if value, ok := oruo.mutation.AddedReadingKm(); ok {
 		_spec.AddField(odometerreading.FieldReadingKm, field.TypeFloat64, value)
+	}
+	if value, ok := oruo.mutation.ReadingTime(); ok {
+		_spec.SetField(odometerreading.FieldReadingTime, field.TypeTime, value)
 	}
 	if value, ok := oruo.mutation.Notes(); ok {
 		_spec.SetField(odometerreading.FieldNotes, field.TypeString, value)

@@ -1,2 +1,2 @@
 # Ensure all text files use LF line endings
-* text=auto eol=lf
+*.sql text=auto eol=lf

@@ -1171,6 +1171,11 @@ func (or *OdometerReadingQuery) collectField(ctx context.Context, oneNode bool, 
 				selectedFields = append(selectedFields, odometerreading.FieldReadingKm)
 				fieldSeen[odometerreading.FieldReadingKm] = struct{}{}
 			}
+		case "readingTime":
+			if _, ok := fieldSeen[odometerreading.FieldReadingTime]; !ok {
+				selectedFields = append(selectedFields, odometerreading.FieldReadingTime)
+				fieldSeen[odometerreading.FieldReadingTime] = struct{}{}
+			}
 		case "notes":
 			if _, ok := fieldSeen[odometerreading.FieldNotes]; !ok {
 				selectedFields = append(selectedFields, odometerreading.FieldNotes)

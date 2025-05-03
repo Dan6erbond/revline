@@ -21,6 +21,8 @@ const (
 	FieldUpdateTime = "update_time"
 	// FieldReadingKm holds the string denoting the reading_km field in the database.
 	FieldReadingKm = "reading_km"
+	// FieldReadingTime holds the string denoting the reading_time field in the database.
+	FieldReadingTime = "reading_time"
 	// FieldNotes holds the string denoting the notes field in the database.
 	FieldNotes = "notes"
 	// EdgeCar holds the string denoting the car edge name in mutations.
@@ -60,6 +62,7 @@ var Columns = []string{
 	FieldCreateTime,
 	FieldUpdateTime,
 	FieldReadingKm,
+	FieldReadingTime,
 	FieldNotes,
 }
 
@@ -116,6 +119,11 @@ func ByUpdateTime(opts ...sql.OrderTermOption) OrderOption {
 // ByReadingKm orders the results by the reading_km field.
 func ByReadingKm(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldReadingKm, opts...).ToFunc()
+}
+
+// ByReadingTime orders the results by the reading_time field.
+func ByReadingTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReadingTime, opts...).ToFunc()
 }
 
 // ByNotes orders the results by the notes field.

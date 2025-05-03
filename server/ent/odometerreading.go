@@ -27,6 +27,8 @@ type OdometerReading struct {
 	UpdateTime time.Time `json:"update_time,omitempty"`
 	// ReadingKm holds the value of the "reading_km" field.
 	ReadingKm float64 `json:"reading_km,omitempty"`
+	// ReadingTime holds the value of the "reading_time" field.
+	ReadingTime time.Time `json:"reading_time,omitempty"`
 	// Notes holds the value of the "notes" field.
 	Notes *string `json:"notes,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -93,7 +95,7 @@ func (*OdometerReading) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case odometerreading.FieldNotes:
 			values[i] = new(sql.NullString)
-		case odometerreading.FieldCreateTime, odometerreading.FieldUpdateTime:
+		case odometerreading.FieldCreateTime, odometerreading.FieldUpdateTime, odometerreading.FieldReadingTime:
 			values[i] = new(sql.NullTime)
 		case odometerreading.FieldID:
 			values[i] = new(uuid.UUID)
@@ -137,6 +139,12 @@ func (or *OdometerReading) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field reading_km", values[i])
 			} else if value.Valid {
 				or.ReadingKm = value.Float64
+			}
+		case odometerreading.FieldReadingTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field reading_time", values[i])
+			} else if value.Valid {
+				or.ReadingTime = value.Time
 			}
 		case odometerreading.FieldNotes:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -211,6 +219,9 @@ func (or *OdometerReading) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("reading_km=")
 	builder.WriteString(fmt.Sprintf("%v", or.ReadingKm))
+	builder.WriteString(", ")
+	builder.WriteString("reading_time=")
+	builder.WriteString(or.ReadingTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	if v := or.Notes; v != nil {
 		builder.WriteString("notes=")
