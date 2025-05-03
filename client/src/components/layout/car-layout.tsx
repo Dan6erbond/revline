@@ -187,7 +187,7 @@ export default function CarLayout({ children }: { children?: ReactNode }) {
           <ArrowLeft />
         </Button>
         <h2 className="text-3xl text-white">{data?.car?.name}</h2>
-        <div className="flex gap-4 items-center text-sm text-white/80 pl-2 pr-4">
+        <div className="hidden md:flex gap-4 items-center text-sm text-white/80 pl-2 pr-4">
           {data?.car.odometerKm && (
             <div className="flex items-center gap-1">
               <Gauge className="w-4 h-4" />
