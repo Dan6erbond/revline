@@ -566,6 +566,7 @@ func (r *createFuelUpInputResolver) Cost(ctx context.Context, obj *ent.CreateFue
 	ex, err := c.Expense.Create().
 		SetCarID(obj.CarID).
 		SetAmount(data).
+		SetNotes("Created by fuel-up").
 		Save(ctx)
 
 	if err != nil {
@@ -586,6 +587,7 @@ func (r *createFuelUpInputResolver) OdometerKm(ctx context.Context, obj *ent.Cre
 			SetCarID(obj.CarID).
 			SetReadingKm(*data).
 			SetReadingTime(obj.OccurredAt).
+			SetNotes("Created by fuel-up").
 			Save(ctx)
 
 		if err != nil {
@@ -608,6 +610,7 @@ func (r *createServiceLogInputResolver) Cost(ctx context.Context, obj *ent.Creat
 		ex, err := c.Expense.Create().
 			SetCarID(obj.CarID).
 			SetAmount(*data).
+			SetNotes("Created by service log").
 			Save(ctx)
 
 		if err != nil {
@@ -631,6 +634,7 @@ func (r *createServiceLogInputResolver) OdometerKm(ctx context.Context, obj *ent
 			SetCarID(obj.CarID).
 			SetReadingKm(*data).
 			SetReadingTime(obj.DatePerformed).
+			SetNotes("Created by service log").
 			Save(ctx)
 
 		if err != nil {
