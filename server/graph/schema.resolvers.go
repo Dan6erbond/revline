@@ -38,11 +38,15 @@ func (r *mutationResolver) UpdateProfile(ctx context.Context, input ent.UpdatePr
 			DistanceUnit:        input.DistanceUnit,
 			FuelConsumptionUnit: input.FuelConsumptionUnit,
 			TemperatureUnit:     input.TemperatureUnit,
+			PowerUnit:           input.PowerUnit,
+			TorqueUnit:          input.TorqueUnit,
 			Visibility:          input.Visibility,
 			UserID:              user.ID,
 		}).Save(ctx); err != nil {
 			return nil, err
 		}
+	} else {
+		profile, err = profile.Update().SetInput(input).Save(ctx)
 	}
 
 	return profile, err
