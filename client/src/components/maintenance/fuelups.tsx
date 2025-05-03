@@ -78,7 +78,10 @@ const getFuelUps = graphql(`
         occurredAt
         station
         amountLiters
-        cost
+        expense {
+          id
+          amount
+        }
         fuelCategory
         octaneRating
         odometerReading {
@@ -113,7 +116,10 @@ const createFuelUp = graphql(`
       occurredAt
       station
       amountLiters
-      cost
+      expense {
+        id
+        amount
+      }
       fuelCategory
       octaneRating
       odometerReading {
@@ -259,7 +265,9 @@ export default function FuelUps() {
               data={data?.car.fuelUps?.map((fu) => ({
                 ...fu,
                 occurredAt: new Date(fu.occurredAt).toLocaleDateString(),
-                relativeCost: fu.cost / fu.amountLiters,
+                relativeCost: fu.expense?.amount
+                  ? fu.expense.amount / fu.amountLiters
+                  : 0,
                 amount: getFuelVolume(fu.amountLiters, fuelVolumeUnit),
               }))}
             >
@@ -342,7 +350,7 @@ export default function FuelUps() {
                   {fuelVolumeUnits[fuelVolumeUnit]}
                 </TableCell>
                 <TableCell>
-                  {fu.cost.toLocaleString([], {
+                  {fu.expense?.amount.toLocaleString([], {
                     style: "currency",
                     currency: currencyCode,
                     maximumFractionDigits: 2,
