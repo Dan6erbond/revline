@@ -24,7 +24,6 @@ func (FuelUp) Fields() []ent.Field {
 		field.Time("occurred_at"),
 		field.String("station"),
 		field.Float("amount_liters"),
-		field.Float("cost"),
 		field.Enum("fuel_category").
 			Values("petrol", "diesel", "electric", "lpg", "other").
 			SchemaType(map[string]string{
@@ -61,6 +60,7 @@ func (FuelUp) Edges() []ent.Edge {
 		edge.From("odometer_reading", OdometerReading.Type).
 			Ref("fuel_up").
 			Unique(),
+		edge.To("expense", Expense.Type).Unique(),
 	}
 }
 

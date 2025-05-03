@@ -12,6 +12,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -174,6 +175,29 @@ func init() {
 	dynosessionDescID := dynosessionFields[0].Descriptor()
 	// dynosession.DefaultID holds the default value on creation for the id field.
 	dynosession.DefaultID = dynosessionDescID.Default.(func() uuid.UUID)
+	expenseMixin := schema.Expense{}.Mixin()
+	expenseMixinFields0 := expenseMixin[0].Fields()
+	_ = expenseMixinFields0
+	expenseFields := schema.Expense{}.Fields()
+	_ = expenseFields
+	// expenseDescCreateTime is the schema descriptor for create_time field.
+	expenseDescCreateTime := expenseMixinFields0[0].Descriptor()
+	// expense.DefaultCreateTime holds the default value on creation for the create_time field.
+	expense.DefaultCreateTime = expenseDescCreateTime.Default.(func() time.Time)
+	// expenseDescUpdateTime is the schema descriptor for update_time field.
+	expenseDescUpdateTime := expenseMixinFields0[1].Descriptor()
+	// expense.DefaultUpdateTime holds the default value on creation for the update_time field.
+	expense.DefaultUpdateTime = expenseDescUpdateTime.Default.(func() time.Time)
+	// expense.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	expense.UpdateDefaultUpdateTime = expenseDescUpdateTime.UpdateDefault.(func() time.Time)
+	// expenseDescAmount is the schema descriptor for amount field.
+	expenseDescAmount := expenseFields[3].Descriptor()
+	// expense.AmountValidator is a validator for the "amount" field. It is called by the builders before save.
+	expense.AmountValidator = expenseDescAmount.Validators[0].(func(float64) error)
+	// expenseDescID is the schema descriptor for id field.
+	expenseDescID := expenseFields[0].Descriptor()
+	// expense.DefaultID holds the default value on creation for the id field.
+	expense.DefaultID = expenseDescID.Default.(func() uuid.UUID)
 	fuelupMixin := schema.FuelUp{}.Mixin()
 	fuelupMixinFields0 := fuelupMixin[0].Fields()
 	_ = fuelupMixinFields0
@@ -190,7 +214,7 @@ func init() {
 	// fuelup.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	fuelup.UpdateDefaultUpdateTime = fuelupDescUpdateTime.UpdateDefault.(func() time.Time)
 	// fuelupDescIsFullTank is the schema descriptor for is_full_tank field.
-	fuelupDescIsFullTank := fuelupFields[7].Descriptor()
+	fuelupDescIsFullTank := fuelupFields[6].Descriptor()
 	// fuelup.DefaultIsFullTank holds the default value on creation for the is_full_tank field.
 	fuelup.DefaultIsFullTank = fuelupDescIsFullTank.Default.(bool)
 	// fuelupDescID is the schema descriptor for id field.

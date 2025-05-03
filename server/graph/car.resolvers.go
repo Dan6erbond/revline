@@ -448,6 +448,13 @@ func (r *mutationResolver) UploadDocument(ctx context.Context, input ent.CreateD
 	return &model.UploadDocumentResult{document, url.String()}, nil
 }
 
+// CreateExpense is the resolver for the createExpense field.
+func (r *mutationResolver) CreateExpense(ctx context.Context, input ent.CreateExpenseInput) (*ent.Expense, error) {
+	c := ent.FromContext(ctx)
+
+	return c.Expense.Create().SetInput(input).Save(ctx)
+}
+
 // CreateFuelUp is the resolver for the createFuelUp field.
 func (r *mutationResolver) CreateFuelUp(ctx context.Context, input ent.CreateFuelUpInput) (*ent.FuelUp, error) {
 	c := ent.FromContext(ctx)
@@ -552,6 +559,24 @@ func (r *queryResolver) Media(ctx context.Context, id string) (*ent.Media, error
 	return r.entClient.Media.Query().Where(media.IDEQ(uid)).First(ctx)
 }
 
+// Cost is the resolver for the cost field.
+func (r *createFuelUpInputResolver) Cost(ctx context.Context, obj *ent.CreateFuelUpInput, data float64) error {
+	c := ent.FromContext(ctx)
+
+	ex, err := c.Expense.Create().
+		SetCarID(obj.CarID).
+		SetAmount(data).
+		Save(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	obj.ExpenseID = &ex.ID
+
+	return err
+}
+
 // OdometerKm is the resolver for the odometerKm field.
 func (r *createFuelUpInputResolver) OdometerKm(ctx context.Context, obj *ent.CreateFuelUpInput, data *float64) error {
 	if data != nil {
@@ -568,6 +593,28 @@ func (r *createFuelUpInputResolver) OdometerKm(ctx context.Context, obj *ent.Cre
 		}
 
 		obj.OdometerReadingID = &or.ID
+
+		return err
+	}
+
+	return nil
+}
+
+// Cost is the resolver for the cost field.
+func (r *createServiceLogInputResolver) Cost(ctx context.Context, obj *ent.CreateServiceLogInput, data *float64) error {
+	if data != nil {
+		c := ent.FromContext(ctx)
+
+		ex, err := c.Expense.Create().
+			SetCarID(obj.CarID).
+			SetAmount(*data).
+			Save(ctx)
+
+		if err != nil {
+			return err
+		}
+
+		obj.ExpenseID = &ex.ID
 
 		return err
 	}

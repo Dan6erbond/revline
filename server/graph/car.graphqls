@@ -48,10 +48,12 @@ type UploadDocumentResult {
 }
 
 extend input CreateFuelUpInput {
+  cost: Float!
   odometerKm: Float
 }
 
 extend input CreateServiceLogInput {
+  cost: Float
   odometerKm: Float
 }
 
@@ -60,6 +62,7 @@ extend type Mutation {
   uploadBannerImage(input: CreateMediaInput!): UploadMediaResult! @loggedIn
   uploadMedia(input: CreateMediaInput!): UploadMediaResult! @loggedIn
   uploadDocument(input: CreateDocumentInput!): UploadDocumentResult! @loggedIn
+  createExpense(input: CreateExpenseInput!): Expense! @loggedIn
   createFuelUp(input: CreateFuelUpInput!): FuelUp! @loggedIn
   createOdometerReading(input: CreateOdometerReadingInput!): OdometerReading!
     @loggedIn

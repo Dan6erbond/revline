@@ -51,6 +51,8 @@ const (
 	EdgeDocuments = "documents"
 	// EdgeDynoSessions holds the string denoting the dyno_sessions edge name in mutations.
 	EdgeDynoSessions = "dyno_sessions"
+	// EdgeExpenses holds the string denoting the expenses edge name in mutations.
+	EdgeExpenses = "expenses"
 	// EdgeBannerImage holds the string denoting the banner_image edge name in mutations.
 	EdgeBannerImage = "banner_image"
 	// Table holds the table name of the car in the database.
@@ -125,6 +127,13 @@ const (
 	DynoSessionsInverseTable = "dyno_sessions"
 	// DynoSessionsColumn is the table column denoting the dyno_sessions relation/edge.
 	DynoSessionsColumn = "car_dyno_sessions"
+	// ExpensesTable is the table that holds the expenses relation/edge.
+	ExpensesTable = "expenses"
+	// ExpensesInverseTable is the table name for the Expense entity.
+	// It exists in this package in order to avoid circular dependency with the "expense" package.
+	ExpensesInverseTable = "expenses"
+	// ExpensesColumn is the table column denoting the expenses relation/edge.
+	ExpensesColumn = "car_expenses"
 	// BannerImageTable is the table that holds the banner_image relation/edge.
 	BannerImageTable = "cars"
 	// BannerImageInverseTable is the table name for the Media entity.
@@ -361,6 +370,20 @@ func ByDynoSessions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByExpensesCount orders the results by expenses count.
+func ByExpensesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newExpensesStep(), opts...)
+	}
+}
+
+// ByExpenses orders the results by expenses terms.
+func ByExpenses(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newExpensesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByBannerImageField orders the results by banner_image field.
 func ByBannerImageField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -435,6 +458,13 @@ func newDynoSessionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DynoSessionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, DynoSessionsTable, DynoSessionsColumn),
+	)
+}
+func newExpensesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ExpensesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ExpensesTable, ExpensesColumn),
 	)
 }
 func newBannerImageStep() *sqlgraph.Step {

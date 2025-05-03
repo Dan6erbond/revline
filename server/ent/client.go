@@ -23,6 +23,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -53,6 +54,8 @@ type Client struct {
 	DynoResult *DynoResultClient
 	// DynoSession is the client for interacting with the DynoSession builders.
 	DynoSession *DynoSessionClient
+	// Expense is the client for interacting with the Expense builders.
+	Expense *ExpenseClient
 	// FuelUp is the client for interacting with the FuelUp builders.
 	FuelUp *FuelUpClient
 	// Media is the client for interacting with the Media builders.
@@ -89,6 +92,7 @@ func (c *Client) init() {
 	c.DragSession = NewDragSessionClient(c.config)
 	c.DynoResult = NewDynoResultClient(c.config)
 	c.DynoSession = NewDynoSessionClient(c.config)
+	c.Expense = NewExpenseClient(c.config)
 	c.FuelUp = NewFuelUpClient(c.config)
 	c.Media = NewMediaClient(c.config)
 	c.OdometerReading = NewOdometerReadingClient(c.config)
@@ -197,6 +201,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		DragSession:     NewDragSessionClient(cfg),
 		DynoResult:      NewDynoResultClient(cfg),
 		DynoSession:     NewDynoSessionClient(cfg),
+		Expense:         NewExpenseClient(cfg),
 		FuelUp:          NewFuelUpClient(cfg),
 		Media:           NewMediaClient(cfg),
 		OdometerReading: NewOdometerReadingClient(cfg),
@@ -232,6 +237,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		DragSession:     NewDragSessionClient(cfg),
 		DynoResult:      NewDynoResultClient(cfg),
 		DynoSession:     NewDynoSessionClient(cfg),
+		Expense:         NewExpenseClient(cfg),
 		FuelUp:          NewFuelUpClient(cfg),
 		Media:           NewMediaClient(cfg),
 		OdometerReading: NewOdometerReadingClient(cfg),
@@ -271,8 +277,8 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Car, c.CheckoutSession, c.Document, c.DragResult, c.DragSession, c.DynoResult,
-		c.DynoSession, c.FuelUp, c.Media, c.OdometerReading, c.Profile, c.ServiceItem,
-		c.ServiceLog, c.ServiceSchedule, c.Subscription, c.User,
+		c.DynoSession, c.Expense, c.FuelUp, c.Media, c.OdometerReading, c.Profile,
+		c.ServiceItem, c.ServiceLog, c.ServiceSchedule, c.Subscription, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -283,8 +289,8 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Car, c.CheckoutSession, c.Document, c.DragResult, c.DragSession, c.DynoResult,
-		c.DynoSession, c.FuelUp, c.Media, c.OdometerReading, c.Profile, c.ServiceItem,
-		c.ServiceLog, c.ServiceSchedule, c.Subscription, c.User,
+		c.DynoSession, c.Expense, c.FuelUp, c.Media, c.OdometerReading, c.Profile,
+		c.ServiceItem, c.ServiceLog, c.ServiceSchedule, c.Subscription, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -307,6 +313,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.DynoResult.mutate(ctx, m)
 	case *DynoSessionMutation:
 		return c.DynoSession.mutate(ctx, m)
+	case *ExpenseMutation:
+		return c.Expense.mutate(ctx, m)
 	case *FuelUpMutation:
 		return c.FuelUp.mutate(ctx, m)
 	case *MediaMutation:
@@ -591,6 +599,22 @@ func (c *CarClient) QueryDynoSessions(ca *Car) *DynoSessionQuery {
 			sqlgraph.From(car.Table, car.FieldID, id),
 			sqlgraph.To(dynosession.Table, dynosession.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, car.DynoSessionsTable, car.DynoSessionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryExpenses queries the expenses edge of a Car.
+func (c *CarClient) QueryExpenses(ca *Car) *ExpenseQuery {
+	query := (&ExpenseClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ca.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, id),
+			sqlgraph.To(expense.Table, expense.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.ExpensesTable, car.ExpensesColumn),
 		)
 		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
 		return fromV, nil
@@ -1581,6 +1605,187 @@ func (c *DynoSessionClient) mutate(ctx context.Context, m *DynoSessionMutation) 
 	}
 }
 
+// ExpenseClient is a client for the Expense schema.
+type ExpenseClient struct {
+	config
+}
+
+// NewExpenseClient returns a client for the Expense from the given config.
+func NewExpenseClient(c config) *ExpenseClient {
+	return &ExpenseClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `expense.Hooks(f(g(h())))`.
+func (c *ExpenseClient) Use(hooks ...Hook) {
+	c.hooks.Expense = append(c.hooks.Expense, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `expense.Intercept(f(g(h())))`.
+func (c *ExpenseClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Expense = append(c.inters.Expense, interceptors...)
+}
+
+// Create returns a builder for creating a Expense entity.
+func (c *ExpenseClient) Create() *ExpenseCreate {
+	mutation := newExpenseMutation(c.config, OpCreate)
+	return &ExpenseCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Expense entities.
+func (c *ExpenseClient) CreateBulk(builders ...*ExpenseCreate) *ExpenseCreateBulk {
+	return &ExpenseCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ExpenseClient) MapCreateBulk(slice any, setFunc func(*ExpenseCreate, int)) *ExpenseCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ExpenseCreateBulk{err: fmt.Errorf("calling to ExpenseClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ExpenseCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ExpenseCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Expense.
+func (c *ExpenseClient) Update() *ExpenseUpdate {
+	mutation := newExpenseMutation(c.config, OpUpdate)
+	return &ExpenseUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ExpenseClient) UpdateOne(e *Expense) *ExpenseUpdateOne {
+	mutation := newExpenseMutation(c.config, OpUpdateOne, withExpense(e))
+	return &ExpenseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ExpenseClient) UpdateOneID(id uuid.UUID) *ExpenseUpdateOne {
+	mutation := newExpenseMutation(c.config, OpUpdateOne, withExpenseID(id))
+	return &ExpenseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Expense.
+func (c *ExpenseClient) Delete() *ExpenseDelete {
+	mutation := newExpenseMutation(c.config, OpDelete)
+	return &ExpenseDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ExpenseClient) DeleteOne(e *Expense) *ExpenseDeleteOne {
+	return c.DeleteOneID(e.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ExpenseClient) DeleteOneID(id uuid.UUID) *ExpenseDeleteOne {
+	builder := c.Delete().Where(expense.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ExpenseDeleteOne{builder}
+}
+
+// Query returns a query builder for Expense.
+func (c *ExpenseClient) Query() *ExpenseQuery {
+	return &ExpenseQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeExpense},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Expense entity by its id.
+func (c *ExpenseClient) Get(ctx context.Context, id uuid.UUID) (*Expense, error) {
+	return c.Query().Where(expense.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ExpenseClient) GetX(ctx context.Context, id uuid.UUID) *Expense {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryCar queries the car edge of a Expense.
+func (c *ExpenseClient) QueryCar(e *Expense) *CarQuery {
+	query := (&CarClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(expense.Table, expense.FieldID, id),
+			sqlgraph.To(car.Table, car.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, expense.CarTable, expense.CarColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFuelUp queries the fuel_up edge of a Expense.
+func (c *ExpenseClient) QueryFuelUp(e *Expense) *FuelUpQuery {
+	query := (&FuelUpClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(expense.Table, expense.FieldID, id),
+			sqlgraph.To(fuelup.Table, fuelup.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, expense.FuelUpTable, expense.FuelUpColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryServiceLog queries the service_log edge of a Expense.
+func (c *ExpenseClient) QueryServiceLog(e *Expense) *ServiceLogQuery {
+	query := (&ServiceLogClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(expense.Table, expense.FieldID, id),
+			sqlgraph.To(servicelog.Table, servicelog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, expense.ServiceLogTable, expense.ServiceLogColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ExpenseClient) Hooks() []Hook {
+	return c.hooks.Expense
+}
+
+// Interceptors returns the client interceptors.
+func (c *ExpenseClient) Interceptors() []Interceptor {
+	return c.inters.Expense
+}
+
+func (c *ExpenseClient) mutate(ctx context.Context, m *ExpenseMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ExpenseCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ExpenseUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ExpenseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ExpenseDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Expense mutation op: %q", m.Op())
+	}
+}
+
 // FuelUpClient is a client for the FuelUp schema.
 type FuelUpClient struct {
 	config
@@ -1714,6 +1919,22 @@ func (c *FuelUpClient) QueryOdometerReading(fu *FuelUp) *OdometerReadingQuery {
 			sqlgraph.From(fuelup.Table, fuelup.FieldID, id),
 			sqlgraph.To(odometerreading.Table, odometerreading.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, fuelup.OdometerReadingTable, fuelup.OdometerReadingColumn),
+		)
+		fromV = sqlgraph.Neighbors(fu.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryExpense queries the expense edge of a FuelUp.
+func (c *FuelUpClient) QueryExpense(fu *FuelUp) *ExpenseQuery {
+	query := (&ExpenseClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := fu.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(fuelup.Table, fuelup.FieldID, id),
+			sqlgraph.To(expense.Table, expense.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, fuelup.ExpenseTable, fuelup.ExpenseColumn),
 		)
 		fromV = sqlgraph.Neighbors(fu.driver.Dialect(), step)
 		return fromV, nil
@@ -2578,6 +2799,22 @@ func (c *ServiceLogClient) QueryOdometerReading(sl *ServiceLog) *OdometerReading
 	return query
 }
 
+// QueryExpense queries the expense edge of a ServiceLog.
+func (c *ServiceLogClient) QueryExpense(sl *ServiceLog) *ExpenseQuery {
+	query := (&ExpenseClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servicelog.Table, servicelog.FieldID, id),
+			sqlgraph.To(expense.Table, expense.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, servicelog.ExpenseTable, servicelog.ExpenseColumn),
+		)
+		fromV = sqlgraph.Neighbors(sl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ServiceLogClient) Hooks() []Hook {
 	return c.hooks.ServiceLog
@@ -3150,12 +3387,12 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 type (
 	hooks struct {
 		Car, CheckoutSession, Document, DragResult, DragSession, DynoResult,
-		DynoSession, FuelUp, Media, OdometerReading, Profile, ServiceItem, ServiceLog,
-		ServiceSchedule, Subscription, User []ent.Hook
+		DynoSession, Expense, FuelUp, Media, OdometerReading, Profile, ServiceItem,
+		ServiceLog, ServiceSchedule, Subscription, User []ent.Hook
 	}
 	inters struct {
 		Car, CheckoutSession, Document, DragResult, DragSession, DynoResult,
-		DynoSession, FuelUp, Media, OdometerReading, Profile, ServiceItem, ServiceLog,
-		ServiceSchedule, Subscription, User []ent.Interceptor
+		DynoSession, Expense, FuelUp, Media, OdometerReading, Profile, ServiceItem,
+		ServiceLog, ServiceSchedule, Subscription, User []ent.Interceptor
 	}
 )

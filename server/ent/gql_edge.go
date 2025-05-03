@@ -124,6 +124,18 @@ func (c *Car) DynoSessions(ctx context.Context) (result []*DynoSession, err erro
 	return result, err
 }
 
+func (c *Car) Expenses(ctx context.Context) (result []*Expense, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = c.NamedExpenses(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = c.Edges.ExpensesOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = c.QueryExpenses().All(ctx)
+	}
+	return result, err
+}
+
 func (c *Car) BannerImage(ctx context.Context) (*Media, error) {
 	result, err := c.Edges.BannerImageOrErr()
 	if IsNotLoaded(err) {
@@ -212,6 +224,30 @@ func (ds *DynoSession) Results(ctx context.Context) (result []*DynoResult, err e
 	return result, err
 }
 
+func (e *Expense) Car(ctx context.Context) (*Car, error) {
+	result, err := e.Edges.CarOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryCar().Only(ctx)
+	}
+	return result, err
+}
+
+func (e *Expense) FuelUp(ctx context.Context) (*FuelUp, error) {
+	result, err := e.Edges.FuelUpOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryFuelUp().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (e *Expense) ServiceLog(ctx context.Context) (*ServiceLog, error) {
+	result, err := e.Edges.ServiceLogOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryServiceLog().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (fu *FuelUp) Car(ctx context.Context) (*Car, error) {
 	result, err := fu.Edges.CarOrErr()
 	if IsNotLoaded(err) {
@@ -224,6 +260,14 @@ func (fu *FuelUp) OdometerReading(ctx context.Context) (*OdometerReading, error)
 	result, err := fu.Edges.OdometerReadingOrErr()
 	if IsNotLoaded(err) {
 		result, err = fu.QueryOdometerReading().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (fu *FuelUp) Expense(ctx context.Context) (*Expense, error) {
+	result, err := fu.Edges.ExpenseOrErr()
+	if IsNotLoaded(err) {
+		result, err = fu.QueryExpense().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }
@@ -332,6 +376,14 @@ func (sl *ServiceLog) OdometerReading(ctx context.Context) (*OdometerReading, er
 	result, err := sl.Edges.OdometerReadingOrErr()
 	if IsNotLoaded(err) {
 		result, err = sl.QueryOdometerReading().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (sl *ServiceLog) Expense(ctx context.Context) (*Expense, error) {
+	result, err := sl.Edges.ExpenseOrErr()
+	if IsNotLoaded(err) {
+		result, err = sl.QueryExpense().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }

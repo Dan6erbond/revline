@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Dan6erbond/revline/ent/dragresult"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/google/uuid"
@@ -31,6 +32,7 @@ type CreateCarInput struct {
 	MediumIDs          []uuid.UUID
 	DocumentIDs        []uuid.UUID
 	DynoSessionIDs     []uuid.UUID
+	ExpenseIDs         []uuid.UUID
 	BannerImageID      *uuid.UUID
 }
 
@@ -88,6 +90,9 @@ func (i *CreateCarInput) Mutate(m *CarMutation) {
 	if v := i.DynoSessionIDs; len(v) > 0 {
 		m.AddDynoSessionIDs(v...)
 	}
+	if v := i.ExpenseIDs; len(v) > 0 {
+		m.AddExpenseIDs(v...)
+	}
 	if v := i.BannerImageID; v != nil {
 		m.SetBannerImageID(*v)
 	}
@@ -142,6 +147,9 @@ type UpdateCarInput struct {
 	ClearDynoSessions        bool
 	AddDynoSessionIDs        []uuid.UUID
 	RemoveDynoSessionIDs     []uuid.UUID
+	ClearExpenses            bool
+	AddExpenseIDs            []uuid.UUID
+	RemoveExpenseIDs         []uuid.UUID
 	ClearBannerImage         bool
 	BannerImageID            *uuid.UUID
 }
@@ -270,6 +278,15 @@ func (i *UpdateCarInput) Mutate(m *CarMutation) {
 	}
 	if v := i.RemoveDynoSessionIDs; len(v) > 0 {
 		m.RemoveDynoSessionIDs(v...)
+	}
+	if i.ClearExpenses {
+		m.ClearExpenses()
+	}
+	if v := i.AddExpenseIDs; len(v) > 0 {
+		m.AddExpenseIDs(v...)
+	}
+	if v := i.RemoveExpenseIDs; len(v) > 0 {
+		m.RemoveExpenseIDs(v...)
 	}
 	if i.ClearBannerImage {
 		m.ClearBannerImage()
@@ -679,6 +696,112 @@ func (c *DynoSessionUpdateOne) SetInput(i UpdateDynoSessionInput) *DynoSessionUp
 	return c
 }
 
+// CreateExpenseInput represents a mutation input for creating expenses.
+type CreateExpenseInput struct {
+	CreateTime   *time.Time
+	UpdateTime   *time.Time
+	OccurredAt   time.Time
+	Type         expense.Type
+	Amount       float64
+	Notes        *string
+	CarID        uuid.UUID
+	FuelUpID     *uuid.UUID
+	ServiceLogID *uuid.UUID
+}
+
+// Mutate applies the CreateExpenseInput on the ExpenseMutation builder.
+func (i *CreateExpenseInput) Mutate(m *ExpenseMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	m.SetOccurredAt(i.OccurredAt)
+	m.SetType(i.Type)
+	m.SetAmount(i.Amount)
+	if v := i.Notes; v != nil {
+		m.SetNotes(*v)
+	}
+	m.SetCarID(i.CarID)
+	if v := i.FuelUpID; v != nil {
+		m.SetFuelUpID(*v)
+	}
+	if v := i.ServiceLogID; v != nil {
+		m.SetServiceLogID(*v)
+	}
+}
+
+// SetInput applies the change-set in the CreateExpenseInput on the ExpenseCreate builder.
+func (c *ExpenseCreate) SetInput(i CreateExpenseInput) *ExpenseCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateExpenseInput represents a mutation input for updating expenses.
+type UpdateExpenseInput struct {
+	UpdateTime      *time.Time
+	OccurredAt      *time.Time
+	Type            *expense.Type
+	Amount          *float64
+	ClearNotes      bool
+	Notes           *string
+	CarID           *uuid.UUID
+	ClearFuelUp     bool
+	FuelUpID        *uuid.UUID
+	ClearServiceLog bool
+	ServiceLogID    *uuid.UUID
+}
+
+// Mutate applies the UpdateExpenseInput on the ExpenseMutation builder.
+func (i *UpdateExpenseInput) Mutate(m *ExpenseMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.OccurredAt; v != nil {
+		m.SetOccurredAt(*v)
+	}
+	if v := i.Type; v != nil {
+		m.SetType(*v)
+	}
+	if v := i.Amount; v != nil {
+		m.SetAmount(*v)
+	}
+	if i.ClearNotes {
+		m.ClearNotes()
+	}
+	if v := i.Notes; v != nil {
+		m.SetNotes(*v)
+	}
+	if v := i.CarID; v != nil {
+		m.SetCarID(*v)
+	}
+	if i.ClearFuelUp {
+		m.ClearFuelUp()
+	}
+	if v := i.FuelUpID; v != nil {
+		m.SetFuelUpID(*v)
+	}
+	if i.ClearServiceLog {
+		m.ClearServiceLog()
+	}
+	if v := i.ServiceLogID; v != nil {
+		m.SetServiceLogID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateExpenseInput on the ExpenseUpdate builder.
+func (c *ExpenseUpdate) SetInput(i UpdateExpenseInput) *ExpenseUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateExpenseInput on the ExpenseUpdateOne builder.
+func (c *ExpenseUpdateOne) SetInput(i UpdateExpenseInput) *ExpenseUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
 // CreateFuelUpInput represents a mutation input for creating fuelups.
 type CreateFuelUpInput struct {
 	CreateTime        *time.Time
@@ -686,13 +809,13 @@ type CreateFuelUpInput struct {
 	OccurredAt        time.Time
 	Station           string
 	AmountLiters      float64
-	Cost              float64
 	FuelCategory      fuelup.FuelCategory
 	OctaneRating      *fuelup.OctaneRating
 	IsFullTank        *bool
 	Notes             *string
 	CarID             uuid.UUID
 	OdometerReadingID *uuid.UUID
+	ExpenseID         *uuid.UUID
 }
 
 // Mutate applies the CreateFuelUpInput on the FuelUpMutation builder.
@@ -706,7 +829,6 @@ func (i *CreateFuelUpInput) Mutate(m *FuelUpMutation) {
 	m.SetOccurredAt(i.OccurredAt)
 	m.SetStation(i.Station)
 	m.SetAmountLiters(i.AmountLiters)
-	m.SetCost(i.Cost)
 	m.SetFuelCategory(i.FuelCategory)
 	if v := i.OctaneRating; v != nil {
 		m.SetOctaneRating(*v)
@@ -720,6 +842,9 @@ func (i *CreateFuelUpInput) Mutate(m *FuelUpMutation) {
 	m.SetCarID(i.CarID)
 	if v := i.OdometerReadingID; v != nil {
 		m.SetOdometerReadingID(*v)
+	}
+	if v := i.ExpenseID; v != nil {
+		m.SetExpenseID(*v)
 	}
 }
 
@@ -735,7 +860,6 @@ type UpdateFuelUpInput struct {
 	OccurredAt           *time.Time
 	Station              *string
 	AmountLiters         *float64
-	Cost                 *float64
 	FuelCategory         *fuelup.FuelCategory
 	ClearOctaneRating    bool
 	OctaneRating         *fuelup.OctaneRating
@@ -745,6 +869,8 @@ type UpdateFuelUpInput struct {
 	CarID                *uuid.UUID
 	ClearOdometerReading bool
 	OdometerReadingID    *uuid.UUID
+	ClearExpense         bool
+	ExpenseID            *uuid.UUID
 }
 
 // Mutate applies the UpdateFuelUpInput on the FuelUpMutation builder.
@@ -760,9 +886,6 @@ func (i *UpdateFuelUpInput) Mutate(m *FuelUpMutation) {
 	}
 	if v := i.AmountLiters; v != nil {
 		m.SetAmountLiters(*v)
-	}
-	if v := i.Cost; v != nil {
-		m.SetCost(*v)
 	}
 	if v := i.FuelCategory; v != nil {
 		m.SetFuelCategory(*v)
@@ -790,6 +913,12 @@ func (i *UpdateFuelUpInput) Mutate(m *FuelUpMutation) {
 	}
 	if v := i.OdometerReadingID; v != nil {
 		m.SetOdometerReadingID(*v)
+	}
+	if i.ClearExpense {
+		m.ClearExpense()
+	}
+	if v := i.ExpenseID; v != nil {
+		m.SetExpenseID(*v)
 	}
 }
 
@@ -1304,6 +1433,7 @@ type CreateServiceLogInput struct {
 	ItemIDs           []uuid.UUID
 	ScheduleID        *uuid.UUID
 	OdometerReadingID *uuid.UUID
+	ExpenseID         *uuid.UUID
 }
 
 // Mutate applies the CreateServiceLogInput on the ServiceLogMutation builder.
@@ -1331,6 +1461,9 @@ func (i *CreateServiceLogInput) Mutate(m *ServiceLogMutation) {
 	if v := i.OdometerReadingID; v != nil {
 		m.SetOdometerReadingID(*v)
 	}
+	if v := i.ExpenseID; v != nil {
+		m.SetExpenseID(*v)
+	}
 }
 
 // SetInput applies the change-set in the CreateServiceLogInput on the ServiceLogCreate builder.
@@ -1355,6 +1488,8 @@ type UpdateServiceLogInput struct {
 	ScheduleID           *uuid.UUID
 	ClearOdometerReading bool
 	OdometerReadingID    *uuid.UUID
+	ClearExpense         bool
+	ExpenseID            *uuid.UUID
 }
 
 // Mutate applies the UpdateServiceLogInput on the ServiceLogMutation builder.
@@ -1400,6 +1535,12 @@ func (i *UpdateServiceLogInput) Mutate(m *ServiceLogMutation) {
 	}
 	if v := i.OdometerReadingID; v != nil {
 		m.SetOdometerReadingID(*v)
+	}
+	if i.ClearExpense {
+		m.ClearExpense()
+	}
+	if v := i.ExpenseID; v != nil {
+		m.SetExpenseID(*v)
 	}
 }
 

@@ -81,11 +81,6 @@ func AmountLiters(v float64) predicate.FuelUp {
 	return predicate.FuelUp(sql.FieldEQ(FieldAmountLiters, v))
 }
 
-// Cost applies equality check predicate on the "cost" field. It's identical to CostEQ.
-func Cost(v float64) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldEQ(FieldCost, v))
-}
-
 // IsFullTank applies equality check predicate on the "is_full_tank" field. It's identical to IsFullTankEQ.
 func IsFullTank(v bool) predicate.FuelUp {
 	return predicate.FuelUp(sql.FieldEQ(FieldIsFullTank, v))
@@ -321,46 +316,6 @@ func AmountLitersLTE(v float64) predicate.FuelUp {
 	return predicate.FuelUp(sql.FieldLTE(FieldAmountLiters, v))
 }
 
-// CostEQ applies the EQ predicate on the "cost" field.
-func CostEQ(v float64) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldEQ(FieldCost, v))
-}
-
-// CostNEQ applies the NEQ predicate on the "cost" field.
-func CostNEQ(v float64) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldNEQ(FieldCost, v))
-}
-
-// CostIn applies the In predicate on the "cost" field.
-func CostIn(vs ...float64) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldIn(FieldCost, vs...))
-}
-
-// CostNotIn applies the NotIn predicate on the "cost" field.
-func CostNotIn(vs ...float64) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldNotIn(FieldCost, vs...))
-}
-
-// CostGT applies the GT predicate on the "cost" field.
-func CostGT(v float64) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldGT(FieldCost, v))
-}
-
-// CostGTE applies the GTE predicate on the "cost" field.
-func CostGTE(v float64) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldGTE(FieldCost, v))
-}
-
-// CostLT applies the LT predicate on the "cost" field.
-func CostLT(v float64) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldLT(FieldCost, v))
-}
-
-// CostLTE applies the LTE predicate on the "cost" field.
-func CostLTE(v float64) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldLTE(FieldCost, v))
-}
-
 // FuelCategoryEQ applies the EQ predicate on the "fuel_category" field.
 func FuelCategoryEQ(v FuelCategory) predicate.FuelUp {
 	return predicate.FuelUp(sql.FieldEQ(FieldFuelCategory, v))
@@ -534,6 +489,29 @@ func HasOdometerReading() predicate.FuelUp {
 func HasOdometerReadingWith(preds ...predicate.OdometerReading) predicate.FuelUp {
 	return predicate.FuelUp(func(s *sql.Selector) {
 		step := newOdometerReadingStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasExpense applies the HasEdge predicate on the "expense" edge.
+func HasExpense() predicate.FuelUp {
+	return predicate.FuelUp(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, ExpenseTable, ExpenseColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasExpenseWith applies the HasEdge predicate on the "expense" edge with a given conditions (other predicates).
+func HasExpenseWith(preds ...predicate.Expense) predicate.FuelUp {
+	return predicate.FuelUp(func(s *sql.Selector) {
+		step := newExpenseStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

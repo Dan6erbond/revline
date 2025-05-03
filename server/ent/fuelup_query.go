@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -12,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -27,6 +29,7 @@ type FuelUpQuery struct {
 	predicates          []predicate.FuelUp
 	withCar             *CarQuery
 	withOdometerReading *OdometerReadingQuery
+	withExpense         *ExpenseQuery
 	withFKs             bool
 	modifiers           []func(*sql.Selector)
 	loadTotal           []func(context.Context, []*FuelUp) error
@@ -103,6 +106,28 @@ func (fuq *FuelUpQuery) QueryOdometerReading() *OdometerReadingQuery {
 			sqlgraph.From(fuelup.Table, fuelup.FieldID, selector),
 			sqlgraph.To(odometerreading.Table, odometerreading.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, fuelup.OdometerReadingTable, fuelup.OdometerReadingColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(fuq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryExpense chains the current query on the "expense" edge.
+func (fuq *FuelUpQuery) QueryExpense() *ExpenseQuery {
+	query := (&ExpenseClient{config: fuq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := fuq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := fuq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(fuelup.Table, fuelup.FieldID, selector),
+			sqlgraph.To(expense.Table, expense.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, fuelup.ExpenseTable, fuelup.ExpenseColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fuq.driver.Dialect(), step)
 		return fromU, nil
@@ -304,6 +329,7 @@ func (fuq *FuelUpQuery) Clone() *FuelUpQuery {
 		predicates:          append([]predicate.FuelUp{}, fuq.predicates...),
 		withCar:             fuq.withCar.Clone(),
 		withOdometerReading: fuq.withOdometerReading.Clone(),
+		withExpense:         fuq.withExpense.Clone(),
 		// clone intermediate query.
 		sql:  fuq.sql.Clone(),
 		path: fuq.path,
@@ -329,6 +355,17 @@ func (fuq *FuelUpQuery) WithOdometerReading(opts ...func(*OdometerReadingQuery))
 		opt(query)
 	}
 	fuq.withOdometerReading = query
+	return fuq
+}
+
+// WithExpense tells the query-builder to eager-load the nodes that are connected to
+// the "expense" edge. The optional arguments are used to configure the query builder of the edge.
+func (fuq *FuelUpQuery) WithExpense(opts ...func(*ExpenseQuery)) *FuelUpQuery {
+	query := (&ExpenseClient{config: fuq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	fuq.withExpense = query
 	return fuq
 }
 
@@ -411,9 +448,10 @@ func (fuq *FuelUpQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Fuel
 		nodes       = []*FuelUp{}
 		withFKs     = fuq.withFKs
 		_spec       = fuq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			fuq.withCar != nil,
 			fuq.withOdometerReading != nil,
+			fuq.withExpense != nil,
 		}
 	)
 	if fuq.withCar != nil || fuq.withOdometerReading != nil {
@@ -452,6 +490,12 @@ func (fuq *FuelUpQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Fuel
 	if query := fuq.withOdometerReading; query != nil {
 		if err := fuq.loadOdometerReading(ctx, query, nodes, nil,
 			func(n *FuelUp, e *OdometerReading) { n.Edges.OdometerReading = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := fuq.withExpense; query != nil {
+		if err := fuq.loadExpense(ctx, query, nodes, nil,
+			func(n *FuelUp, e *Expense) { n.Edges.Expense = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -524,6 +568,34 @@ func (fuq *FuelUpQuery) loadOdometerReading(ctx context.Context, query *Odometer
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (fuq *FuelUpQuery) loadExpense(ctx context.Context, query *ExpenseQuery, nodes []*FuelUp, init func(*FuelUp), assign func(*FuelUp, *Expense)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*FuelUp)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.Expense(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(fuelup.ExpenseColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.fuel_up_expense
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "fuel_up_expense" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "fuel_up_expense" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

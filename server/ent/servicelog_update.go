@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/Dan6erbond/revline/ent/serviceitem"
@@ -157,6 +158,25 @@ func (slu *ServiceLogUpdate) SetOdometerReading(o *OdometerReading) *ServiceLogU
 	return slu.SetOdometerReadingID(o.ID)
 }
 
+// SetExpenseID sets the "expense" edge to the Expense entity by ID.
+func (slu *ServiceLogUpdate) SetExpenseID(id uuid.UUID) *ServiceLogUpdate {
+	slu.mutation.SetExpenseID(id)
+	return slu
+}
+
+// SetNillableExpenseID sets the "expense" edge to the Expense entity by ID if the given value is not nil.
+func (slu *ServiceLogUpdate) SetNillableExpenseID(id *uuid.UUID) *ServiceLogUpdate {
+	if id != nil {
+		slu = slu.SetExpenseID(*id)
+	}
+	return slu
+}
+
+// SetExpense sets the "expense" edge to the Expense entity.
+func (slu *ServiceLogUpdate) SetExpense(e *Expense) *ServiceLogUpdate {
+	return slu.SetExpenseID(e.ID)
+}
+
 // Mutation returns the ServiceLogMutation object of the builder.
 func (slu *ServiceLogUpdate) Mutation() *ServiceLogMutation {
 	return slu.mutation
@@ -198,6 +218,12 @@ func (slu *ServiceLogUpdate) ClearSchedule() *ServiceLogUpdate {
 // ClearOdometerReading clears the "odometer_reading" edge to the OdometerReading entity.
 func (slu *ServiceLogUpdate) ClearOdometerReading() *ServiceLogUpdate {
 	slu.mutation.ClearOdometerReading()
+	return slu
+}
+
+// ClearExpense clears the "expense" edge to the Expense entity.
+func (slu *ServiceLogUpdate) ClearExpense() *ServiceLogUpdate {
+	slu.mutation.ClearExpense()
 	return slu
 }
 
@@ -407,6 +433,35 @@ func (slu *ServiceLogUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if slu.mutation.ExpenseCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   servicelog.ExpenseTable,
+			Columns: []string{servicelog.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := slu.mutation.ExpenseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   servicelog.ExpenseTable,
+			Columns: []string{servicelog.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, slu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{servicelog.Label}
@@ -551,6 +606,25 @@ func (sluo *ServiceLogUpdateOne) SetOdometerReading(o *OdometerReading) *Service
 	return sluo.SetOdometerReadingID(o.ID)
 }
 
+// SetExpenseID sets the "expense" edge to the Expense entity by ID.
+func (sluo *ServiceLogUpdateOne) SetExpenseID(id uuid.UUID) *ServiceLogUpdateOne {
+	sluo.mutation.SetExpenseID(id)
+	return sluo
+}
+
+// SetNillableExpenseID sets the "expense" edge to the Expense entity by ID if the given value is not nil.
+func (sluo *ServiceLogUpdateOne) SetNillableExpenseID(id *uuid.UUID) *ServiceLogUpdateOne {
+	if id != nil {
+		sluo = sluo.SetExpenseID(*id)
+	}
+	return sluo
+}
+
+// SetExpense sets the "expense" edge to the Expense entity.
+func (sluo *ServiceLogUpdateOne) SetExpense(e *Expense) *ServiceLogUpdateOne {
+	return sluo.SetExpenseID(e.ID)
+}
+
 // Mutation returns the ServiceLogMutation object of the builder.
 func (sluo *ServiceLogUpdateOne) Mutation() *ServiceLogMutation {
 	return sluo.mutation
@@ -592,6 +666,12 @@ func (sluo *ServiceLogUpdateOne) ClearSchedule() *ServiceLogUpdateOne {
 // ClearOdometerReading clears the "odometer_reading" edge to the OdometerReading entity.
 func (sluo *ServiceLogUpdateOne) ClearOdometerReading() *ServiceLogUpdateOne {
 	sluo.mutation.ClearOdometerReading()
+	return sluo
+}
+
+// ClearExpense clears the "expense" edge to the Expense entity.
+func (sluo *ServiceLogUpdateOne) ClearExpense() *ServiceLogUpdateOne {
+	sluo.mutation.ClearExpense()
 	return sluo
 }
 
@@ -824,6 +904,35 @@ func (sluo *ServiceLogUpdateOne) sqlSave(ctx context.Context) (_node *ServiceLog
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(odometerreading.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if sluo.mutation.ExpenseCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   servicelog.ExpenseTable,
+			Columns: []string{servicelog.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := sluo.mutation.ExpenseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   servicelog.ExpenseTable,
+			Columns: []string{servicelog.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

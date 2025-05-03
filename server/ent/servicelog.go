@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
@@ -50,11 +51,13 @@ type ServiceLogEdges struct {
 	Schedule *ServiceSchedule `json:"schedule,omitempty"`
 	// OdometerReading holds the value of the odometer_reading edge.
 	OdometerReading *OdometerReading `json:"odometer_reading,omitempty"`
+	// Expense holds the value of the expense edge.
+	Expense *Expense `json:"expense,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 	// totalCount holds the count of the edges above.
-	totalCount [4]map[string]int
+	totalCount [5]map[string]int
 
 	namedItems map[string][]*ServiceItem
 }
@@ -99,6 +102,17 @@ func (e ServiceLogEdges) OdometerReadingOrErr() (*OdometerReading, error) {
 		return nil, &NotFoundError{label: odometerreading.Label}
 	}
 	return nil, &NotLoadedError{edge: "odometer_reading"}
+}
+
+// ExpenseOrErr returns the Expense value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ServiceLogEdges) ExpenseOrErr() (*Expense, error) {
+	if e.Expense != nil {
+		return e.Expense, nil
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: expense.Label}
+	}
+	return nil, &NotLoadedError{edge: "expense"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -223,6 +237,11 @@ func (sl *ServiceLog) QuerySchedule() *ServiceScheduleQuery {
 // QueryOdometerReading queries the "odometer_reading" edge of the ServiceLog entity.
 func (sl *ServiceLog) QueryOdometerReading() *OdometerReadingQuery {
 	return NewServiceLogClient(sl.config).QueryOdometerReading(sl)
+}
+
+// QueryExpense queries the "expense" edge of the ServiceLog entity.
+func (sl *ServiceLog) QueryExpense() *ExpenseQuery {
+	return NewServiceLogClient(sl.config).QueryExpense(sl)
 }
 
 // Update returns a builder for updating this ServiceLog.

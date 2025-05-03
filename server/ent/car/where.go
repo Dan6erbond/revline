@@ -821,6 +821,29 @@ func HasDynoSessionsWith(preds ...predicate.DynoSession) predicate.Car {
 	})
 }
 
+// HasExpenses applies the HasEdge predicate on the "expenses" edge.
+func HasExpenses() predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ExpensesTable, ExpensesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasExpensesWith applies the HasEdge predicate on the "expenses" edge with a given conditions (other predicates).
+func HasExpensesWith(preds ...predicate.Expense) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := newExpensesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasBannerImage applies the HasEdge predicate on the "banner_image" edge.
 func HasBannerImage() predicate.Car {
 	return predicate.Car(func(s *sql.Selector) {

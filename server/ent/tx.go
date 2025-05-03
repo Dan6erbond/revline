@@ -26,6 +26,8 @@ type Tx struct {
 	DynoResult *DynoResultClient
 	// DynoSession is the client for interacting with the DynoSession builders.
 	DynoSession *DynoSessionClient
+	// Expense is the client for interacting with the Expense builders.
+	Expense *ExpenseClient
 	// FuelUp is the client for interacting with the FuelUp builders.
 	FuelUp *FuelUpClient
 	// Media is the client for interacting with the Media builders.
@@ -182,6 +184,7 @@ func (tx *Tx) init() {
 	tx.DragSession = NewDragSessionClient(tx.config)
 	tx.DynoResult = NewDynoResultClient(tx.config)
 	tx.DynoSession = NewDynoSessionClient(tx.config)
+	tx.Expense = NewExpenseClient(tx.config)
 	tx.FuelUp = NewFuelUpClient(tx.config)
 	tx.Media = NewMediaClient(tx.config)
 	tx.OdometerReading = NewOdometerReadingClient(tx.config)

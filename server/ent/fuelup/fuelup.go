@@ -28,8 +28,6 @@ const (
 	FieldStation = "station"
 	// FieldAmountLiters holds the string denoting the amount_liters field in the database.
 	FieldAmountLiters = "amount_liters"
-	// FieldCost holds the string denoting the cost field in the database.
-	FieldCost = "cost"
 	// FieldFuelCategory holds the string denoting the fuel_category field in the database.
 	FieldFuelCategory = "fuel_category"
 	// FieldOctaneRating holds the string denoting the octane_rating field in the database.
@@ -42,6 +40,8 @@ const (
 	EdgeCar = "car"
 	// EdgeOdometerReading holds the string denoting the odometer_reading edge name in mutations.
 	EdgeOdometerReading = "odometer_reading"
+	// EdgeExpense holds the string denoting the expense edge name in mutations.
+	EdgeExpense = "expense"
 	// Table holds the table name of the fuelup in the database.
 	Table = "fuel_ups"
 	// CarTable is the table that holds the car relation/edge.
@@ -58,6 +58,13 @@ const (
 	OdometerReadingInverseTable = "odometer_readings"
 	// OdometerReadingColumn is the table column denoting the odometer_reading relation/edge.
 	OdometerReadingColumn = "odometer_reading_fuel_up"
+	// ExpenseTable is the table that holds the expense relation/edge.
+	ExpenseTable = "expenses"
+	// ExpenseInverseTable is the table name for the Expense entity.
+	// It exists in this package in order to avoid circular dependency with the "expense" package.
+	ExpenseInverseTable = "expenses"
+	// ExpenseColumn is the table column denoting the expense relation/edge.
+	ExpenseColumn = "fuel_up_expense"
 )
 
 // Columns holds all SQL columns for fuelup fields.
@@ -68,7 +75,6 @@ var Columns = []string{
 	FieldOccurredAt,
 	FieldStation,
 	FieldAmountLiters,
-	FieldCost,
 	FieldFuelCategory,
 	FieldOctaneRating,
 	FieldIsFullTank,
@@ -196,11 +202,6 @@ func ByAmountLiters(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAmountLiters, opts...).ToFunc()
 }
 
-// ByCost orders the results by the cost field.
-func ByCost(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCost, opts...).ToFunc()
-}
-
 // ByFuelCategory orders the results by the fuel_category field.
 func ByFuelCategory(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFuelCategory, opts...).ToFunc()
@@ -234,6 +235,13 @@ func ByOdometerReadingField(field string, opts ...sql.OrderTermOption) OrderOpti
 		sqlgraph.OrderByNeighborTerms(s, newOdometerReadingStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByExpenseField orders the results by expense field.
+func ByExpenseField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newExpenseStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newCarStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -246,6 +254,13 @@ func newOdometerReadingStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OdometerReadingInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, true, OdometerReadingTable, OdometerReadingColumn),
+	)
+}
+func newExpenseStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ExpenseInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, ExpenseTable, ExpenseColumn),
 	)
 }
 

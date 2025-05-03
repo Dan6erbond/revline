@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/google/uuid"
@@ -30,8 +31,6 @@ type FuelUp struct {
 	Station string `json:"station,omitempty"`
 	// AmountLiters holds the value of the "amount_liters" field.
 	AmountLiters float64 `json:"amount_liters,omitempty"`
-	// Cost holds the value of the "cost" field.
-	Cost float64 `json:"cost,omitempty"`
 	// FuelCategory holds the value of the "fuel_category" field.
 	FuelCategory fuelup.FuelCategory `json:"fuel_category,omitempty"`
 	// OctaneRating holds the value of the "octane_rating" field.
@@ -54,11 +53,13 @@ type FuelUpEdges struct {
 	Car *Car `json:"car,omitempty"`
 	// OdometerReading holds the value of the odometer_reading edge.
 	OdometerReading *OdometerReading `json:"odometer_reading,omitempty"`
+	// Expense holds the value of the expense edge.
+	Expense *Expense `json:"expense,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 	// totalCount holds the count of the edges above.
-	totalCount [2]map[string]int
+	totalCount [3]map[string]int
 }
 
 // CarOrErr returns the Car value or an error if the edge
@@ -83,6 +84,17 @@ func (e FuelUpEdges) OdometerReadingOrErr() (*OdometerReading, error) {
 	return nil, &NotLoadedError{edge: "odometer_reading"}
 }
 
+// ExpenseOrErr returns the Expense value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e FuelUpEdges) ExpenseOrErr() (*Expense, error) {
+	if e.Expense != nil {
+		return e.Expense, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: expense.Label}
+	}
+	return nil, &NotLoadedError{edge: "expense"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*FuelUp) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -90,7 +102,7 @@ func (*FuelUp) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case fuelup.FieldIsFullTank:
 			values[i] = new(sql.NullBool)
-		case fuelup.FieldAmountLiters, fuelup.FieldCost:
+		case fuelup.FieldAmountLiters:
 			values[i] = new(sql.NullFloat64)
 		case fuelup.FieldStation, fuelup.FieldFuelCategory, fuelup.FieldOctaneRating, fuelup.FieldNotes:
 			values[i] = new(sql.NullString)
@@ -152,12 +164,6 @@ func (fu *FuelUp) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field amount_liters", values[i])
 			} else if value.Valid {
 				fu.AmountLiters = value.Float64
-			}
-		case fuelup.FieldCost:
-			if value, ok := values[i].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field cost", values[i])
-			} else if value.Valid {
-				fu.Cost = value.Float64
 			}
 		case fuelup.FieldFuelCategory:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -222,6 +228,11 @@ func (fu *FuelUp) QueryOdometerReading() *OdometerReadingQuery {
 	return NewFuelUpClient(fu.config).QueryOdometerReading(fu)
 }
 
+// QueryExpense queries the "expense" edge of the FuelUp entity.
+func (fu *FuelUp) QueryExpense() *ExpenseQuery {
+	return NewFuelUpClient(fu.config).QueryExpense(fu)
+}
+
 // Update returns a builder for updating this FuelUp.
 // Note that you need to call FuelUp.Unwrap() before calling this method if this FuelUp
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -259,9 +270,6 @@ func (fu *FuelUp) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("amount_liters=")
 	builder.WriteString(fmt.Sprintf("%v", fu.AmountLiters))
-	builder.WriteString(", ")
-	builder.WriteString("cost=")
-	builder.WriteString(fmt.Sprintf("%v", fu.Cost))
 	builder.WriteString(", ")
 	builder.WriteString("fuel_category=")
 	builder.WriteString(fmt.Sprintf("%v", fu.FuelCategory))

@@ -185,6 +185,45 @@ var (
 			},
 		},
 	}
+	// ExpensesColumns holds the columns for the "expenses" table.
+	ExpensesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "occurred_at", Type: field.TypeTime},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"fuel", "service", "other"}},
+		{Name: "amount", Type: field.TypeFloat64},
+		{Name: "notes", Type: field.TypeString, Nullable: true},
+		{Name: "car_expenses", Type: field.TypeUUID},
+		{Name: "fuel_up_expense", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "service_log_expense", Type: field.TypeUUID, Unique: true, Nullable: true},
+	}
+	// ExpensesTable holds the schema information for the "expenses" table.
+	ExpensesTable = &schema.Table{
+		Name:       "expenses",
+		Columns:    ExpensesColumns,
+		PrimaryKey: []*schema.Column{ExpensesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "expenses_cars_expenses",
+				Columns:    []*schema.Column{ExpensesColumns[7]},
+				RefColumns: []*schema.Column{CarsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "expenses_fuel_ups_expense",
+				Columns:    []*schema.Column{ExpensesColumns[8]},
+				RefColumns: []*schema.Column{FuelUpsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "expenses_service_logs_expense",
+				Columns:    []*schema.Column{ExpensesColumns[9]},
+				RefColumns: []*schema.Column{ServiceLogsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// FuelUpsColumns holds the columns for the "fuel_ups" table.
 	FuelUpsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -193,7 +232,6 @@ var (
 		{Name: "occurred_at", Type: field.TypeTime},
 		{Name: "station", Type: field.TypeString},
 		{Name: "amount_liters", Type: field.TypeFloat64},
-		{Name: "cost", Type: field.TypeFloat64},
 		{Name: "fuel_category", Type: field.TypeEnum, Enums: []string{"petrol", "diesel", "electric", "lpg", "other"}, SchemaType: map[string]string{"postgres": "fuel_category"}},
 		{Name: "octane_rating", Type: field.TypeEnum, Nullable: true, Enums: []string{"ron91", "ron95", "ron98", "ron100", "e85", "race"}, SchemaType: map[string]string{"postgres": "octane_rating"}},
 		{Name: "is_full_tank", Type: field.TypeBool, Default: true},
@@ -209,13 +247,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "fuel_ups_cars_fuel_ups",
-				Columns:    []*schema.Column{FuelUpsColumns[11]},
+				Columns:    []*schema.Column{FuelUpsColumns[10]},
 				RefColumns: []*schema.Column{CarsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "fuel_ups_odometer_readings_fuel_up",
-				Columns:    []*schema.Column{FuelUpsColumns[12]},
+				Columns:    []*schema.Column{FuelUpsColumns[11]},
 				RefColumns: []*schema.Column{OdometerReadingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -498,6 +536,7 @@ var (
 		DragSessionsTable,
 		DynoResultsTable,
 		DynoSessionsTable,
+		ExpensesTable,
 		FuelUpsTable,
 		MediaTable,
 		OdometerReadingsTable,
@@ -521,6 +560,9 @@ func init() {
 	DragSessionsTable.ForeignKeys[0].RefTable = CarsTable
 	DynoResultsTable.ForeignKeys[0].RefTable = DynoSessionsTable
 	DynoSessionsTable.ForeignKeys[0].RefTable = CarsTable
+	ExpensesTable.ForeignKeys[0].RefTable = CarsTable
+	ExpensesTable.ForeignKeys[1].RefTable = FuelUpsTable
+	ExpensesTable.ForeignKeys[2].RefTable = ServiceLogsTable
 	FuelUpsTable.ForeignKeys[0].RefTable = CarsTable
 	FuelUpsTable.ForeignKeys[1].RefTable = OdometerReadingsTable
 	MediaTable.ForeignKeys[0].RefTable = CarsTable

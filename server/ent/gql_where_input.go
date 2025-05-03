@@ -14,6 +14,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -198,6 +199,10 @@ type CarWhereInput struct {
 	// "dyno_sessions" edge predicates.
 	HasDynoSessions     *bool                    `json:"hasDynoSessions,omitempty"`
 	HasDynoSessionsWith []*DynoSessionWhereInput `json:"hasDynoSessionsWith,omitempty"`
+
+	// "expenses" edge predicates.
+	HasExpenses     *bool                `json:"hasExpenses,omitempty"`
+	HasExpensesWith []*ExpenseWhereInput `json:"hasExpensesWith,omitempty"`
 
 	// "banner_image" edge predicates.
 	HasBannerImage     *bool              `json:"hasBannerImage,omitempty"`
@@ -776,6 +781,24 @@ func (i *CarWhereInput) P() (predicate.Car, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, car.HasDynoSessionsWith(with...))
+	}
+	if i.HasExpenses != nil {
+		p := car.HasExpenses()
+		if !*i.HasExpenses {
+			p = car.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasExpensesWith) > 0 {
+		with := make([]predicate.Expense, 0, len(i.HasExpensesWith))
+		for _, w := range i.HasExpensesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasExpensesWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, car.HasExpensesWith(with...))
 	}
 	if i.HasBannerImage != nil {
 		p := car.HasBannerImage()
@@ -2815,6 +2838,412 @@ func (i *DynoSessionWhereInput) P() (predicate.DynoSession, error) {
 	}
 }
 
+// ExpenseWhereInput represents a where input for filtering Expense queries.
+type ExpenseWhereInput struct {
+	Predicates []predicate.Expense  `json:"-"`
+	Not        *ExpenseWhereInput   `json:"not,omitempty"`
+	Or         []*ExpenseWhereInput `json:"or,omitempty"`
+	And        []*ExpenseWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *uuid.UUID  `json:"id,omitempty"`
+	IDNEQ   *uuid.UUID  `json:"idNEQ,omitempty"`
+	IDIn    []uuid.UUID `json:"idIn,omitempty"`
+	IDNotIn []uuid.UUID `json:"idNotIn,omitempty"`
+	IDGT    *uuid.UUID  `json:"idGT,omitempty"`
+	IDGTE   *uuid.UUID  `json:"idGTE,omitempty"`
+	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
+	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
+
+	// "create_time" field predicates.
+	CreateTime      *time.Time  `json:"createTime,omitempty"`
+	CreateTimeNEQ   *time.Time  `json:"createTimeNEQ,omitempty"`
+	CreateTimeIn    []time.Time `json:"createTimeIn,omitempty"`
+	CreateTimeNotIn []time.Time `json:"createTimeNotIn,omitempty"`
+	CreateTimeGT    *time.Time  `json:"createTimeGT,omitempty"`
+	CreateTimeGTE   *time.Time  `json:"createTimeGTE,omitempty"`
+	CreateTimeLT    *time.Time  `json:"createTimeLT,omitempty"`
+	CreateTimeLTE   *time.Time  `json:"createTimeLTE,omitempty"`
+
+	// "update_time" field predicates.
+	UpdateTime      *time.Time  `json:"updateTime,omitempty"`
+	UpdateTimeNEQ   *time.Time  `json:"updateTimeNEQ,omitempty"`
+	UpdateTimeIn    []time.Time `json:"updateTimeIn,omitempty"`
+	UpdateTimeNotIn []time.Time `json:"updateTimeNotIn,omitempty"`
+	UpdateTimeGT    *time.Time  `json:"updateTimeGT,omitempty"`
+	UpdateTimeGTE   *time.Time  `json:"updateTimeGTE,omitempty"`
+	UpdateTimeLT    *time.Time  `json:"updateTimeLT,omitempty"`
+	UpdateTimeLTE   *time.Time  `json:"updateTimeLTE,omitempty"`
+
+	// "occurred_at" field predicates.
+	OccurredAt      *time.Time  `json:"occurredAt,omitempty"`
+	OccurredAtNEQ   *time.Time  `json:"occurredAtNEQ,omitempty"`
+	OccurredAtIn    []time.Time `json:"occurredAtIn,omitempty"`
+	OccurredAtNotIn []time.Time `json:"occurredAtNotIn,omitempty"`
+	OccurredAtGT    *time.Time  `json:"occurredAtGT,omitempty"`
+	OccurredAtGTE   *time.Time  `json:"occurredAtGTE,omitempty"`
+	OccurredAtLT    *time.Time  `json:"occurredAtLT,omitempty"`
+	OccurredAtLTE   *time.Time  `json:"occurredAtLTE,omitempty"`
+
+	// "type" field predicates.
+	Type      *expense.Type  `json:"type,omitempty"`
+	TypeNEQ   *expense.Type  `json:"typeNEQ,omitempty"`
+	TypeIn    []expense.Type `json:"typeIn,omitempty"`
+	TypeNotIn []expense.Type `json:"typeNotIn,omitempty"`
+
+	// "amount" field predicates.
+	Amount      *float64  `json:"amount,omitempty"`
+	AmountNEQ   *float64  `json:"amountNEQ,omitempty"`
+	AmountIn    []float64 `json:"amountIn,omitempty"`
+	AmountNotIn []float64 `json:"amountNotIn,omitempty"`
+	AmountGT    *float64  `json:"amountGT,omitempty"`
+	AmountGTE   *float64  `json:"amountGTE,omitempty"`
+	AmountLT    *float64  `json:"amountLT,omitempty"`
+	AmountLTE   *float64  `json:"amountLTE,omitempty"`
+
+	// "notes" field predicates.
+	Notes             *string  `json:"notes,omitempty"`
+	NotesNEQ          *string  `json:"notesNEQ,omitempty"`
+	NotesIn           []string `json:"notesIn,omitempty"`
+	NotesNotIn        []string `json:"notesNotIn,omitempty"`
+	NotesGT           *string  `json:"notesGT,omitempty"`
+	NotesGTE          *string  `json:"notesGTE,omitempty"`
+	NotesLT           *string  `json:"notesLT,omitempty"`
+	NotesLTE          *string  `json:"notesLTE,omitempty"`
+	NotesContains     *string  `json:"notesContains,omitempty"`
+	NotesHasPrefix    *string  `json:"notesHasPrefix,omitempty"`
+	NotesHasSuffix    *string  `json:"notesHasSuffix,omitempty"`
+	NotesIsNil        bool     `json:"notesIsNil,omitempty"`
+	NotesNotNil       bool     `json:"notesNotNil,omitempty"`
+	NotesEqualFold    *string  `json:"notesEqualFold,omitempty"`
+	NotesContainsFold *string  `json:"notesContainsFold,omitempty"`
+
+	// "car" edge predicates.
+	HasCar     *bool            `json:"hasCar,omitempty"`
+	HasCarWith []*CarWhereInput `json:"hasCarWith,omitempty"`
+
+	// "fuel_up" edge predicates.
+	HasFuelUp     *bool               `json:"hasFuelUp,omitempty"`
+	HasFuelUpWith []*FuelUpWhereInput `json:"hasFuelUpWith,omitempty"`
+
+	// "service_log" edge predicates.
+	HasServiceLog     *bool                   `json:"hasServiceLog,omitempty"`
+	HasServiceLogWith []*ServiceLogWhereInput `json:"hasServiceLogWith,omitempty"`
+}
+
+// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
+func (i *ExpenseWhereInput) AddPredicates(predicates ...predicate.Expense) {
+	i.Predicates = append(i.Predicates, predicates...)
+}
+
+// Filter applies the ExpenseWhereInput filter on the ExpenseQuery builder.
+func (i *ExpenseWhereInput) Filter(q *ExpenseQuery) (*ExpenseQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		if err == ErrEmptyExpenseWhereInput {
+			return q, nil
+		}
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// ErrEmptyExpenseWhereInput is returned in case the ExpenseWhereInput is empty.
+var ErrEmptyExpenseWhereInput = errors.New("ent: empty predicate ExpenseWhereInput")
+
+// P returns a predicate for filtering expenses.
+// An error is returned if the input is empty or invalid.
+func (i *ExpenseWhereInput) P() (predicate.Expense, error) {
+	var predicates []predicate.Expense
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'not'", err)
+		}
+		predicates = append(predicates, expense.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'or'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.Expense, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'or'", err)
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, expense.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'and'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.Expense, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'and'", err)
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, expense.And(and...))
+	}
+	predicates = append(predicates, i.Predicates...)
+	if i.ID != nil {
+		predicates = append(predicates, expense.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, expense.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, expense.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, expense.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, expense.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, expense.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, expense.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, expense.IDLTE(*i.IDLTE))
+	}
+	if i.CreateTime != nil {
+		predicates = append(predicates, expense.CreateTimeEQ(*i.CreateTime))
+	}
+	if i.CreateTimeNEQ != nil {
+		predicates = append(predicates, expense.CreateTimeNEQ(*i.CreateTimeNEQ))
+	}
+	if len(i.CreateTimeIn) > 0 {
+		predicates = append(predicates, expense.CreateTimeIn(i.CreateTimeIn...))
+	}
+	if len(i.CreateTimeNotIn) > 0 {
+		predicates = append(predicates, expense.CreateTimeNotIn(i.CreateTimeNotIn...))
+	}
+	if i.CreateTimeGT != nil {
+		predicates = append(predicates, expense.CreateTimeGT(*i.CreateTimeGT))
+	}
+	if i.CreateTimeGTE != nil {
+		predicates = append(predicates, expense.CreateTimeGTE(*i.CreateTimeGTE))
+	}
+	if i.CreateTimeLT != nil {
+		predicates = append(predicates, expense.CreateTimeLT(*i.CreateTimeLT))
+	}
+	if i.CreateTimeLTE != nil {
+		predicates = append(predicates, expense.CreateTimeLTE(*i.CreateTimeLTE))
+	}
+	if i.UpdateTime != nil {
+		predicates = append(predicates, expense.UpdateTimeEQ(*i.UpdateTime))
+	}
+	if i.UpdateTimeNEQ != nil {
+		predicates = append(predicates, expense.UpdateTimeNEQ(*i.UpdateTimeNEQ))
+	}
+	if len(i.UpdateTimeIn) > 0 {
+		predicates = append(predicates, expense.UpdateTimeIn(i.UpdateTimeIn...))
+	}
+	if len(i.UpdateTimeNotIn) > 0 {
+		predicates = append(predicates, expense.UpdateTimeNotIn(i.UpdateTimeNotIn...))
+	}
+	if i.UpdateTimeGT != nil {
+		predicates = append(predicates, expense.UpdateTimeGT(*i.UpdateTimeGT))
+	}
+	if i.UpdateTimeGTE != nil {
+		predicates = append(predicates, expense.UpdateTimeGTE(*i.UpdateTimeGTE))
+	}
+	if i.UpdateTimeLT != nil {
+		predicates = append(predicates, expense.UpdateTimeLT(*i.UpdateTimeLT))
+	}
+	if i.UpdateTimeLTE != nil {
+		predicates = append(predicates, expense.UpdateTimeLTE(*i.UpdateTimeLTE))
+	}
+	if i.OccurredAt != nil {
+		predicates = append(predicates, expense.OccurredAtEQ(*i.OccurredAt))
+	}
+	if i.OccurredAtNEQ != nil {
+		predicates = append(predicates, expense.OccurredAtNEQ(*i.OccurredAtNEQ))
+	}
+	if len(i.OccurredAtIn) > 0 {
+		predicates = append(predicates, expense.OccurredAtIn(i.OccurredAtIn...))
+	}
+	if len(i.OccurredAtNotIn) > 0 {
+		predicates = append(predicates, expense.OccurredAtNotIn(i.OccurredAtNotIn...))
+	}
+	if i.OccurredAtGT != nil {
+		predicates = append(predicates, expense.OccurredAtGT(*i.OccurredAtGT))
+	}
+	if i.OccurredAtGTE != nil {
+		predicates = append(predicates, expense.OccurredAtGTE(*i.OccurredAtGTE))
+	}
+	if i.OccurredAtLT != nil {
+		predicates = append(predicates, expense.OccurredAtLT(*i.OccurredAtLT))
+	}
+	if i.OccurredAtLTE != nil {
+		predicates = append(predicates, expense.OccurredAtLTE(*i.OccurredAtLTE))
+	}
+	if i.Type != nil {
+		predicates = append(predicates, expense.TypeEQ(*i.Type))
+	}
+	if i.TypeNEQ != nil {
+		predicates = append(predicates, expense.TypeNEQ(*i.TypeNEQ))
+	}
+	if len(i.TypeIn) > 0 {
+		predicates = append(predicates, expense.TypeIn(i.TypeIn...))
+	}
+	if len(i.TypeNotIn) > 0 {
+		predicates = append(predicates, expense.TypeNotIn(i.TypeNotIn...))
+	}
+	if i.Amount != nil {
+		predicates = append(predicates, expense.AmountEQ(*i.Amount))
+	}
+	if i.AmountNEQ != nil {
+		predicates = append(predicates, expense.AmountNEQ(*i.AmountNEQ))
+	}
+	if len(i.AmountIn) > 0 {
+		predicates = append(predicates, expense.AmountIn(i.AmountIn...))
+	}
+	if len(i.AmountNotIn) > 0 {
+		predicates = append(predicates, expense.AmountNotIn(i.AmountNotIn...))
+	}
+	if i.AmountGT != nil {
+		predicates = append(predicates, expense.AmountGT(*i.AmountGT))
+	}
+	if i.AmountGTE != nil {
+		predicates = append(predicates, expense.AmountGTE(*i.AmountGTE))
+	}
+	if i.AmountLT != nil {
+		predicates = append(predicates, expense.AmountLT(*i.AmountLT))
+	}
+	if i.AmountLTE != nil {
+		predicates = append(predicates, expense.AmountLTE(*i.AmountLTE))
+	}
+	if i.Notes != nil {
+		predicates = append(predicates, expense.NotesEQ(*i.Notes))
+	}
+	if i.NotesNEQ != nil {
+		predicates = append(predicates, expense.NotesNEQ(*i.NotesNEQ))
+	}
+	if len(i.NotesIn) > 0 {
+		predicates = append(predicates, expense.NotesIn(i.NotesIn...))
+	}
+	if len(i.NotesNotIn) > 0 {
+		predicates = append(predicates, expense.NotesNotIn(i.NotesNotIn...))
+	}
+	if i.NotesGT != nil {
+		predicates = append(predicates, expense.NotesGT(*i.NotesGT))
+	}
+	if i.NotesGTE != nil {
+		predicates = append(predicates, expense.NotesGTE(*i.NotesGTE))
+	}
+	if i.NotesLT != nil {
+		predicates = append(predicates, expense.NotesLT(*i.NotesLT))
+	}
+	if i.NotesLTE != nil {
+		predicates = append(predicates, expense.NotesLTE(*i.NotesLTE))
+	}
+	if i.NotesContains != nil {
+		predicates = append(predicates, expense.NotesContains(*i.NotesContains))
+	}
+	if i.NotesHasPrefix != nil {
+		predicates = append(predicates, expense.NotesHasPrefix(*i.NotesHasPrefix))
+	}
+	if i.NotesHasSuffix != nil {
+		predicates = append(predicates, expense.NotesHasSuffix(*i.NotesHasSuffix))
+	}
+	if i.NotesIsNil {
+		predicates = append(predicates, expense.NotesIsNil())
+	}
+	if i.NotesNotNil {
+		predicates = append(predicates, expense.NotesNotNil())
+	}
+	if i.NotesEqualFold != nil {
+		predicates = append(predicates, expense.NotesEqualFold(*i.NotesEqualFold))
+	}
+	if i.NotesContainsFold != nil {
+		predicates = append(predicates, expense.NotesContainsFold(*i.NotesContainsFold))
+	}
+
+	if i.HasCar != nil {
+		p := expense.HasCar()
+		if !*i.HasCar {
+			p = expense.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasCarWith) > 0 {
+		with := make([]predicate.Car, 0, len(i.HasCarWith))
+		for _, w := range i.HasCarWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasCarWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, expense.HasCarWith(with...))
+	}
+	if i.HasFuelUp != nil {
+		p := expense.HasFuelUp()
+		if !*i.HasFuelUp {
+			p = expense.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasFuelUpWith) > 0 {
+		with := make([]predicate.FuelUp, 0, len(i.HasFuelUpWith))
+		for _, w := range i.HasFuelUpWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasFuelUpWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, expense.HasFuelUpWith(with...))
+	}
+	if i.HasServiceLog != nil {
+		p := expense.HasServiceLog()
+		if !*i.HasServiceLog {
+			p = expense.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasServiceLogWith) > 0 {
+		with := make([]predicate.ServiceLog, 0, len(i.HasServiceLogWith))
+		for _, w := range i.HasServiceLogWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasServiceLogWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, expense.HasServiceLogWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, ErrEmptyExpenseWhereInput
+	case 1:
+		return predicates[0], nil
+	default:
+		return expense.And(predicates...), nil
+	}
+}
+
 // FuelUpWhereInput represents a where input for filtering FuelUp queries.
 type FuelUpWhereInput struct {
 	Predicates []predicate.FuelUp  `json:"-"`
@@ -2887,16 +3316,6 @@ type FuelUpWhereInput struct {
 	AmountLitersLT    *float64  `json:"amountLitersLT,omitempty"`
 	AmountLitersLTE   *float64  `json:"amountLitersLTE,omitempty"`
 
-	// "cost" field predicates.
-	Cost      *float64  `json:"cost,omitempty"`
-	CostNEQ   *float64  `json:"costNEQ,omitempty"`
-	CostIn    []float64 `json:"costIn,omitempty"`
-	CostNotIn []float64 `json:"costNotIn,omitempty"`
-	CostGT    *float64  `json:"costGT,omitempty"`
-	CostGTE   *float64  `json:"costGTE,omitempty"`
-	CostLT    *float64  `json:"costLT,omitempty"`
-	CostLTE   *float64  `json:"costLTE,omitempty"`
-
 	// "fuel_category" field predicates.
 	FuelCategory      *fuelup.FuelCategory  `json:"fuelCategory,omitempty"`
 	FuelCategoryNEQ   *fuelup.FuelCategory  `json:"fuelCategoryNEQ,omitempty"`
@@ -2939,6 +3358,10 @@ type FuelUpWhereInput struct {
 	// "odometer_reading" edge predicates.
 	HasOdometerReading     *bool                        `json:"hasOdometerReading,omitempty"`
 	HasOdometerReadingWith []*OdometerReadingWhereInput `json:"hasOdometerReadingWith,omitempty"`
+
+	// "expense" edge predicates.
+	HasExpense     *bool                `json:"hasExpense,omitempty"`
+	HasExpenseWith []*ExpenseWhereInput `json:"hasExpenseWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -3171,30 +3594,6 @@ func (i *FuelUpWhereInput) P() (predicate.FuelUp, error) {
 	if i.AmountLitersLTE != nil {
 		predicates = append(predicates, fuelup.AmountLitersLTE(*i.AmountLitersLTE))
 	}
-	if i.Cost != nil {
-		predicates = append(predicates, fuelup.CostEQ(*i.Cost))
-	}
-	if i.CostNEQ != nil {
-		predicates = append(predicates, fuelup.CostNEQ(*i.CostNEQ))
-	}
-	if len(i.CostIn) > 0 {
-		predicates = append(predicates, fuelup.CostIn(i.CostIn...))
-	}
-	if len(i.CostNotIn) > 0 {
-		predicates = append(predicates, fuelup.CostNotIn(i.CostNotIn...))
-	}
-	if i.CostGT != nil {
-		predicates = append(predicates, fuelup.CostGT(*i.CostGT))
-	}
-	if i.CostGTE != nil {
-		predicates = append(predicates, fuelup.CostGTE(*i.CostGTE))
-	}
-	if i.CostLT != nil {
-		predicates = append(predicates, fuelup.CostLT(*i.CostLT))
-	}
-	if i.CostLTE != nil {
-		predicates = append(predicates, fuelup.CostLTE(*i.CostLTE))
-	}
 	if i.FuelCategory != nil {
 		predicates = append(predicates, fuelup.FuelCategoryEQ(*i.FuelCategory))
 	}
@@ -3312,6 +3711,24 @@ func (i *FuelUpWhereInput) P() (predicate.FuelUp, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, fuelup.HasOdometerReadingWith(with...))
+	}
+	if i.HasExpense != nil {
+		p := fuelup.HasExpense()
+		if !*i.HasExpense {
+			p = fuelup.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasExpenseWith) > 0 {
+		with := make([]predicate.Expense, 0, len(i.HasExpenseWith))
+		for _, w := range i.HasExpenseWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasExpenseWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, fuelup.HasExpenseWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -5157,6 +5574,10 @@ type ServiceLogWhereInput struct {
 	// "odometer_reading" edge predicates.
 	HasOdometerReading     *bool                        `json:"hasOdometerReading,omitempty"`
 	HasOdometerReadingWith []*OdometerReadingWhereInput `json:"hasOdometerReadingWith,omitempty"`
+
+	// "expense" edge predicates.
+	HasExpense     *bool                `json:"hasExpense,omitempty"`
+	HasExpenseWith []*ExpenseWhereInput `json:"hasExpenseWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -5488,6 +5909,24 @@ func (i *ServiceLogWhereInput) P() (predicate.ServiceLog, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, servicelog.HasOdometerReadingWith(with...))
+	}
+	if i.HasExpense != nil {
+		p := servicelog.HasExpense()
+		if !*i.HasExpense {
+			p = servicelog.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasExpenseWith) > 0 {
+		with := make([]predicate.Expense, 0, len(i.HasExpenseWith))
+		for _, w := range i.HasExpenseWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasExpenseWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, servicelog.HasExpenseWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

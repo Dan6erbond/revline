@@ -18,6 +18,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -47,6 +48,7 @@ const (
 	TypeDragSession     = "DragSession"
 	TypeDynoResult      = "DynoResult"
 	TypeDynoSession     = "DynoSession"
+	TypeExpense         = "Expense"
 	TypeFuelUp          = "FuelUp"
 	TypeMedia           = "Media"
 	TypeOdometerReading = "OdometerReading"
@@ -103,6 +105,9 @@ type CarMutation struct {
 	dyno_sessions            map[uuid.UUID]struct{}
 	removeddyno_sessions     map[uuid.UUID]struct{}
 	cleareddyno_sessions     bool
+	expenses                 map[uuid.UUID]struct{}
+	removedexpenses          map[uuid.UUID]struct{}
+	clearedexpenses          bool
 	banner_image             *uuid.UUID
 	clearedbanner_image      bool
 	done                     bool
@@ -1113,6 +1118,60 @@ func (m *CarMutation) ResetDynoSessions() {
 	m.removeddyno_sessions = nil
 }
 
+// AddExpenseIDs adds the "expenses" edge to the Expense entity by ids.
+func (m *CarMutation) AddExpenseIDs(ids ...uuid.UUID) {
+	if m.expenses == nil {
+		m.expenses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.expenses[ids[i]] = struct{}{}
+	}
+}
+
+// ClearExpenses clears the "expenses" edge to the Expense entity.
+func (m *CarMutation) ClearExpenses() {
+	m.clearedexpenses = true
+}
+
+// ExpensesCleared reports if the "expenses" edge to the Expense entity was cleared.
+func (m *CarMutation) ExpensesCleared() bool {
+	return m.clearedexpenses
+}
+
+// RemoveExpenseIDs removes the "expenses" edge to the Expense entity by IDs.
+func (m *CarMutation) RemoveExpenseIDs(ids ...uuid.UUID) {
+	if m.removedexpenses == nil {
+		m.removedexpenses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.expenses, ids[i])
+		m.removedexpenses[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedExpenses returns the removed IDs of the "expenses" edge to the Expense entity.
+func (m *CarMutation) RemovedExpensesIDs() (ids []uuid.UUID) {
+	for id := range m.removedexpenses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ExpensesIDs returns the "expenses" edge IDs in the mutation.
+func (m *CarMutation) ExpensesIDs() (ids []uuid.UUID) {
+	for id := range m.expenses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetExpenses resets all changes to the "expenses" edge.
+func (m *CarMutation) ResetExpenses() {
+	m.expenses = nil
+	m.clearedexpenses = false
+	m.removedexpenses = nil
+}
+
 // SetBannerImageID sets the "banner_image" edge to the Media entity by id.
 func (m *CarMutation) SetBannerImageID(id uuid.UUID) {
 	m.banner_image = &id
@@ -1452,7 +1511,7 @@ func (m *CarMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *CarMutation) AddedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 12)
 	if m.owner != nil {
 		edges = append(edges, car.EdgeOwner)
 	}
@@ -1482,6 +1541,9 @@ func (m *CarMutation) AddedEdges() []string {
 	}
 	if m.dyno_sessions != nil {
 		edges = append(edges, car.EdgeDynoSessions)
+	}
+	if m.expenses != nil {
+		edges = append(edges, car.EdgeExpenses)
 	}
 	if m.banner_image != nil {
 		edges = append(edges, car.EdgeBannerImage)
@@ -1551,6 +1613,12 @@ func (m *CarMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case car.EdgeExpenses:
+		ids := make([]ent.Value, 0, len(m.expenses))
+		for id := range m.expenses {
+			ids = append(ids, id)
+		}
+		return ids
 	case car.EdgeBannerImage:
 		if id := m.banner_image; id != nil {
 			return []ent.Value{*id}
@@ -1561,7 +1629,7 @@ func (m *CarMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *CarMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 12)
 	if m.removeddrag_sessions != nil {
 		edges = append(edges, car.EdgeDragSessions)
 	}
@@ -1588,6 +1656,9 @@ func (m *CarMutation) RemovedEdges() []string {
 	}
 	if m.removeddyno_sessions != nil {
 		edges = append(edges, car.EdgeDynoSessions)
+	}
+	if m.removedexpenses != nil {
+		edges = append(edges, car.EdgeExpenses)
 	}
 	return edges
 }
@@ -1650,13 +1721,19 @@ func (m *CarMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case car.EdgeExpenses:
+		ids := make([]ent.Value, 0, len(m.removedexpenses))
+		for id := range m.removedexpenses {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *CarMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 12)
 	if m.clearedowner {
 		edges = append(edges, car.EdgeOwner)
 	}
@@ -1686,6 +1763,9 @@ func (m *CarMutation) ClearedEdges() []string {
 	}
 	if m.cleareddyno_sessions {
 		edges = append(edges, car.EdgeDynoSessions)
+	}
+	if m.clearedexpenses {
+		edges = append(edges, car.EdgeExpenses)
 	}
 	if m.clearedbanner_image {
 		edges = append(edges, car.EdgeBannerImage)
@@ -1717,6 +1797,8 @@ func (m *CarMutation) EdgeCleared(name string) bool {
 		return m.cleareddocuments
 	case car.EdgeDynoSessions:
 		return m.cleareddyno_sessions
+	case car.EdgeExpenses:
+		return m.clearedexpenses
 	case car.EdgeBannerImage:
 		return m.clearedbanner_image
 	}
@@ -1770,6 +1852,9 @@ func (m *CarMutation) ResetEdge(name string) error {
 		return nil
 	case car.EdgeDynoSessions:
 		m.ResetDynoSessions()
+		return nil
+	case car.EdgeExpenses:
+		m.ResetExpenses()
 		return nil
 	case car.EdgeBannerImage:
 		m.ResetBannerImage()
@@ -5915,6 +6000,851 @@ func (m *DynoSessionMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown DynoSession edge %s", name)
 }
 
+// ExpenseMutation represents an operation that mutates the Expense nodes in the graph.
+type ExpenseMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *uuid.UUID
+	create_time        *time.Time
+	update_time        *time.Time
+	occurred_at        *time.Time
+	_type              *expense.Type
+	amount             *float64
+	addamount          *float64
+	notes              *string
+	clearedFields      map[string]struct{}
+	car                *uuid.UUID
+	clearedcar         bool
+	fuel_up            *uuid.UUID
+	clearedfuel_up     bool
+	service_log        *uuid.UUID
+	clearedservice_log bool
+	done               bool
+	oldValue           func(context.Context) (*Expense, error)
+	predicates         []predicate.Expense
+}
+
+var _ ent.Mutation = (*ExpenseMutation)(nil)
+
+// expenseOption allows management of the mutation configuration using functional options.
+type expenseOption func(*ExpenseMutation)
+
+// newExpenseMutation creates new mutation for the Expense entity.
+func newExpenseMutation(c config, op Op, opts ...expenseOption) *ExpenseMutation {
+	m := &ExpenseMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeExpense,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withExpenseID sets the ID field of the mutation.
+func withExpenseID(id uuid.UUID) expenseOption {
+	return func(m *ExpenseMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Expense
+		)
+		m.oldValue = func(ctx context.Context) (*Expense, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Expense.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withExpense sets the old Expense of the mutation.
+func withExpense(node *Expense) expenseOption {
+	return func(m *ExpenseMutation) {
+		m.oldValue = func(context.Context) (*Expense, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ExpenseMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ExpenseMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Expense entities.
+func (m *ExpenseMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ExpenseMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ExpenseMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Expense.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *ExpenseMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *ExpenseMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the Expense entity.
+// If the Expense object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ExpenseMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *ExpenseMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *ExpenseMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *ExpenseMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the Expense entity.
+// If the Expense object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ExpenseMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *ExpenseMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetOccurredAt sets the "occurred_at" field.
+func (m *ExpenseMutation) SetOccurredAt(t time.Time) {
+	m.occurred_at = &t
+}
+
+// OccurredAt returns the value of the "occurred_at" field in the mutation.
+func (m *ExpenseMutation) OccurredAt() (r time.Time, exists bool) {
+	v := m.occurred_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOccurredAt returns the old "occurred_at" field's value of the Expense entity.
+// If the Expense object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ExpenseMutation) OldOccurredAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOccurredAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOccurredAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOccurredAt: %w", err)
+	}
+	return oldValue.OccurredAt, nil
+}
+
+// ResetOccurredAt resets all changes to the "occurred_at" field.
+func (m *ExpenseMutation) ResetOccurredAt() {
+	m.occurred_at = nil
+}
+
+// SetType sets the "type" field.
+func (m *ExpenseMutation) SetType(e expense.Type) {
+	m._type = &e
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *ExpenseMutation) GetType() (r expense.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the Expense entity.
+// If the Expense object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ExpenseMutation) OldType(ctx context.Context) (v expense.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *ExpenseMutation) ResetType() {
+	m._type = nil
+}
+
+// SetAmount sets the "amount" field.
+func (m *ExpenseMutation) SetAmount(f float64) {
+	m.amount = &f
+	m.addamount = nil
+}
+
+// Amount returns the value of the "amount" field in the mutation.
+func (m *ExpenseMutation) Amount() (r float64, exists bool) {
+	v := m.amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAmount returns the old "amount" field's value of the Expense entity.
+// If the Expense object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ExpenseMutation) OldAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAmount: %w", err)
+	}
+	return oldValue.Amount, nil
+}
+
+// AddAmount adds f to the "amount" field.
+func (m *ExpenseMutation) AddAmount(f float64) {
+	if m.addamount != nil {
+		*m.addamount += f
+	} else {
+		m.addamount = &f
+	}
+}
+
+// AddedAmount returns the value that was added to the "amount" field in this mutation.
+func (m *ExpenseMutation) AddedAmount() (r float64, exists bool) {
+	v := m.addamount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAmount resets all changes to the "amount" field.
+func (m *ExpenseMutation) ResetAmount() {
+	m.amount = nil
+	m.addamount = nil
+}
+
+// SetNotes sets the "notes" field.
+func (m *ExpenseMutation) SetNotes(s string) {
+	m.notes = &s
+}
+
+// Notes returns the value of the "notes" field in the mutation.
+func (m *ExpenseMutation) Notes() (r string, exists bool) {
+	v := m.notes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotes returns the old "notes" field's value of the Expense entity.
+// If the Expense object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ExpenseMutation) OldNotes(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotes: %w", err)
+	}
+	return oldValue.Notes, nil
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (m *ExpenseMutation) ClearNotes() {
+	m.notes = nil
+	m.clearedFields[expense.FieldNotes] = struct{}{}
+}
+
+// NotesCleared returns if the "notes" field was cleared in this mutation.
+func (m *ExpenseMutation) NotesCleared() bool {
+	_, ok := m.clearedFields[expense.FieldNotes]
+	return ok
+}
+
+// ResetNotes resets all changes to the "notes" field.
+func (m *ExpenseMutation) ResetNotes() {
+	m.notes = nil
+	delete(m.clearedFields, expense.FieldNotes)
+}
+
+// SetCarID sets the "car" edge to the Car entity by id.
+func (m *ExpenseMutation) SetCarID(id uuid.UUID) {
+	m.car = &id
+}
+
+// ClearCar clears the "car" edge to the Car entity.
+func (m *ExpenseMutation) ClearCar() {
+	m.clearedcar = true
+}
+
+// CarCleared reports if the "car" edge to the Car entity was cleared.
+func (m *ExpenseMutation) CarCleared() bool {
+	return m.clearedcar
+}
+
+// CarID returns the "car" edge ID in the mutation.
+func (m *ExpenseMutation) CarID() (id uuid.UUID, exists bool) {
+	if m.car != nil {
+		return *m.car, true
+	}
+	return
+}
+
+// CarIDs returns the "car" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CarID instead. It exists only for internal usage by the builders.
+func (m *ExpenseMutation) CarIDs() (ids []uuid.UUID) {
+	if id := m.car; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCar resets all changes to the "car" edge.
+func (m *ExpenseMutation) ResetCar() {
+	m.car = nil
+	m.clearedcar = false
+}
+
+// SetFuelUpID sets the "fuel_up" edge to the FuelUp entity by id.
+func (m *ExpenseMutation) SetFuelUpID(id uuid.UUID) {
+	m.fuel_up = &id
+}
+
+// ClearFuelUp clears the "fuel_up" edge to the FuelUp entity.
+func (m *ExpenseMutation) ClearFuelUp() {
+	m.clearedfuel_up = true
+}
+
+// FuelUpCleared reports if the "fuel_up" edge to the FuelUp entity was cleared.
+func (m *ExpenseMutation) FuelUpCleared() bool {
+	return m.clearedfuel_up
+}
+
+// FuelUpID returns the "fuel_up" edge ID in the mutation.
+func (m *ExpenseMutation) FuelUpID() (id uuid.UUID, exists bool) {
+	if m.fuel_up != nil {
+		return *m.fuel_up, true
+	}
+	return
+}
+
+// FuelUpIDs returns the "fuel_up" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// FuelUpID instead. It exists only for internal usage by the builders.
+func (m *ExpenseMutation) FuelUpIDs() (ids []uuid.UUID) {
+	if id := m.fuel_up; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetFuelUp resets all changes to the "fuel_up" edge.
+func (m *ExpenseMutation) ResetFuelUp() {
+	m.fuel_up = nil
+	m.clearedfuel_up = false
+}
+
+// SetServiceLogID sets the "service_log" edge to the ServiceLog entity by id.
+func (m *ExpenseMutation) SetServiceLogID(id uuid.UUID) {
+	m.service_log = &id
+}
+
+// ClearServiceLog clears the "service_log" edge to the ServiceLog entity.
+func (m *ExpenseMutation) ClearServiceLog() {
+	m.clearedservice_log = true
+}
+
+// ServiceLogCleared reports if the "service_log" edge to the ServiceLog entity was cleared.
+func (m *ExpenseMutation) ServiceLogCleared() bool {
+	return m.clearedservice_log
+}
+
+// ServiceLogID returns the "service_log" edge ID in the mutation.
+func (m *ExpenseMutation) ServiceLogID() (id uuid.UUID, exists bool) {
+	if m.service_log != nil {
+		return *m.service_log, true
+	}
+	return
+}
+
+// ServiceLogIDs returns the "service_log" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ServiceLogID instead. It exists only for internal usage by the builders.
+func (m *ExpenseMutation) ServiceLogIDs() (ids []uuid.UUID) {
+	if id := m.service_log; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetServiceLog resets all changes to the "service_log" edge.
+func (m *ExpenseMutation) ResetServiceLog() {
+	m.service_log = nil
+	m.clearedservice_log = false
+}
+
+// Where appends a list predicates to the ExpenseMutation builder.
+func (m *ExpenseMutation) Where(ps ...predicate.Expense) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ExpenseMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ExpenseMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Expense, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ExpenseMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ExpenseMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Expense).
+func (m *ExpenseMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ExpenseMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.create_time != nil {
+		fields = append(fields, expense.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, expense.FieldUpdateTime)
+	}
+	if m.occurred_at != nil {
+		fields = append(fields, expense.FieldOccurredAt)
+	}
+	if m._type != nil {
+		fields = append(fields, expense.FieldType)
+	}
+	if m.amount != nil {
+		fields = append(fields, expense.FieldAmount)
+	}
+	if m.notes != nil {
+		fields = append(fields, expense.FieldNotes)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ExpenseMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case expense.FieldCreateTime:
+		return m.CreateTime()
+	case expense.FieldUpdateTime:
+		return m.UpdateTime()
+	case expense.FieldOccurredAt:
+		return m.OccurredAt()
+	case expense.FieldType:
+		return m.GetType()
+	case expense.FieldAmount:
+		return m.Amount()
+	case expense.FieldNotes:
+		return m.Notes()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ExpenseMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case expense.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case expense.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case expense.FieldOccurredAt:
+		return m.OldOccurredAt(ctx)
+	case expense.FieldType:
+		return m.OldType(ctx)
+	case expense.FieldAmount:
+		return m.OldAmount(ctx)
+	case expense.FieldNotes:
+		return m.OldNotes(ctx)
+	}
+	return nil, fmt.Errorf("unknown Expense field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ExpenseMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case expense.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case expense.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case expense.FieldOccurredAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOccurredAt(v)
+		return nil
+	case expense.FieldType:
+		v, ok := value.(expense.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case expense.FieldAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAmount(v)
+		return nil
+	case expense.FieldNotes:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotes(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Expense field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ExpenseMutation) AddedFields() []string {
+	var fields []string
+	if m.addamount != nil {
+		fields = append(fields, expense.FieldAmount)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ExpenseMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case expense.FieldAmount:
+		return m.AddedAmount()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ExpenseMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case expense.FieldAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAmount(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Expense numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ExpenseMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(expense.FieldNotes) {
+		fields = append(fields, expense.FieldNotes)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ExpenseMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ExpenseMutation) ClearField(name string) error {
+	switch name {
+	case expense.FieldNotes:
+		m.ClearNotes()
+		return nil
+	}
+	return fmt.Errorf("unknown Expense nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ExpenseMutation) ResetField(name string) error {
+	switch name {
+	case expense.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case expense.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case expense.FieldOccurredAt:
+		m.ResetOccurredAt()
+		return nil
+	case expense.FieldType:
+		m.ResetType()
+		return nil
+	case expense.FieldAmount:
+		m.ResetAmount()
+		return nil
+	case expense.FieldNotes:
+		m.ResetNotes()
+		return nil
+	}
+	return fmt.Errorf("unknown Expense field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ExpenseMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.car != nil {
+		edges = append(edges, expense.EdgeCar)
+	}
+	if m.fuel_up != nil {
+		edges = append(edges, expense.EdgeFuelUp)
+	}
+	if m.service_log != nil {
+		edges = append(edges, expense.EdgeServiceLog)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ExpenseMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case expense.EdgeCar:
+		if id := m.car; id != nil {
+			return []ent.Value{*id}
+		}
+	case expense.EdgeFuelUp:
+		if id := m.fuel_up; id != nil {
+			return []ent.Value{*id}
+		}
+	case expense.EdgeServiceLog:
+		if id := m.service_log; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ExpenseMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ExpenseMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ExpenseMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedcar {
+		edges = append(edges, expense.EdgeCar)
+	}
+	if m.clearedfuel_up {
+		edges = append(edges, expense.EdgeFuelUp)
+	}
+	if m.clearedservice_log {
+		edges = append(edges, expense.EdgeServiceLog)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ExpenseMutation) EdgeCleared(name string) bool {
+	switch name {
+	case expense.EdgeCar:
+		return m.clearedcar
+	case expense.EdgeFuelUp:
+		return m.clearedfuel_up
+	case expense.EdgeServiceLog:
+		return m.clearedservice_log
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ExpenseMutation) ClearEdge(name string) error {
+	switch name {
+	case expense.EdgeCar:
+		m.ClearCar()
+		return nil
+	case expense.EdgeFuelUp:
+		m.ClearFuelUp()
+		return nil
+	case expense.EdgeServiceLog:
+		m.ClearServiceLog()
+		return nil
+	}
+	return fmt.Errorf("unknown Expense unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ExpenseMutation) ResetEdge(name string) error {
+	switch name {
+	case expense.EdgeCar:
+		m.ResetCar()
+		return nil
+	case expense.EdgeFuelUp:
+		m.ResetFuelUp()
+		return nil
+	case expense.EdgeServiceLog:
+		m.ResetServiceLog()
+		return nil
+	}
+	return fmt.Errorf("unknown Expense edge %s", name)
+}
+
 // FuelUpMutation represents an operation that mutates the FuelUp nodes in the graph.
 type FuelUpMutation struct {
 	config
@@ -5927,8 +6857,6 @@ type FuelUpMutation struct {
 	station                 *string
 	amount_liters           *float64
 	addamount_liters        *float64
-	cost                    *float64
-	addcost                 *float64
 	fuel_category           *fuelup.FuelCategory
 	octane_rating           *fuelup.OctaneRating
 	is_full_tank            *bool
@@ -5938,6 +6866,8 @@ type FuelUpMutation struct {
 	clearedcar              bool
 	odometer_reading        *uuid.UUID
 	clearedodometer_reading bool
+	expense                 *uuid.UUID
+	clearedexpense          bool
 	done                    bool
 	oldValue                func(context.Context) (*FuelUp, error)
 	predicates              []predicate.FuelUp
@@ -6247,62 +7177,6 @@ func (m *FuelUpMutation) ResetAmountLiters() {
 	m.addamount_liters = nil
 }
 
-// SetCost sets the "cost" field.
-func (m *FuelUpMutation) SetCost(f float64) {
-	m.cost = &f
-	m.addcost = nil
-}
-
-// Cost returns the value of the "cost" field in the mutation.
-func (m *FuelUpMutation) Cost() (r float64, exists bool) {
-	v := m.cost
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCost returns the old "cost" field's value of the FuelUp entity.
-// If the FuelUp object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FuelUpMutation) OldCost(ctx context.Context) (v float64, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCost is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCost requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCost: %w", err)
-	}
-	return oldValue.Cost, nil
-}
-
-// AddCost adds f to the "cost" field.
-func (m *FuelUpMutation) AddCost(f float64) {
-	if m.addcost != nil {
-		*m.addcost += f
-	} else {
-		m.addcost = &f
-	}
-}
-
-// AddedCost returns the value that was added to the "cost" field in this mutation.
-func (m *FuelUpMutation) AddedCost() (r float64, exists bool) {
-	v := m.addcost
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetCost resets all changes to the "cost" field.
-func (m *FuelUpMutation) ResetCost() {
-	m.cost = nil
-	m.addcost = nil
-}
-
 // SetFuelCategory sets the "fuel_category" field.
 func (m *FuelUpMutation) SetFuelCategory(fc fuelup.FuelCategory) {
 	m.fuel_category = &fc
@@ -6551,6 +7425,45 @@ func (m *FuelUpMutation) ResetOdometerReading() {
 	m.clearedodometer_reading = false
 }
 
+// SetExpenseID sets the "expense" edge to the Expense entity by id.
+func (m *FuelUpMutation) SetExpenseID(id uuid.UUID) {
+	m.expense = &id
+}
+
+// ClearExpense clears the "expense" edge to the Expense entity.
+func (m *FuelUpMutation) ClearExpense() {
+	m.clearedexpense = true
+}
+
+// ExpenseCleared reports if the "expense" edge to the Expense entity was cleared.
+func (m *FuelUpMutation) ExpenseCleared() bool {
+	return m.clearedexpense
+}
+
+// ExpenseID returns the "expense" edge ID in the mutation.
+func (m *FuelUpMutation) ExpenseID() (id uuid.UUID, exists bool) {
+	if m.expense != nil {
+		return *m.expense, true
+	}
+	return
+}
+
+// ExpenseIDs returns the "expense" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ExpenseID instead. It exists only for internal usage by the builders.
+func (m *FuelUpMutation) ExpenseIDs() (ids []uuid.UUID) {
+	if id := m.expense; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetExpense resets all changes to the "expense" edge.
+func (m *FuelUpMutation) ResetExpense() {
+	m.expense = nil
+	m.clearedexpense = false
+}
+
 // Where appends a list predicates to the FuelUpMutation builder.
 func (m *FuelUpMutation) Where(ps ...predicate.FuelUp) {
 	m.predicates = append(m.predicates, ps...)
@@ -6585,7 +7498,7 @@ func (m *FuelUpMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *FuelUpMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 9)
 	if m.create_time != nil {
 		fields = append(fields, fuelup.FieldCreateTime)
 	}
@@ -6600,9 +7513,6 @@ func (m *FuelUpMutation) Fields() []string {
 	}
 	if m.amount_liters != nil {
 		fields = append(fields, fuelup.FieldAmountLiters)
-	}
-	if m.cost != nil {
-		fields = append(fields, fuelup.FieldCost)
 	}
 	if m.fuel_category != nil {
 		fields = append(fields, fuelup.FieldFuelCategory)
@@ -6634,8 +7544,6 @@ func (m *FuelUpMutation) Field(name string) (ent.Value, bool) {
 		return m.Station()
 	case fuelup.FieldAmountLiters:
 		return m.AmountLiters()
-	case fuelup.FieldCost:
-		return m.Cost()
 	case fuelup.FieldFuelCategory:
 		return m.FuelCategory()
 	case fuelup.FieldOctaneRating:
@@ -6663,8 +7571,6 @@ func (m *FuelUpMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldStation(ctx)
 	case fuelup.FieldAmountLiters:
 		return m.OldAmountLiters(ctx)
-	case fuelup.FieldCost:
-		return m.OldCost(ctx)
 	case fuelup.FieldFuelCategory:
 		return m.OldFuelCategory(ctx)
 	case fuelup.FieldOctaneRating:
@@ -6717,13 +7623,6 @@ func (m *FuelUpMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetAmountLiters(v)
 		return nil
-	case fuelup.FieldCost:
-		v, ok := value.(float64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCost(v)
-		return nil
 	case fuelup.FieldFuelCategory:
 		v, ok := value.(fuelup.FuelCategory)
 		if !ok {
@@ -6763,9 +7662,6 @@ func (m *FuelUpMutation) AddedFields() []string {
 	if m.addamount_liters != nil {
 		fields = append(fields, fuelup.FieldAmountLiters)
 	}
-	if m.addcost != nil {
-		fields = append(fields, fuelup.FieldCost)
-	}
 	return fields
 }
 
@@ -6776,8 +7672,6 @@ func (m *FuelUpMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case fuelup.FieldAmountLiters:
 		return m.AddedAmountLiters()
-	case fuelup.FieldCost:
-		return m.AddedCost()
 	}
 	return nil, false
 }
@@ -6793,13 +7687,6 @@ func (m *FuelUpMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddAmountLiters(v)
-		return nil
-	case fuelup.FieldCost:
-		v, ok := value.(float64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddCost(v)
 		return nil
 	}
 	return fmt.Errorf("unknown FuelUp numeric field %s", name)
@@ -6858,9 +7745,6 @@ func (m *FuelUpMutation) ResetField(name string) error {
 	case fuelup.FieldAmountLiters:
 		m.ResetAmountLiters()
 		return nil
-	case fuelup.FieldCost:
-		m.ResetCost()
-		return nil
 	case fuelup.FieldFuelCategory:
 		m.ResetFuelCategory()
 		return nil
@@ -6879,12 +7763,15 @@ func (m *FuelUpMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *FuelUpMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.car != nil {
 		edges = append(edges, fuelup.EdgeCar)
 	}
 	if m.odometer_reading != nil {
 		edges = append(edges, fuelup.EdgeOdometerReading)
+	}
+	if m.expense != nil {
+		edges = append(edges, fuelup.EdgeExpense)
 	}
 	return edges
 }
@@ -6901,13 +7788,17 @@ func (m *FuelUpMutation) AddedIDs(name string) []ent.Value {
 		if id := m.odometer_reading; id != nil {
 			return []ent.Value{*id}
 		}
+	case fuelup.EdgeExpense:
+		if id := m.expense; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *FuelUpMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	return edges
 }
 
@@ -6919,12 +7810,15 @@ func (m *FuelUpMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *FuelUpMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedcar {
 		edges = append(edges, fuelup.EdgeCar)
 	}
 	if m.clearedodometer_reading {
 		edges = append(edges, fuelup.EdgeOdometerReading)
+	}
+	if m.clearedexpense {
+		edges = append(edges, fuelup.EdgeExpense)
 	}
 	return edges
 }
@@ -6937,6 +7831,8 @@ func (m *FuelUpMutation) EdgeCleared(name string) bool {
 		return m.clearedcar
 	case fuelup.EdgeOdometerReading:
 		return m.clearedodometer_reading
+	case fuelup.EdgeExpense:
+		return m.clearedexpense
 	}
 	return false
 }
@@ -6951,6 +7847,9 @@ func (m *FuelUpMutation) ClearEdge(name string) error {
 	case fuelup.EdgeOdometerReading:
 		m.ClearOdometerReading()
 		return nil
+	case fuelup.EdgeExpense:
+		m.ClearExpense()
+		return nil
 	}
 	return fmt.Errorf("unknown FuelUp unique edge %s", name)
 }
@@ -6964,6 +7863,9 @@ func (m *FuelUpMutation) ResetEdge(name string) error {
 		return nil
 	case fuelup.EdgeOdometerReading:
 		m.ResetOdometerReading()
+		return nil
+	case fuelup.EdgeExpense:
+		m.ResetExpense()
 		return nil
 	}
 	return fmt.Errorf("unknown FuelUp edge %s", name)
@@ -10692,6 +11594,8 @@ type ServiceLogMutation struct {
 	clearedschedule         bool
 	odometer_reading        *uuid.UUID
 	clearedodometer_reading bool
+	expense                 *uuid.UUID
+	clearedexpense          bool
 	done                    bool
 	oldValue                func(context.Context) (*ServiceLog, error)
 	predicates              []predicate.ServiceLog
@@ -11178,6 +12082,45 @@ func (m *ServiceLogMutation) ResetOdometerReading() {
 	m.clearedodometer_reading = false
 }
 
+// SetExpenseID sets the "expense" edge to the Expense entity by id.
+func (m *ServiceLogMutation) SetExpenseID(id uuid.UUID) {
+	m.expense = &id
+}
+
+// ClearExpense clears the "expense" edge to the Expense entity.
+func (m *ServiceLogMutation) ClearExpense() {
+	m.clearedexpense = true
+}
+
+// ExpenseCleared reports if the "expense" edge to the Expense entity was cleared.
+func (m *ServiceLogMutation) ExpenseCleared() bool {
+	return m.clearedexpense
+}
+
+// ExpenseID returns the "expense" edge ID in the mutation.
+func (m *ServiceLogMutation) ExpenseID() (id uuid.UUID, exists bool) {
+	if m.expense != nil {
+		return *m.expense, true
+	}
+	return
+}
+
+// ExpenseIDs returns the "expense" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ExpenseID instead. It exists only for internal usage by the builders.
+func (m *ServiceLogMutation) ExpenseIDs() (ids []uuid.UUID) {
+	if id := m.expense; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetExpense resets all changes to the "expense" edge.
+func (m *ServiceLogMutation) ResetExpense() {
+	m.expense = nil
+	m.clearedexpense = false
+}
+
 // Where appends a list predicates to the ServiceLogMutation builder.
 func (m *ServiceLogMutation) Where(ps ...predicate.ServiceLog) {
 	m.predicates = append(m.predicates, ps...)
@@ -11394,7 +12337,7 @@ func (m *ServiceLogMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ServiceLogMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.car != nil {
 		edges = append(edges, servicelog.EdgeCar)
 	}
@@ -11406,6 +12349,9 @@ func (m *ServiceLogMutation) AddedEdges() []string {
 	}
 	if m.odometer_reading != nil {
 		edges = append(edges, servicelog.EdgeOdometerReading)
+	}
+	if m.expense != nil {
+		edges = append(edges, servicelog.EdgeExpense)
 	}
 	return edges
 }
@@ -11432,13 +12378,17 @@ func (m *ServiceLogMutation) AddedIDs(name string) []ent.Value {
 		if id := m.odometer_reading; id != nil {
 			return []ent.Value{*id}
 		}
+	case servicelog.EdgeExpense:
+		if id := m.expense; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ServiceLogMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removeditems != nil {
 		edges = append(edges, servicelog.EdgeItems)
 	}
@@ -11461,7 +12411,7 @@ func (m *ServiceLogMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ServiceLogMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedcar {
 		edges = append(edges, servicelog.EdgeCar)
 	}
@@ -11473,6 +12423,9 @@ func (m *ServiceLogMutation) ClearedEdges() []string {
 	}
 	if m.clearedodometer_reading {
 		edges = append(edges, servicelog.EdgeOdometerReading)
+	}
+	if m.clearedexpense {
+		edges = append(edges, servicelog.EdgeExpense)
 	}
 	return edges
 }
@@ -11489,6 +12442,8 @@ func (m *ServiceLogMutation) EdgeCleared(name string) bool {
 		return m.clearedschedule
 	case servicelog.EdgeOdometerReading:
 		return m.clearedodometer_reading
+	case servicelog.EdgeExpense:
+		return m.clearedexpense
 	}
 	return false
 }
@@ -11505,6 +12460,9 @@ func (m *ServiceLogMutation) ClearEdge(name string) error {
 		return nil
 	case servicelog.EdgeOdometerReading:
 		m.ClearOdometerReading()
+		return nil
+	case servicelog.EdgeExpense:
+		m.ClearExpense()
 		return nil
 	}
 	return fmt.Errorf("unknown ServiceLog unique edge %s", name)
@@ -11525,6 +12483,9 @@ func (m *ServiceLogMutation) ResetEdge(name string) error {
 		return nil
 	case servicelog.EdgeOdometerReading:
 		m.ResetOdometerReading()
+		return nil
+	case servicelog.EdgeExpense:
+		m.ResetExpense()
 		return nil
 	}
 	return fmt.Errorf("unknown ServiceLog edge %s", name)

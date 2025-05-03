@@ -27,6 +27,9 @@ type DynoResult func(*sql.Selector)
 // DynoSession is the predicate function for dynosession builders.
 type DynoSession func(*sql.Selector)
 
+// Expense is the predicate function for expense builders.
+type Expense func(*sql.Selector)
+
 // FuelUp is the predicate function for fuelup builders.
 type FuelUp func(*sql.Selector)
 

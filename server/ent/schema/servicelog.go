@@ -44,6 +44,7 @@ func (ServiceLog) Edges() []ent.Edge {
 		edge.From("odometer_reading", OdometerReading.Type).
 			Ref("service_log").
 			Unique(),
+		edge.To("expense", Expense.Type).Unique(),
 	}
 }
 

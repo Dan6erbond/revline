@@ -19,6 +19,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -95,6 +96,7 @@ func checkColumn(table, column string) error {
 			dragsession.Table:     dragsession.ValidColumn,
 			dynoresult.Table:      dynoresult.ValidColumn,
 			dynosession.Table:     dynosession.ValidColumn,
+			expense.Table:         expense.ValidColumn,
 			fuelup.Table:          fuelup.ValidColumn,
 			media.Table:           media.ValidColumn,
 			odometerreading.Table: odometerreading.ValidColumn,

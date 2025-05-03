@@ -33,6 +33,8 @@ const (
 	EdgeSchedule = "schedule"
 	// EdgeOdometerReading holds the string denoting the odometer_reading edge name in mutations.
 	EdgeOdometerReading = "odometer_reading"
+	// EdgeExpense holds the string denoting the expense edge name in mutations.
+	EdgeExpense = "expense"
 	// Table holds the table name of the servicelog in the database.
 	Table = "service_logs"
 	// CarTable is the table that holds the car relation/edge.
@@ -61,6 +63,13 @@ const (
 	OdometerReadingInverseTable = "odometer_readings"
 	// OdometerReadingColumn is the table column denoting the odometer_reading relation/edge.
 	OdometerReadingColumn = "odometer_reading_service_log"
+	// ExpenseTable is the table that holds the expense relation/edge.
+	ExpenseTable = "expenses"
+	// ExpenseInverseTable is the table name for the Expense entity.
+	// It exists in this package in order to avoid circular dependency with the "expense" package.
+	ExpenseInverseTable = "expenses"
+	// ExpenseColumn is the table column denoting the expense relation/edge.
+	ExpenseColumn = "service_log_expense"
 )
 
 // Columns holds all SQL columns for servicelog fields.
@@ -180,6 +189,13 @@ func ByOdometerReadingField(field string, opts ...sql.OrderTermOption) OrderOpti
 		sqlgraph.OrderByNeighborTerms(s, newOdometerReadingStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByExpenseField orders the results by expense field.
+func ByExpenseField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newExpenseStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newCarStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -206,5 +222,12 @@ func newOdometerReadingStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OdometerReadingInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, true, OdometerReadingTable, OdometerReadingColumn),
+	)
+}
+func newExpenseStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ExpenseInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, ExpenseTable, ExpenseColumn),
 	)
 }

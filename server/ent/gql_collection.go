@@ -13,6 +13,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -171,6 +172,19 @@ func (c *CarQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphq
 				return err
 			}
 			c.WithNamedDynoSessions(alias, func(wq *DynoSessionQuery) {
+				*wq = *query
+			})
+
+		case "expenses":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ExpenseClient{config: c.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, expenseImplementors)...); err != nil {
+				return err
+			}
+			c.WithNamedExpenses(alias, func(wq *ExpenseQuery) {
 				*wq = *query
 			})
 
@@ -886,6 +900,131 @@ func newDynoSessionPaginateArgs(rv map[string]any) *dynosessionPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (e *ExpenseQuery) CollectFields(ctx context.Context, satisfies ...string) (*ExpenseQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return e, nil
+	}
+	if err := e.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return e, nil
+}
+
+func (e *ExpenseQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(expense.Columns))
+		selectedFields = []string{expense.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+
+		case "car":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&CarClient{config: e.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, carImplementors)...); err != nil {
+				return err
+			}
+			e.withCar = query
+
+		case "fuelUp":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&FuelUpClient{config: e.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, fuelupImplementors)...); err != nil {
+				return err
+			}
+			e.withFuelUp = query
+
+		case "serviceLog":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ServiceLogClient{config: e.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, servicelogImplementors)...); err != nil {
+				return err
+			}
+			e.withServiceLog = query
+		case "createTime":
+			if _, ok := fieldSeen[expense.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, expense.FieldCreateTime)
+				fieldSeen[expense.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[expense.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, expense.FieldUpdateTime)
+				fieldSeen[expense.FieldUpdateTime] = struct{}{}
+			}
+		case "occurredAt":
+			if _, ok := fieldSeen[expense.FieldOccurredAt]; !ok {
+				selectedFields = append(selectedFields, expense.FieldOccurredAt)
+				fieldSeen[expense.FieldOccurredAt] = struct{}{}
+			}
+		case "type":
+			if _, ok := fieldSeen[expense.FieldType]; !ok {
+				selectedFields = append(selectedFields, expense.FieldType)
+				fieldSeen[expense.FieldType] = struct{}{}
+			}
+		case "amount":
+			if _, ok := fieldSeen[expense.FieldAmount]; !ok {
+				selectedFields = append(selectedFields, expense.FieldAmount)
+				fieldSeen[expense.FieldAmount] = struct{}{}
+			}
+		case "notes":
+			if _, ok := fieldSeen[expense.FieldNotes]; !ok {
+				selectedFields = append(selectedFields, expense.FieldNotes)
+				fieldSeen[expense.FieldNotes] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		e.Select(selectedFields...)
+	}
+	return nil
+}
+
+type expensePaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []ExpensePaginateOption
+}
+
+func newExpensePaginateArgs(rv map[string]any) *expensePaginateArgs {
+	args := &expensePaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*ExpenseWhereInput); ok {
+		args.opts = append(args.opts, WithExpenseFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (fu *FuelUpQuery) CollectFields(ctx context.Context, satisfies ...string) (*FuelUpQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
@@ -928,6 +1067,17 @@ func (fu *FuelUpQuery) collectField(ctx context.Context, oneNode bool, opCtx *gr
 				return err
 			}
 			fu.withOdometerReading = query
+
+		case "expense":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ExpenseClient{config: fu.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, expenseImplementors)...); err != nil {
+				return err
+			}
+			fu.withExpense = query
 		case "createTime":
 			if _, ok := fieldSeen[fuelup.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, fuelup.FieldCreateTime)
@@ -952,11 +1102,6 @@ func (fu *FuelUpQuery) collectField(ctx context.Context, oneNode bool, opCtx *gr
 			if _, ok := fieldSeen[fuelup.FieldAmountLiters]; !ok {
 				selectedFields = append(selectedFields, fuelup.FieldAmountLiters)
 				fieldSeen[fuelup.FieldAmountLiters] = struct{}{}
-			}
-		case "cost":
-			if _, ok := fieldSeen[fuelup.FieldCost]; !ok {
-				selectedFields = append(selectedFields, fuelup.FieldCost)
-				fieldSeen[fuelup.FieldCost] = struct{}{}
 			}
 		case "fuelCategory":
 			if _, ok := fieldSeen[fuelup.FieldFuelCategory]; !ok {
@@ -1566,6 +1711,17 @@ func (sl *ServiceLogQuery) collectField(ctx context.Context, oneNode bool, opCtx
 				return err
 			}
 			sl.withOdometerReading = query
+
+		case "expense":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ExpenseClient{config: sl.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, expenseImplementors)...); err != nil {
+				return err
+			}
+			sl.withExpense = query
 		case "createTime":
 			if _, ok := fieldSeen[servicelog.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, servicelog.FieldCreateTime)

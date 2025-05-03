@@ -15,6 +15,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -67,6 +68,11 @@ var dynosessionImplementors = []string{"DynoSession", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
 func (*DynoSession) IsNode() {}
+
+var expenseImplementors = []string{"Expense", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*Expense) IsNode() {}
 
 var fuelupImplementors = []string{"FuelUp", "Node"}
 
@@ -230,6 +236,15 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 			Where(dynosession.ID(id))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
 			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, dynosessionImplementors...); err != nil {
+				return nil, err
+			}
+		}
+		return query.Only(ctx)
+	case expense.Table:
+		query := c.Expense.Query().
+			Where(expense.ID(id))
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, expenseImplementors...); err != nil {
 				return nil, err
 			}
 		}
@@ -488,6 +503,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		query := c.DynoSession.Query().
 			Where(dynosession.IDIn(ids...))
 		query, err := query.CollectFields(ctx, dynosessionImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case expense.Table:
+		query := c.Expense.Query().
+			Where(expense.IDIn(ids...))
+		query, err := query.CollectFields(ctx, expenseImplementors...)
 		if err != nil {
 			return nil, err
 		}

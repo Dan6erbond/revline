@@ -443,6 +443,29 @@ func HasOdometerReadingWith(preds ...predicate.OdometerReading) predicate.Servic
 	})
 }
 
+// HasExpense applies the HasEdge predicate on the "expense" edge.
+func HasExpense() predicate.ServiceLog {
+	return predicate.ServiceLog(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, ExpenseTable, ExpenseColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasExpenseWith applies the HasEdge predicate on the "expense" edge with a given conditions (other predicates).
+func HasExpenseWith(preds ...predicate.Expense) predicate.ServiceLog {
+	return predicate.ServiceLog(func(s *sql.Selector) {
+		step := newExpenseStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.ServiceLog) predicate.ServiceLog {
 	return predicate.ServiceLog(sql.AndPredicates(predicates...))

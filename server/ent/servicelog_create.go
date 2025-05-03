@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/serviceitem"
 	"github.com/Dan6erbond/revline/ent/servicelog"
@@ -163,6 +164,25 @@ func (slc *ServiceLogCreate) SetNillableOdometerReadingID(id *uuid.UUID) *Servic
 // SetOdometerReading sets the "odometer_reading" edge to the OdometerReading entity.
 func (slc *ServiceLogCreate) SetOdometerReading(o *OdometerReading) *ServiceLogCreate {
 	return slc.SetOdometerReadingID(o.ID)
+}
+
+// SetExpenseID sets the "expense" edge to the Expense entity by ID.
+func (slc *ServiceLogCreate) SetExpenseID(id uuid.UUID) *ServiceLogCreate {
+	slc.mutation.SetExpenseID(id)
+	return slc
+}
+
+// SetNillableExpenseID sets the "expense" edge to the Expense entity by ID if the given value is not nil.
+func (slc *ServiceLogCreate) SetNillableExpenseID(id *uuid.UUID) *ServiceLogCreate {
+	if id != nil {
+		slc = slc.SetExpenseID(*id)
+	}
+	return slc
+}
+
+// SetExpense sets the "expense" edge to the Expense entity.
+func (slc *ServiceLogCreate) SetExpense(e *Expense) *ServiceLogCreate {
+	return slc.SetExpenseID(e.ID)
 }
 
 // Mutation returns the ServiceLogMutation object of the builder.
@@ -348,6 +368,22 @@ func (slc *ServiceLogCreate) createSpec() (*ServiceLog, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.odometer_reading_service_log = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := slc.mutation.ExpenseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   servicelog.ExpenseTable,
+			Columns: []string{servicelog.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

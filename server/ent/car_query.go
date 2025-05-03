@@ -16,6 +16,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/dynosession"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -44,6 +45,7 @@ type CarQuery struct {
 	withMedia                 *MediaQuery
 	withDocuments             *DocumentQuery
 	withDynoSessions          *DynoSessionQuery
+	withExpenses              *ExpenseQuery
 	withBannerImage           *MediaQuery
 	withFKs                   bool
 	modifiers                 []func(*sql.Selector)
@@ -57,6 +59,7 @@ type CarQuery struct {
 	withNamedMedia            map[string]*MediaQuery
 	withNamedDocuments        map[string]*DocumentQuery
 	withNamedDynoSessions     map[string]*DynoSessionQuery
+	withNamedExpenses         map[string]*ExpenseQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -313,6 +316,28 @@ func (cq *CarQuery) QueryDynoSessions() *DynoSessionQuery {
 	return query
 }
 
+// QueryExpenses chains the current query on the "expenses" edge.
+func (cq *CarQuery) QueryExpenses() *ExpenseQuery {
+	query := (&ExpenseClient{config: cq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, selector),
+			sqlgraph.To(expense.Table, expense.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.ExpensesTable, car.ExpensesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryBannerImage chains the current query on the "banner_image" edge.
 func (cq *CarQuery) QueryBannerImage() *MediaQuery {
 	query := (&MediaClient{config: cq.config}).Query()
@@ -537,6 +562,7 @@ func (cq *CarQuery) Clone() *CarQuery {
 		withMedia:            cq.withMedia.Clone(),
 		withDocuments:        cq.withDocuments.Clone(),
 		withDynoSessions:     cq.withDynoSessions.Clone(),
+		withExpenses:         cq.withExpenses.Clone(),
 		withBannerImage:      cq.withBannerImage.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
@@ -654,6 +680,17 @@ func (cq *CarQuery) WithDynoSessions(opts ...func(*DynoSessionQuery)) *CarQuery 
 	return cq
 }
 
+// WithExpenses tells the query-builder to eager-load the nodes that are connected to
+// the "expenses" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CarQuery) WithExpenses(opts ...func(*ExpenseQuery)) *CarQuery {
+	query := (&ExpenseClient{config: cq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withExpenses = query
+	return cq
+}
+
 // WithBannerImage tells the query-builder to eager-load the nodes that are connected to
 // the "banner_image" edge. The optional arguments are used to configure the query builder of the edge.
 func (cq *CarQuery) WithBannerImage(opts ...func(*MediaQuery)) *CarQuery {
@@ -744,7 +781,7 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 		nodes       = []*Car{}
 		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
-		loadedTypes = [11]bool{
+		loadedTypes = [12]bool{
 			cq.withOwner != nil,
 			cq.withDragSessions != nil,
 			cq.withFuelUps != nil,
@@ -755,6 +792,7 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 			cq.withMedia != nil,
 			cq.withDocuments != nil,
 			cq.withDynoSessions != nil,
+			cq.withExpenses != nil,
 			cq.withBannerImage != nil,
 		}
 	)
@@ -854,6 +892,13 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 			return nil, err
 		}
 	}
+	if query := cq.withExpenses; query != nil {
+		if err := cq.loadExpenses(ctx, query, nodes,
+			func(n *Car) { n.Edges.Expenses = []*Expense{} },
+			func(n *Car, e *Expense) { n.Edges.Expenses = append(n.Edges.Expenses, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := cq.withBannerImage; query != nil {
 		if err := cq.loadBannerImage(ctx, query, nodes, nil,
 			func(n *Car, e *Media) { n.Edges.BannerImage = e }); err != nil {
@@ -920,6 +965,13 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 		if err := cq.loadDynoSessions(ctx, query, nodes,
 			func(n *Car) { n.appendNamedDynoSessions(name) },
 			func(n *Car, e *DynoSession) { n.appendNamedDynoSessions(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range cq.withNamedExpenses {
+		if err := cq.loadExpenses(ctx, query, nodes,
+			func(n *Car) { n.appendNamedExpenses(name) },
+			func(n *Car, e *Expense) { n.appendNamedExpenses(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1242,6 +1294,37 @@ func (cq *CarQuery) loadDynoSessions(ctx context.Context, query *DynoSessionQuer
 	}
 	return nil
 }
+func (cq *CarQuery) loadExpenses(ctx context.Context, query *ExpenseQuery, nodes []*Car, init func(*Car), assign func(*Car, *Expense)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Car)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Expense(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(car.ExpensesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.car_expenses
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "car_expenses" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "car_expenses" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 func (cq *CarQuery) loadBannerImage(ctx context.Context, query *MediaQuery, nodes []*Car, init func(*Car), assign func(*Car, *Media)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Car)
@@ -1482,6 +1565,20 @@ func (cq *CarQuery) WithNamedDynoSessions(name string, opts ...func(*DynoSession
 		cq.withNamedDynoSessions = make(map[string]*DynoSessionQuery)
 	}
 	cq.withNamedDynoSessions[name] = query
+	return cq
+}
+
+// WithNamedExpenses tells the query-builder to eager-load the nodes that are connected to the "expenses"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (cq *CarQuery) WithNamedExpenses(name string, opts ...func(*ExpenseQuery)) *CarQuery {
+	query := (&ExpenseClient{config: cq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if cq.withNamedExpenses == nil {
+		cq.withNamedExpenses = make(map[string]*ExpenseQuery)
+	}
+	cq.withNamedExpenses[name] = query
 	return cq
 }
 

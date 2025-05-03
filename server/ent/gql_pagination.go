@@ -18,6 +18,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -1851,6 +1852,255 @@ func (ds *DynoSession) ToEdge(order *DynoSessionOrder) *DynoSessionEdge {
 	return &DynoSessionEdge{
 		Node:   ds,
 		Cursor: order.Field.toCursor(ds),
+	}
+}
+
+// ExpenseEdge is the edge representation of Expense.
+type ExpenseEdge struct {
+	Node   *Expense `json:"node"`
+	Cursor Cursor   `json:"cursor"`
+}
+
+// ExpenseConnection is the connection containing edges to Expense.
+type ExpenseConnection struct {
+	Edges      []*ExpenseEdge `json:"edges"`
+	PageInfo   PageInfo       `json:"pageInfo"`
+	TotalCount int            `json:"totalCount"`
+}
+
+func (c *ExpenseConnection) build(nodes []*Expense, pager *expensePager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *Expense
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Expense {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Expense {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*ExpenseEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &ExpenseEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// ExpensePaginateOption enables pagination customization.
+type ExpensePaginateOption func(*expensePager) error
+
+// WithExpenseOrder configures pagination ordering.
+func WithExpenseOrder(order *ExpenseOrder) ExpensePaginateOption {
+	if order == nil {
+		order = DefaultExpenseOrder
+	}
+	o := *order
+	return func(pager *expensePager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultExpenseOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithExpenseFilter configures pagination filter.
+func WithExpenseFilter(filter func(*ExpenseQuery) (*ExpenseQuery, error)) ExpensePaginateOption {
+	return func(pager *expensePager) error {
+		if filter == nil {
+			return errors.New("ExpenseQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type expensePager struct {
+	reverse bool
+	order   *ExpenseOrder
+	filter  func(*ExpenseQuery) (*ExpenseQuery, error)
+}
+
+func newExpensePager(opts []ExpensePaginateOption, reverse bool) (*expensePager, error) {
+	pager := &expensePager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultExpenseOrder
+	}
+	return pager, nil
+}
+
+func (p *expensePager) applyFilter(query *ExpenseQuery) (*ExpenseQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *expensePager) toCursor(e *Expense) Cursor {
+	return p.order.Field.toCursor(e)
+}
+
+func (p *expensePager) applyCursors(query *ExpenseQuery, after, before *Cursor) (*ExpenseQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultExpenseOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *expensePager) applyOrder(query *ExpenseQuery) *ExpenseQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultExpenseOrder.Field {
+		query = query.Order(DefaultExpenseOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *expensePager) orderExpr(query *ExpenseQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultExpenseOrder.Field {
+			b.Comma().Ident(DefaultExpenseOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Expense.
+func (e *ExpenseQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...ExpensePaginateOption,
+) (*ExpenseConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newExpensePager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if e, err = pager.applyFilter(e); err != nil {
+		return nil, err
+	}
+	conn := &ExpenseConnection{Edges: []*ExpenseEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := e.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if e, err = pager.applyCursors(e, after, before); err != nil {
+		return nil, err
+	}
+	limit := paginateLimit(first, last)
+	if limit != 0 {
+		e.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := e.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	e = pager.applyOrder(e)
+	nodes, err := e.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// ExpenseOrderField defines the ordering field of Expense.
+type ExpenseOrderField struct {
+	// Value extracts the ordering value from the given Expense.
+	Value    func(*Expense) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) expense.OrderOption
+	toCursor func(*Expense) Cursor
+}
+
+// ExpenseOrder defines the ordering of Expense.
+type ExpenseOrder struct {
+	Direction OrderDirection     `json:"direction"`
+	Field     *ExpenseOrderField `json:"field"`
+}
+
+// DefaultExpenseOrder is the default ordering of Expense.
+var DefaultExpenseOrder = &ExpenseOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &ExpenseOrderField{
+		Value: func(e *Expense) (ent.Value, error) {
+			return e.ID, nil
+		},
+		column: expense.FieldID,
+		toTerm: expense.ByID,
+		toCursor: func(e *Expense) Cursor {
+			return Cursor{ID: e.ID}
+		},
+	},
+}
+
+// ToEdge converts Expense into ExpenseEdge.
+func (e *Expense) ToEdge(order *ExpenseOrder) *ExpenseEdge {
+	if order == nil {
+		order = DefaultExpenseOrder
+	}
+	return &ExpenseEdge{
+		Node:   e,
+		Cursor: order.Field.toCursor(e),
 	}
 }
 

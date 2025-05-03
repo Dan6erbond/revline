@@ -93,6 +93,18 @@ func (f DynoSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DynoSessionMutation", m)
 }
 
+// The ExpenseFunc type is an adapter to allow the use of ordinary
+// function as Expense mutator.
+type ExpenseFunc func(context.Context, *ent.ExpenseMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ExpenseFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ExpenseMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ExpenseMutation", m)
+}
+
 // The FuelUpFunc type is an adapter to allow the use of ordinary
 // function as FuelUp mutator.
 type FuelUpFunc func(context.Context, *ent.FuelUpMutation) (ent.Value, error)

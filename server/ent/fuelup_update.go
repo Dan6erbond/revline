@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -83,27 +84,6 @@ func (fuu *FuelUpUpdate) SetNillableAmountLiters(f *float64) *FuelUpUpdate {
 // AddAmountLiters adds f to the "amount_liters" field.
 func (fuu *FuelUpUpdate) AddAmountLiters(f float64) *FuelUpUpdate {
 	fuu.mutation.AddAmountLiters(f)
-	return fuu
-}
-
-// SetCost sets the "cost" field.
-func (fuu *FuelUpUpdate) SetCost(f float64) *FuelUpUpdate {
-	fuu.mutation.ResetCost()
-	fuu.mutation.SetCost(f)
-	return fuu
-}
-
-// SetNillableCost sets the "cost" field if the given value is not nil.
-func (fuu *FuelUpUpdate) SetNillableCost(f *float64) *FuelUpUpdate {
-	if f != nil {
-		fuu.SetCost(*f)
-	}
-	return fuu
-}
-
-// AddCost adds f to the "cost" field.
-func (fuu *FuelUpUpdate) AddCost(f float64) *FuelUpUpdate {
-	fuu.mutation.AddCost(f)
 	return fuu
 }
 
@@ -205,6 +185,25 @@ func (fuu *FuelUpUpdate) SetOdometerReading(o *OdometerReading) *FuelUpUpdate {
 	return fuu.SetOdometerReadingID(o.ID)
 }
 
+// SetExpenseID sets the "expense" edge to the Expense entity by ID.
+func (fuu *FuelUpUpdate) SetExpenseID(id uuid.UUID) *FuelUpUpdate {
+	fuu.mutation.SetExpenseID(id)
+	return fuu
+}
+
+// SetNillableExpenseID sets the "expense" edge to the Expense entity by ID if the given value is not nil.
+func (fuu *FuelUpUpdate) SetNillableExpenseID(id *uuid.UUID) *FuelUpUpdate {
+	if id != nil {
+		fuu = fuu.SetExpenseID(*id)
+	}
+	return fuu
+}
+
+// SetExpense sets the "expense" edge to the Expense entity.
+func (fuu *FuelUpUpdate) SetExpense(e *Expense) *FuelUpUpdate {
+	return fuu.SetExpenseID(e.ID)
+}
+
 // Mutation returns the FuelUpMutation object of the builder.
 func (fuu *FuelUpUpdate) Mutation() *FuelUpMutation {
 	return fuu.mutation
@@ -219,6 +218,12 @@ func (fuu *FuelUpUpdate) ClearCar() *FuelUpUpdate {
 // ClearOdometerReading clears the "odometer_reading" edge to the OdometerReading entity.
 func (fuu *FuelUpUpdate) ClearOdometerReading() *FuelUpUpdate {
 	fuu.mutation.ClearOdometerReading()
+	return fuu
+}
+
+// ClearExpense clears the "expense" edge to the Expense entity.
+func (fuu *FuelUpUpdate) ClearExpense() *FuelUpUpdate {
+	fuu.mutation.ClearExpense()
 	return fuu
 }
 
@@ -303,12 +308,6 @@ func (fuu *FuelUpUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := fuu.mutation.AddedAmountLiters(); ok {
 		_spec.AddField(fuelup.FieldAmountLiters, field.TypeFloat64, value)
 	}
-	if value, ok := fuu.mutation.Cost(); ok {
-		_spec.SetField(fuelup.FieldCost, field.TypeFloat64, value)
-	}
-	if value, ok := fuu.mutation.AddedCost(); ok {
-		_spec.AddField(fuelup.FieldCost, field.TypeFloat64, value)
-	}
 	if value, ok := fuu.mutation.FuelCategory(); ok {
 		_spec.SetField(fuelup.FieldFuelCategory, field.TypeEnum, value)
 	}
@@ -378,6 +377,35 @@ func (fuu *FuelUpUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(odometerreading.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if fuu.mutation.ExpenseCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   fuelup.ExpenseTable,
+			Columns: []string{fuelup.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fuu.mutation.ExpenseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   fuelup.ExpenseTable,
+			Columns: []string{fuelup.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -457,27 +485,6 @@ func (fuuo *FuelUpUpdateOne) SetNillableAmountLiters(f *float64) *FuelUpUpdateOn
 // AddAmountLiters adds f to the "amount_liters" field.
 func (fuuo *FuelUpUpdateOne) AddAmountLiters(f float64) *FuelUpUpdateOne {
 	fuuo.mutation.AddAmountLiters(f)
-	return fuuo
-}
-
-// SetCost sets the "cost" field.
-func (fuuo *FuelUpUpdateOne) SetCost(f float64) *FuelUpUpdateOne {
-	fuuo.mutation.ResetCost()
-	fuuo.mutation.SetCost(f)
-	return fuuo
-}
-
-// SetNillableCost sets the "cost" field if the given value is not nil.
-func (fuuo *FuelUpUpdateOne) SetNillableCost(f *float64) *FuelUpUpdateOne {
-	if f != nil {
-		fuuo.SetCost(*f)
-	}
-	return fuuo
-}
-
-// AddCost adds f to the "cost" field.
-func (fuuo *FuelUpUpdateOne) AddCost(f float64) *FuelUpUpdateOne {
-	fuuo.mutation.AddCost(f)
 	return fuuo
 }
 
@@ -579,6 +586,25 @@ func (fuuo *FuelUpUpdateOne) SetOdometerReading(o *OdometerReading) *FuelUpUpdat
 	return fuuo.SetOdometerReadingID(o.ID)
 }
 
+// SetExpenseID sets the "expense" edge to the Expense entity by ID.
+func (fuuo *FuelUpUpdateOne) SetExpenseID(id uuid.UUID) *FuelUpUpdateOne {
+	fuuo.mutation.SetExpenseID(id)
+	return fuuo
+}
+
+// SetNillableExpenseID sets the "expense" edge to the Expense entity by ID if the given value is not nil.
+func (fuuo *FuelUpUpdateOne) SetNillableExpenseID(id *uuid.UUID) *FuelUpUpdateOne {
+	if id != nil {
+		fuuo = fuuo.SetExpenseID(*id)
+	}
+	return fuuo
+}
+
+// SetExpense sets the "expense" edge to the Expense entity.
+func (fuuo *FuelUpUpdateOne) SetExpense(e *Expense) *FuelUpUpdateOne {
+	return fuuo.SetExpenseID(e.ID)
+}
+
 // Mutation returns the FuelUpMutation object of the builder.
 func (fuuo *FuelUpUpdateOne) Mutation() *FuelUpMutation {
 	return fuuo.mutation
@@ -593,6 +619,12 @@ func (fuuo *FuelUpUpdateOne) ClearCar() *FuelUpUpdateOne {
 // ClearOdometerReading clears the "odometer_reading" edge to the OdometerReading entity.
 func (fuuo *FuelUpUpdateOne) ClearOdometerReading() *FuelUpUpdateOne {
 	fuuo.mutation.ClearOdometerReading()
+	return fuuo
+}
+
+// ClearExpense clears the "expense" edge to the Expense entity.
+func (fuuo *FuelUpUpdateOne) ClearExpense() *FuelUpUpdateOne {
+	fuuo.mutation.ClearExpense()
 	return fuuo
 }
 
@@ -707,12 +739,6 @@ func (fuuo *FuelUpUpdateOne) sqlSave(ctx context.Context) (_node *FuelUp, err er
 	if value, ok := fuuo.mutation.AddedAmountLiters(); ok {
 		_spec.AddField(fuelup.FieldAmountLiters, field.TypeFloat64, value)
 	}
-	if value, ok := fuuo.mutation.Cost(); ok {
-		_spec.SetField(fuelup.FieldCost, field.TypeFloat64, value)
-	}
-	if value, ok := fuuo.mutation.AddedCost(); ok {
-		_spec.AddField(fuelup.FieldCost, field.TypeFloat64, value)
-	}
 	if value, ok := fuuo.mutation.FuelCategory(); ok {
 		_spec.SetField(fuelup.FieldFuelCategory, field.TypeEnum, value)
 	}
@@ -782,6 +808,35 @@ func (fuuo *FuelUpUpdateOne) sqlSave(ctx context.Context) (_node *FuelUp, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(odometerreading.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if fuuo.mutation.ExpenseCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   fuelup.ExpenseTable,
+			Columns: []string{fuelup.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fuuo.mutation.ExpenseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   fuelup.ExpenseTable,
+			Columns: []string{fuelup.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

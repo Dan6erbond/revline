@@ -279,6 +279,30 @@ func (f DynoSessionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mut
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.DynoSessionMutation", m)
 }
 
+// The ExpenseQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type ExpenseQueryRuleFunc func(context.Context, *ent.ExpenseQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f ExpenseQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ExpenseQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ExpenseQuery", q)
+}
+
+// The ExpenseMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type ExpenseMutationRuleFunc func(context.Context, *ent.ExpenseMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f ExpenseMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.ExpenseMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ExpenseMutation", m)
+}
+
 // The FuelUpQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type FuelUpQueryRuleFunc func(context.Context, *ent.FuelUpQuery) error
@@ -544,6 +568,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.DynoSessionQuery:
 		return q.Filter(), nil
+	case *ent.ExpenseQuery:
+		return q.Filter(), nil
 	case *ent.FuelUpQuery:
 		return q.Filter(), nil
 	case *ent.MediaQuery:
@@ -582,6 +608,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.DynoResultMutation:
 		return m.Filter(), nil
 	case *ent.DynoSessionMutation:
+		return m.Filter(), nil
+	case *ent.ExpenseMutation:
 		return m.Filter(), nil
 	case *ent.FuelUpMutation:
 		return m.Filter(), nil

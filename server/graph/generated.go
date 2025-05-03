@@ -18,6 +18,7 @@ import (
 	"github.com/Dan6erbond/revline/ent"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/dragresult"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/subscription"
@@ -72,6 +73,7 @@ type ComplexityRoot struct {
 		Documents                     func(childComplexity int) int
 		DragSessions                  func(childComplexity int) int
 		DynoSessions                  func(childComplexity int) int
+		Expenses                      func(childComplexity int) int
 		FuelUps                       func(childComplexity int) int
 		ID                            func(childComplexity int) int
 		Make                          func(childComplexity int) int
@@ -155,6 +157,19 @@ type ComplexityRoot struct {
 		UpdateTime func(childComplexity int) int
 	}
 
+	Expense struct {
+		Amount     func(childComplexity int) int
+		Car        func(childComplexity int) int
+		CreateTime func(childComplexity int) int
+		FuelUp     func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Notes      func(childComplexity int) int
+		OccurredAt func(childComplexity int) int
+		ServiceLog func(childComplexity int) int
+		Type       func(childComplexity int) int
+		UpdateTime func(childComplexity int) int
+	}
+
 	FileMetadata struct {
 		ContentType func(childComplexity int) int
 		ETag        func(childComplexity int) int
@@ -166,8 +181,8 @@ type ComplexityRoot struct {
 	FuelUp struct {
 		AmountLiters    func(childComplexity int) int
 		Car             func(childComplexity int) int
-		Cost            func(childComplexity int) int
 		CreateTime      func(childComplexity int) int
+		Expense         func(childComplexity int) int
 		FuelCategory    func(childComplexity int) int
 		ID              func(childComplexity int) int
 		IsFullTank      func(childComplexity int) int
@@ -196,6 +211,7 @@ type ComplexityRoot struct {
 		CreateDragSession          func(childComplexity int, input ent.CreateDragSessionInput) int
 		CreateDynoResult           func(childComplexity int, input ent.CreateDynoResultInput) int
 		CreateDynoSession          func(childComplexity int, input ent.CreateDynoSessionInput) int
+		CreateExpense              func(childComplexity int, input ent.CreateExpenseInput) int
 		CreateFuelUp               func(childComplexity int, input ent.CreateFuelUpInput) int
 		CreateOdometerReading      func(childComplexity int, input ent.CreateOdometerReadingInput) int
 		CreateServiceItem          func(childComplexity int, input ent.CreateServiceItemInput) int
@@ -267,6 +283,7 @@ type ComplexityRoot struct {
 		Car             func(childComplexity int) int
 		CreateTime      func(childComplexity int) int
 		DatePerformed   func(childComplexity int) int
+		Expense         func(childComplexity int) int
 		ID              func(childComplexity int) int
 		Items           func(childComplexity int) int
 		Notes           func(childComplexity int) int
@@ -356,6 +373,7 @@ type MutationResolver interface {
 	UploadBannerImage(ctx context.Context, input ent.CreateMediaInput) (*model.UploadMediaResult, error)
 	UploadMedia(ctx context.Context, input ent.CreateMediaInput) (*model.UploadMediaResult, error)
 	UploadDocument(ctx context.Context, input ent.CreateDocumentInput) (*model.UploadDocumentResult, error)
+	CreateExpense(ctx context.Context, input ent.CreateExpenseInput) (*ent.Expense, error)
 	CreateFuelUp(ctx context.Context, input ent.CreateFuelUpInput) (*ent.FuelUp, error)
 	CreateOdometerReading(ctx context.Context, input ent.CreateOdometerReadingInput) (*ent.OdometerReading, error)
 	CreateServiceItem(ctx context.Context, input ent.CreateServiceItemInput) (*ent.ServiceItem, error)
@@ -384,9 +402,11 @@ type UserResolver interface {
 }
 
 type CreateFuelUpInputResolver interface {
+	Cost(ctx context.Context, obj *ent.CreateFuelUpInput, data float64) error
 	OdometerKm(ctx context.Context, obj *ent.CreateFuelUpInput, data *float64) error
 }
 type CreateServiceLogInputResolver interface {
+	Cost(ctx context.Context, obj *ent.CreateServiceLogInput, data *float64) error
 	OdometerKm(ctx context.Context, obj *ent.CreateServiceLogInput, data *float64) error
 }
 
@@ -457,6 +477,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Car.DynoSessions(childComplexity), true
+
+	case "Car.expenses":
+		if e.complexity.Car.Expenses == nil {
+			break
+		}
+
+		return e.complexity.Car.Expenses(childComplexity), true
 
 	case "Car.fuelUps":
 		if e.complexity.Car.FuelUps == nil {
@@ -899,6 +926,76 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.DynoSession.UpdateTime(childComplexity), true
 
+	case "Expense.amount":
+		if e.complexity.Expense.Amount == nil {
+			break
+		}
+
+		return e.complexity.Expense.Amount(childComplexity), true
+
+	case "Expense.car":
+		if e.complexity.Expense.Car == nil {
+			break
+		}
+
+		return e.complexity.Expense.Car(childComplexity), true
+
+	case "Expense.createTime":
+		if e.complexity.Expense.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.Expense.CreateTime(childComplexity), true
+
+	case "Expense.fuelUp":
+		if e.complexity.Expense.FuelUp == nil {
+			break
+		}
+
+		return e.complexity.Expense.FuelUp(childComplexity), true
+
+	case "Expense.id":
+		if e.complexity.Expense.ID == nil {
+			break
+		}
+
+		return e.complexity.Expense.ID(childComplexity), true
+
+	case "Expense.notes":
+		if e.complexity.Expense.Notes == nil {
+			break
+		}
+
+		return e.complexity.Expense.Notes(childComplexity), true
+
+	case "Expense.occurredAt":
+		if e.complexity.Expense.OccurredAt == nil {
+			break
+		}
+
+		return e.complexity.Expense.OccurredAt(childComplexity), true
+
+	case "Expense.serviceLog":
+		if e.complexity.Expense.ServiceLog == nil {
+			break
+		}
+
+		return e.complexity.Expense.ServiceLog(childComplexity), true
+
+	case "Expense.type":
+		if e.complexity.Expense.Type == nil {
+			break
+		}
+
+		return e.complexity.Expense.Type(childComplexity), true
+
+	case "Expense.updateTime":
+		if e.complexity.Expense.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.Expense.UpdateTime(childComplexity), true
+
 	case "FileMetadata.contentType":
 		if e.complexity.FileMetadata.ContentType == nil {
 			break
@@ -948,19 +1045,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.FuelUp.Car(childComplexity), true
 
-	case "FuelUp.cost":
-		if e.complexity.FuelUp.Cost == nil {
-			break
-		}
-
-		return e.complexity.FuelUp.Cost(childComplexity), true
-
 	case "FuelUp.createTime":
 		if e.complexity.FuelUp.CreateTime == nil {
 			break
 		}
 
 		return e.complexity.FuelUp.CreateTime(childComplexity), true
+
+	case "FuelUp.expense":
+		if e.complexity.FuelUp.Expense == nil {
+			break
+		}
+
+		return e.complexity.FuelUp.Expense(childComplexity), true
 
 	case "FuelUp.fuelCategory":
 		if e.complexity.FuelUp.FuelCategory == nil {
@@ -1145,6 +1242,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.CreateDynoSession(childComplexity, args["input"].(ent.CreateDynoSessionInput)), true
+
+	case "Mutation.createExpense":
+		if e.complexity.Mutation.CreateExpense == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createExpense_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateExpense(childComplexity, args["input"].(ent.CreateExpenseInput)), true
 
 	case "Mutation.createFuelUp":
 		if e.complexity.Mutation.CreateFuelUp == nil {
@@ -1613,6 +1722,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.ServiceLog.DatePerformed(childComplexity), true
 
+	case "ServiceLog.expense":
+		if e.complexity.ServiceLog.Expense == nil {
+			break
+		}
+
+		return e.complexity.ServiceLog.Expense(childComplexity), true
+
 	case "ServiceLog.id":
 		if e.complexity.ServiceLog.ID == nil {
 			break
@@ -1959,6 +2075,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateDragSessionInput,
 		ec.unmarshalInputCreateDynoResultInput,
 		ec.unmarshalInputCreateDynoSessionInput,
+		ec.unmarshalInputCreateExpenseInput,
 		ec.unmarshalInputCreateFuelUpInput,
 		ec.unmarshalInputCreateMediaInput,
 		ec.unmarshalInputCreateOdometerReadingInput,
@@ -1972,6 +2089,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputDragSessionWhereInput,
 		ec.unmarshalInputDynoResultWhereInput,
 		ec.unmarshalInputDynoSessionWhereInput,
+		ec.unmarshalInputExpenseWhereInput,
 		ec.unmarshalInputFuelUpWhereInput,
 		ec.unmarshalInputMediaWhereInput,
 		ec.unmarshalInputOdometerReadingWhereInput,
@@ -1986,6 +2104,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputUpdateDragSessionInput,
 		ec.unmarshalInputUpdateDynoResultInput,
 		ec.unmarshalInputUpdateDynoSessionInput,
+		ec.unmarshalInputUpdateExpenseInput,
 		ec.unmarshalInputUpdateFuelUpInput,
 		ec.unmarshalInputUpdateMediaInput,
 		ec.unmarshalInputUpdateOdometerReadingInput,
@@ -2250,6 +2369,29 @@ func (ec *executionContext) field_Mutation_createDynoSession_argsInput(
 	}
 
 	var zeroVal ent.CreateDynoSessionInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_createExpense_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_createExpense_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_createExpense_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (ent.CreateExpenseInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNCreateExpenseInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐCreateExpenseInput(ctx, tmp)
+	}
+
+	var zeroVal ent.CreateExpenseInput
 	return zeroVal, nil
 }
 
@@ -3270,8 +3412,6 @@ func (ec *executionContext) fieldContext_Car_fuelUps(_ context.Context, field gr
 				return ec.fieldContext_FuelUp_station(ctx, field)
 			case "amountLiters":
 				return ec.fieldContext_FuelUp_amountLiters(ctx, field)
-			case "cost":
-				return ec.fieldContext_FuelUp_cost(ctx, field)
 			case "fuelCategory":
 				return ec.fieldContext_FuelUp_fuelCategory(ctx, field)
 			case "octaneRating":
@@ -3284,6 +3424,8 @@ func (ec *executionContext) fieldContext_Car_fuelUps(_ context.Context, field gr
 				return ec.fieldContext_FuelUp_car(ctx, field)
 			case "odometerReading":
 				return ec.fieldContext_FuelUp_odometerReading(ctx, field)
+			case "expense":
+				return ec.fieldContext_FuelUp_expense(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type FuelUp", field.Name)
 		},
@@ -3475,6 +3617,8 @@ func (ec *executionContext) fieldContext_Car_serviceLogs(_ context.Context, fiel
 				return ec.fieldContext_ServiceLog_schedule(ctx, field)
 			case "odometerReading":
 				return ec.fieldContext_ServiceLog_odometerReading(ctx, field)
+			case "expense":
+				return ec.fieldContext_ServiceLog_expense(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ServiceLog", field.Name)
 		},
@@ -3717,6 +3861,69 @@ func (ec *executionContext) fieldContext_Car_dynoSessions(_ context.Context, fie
 				return ec.fieldContext_DynoSession_results(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DynoSession", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Car_expenses(ctx context.Context, field graphql.CollectedField, obj *ent.Car) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Car_expenses(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Expenses(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Expense)
+	fc.Result = res
+	return ec.marshalOExpense2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpenseᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Car_expenses(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Car",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Expense_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Expense_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Expense_updateTime(ctx, field)
+			case "occurredAt":
+				return ec.fieldContext_Expense_occurredAt(ctx, field)
+			case "type":
+				return ec.fieldContext_Expense_type(ctx, field)
+			case "amount":
+				return ec.fieldContext_Expense_amount(ctx, field)
+			case "notes":
+				return ec.fieldContext_Expense_notes(ctx, field)
+			case "car":
+				return ec.fieldContext_Expense_car(ctx, field)
+			case "fuelUp":
+				return ec.fieldContext_Expense_fuelUp(ctx, field)
+			case "serviceLog":
+				return ec.fieldContext_Expense_serviceLog(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Expense", field.Name)
 		},
 	}
 	return fc, nil
@@ -4727,6 +4934,8 @@ func (ec *executionContext) fieldContext_Document_car(_ context.Context, field g
 				return ec.fieldContext_Car_documents(ctx, field)
 			case "dynoSessions":
 				return ec.fieldContext_Car_dynoSessions(ctx, field)
+			case "expenses":
+				return ec.fieldContext_Car_expenses(ctx, field)
 			case "bannerImage":
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "bannerImageUrl":
@@ -5459,6 +5668,8 @@ func (ec *executionContext) fieldContext_DragSession_car(_ context.Context, fiel
 				return ec.fieldContext_Car_documents(ctx, field)
 			case "dynoSessions":
 				return ec.fieldContext_Car_dynoSessions(ctx, field)
+			case "expenses":
+				return ec.fieldContext_Car_expenses(ctx, field)
 			case "bannerImage":
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "bannerImageUrl":
@@ -6151,6 +6362,8 @@ func (ec *executionContext) fieldContext_DynoSession_car(_ context.Context, fiel
 				return ec.fieldContext_Car_documents(ctx, field)
 			case "dynoSessions":
 				return ec.fieldContext_Car_dynoSessions(ctx, field)
+			case "expenses":
+				return ec.fieldContext_Car_expenses(ctx, field)
 			case "bannerImage":
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "bannerImageUrl":
@@ -6220,6 +6433,541 @@ func (ec *executionContext) fieldContext_DynoSession_results(_ context.Context, 
 				return ec.fieldContext_DynoResult_session(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DynoResult", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Expense_id(ctx context.Context, field graphql.CollectedField, obj *ent.Expense) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Expense_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Expense_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Expense",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Expense_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.Expense) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Expense_createTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Expense_createTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Expense",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Expense_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.Expense) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Expense_updateTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Expense_updateTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Expense",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Expense_occurredAt(ctx context.Context, field graphql.CollectedField, obj *ent.Expense) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Expense_occurredAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OccurredAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Expense_occurredAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Expense",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Expense_type(ctx context.Context, field graphql.CollectedField, obj *ent.Expense) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Expense_type(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(expense.Type)
+	fc.Result = res
+	return ec.marshalNExpenseType2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Expense_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Expense",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ExpenseType does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Expense_amount(ctx context.Context, field graphql.CollectedField, obj *ent.Expense) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Expense_amount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Amount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Expense_amount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Expense",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Expense_notes(ctx context.Context, field graphql.CollectedField, obj *ent.Expense) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Expense_notes(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Notes, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Expense_notes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Expense",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Expense_car(ctx context.Context, field graphql.CollectedField, obj *ent.Expense) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Expense_car(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Car(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Car)
+	fc.Result = res
+	return ec.marshalNCar2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐCar(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Expense_car(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Expense",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Car_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Car_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Car_updateTime(ctx, field)
+			case "name":
+				return ec.fieldContext_Car_name(ctx, field)
+			case "make":
+				return ec.fieldContext_Car_make(ctx, field)
+			case "model":
+				return ec.fieldContext_Car_model(ctx, field)
+			case "type":
+				return ec.fieldContext_Car_type(ctx, field)
+			case "year":
+				return ec.fieldContext_Car_year(ctx, field)
+			case "trim":
+				return ec.fieldContext_Car_trim(ctx, field)
+			case "owner":
+				return ec.fieldContext_Car_owner(ctx, field)
+			case "dragSessions":
+				return ec.fieldContext_Car_dragSessions(ctx, field)
+			case "fuelUps":
+				return ec.fieldContext_Car_fuelUps(ctx, field)
+			case "odometerReadings":
+				return ec.fieldContext_Car_odometerReadings(ctx, field)
+			case "serviceItems":
+				return ec.fieldContext_Car_serviceItems(ctx, field)
+			case "serviceLogs":
+				return ec.fieldContext_Car_serviceLogs(ctx, field)
+			case "serviceSchedules":
+				return ec.fieldContext_Car_serviceSchedules(ctx, field)
+			case "media":
+				return ec.fieldContext_Car_media(ctx, field)
+			case "documents":
+				return ec.fieldContext_Car_documents(ctx, field)
+			case "dynoSessions":
+				return ec.fieldContext_Car_dynoSessions(ctx, field)
+			case "expenses":
+				return ec.fieldContext_Car_expenses(ctx, field)
+			case "bannerImage":
+				return ec.fieldContext_Car_bannerImage(ctx, field)
+			case "bannerImageUrl":
+				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
+			case "averageConsumptionLitersPerKm":
+				return ec.fieldContext_Car_averageConsumptionLitersPerKm(ctx, field)
+			case "upcomingServices":
+				return ec.fieldContext_Car_upcomingServices(ctx, field)
+			case "odometerKm":
+				return ec.fieldContext_Car_odometerKm(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Expense_fuelUp(ctx context.Context, field graphql.CollectedField, obj *ent.Expense) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Expense_fuelUp(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FuelUp(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.FuelUp)
+	fc.Result = res
+	return ec.marshalOFuelUp2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐFuelUp(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Expense_fuelUp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Expense",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_FuelUp_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_FuelUp_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_FuelUp_updateTime(ctx, field)
+			case "occurredAt":
+				return ec.fieldContext_FuelUp_occurredAt(ctx, field)
+			case "station":
+				return ec.fieldContext_FuelUp_station(ctx, field)
+			case "amountLiters":
+				return ec.fieldContext_FuelUp_amountLiters(ctx, field)
+			case "fuelCategory":
+				return ec.fieldContext_FuelUp_fuelCategory(ctx, field)
+			case "octaneRating":
+				return ec.fieldContext_FuelUp_octaneRating(ctx, field)
+			case "isFullTank":
+				return ec.fieldContext_FuelUp_isFullTank(ctx, field)
+			case "notes":
+				return ec.fieldContext_FuelUp_notes(ctx, field)
+			case "car":
+				return ec.fieldContext_FuelUp_car(ctx, field)
+			case "odometerReading":
+				return ec.fieldContext_FuelUp_odometerReading(ctx, field)
+			case "expense":
+				return ec.fieldContext_FuelUp_expense(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type FuelUp", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Expense_serviceLog(ctx context.Context, field graphql.CollectedField, obj *ent.Expense) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Expense_serviceLog(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ServiceLog(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ServiceLog)
+	fc.Result = res
+	return ec.marshalOServiceLog2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐServiceLog(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Expense_serviceLog(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Expense",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ServiceLog_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_ServiceLog_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_ServiceLog_updateTime(ctx, field)
+			case "datePerformed":
+				return ec.fieldContext_ServiceLog_datePerformed(ctx, field)
+			case "performedBy":
+				return ec.fieldContext_ServiceLog_performedBy(ctx, field)
+			case "notes":
+				return ec.fieldContext_ServiceLog_notes(ctx, field)
+			case "car":
+				return ec.fieldContext_ServiceLog_car(ctx, field)
+			case "items":
+				return ec.fieldContext_ServiceLog_items(ctx, field)
+			case "schedule":
+				return ec.fieldContext_ServiceLog_schedule(ctx, field)
+			case "odometerReading":
+				return ec.fieldContext_ServiceLog_odometerReading(ctx, field)
+			case "expense":
+				return ec.fieldContext_ServiceLog_expense(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ServiceLog", field.Name)
 		},
 	}
 	return fc, nil
@@ -6706,50 +7454,6 @@ func (ec *executionContext) fieldContext_FuelUp_amountLiters(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _FuelUp_cost(ctx context.Context, field graphql.CollectedField, obj *ent.FuelUp) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_FuelUp_cost(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Cost, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_FuelUp_cost(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "FuelUp",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _FuelUp_fuelCategory(ctx context.Context, field graphql.CollectedField, obj *ent.FuelUp) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_FuelUp_fuelCategory(ctx, field)
 	if err != nil {
@@ -6997,6 +7701,8 @@ func (ec *executionContext) fieldContext_FuelUp_car(_ context.Context, field gra
 				return ec.fieldContext_Car_documents(ctx, field)
 			case "dynoSessions":
 				return ec.fieldContext_Car_dynoSessions(ctx, field)
+			case "expenses":
+				return ec.fieldContext_Car_expenses(ctx, field)
 			case "bannerImage":
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "bannerImageUrl":
@@ -7070,6 +7776,69 @@ func (ec *executionContext) fieldContext_FuelUp_odometerReading(_ context.Contex
 				return ec.fieldContext_OdometerReading_serviceLog(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type OdometerReading", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FuelUp_expense(ctx context.Context, field graphql.CollectedField, obj *ent.FuelUp) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FuelUp_expense(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Expense(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Expense)
+	fc.Result = res
+	return ec.marshalOExpense2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpense(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FuelUp_expense(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FuelUp",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Expense_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Expense_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Expense_updateTime(ctx, field)
+			case "occurredAt":
+				return ec.fieldContext_Expense_occurredAt(ctx, field)
+			case "type":
+				return ec.fieldContext_Expense_type(ctx, field)
+			case "amount":
+				return ec.fieldContext_Expense_amount(ctx, field)
+			case "notes":
+				return ec.fieldContext_Expense_notes(ctx, field)
+			case "car":
+				return ec.fieldContext_Expense_car(ctx, field)
+			case "fuelUp":
+				return ec.fieldContext_Expense_fuelUp(ctx, field)
+			case "serviceLog":
+				return ec.fieldContext_Expense_serviceLog(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Expense", field.Name)
 		},
 	}
 	return fc, nil
@@ -7281,6 +8050,8 @@ func (ec *executionContext) fieldContext_Media_car(_ context.Context, field grap
 				return ec.fieldContext_Car_documents(ctx, field)
 			case "dynoSessions":
 				return ec.fieldContext_Car_dynoSessions(ctx, field)
+			case "expenses":
+				return ec.fieldContext_Car_expenses(ctx, field)
 			case "bannerImage":
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "bannerImageUrl":
@@ -7716,6 +8487,8 @@ func (ec *executionContext) fieldContext_Mutation_createCar(ctx context.Context,
 				return ec.fieldContext_Car_documents(ctx, field)
 			case "dynoSessions":
 				return ec.fieldContext_Car_dynoSessions(ctx, field)
+			case "expenses":
+				return ec.fieldContext_Car_expenses(ctx, field)
 			case "bannerImage":
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "bannerImageUrl":
@@ -7993,6 +8766,105 @@ func (ec *executionContext) fieldContext_Mutation_uploadDocument(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createExpense(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createExpense(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CreateExpense(rctx, fc.Args["input"].(ent.CreateExpenseInput))
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			if ec.directives.LoggedIn == nil {
+				var zeroVal *ent.Expense
+				return zeroVal, errors.New("directive loggedIn is not implemented")
+			}
+			return ec.directives.LoggedIn(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*ent.Expense); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/Dan6erbond/revline/ent.Expense`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Expense)
+	fc.Result = res
+	return ec.marshalNExpense2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpense(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createExpense(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Expense_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Expense_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Expense_updateTime(ctx, field)
+			case "occurredAt":
+				return ec.fieldContext_Expense_occurredAt(ctx, field)
+			case "type":
+				return ec.fieldContext_Expense_type(ctx, field)
+			case "amount":
+				return ec.fieldContext_Expense_amount(ctx, field)
+			case "notes":
+				return ec.fieldContext_Expense_notes(ctx, field)
+			case "car":
+				return ec.fieldContext_Expense_car(ctx, field)
+			case "fuelUp":
+				return ec.fieldContext_Expense_fuelUp(ctx, field)
+			case "serviceLog":
+				return ec.fieldContext_Expense_serviceLog(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Expense", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createExpense_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createFuelUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createFuelUp(ctx, field)
 	if err != nil {
@@ -8066,8 +8938,6 @@ func (ec *executionContext) fieldContext_Mutation_createFuelUp(ctx context.Conte
 				return ec.fieldContext_FuelUp_station(ctx, field)
 			case "amountLiters":
 				return ec.fieldContext_FuelUp_amountLiters(ctx, field)
-			case "cost":
-				return ec.fieldContext_FuelUp_cost(ctx, field)
 			case "fuelCategory":
 				return ec.fieldContext_FuelUp_fuelCategory(ctx, field)
 			case "octaneRating":
@@ -8080,6 +8950,8 @@ func (ec *executionContext) fieldContext_Mutation_createFuelUp(ctx context.Conte
 				return ec.fieldContext_FuelUp_car(ctx, field)
 			case "odometerReading":
 				return ec.fieldContext_FuelUp_odometerReading(ctx, field)
+			case "expense":
+				return ec.fieldContext_FuelUp_expense(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type FuelUp", field.Name)
 		},
@@ -8484,6 +9356,8 @@ func (ec *executionContext) fieldContext_Mutation_createServiceLog(ctx context.C
 				return ec.fieldContext_ServiceLog_schedule(ctx, field)
 			case "odometerReading":
 				return ec.fieldContext_ServiceLog_odometerReading(ctx, field)
+			case "expense":
+				return ec.fieldContext_ServiceLog_expense(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ServiceLog", field.Name)
 		},
@@ -9355,6 +10229,8 @@ func (ec *executionContext) fieldContext_OdometerReading_car(_ context.Context, 
 				return ec.fieldContext_Car_documents(ctx, field)
 			case "dynoSessions":
 				return ec.fieldContext_Car_dynoSessions(ctx, field)
+			case "expenses":
+				return ec.fieldContext_Car_expenses(ctx, field)
 			case "bannerImage":
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "bannerImageUrl":
@@ -9420,8 +10296,6 @@ func (ec *executionContext) fieldContext_OdometerReading_fuelUp(_ context.Contex
 				return ec.fieldContext_FuelUp_station(ctx, field)
 			case "amountLiters":
 				return ec.fieldContext_FuelUp_amountLiters(ctx, field)
-			case "cost":
-				return ec.fieldContext_FuelUp_cost(ctx, field)
 			case "fuelCategory":
 				return ec.fieldContext_FuelUp_fuelCategory(ctx, field)
 			case "octaneRating":
@@ -9434,6 +10308,8 @@ func (ec *executionContext) fieldContext_OdometerReading_fuelUp(_ context.Contex
 				return ec.fieldContext_FuelUp_car(ctx, field)
 			case "odometerReading":
 				return ec.fieldContext_FuelUp_odometerReading(ctx, field)
+			case "expense":
+				return ec.fieldContext_FuelUp_expense(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type FuelUp", field.Name)
 		},
@@ -9497,6 +10373,8 @@ func (ec *executionContext) fieldContext_OdometerReading_serviceLog(_ context.Co
 				return ec.fieldContext_ServiceLog_schedule(ctx, field)
 			case "odometerReading":
 				return ec.fieldContext_ServiceLog_odometerReading(ctx, field)
+			case "expense":
+				return ec.fieldContext_ServiceLog_expense(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ServiceLog", field.Name)
 		},
@@ -10362,6 +11240,8 @@ func (ec *executionContext) fieldContext_Query_car(ctx context.Context, field gr
 				return ec.fieldContext_Car_documents(ctx, field)
 			case "dynoSessions":
 				return ec.fieldContext_Car_dynoSessions(ctx, field)
+			case "expenses":
+				return ec.fieldContext_Car_expenses(ctx, field)
 			case "bannerImage":
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "bannerImageUrl":
@@ -11266,6 +12146,8 @@ func (ec *executionContext) fieldContext_ServiceItem_car(_ context.Context, fiel
 				return ec.fieldContext_Car_documents(ctx, field)
 			case "dynoSessions":
 				return ec.fieldContext_Car_dynoSessions(ctx, field)
+			case "expenses":
+				return ec.fieldContext_Car_expenses(ctx, field)
 			case "bannerImage":
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "bannerImageUrl":
@@ -11408,6 +12290,8 @@ func (ec *executionContext) fieldContext_ServiceItem_logs(_ context.Context, fie
 				return ec.fieldContext_ServiceLog_schedule(ctx, field)
 			case "odometerReading":
 				return ec.fieldContext_ServiceLog_odometerReading(ctx, field)
+			case "expense":
+				return ec.fieldContext_ServiceLog_expense(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ServiceLog", field.Name)
 		},
@@ -11750,6 +12634,8 @@ func (ec *executionContext) fieldContext_ServiceLog_car(_ context.Context, field
 				return ec.fieldContext_Car_documents(ctx, field)
 			case "dynoSessions":
 				return ec.fieldContext_Car_dynoSessions(ctx, field)
+			case "expenses":
+				return ec.fieldContext_Car_expenses(ctx, field)
 			case "bannerImage":
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "bannerImageUrl":
@@ -11959,6 +12845,69 @@ func (ec *executionContext) fieldContext_ServiceLog_odometerReading(_ context.Co
 				return ec.fieldContext_OdometerReading_serviceLog(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type OdometerReading", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ServiceLog_expense(ctx context.Context, field graphql.CollectedField, obj *ent.ServiceLog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ServiceLog_expense(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Expense(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Expense)
+	fc.Result = res
+	return ec.marshalOExpense2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpense(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ServiceLog_expense(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ServiceLog",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Expense_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Expense_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Expense_updateTime(ctx, field)
+			case "occurredAt":
+				return ec.fieldContext_Expense_occurredAt(ctx, field)
+			case "type":
+				return ec.fieldContext_Expense_type(ctx, field)
+			case "amount":
+				return ec.fieldContext_Expense_amount(ctx, field)
+			case "notes":
+				return ec.fieldContext_Expense_notes(ctx, field)
+			case "car":
+				return ec.fieldContext_Expense_car(ctx, field)
+			case "fuelUp":
+				return ec.fieldContext_Expense_fuelUp(ctx, field)
+			case "serviceLog":
+				return ec.fieldContext_Expense_serviceLog(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Expense", field.Name)
 		},
 	}
 	return fc, nil
@@ -12466,6 +13415,8 @@ func (ec *executionContext) fieldContext_ServiceSchedule_car(_ context.Context, 
 				return ec.fieldContext_Car_documents(ctx, field)
 			case "dynoSessions":
 				return ec.fieldContext_Car_dynoSessions(ctx, field)
+			case "expenses":
+				return ec.fieldContext_Car_expenses(ctx, field)
 			case "bannerImage":
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "bannerImageUrl":
@@ -12606,6 +13557,8 @@ func (ec *executionContext) fieldContext_ServiceSchedule_logs(_ context.Context,
 				return ec.fieldContext_ServiceLog_schedule(ctx, field)
 			case "odometerReading":
 				return ec.fieldContext_ServiceLog_odometerReading(ctx, field)
+			case "expense":
+				return ec.fieldContext_ServiceLog_expense(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ServiceLog", field.Name)
 		},
@@ -13741,6 +14694,8 @@ func (ec *executionContext) fieldContext_User_cars(_ context.Context, field grap
 				return ec.fieldContext_Car_documents(ctx, field)
 			case "dynoSessions":
 				return ec.fieldContext_Car_dynoSessions(ctx, field)
+			case "expenses":
+				return ec.fieldContext_Car_expenses(ctx, field)
 			case "bannerImage":
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "bannerImageUrl":
@@ -15980,7 +16935,7 @@ func (ec *executionContext) unmarshalInputCarWhereInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "make", "makeNEQ", "makeIn", "makeNotIn", "makeGT", "makeGTE", "makeLT", "makeLTE", "makeContains", "makeHasPrefix", "makeHasSuffix", "makeIsNil", "makeNotNil", "makeEqualFold", "makeContainsFold", "model", "modelNEQ", "modelIn", "modelNotIn", "modelGT", "modelGTE", "modelLT", "modelLTE", "modelContains", "modelHasPrefix", "modelHasSuffix", "modelIsNil", "modelNotNil", "modelEqualFold", "modelContainsFold", "type", "typeNEQ", "typeIn", "typeNotIn", "typeGT", "typeGTE", "typeLT", "typeLTE", "typeContains", "typeHasPrefix", "typeHasSuffix", "typeIsNil", "typeNotNil", "typeEqualFold", "typeContainsFold", "year", "yearNEQ", "yearIn", "yearNotIn", "yearGT", "yearGTE", "yearLT", "yearLTE", "yearIsNil", "yearNotNil", "trim", "trimNEQ", "trimIn", "trimNotIn", "trimGT", "trimGTE", "trimLT", "trimLTE", "trimContains", "trimHasPrefix", "trimHasSuffix", "trimIsNil", "trimNotNil", "trimEqualFold", "trimContainsFold", "hasOwner", "hasOwnerWith", "hasDragSessions", "hasDragSessionsWith", "hasFuelUps", "hasFuelUpsWith", "hasOdometerReadings", "hasOdometerReadingsWith", "hasServiceItems", "hasServiceItemsWith", "hasServiceLogs", "hasServiceLogsWith", "hasServiceSchedules", "hasServiceSchedulesWith", "hasMedia", "hasMediaWith", "hasDocuments", "hasDocumentsWith", "hasDynoSessions", "hasDynoSessionsWith", "hasBannerImage", "hasBannerImageWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "make", "makeNEQ", "makeIn", "makeNotIn", "makeGT", "makeGTE", "makeLT", "makeLTE", "makeContains", "makeHasPrefix", "makeHasSuffix", "makeIsNil", "makeNotNil", "makeEqualFold", "makeContainsFold", "model", "modelNEQ", "modelIn", "modelNotIn", "modelGT", "modelGTE", "modelLT", "modelLTE", "modelContains", "modelHasPrefix", "modelHasSuffix", "modelIsNil", "modelNotNil", "modelEqualFold", "modelContainsFold", "type", "typeNEQ", "typeIn", "typeNotIn", "typeGT", "typeGTE", "typeLT", "typeLTE", "typeContains", "typeHasPrefix", "typeHasSuffix", "typeIsNil", "typeNotNil", "typeEqualFold", "typeContainsFold", "year", "yearNEQ", "yearIn", "yearNotIn", "yearGT", "yearGTE", "yearLT", "yearLTE", "yearIsNil", "yearNotNil", "trim", "trimNEQ", "trimIn", "trimNotIn", "trimGT", "trimGTE", "trimLT", "trimLTE", "trimContains", "trimHasPrefix", "trimHasSuffix", "trimIsNil", "trimNotNil", "trimEqualFold", "trimContainsFold", "hasOwner", "hasOwnerWith", "hasDragSessions", "hasDragSessionsWith", "hasFuelUps", "hasFuelUpsWith", "hasOdometerReadings", "hasOdometerReadingsWith", "hasServiceItems", "hasServiceItemsWith", "hasServiceLogs", "hasServiceLogsWith", "hasServiceSchedules", "hasServiceSchedulesWith", "hasMedia", "hasMediaWith", "hasDocuments", "hasDocumentsWith", "hasDynoSessions", "hasDynoSessionsWith", "hasExpenses", "hasExpensesWith", "hasBannerImage", "hasBannerImageWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -16897,6 +17852,20 @@ func (ec *executionContext) unmarshalInputCarWhereInput(ctx context.Context, obj
 				return it, err
 			}
 			it.HasDynoSessionsWith = data
+		case "hasExpenses":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasExpenses"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasExpenses = data
+		case "hasExpensesWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasExpensesWith"))
+			data, err := ec.unmarshalOExpenseWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpenseWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasExpensesWith = data
 		case "hasBannerImage":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasBannerImage"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -17469,7 +18438,7 @@ func (ec *executionContext) unmarshalInputCreateCarInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "make", "model", "type", "year", "trim", "ownerID", "dragSessionIDs", "fuelUpIDs", "odometerReadingIDs", "serviceItemIDs", "serviceLogIDs", "serviceScheduleIDs", "mediumIDs", "documentIDs", "dynoSessionIDs", "bannerImageID"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "make", "model", "type", "year", "trim", "ownerID", "dragSessionIDs", "fuelUpIDs", "odometerReadingIDs", "serviceItemIDs", "serviceLogIDs", "serviceScheduleIDs", "mediumIDs", "documentIDs", "dynoSessionIDs", "expenseIDs", "bannerImageID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -17602,6 +18571,13 @@ func (ec *executionContext) unmarshalInputCreateCarInput(ctx context.Context, ob
 				return it, err
 			}
 			it.DynoSessionIDs = data
+		case "expenseIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expenseIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ExpenseIDs = data
 		case "bannerImageID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bannerImageID"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -17945,6 +18921,89 @@ func (ec *executionContext) unmarshalInputCreateDynoSessionInput(ctx context.Con
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateExpenseInput(ctx context.Context, obj any) (ent.CreateExpenseInput, error) {
+	var it ent.CreateExpenseInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"createTime", "updateTime", "occurredAt", "type", "amount", "notes", "carID", "fuelUpID", "serviceLogID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "occurredAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurredAt"))
+			data, err := ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OccurredAt = data
+		case "type":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalNExpenseType2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "amount":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amount"))
+			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Amount = data
+		case "notes":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Notes = data
+		case "carID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("carID"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CarID = data
+		case "fuelUpID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelUpID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelUpID = data
+		case "serviceLogID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("serviceLogID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ServiceLogID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateFuelUpInput(ctx context.Context, obj any) (ent.CreateFuelUpInput, error) {
 	var it ent.CreateFuelUpInput
 	asMap := map[string]any{}
@@ -17952,7 +19011,7 @@ func (ec *executionContext) unmarshalInputCreateFuelUpInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "occurredAt", "station", "amountLiters", "cost", "fuelCategory", "octaneRating", "isFullTank", "notes", "carID", "odometerReadingID", "odometerKm"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "occurredAt", "station", "amountLiters", "fuelCategory", "octaneRating", "isFullTank", "notes", "carID", "odometerReadingID", "expenseID", "cost", "odometerKm"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -17994,13 +19053,6 @@ func (ec *executionContext) unmarshalInputCreateFuelUpInput(ctx context.Context,
 				return it, err
 			}
 			it.AmountLiters = data
-		case "cost":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cost"))
-			data, err := ec.unmarshalNFloat2float64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Cost = data
 		case "fuelCategory":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelCategory"))
 			data, err := ec.unmarshalNFuelCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋfuelupᚐFuelCategory(ctx, v)
@@ -18043,6 +19095,22 @@ func (ec *executionContext) unmarshalInputCreateFuelUpInput(ctx context.Context,
 				return it, err
 			}
 			it.OdometerReadingID = data
+		case "expenseID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expenseID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ExpenseID = data
+		case "cost":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cost"))
+			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CreateFuelUpInput().Cost(ctx, &it, data); err != nil {
+				return it, err
+			}
 		case "odometerKm":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("odometerKm"))
 			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
@@ -18397,7 +19465,7 @@ func (ec *executionContext) unmarshalInputCreateServiceLogInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "datePerformed", "performedBy", "notes", "carID", "itemIDs", "scheduleID", "odometerReadingID", "odometerKm"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "datePerformed", "performedBy", "notes", "carID", "itemIDs", "scheduleID", "odometerReadingID", "expenseID", "cost", "odometerKm"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -18467,6 +19535,22 @@ func (ec *executionContext) unmarshalInputCreateServiceLogInput(ctx context.Cont
 				return it, err
 			}
 			it.OdometerReadingID = data
+		case "expenseID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expenseID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ExpenseID = data
+		case "cost":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cost"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CreateServiceLogInput().Cost(ctx, &it, data); err != nil {
+				return it, err
+			}
 		case "odometerKm":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("odometerKm"))
 			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
@@ -20596,6 +21680,502 @@ func (ec *executionContext) unmarshalInputDynoSessionWhereInput(ctx context.Cont
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputExpenseWhereInput(ctx context.Context, obj any) (ent.ExpenseWhereInput, error) {
+	var it ent.ExpenseWhereInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "occurredAt", "occurredAtNEQ", "occurredAtIn", "occurredAtNotIn", "occurredAtGT", "occurredAtGTE", "occurredAtLT", "occurredAtLTE", "type", "typeNEQ", "typeIn", "typeNotIn", "amount", "amountNEQ", "amountIn", "amountNotIn", "amountGT", "amountGTE", "amountLT", "amountLTE", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasFuelUp", "hasFuelUpWith", "hasServiceLog", "hasServiceLogWith"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "not":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
+			data, err := ec.unmarshalOExpenseWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpenseWhereInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Not = data
+		case "and":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
+			data, err := ec.unmarshalOExpenseWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpenseWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.And = data
+		case "or":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
+			data, err := ec.unmarshalOExpenseWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpenseWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Or = data
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "idNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDNEQ = data
+		case "idIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDIn = data
+		case "idNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDNotIn = data
+		case "idGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDGT = data
+		case "idGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDGTE = data
+		case "idLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDLT = data
+		case "idLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
+		case "occurredAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurredAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OccurredAt = data
+		case "occurredAtNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurredAtNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OccurredAtNEQ = data
+		case "occurredAtIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurredAtIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OccurredAtIn = data
+		case "occurredAtNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurredAtNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OccurredAtNotIn = data
+		case "occurredAtGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurredAtGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OccurredAtGT = data
+		case "occurredAtGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurredAtGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OccurredAtGTE = data
+		case "occurredAtLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurredAtLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OccurredAtLT = data
+		case "occurredAtLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurredAtLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OccurredAtLTE = data
+		case "type":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalOExpenseType2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "typeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeNEQ"))
+			data, err := ec.unmarshalOExpenseType2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeNEQ = data
+		case "typeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeIn"))
+			data, err := ec.unmarshalOExpenseType2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐTypeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeIn = data
+		case "typeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeNotIn"))
+			data, err := ec.unmarshalOExpenseType2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐTypeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeNotIn = data
+		case "amount":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amount"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Amount = data
+		case "amountNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amountNEQ"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AmountNEQ = data
+		case "amountIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amountIn"))
+			data, err := ec.unmarshalOFloat2ᚕfloat64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AmountIn = data
+		case "amountNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amountNotIn"))
+			data, err := ec.unmarshalOFloat2ᚕfloat64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AmountNotIn = data
+		case "amountGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amountGT"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AmountGT = data
+		case "amountGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amountGTE"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AmountGTE = data
+		case "amountLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amountLT"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AmountLT = data
+		case "amountLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amountLTE"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AmountLTE = data
+		case "notes":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Notes = data
+		case "notesNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NotesNEQ = data
+		case "notesIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NotesIn = data
+		case "notesNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NotesNotIn = data
+		case "notesGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NotesGT = data
+		case "notesGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NotesGTE = data
+		case "notesLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NotesLT = data
+		case "notesLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NotesLTE = data
+		case "notesContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NotesContains = data
+		case "notesHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NotesHasPrefix = data
+		case "notesHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NotesHasSuffix = data
+		case "notesIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NotesIsNil = data
+		case "notesNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NotesNotNil = data
+		case "notesEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NotesEqualFold = data
+		case "notesContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NotesContainsFold = data
+		case "hasCar":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCar"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasCar = data
+		case "hasCarWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCarWith"))
+			data, err := ec.unmarshalOCarWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐCarWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasCarWith = data
+		case "hasFuelUp":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasFuelUp"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasFuelUp = data
+		case "hasFuelUpWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasFuelUpWith"))
+			data, err := ec.unmarshalOFuelUpWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐFuelUpWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasFuelUpWith = data
+		case "hasServiceLog":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasServiceLog"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasServiceLog = data
+		case "hasServiceLogWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasServiceLogWith"))
+			data, err := ec.unmarshalOServiceLogWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐServiceLogWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasServiceLogWith = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputFuelUpWhereInput(ctx context.Context, obj any) (ent.FuelUpWhereInput, error) {
 	var it ent.FuelUpWhereInput
 	asMap := map[string]any{}
@@ -20603,7 +22183,7 @@ func (ec *executionContext) unmarshalInputFuelUpWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "occurredAt", "occurredAtNEQ", "occurredAtIn", "occurredAtNotIn", "occurredAtGT", "occurredAtGTE", "occurredAtLT", "occurredAtLTE", "station", "stationNEQ", "stationIn", "stationNotIn", "stationGT", "stationGTE", "stationLT", "stationLTE", "stationContains", "stationHasPrefix", "stationHasSuffix", "stationEqualFold", "stationContainsFold", "amountLiters", "amountLitersNEQ", "amountLitersIn", "amountLitersNotIn", "amountLitersGT", "amountLitersGTE", "amountLitersLT", "amountLitersLTE", "cost", "costNEQ", "costIn", "costNotIn", "costGT", "costGTE", "costLT", "costLTE", "fuelCategory", "fuelCategoryNEQ", "fuelCategoryIn", "fuelCategoryNotIn", "octaneRating", "octaneRatingNEQ", "octaneRatingIn", "octaneRatingNotIn", "octaneRatingIsNil", "octaneRatingNotNil", "isFullTank", "isFullTankNEQ", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasOdometerReading", "hasOdometerReadingWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "occurredAt", "occurredAtNEQ", "occurredAtIn", "occurredAtNotIn", "occurredAtGT", "occurredAtGTE", "occurredAtLT", "occurredAtLTE", "station", "stationNEQ", "stationIn", "stationNotIn", "stationGT", "stationGTE", "stationLT", "stationLTE", "stationContains", "stationHasPrefix", "stationHasSuffix", "stationEqualFold", "stationContainsFold", "amountLiters", "amountLitersNEQ", "amountLitersIn", "amountLitersNotIn", "amountLitersGT", "amountLitersGTE", "amountLitersLT", "amountLitersLTE", "fuelCategory", "fuelCategoryNEQ", "fuelCategoryIn", "fuelCategoryNotIn", "octaneRating", "octaneRatingNEQ", "octaneRatingIn", "octaneRatingNotIn", "octaneRatingIsNil", "octaneRatingNotNil", "isFullTank", "isFullTankNEQ", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasOdometerReading", "hasOdometerReadingWith", "hasExpense", "hasExpenseWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -21002,62 +22582,6 @@ func (ec *executionContext) unmarshalInputFuelUpWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.AmountLitersLTE = data
-		case "cost":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cost"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Cost = data
-		case "costNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("costNEQ"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CostNEQ = data
-		case "costIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("costIn"))
-			data, err := ec.unmarshalOFloat2ᚕfloat64ᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CostIn = data
-		case "costNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("costNotIn"))
-			data, err := ec.unmarshalOFloat2ᚕfloat64ᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CostNotIn = data
-		case "costGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("costGT"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CostGT = data
-		case "costGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("costGTE"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CostGTE = data
-		case "costLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("costLT"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CostLT = data
-		case "costLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("costLTE"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CostLTE = data
 		case "fuelCategory":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelCategory"))
 			data, err := ec.unmarshalOFuelCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋfuelupᚐFuelCategory(ctx, v)
@@ -21275,6 +22799,20 @@ func (ec *executionContext) unmarshalInputFuelUpWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.HasOdometerReadingWith = data
+		case "hasExpense":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasExpense"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasExpense = data
+		case "hasExpenseWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasExpenseWith"))
+			data, err := ec.unmarshalOExpenseWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpenseWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasExpenseWith = data
 		}
 	}
 
@@ -23559,7 +25097,7 @@ func (ec *executionContext) unmarshalInputServiceLogWhereInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "datePerformed", "datePerformedNEQ", "datePerformedIn", "datePerformedNotIn", "datePerformedGT", "datePerformedGTE", "datePerformedLT", "datePerformedLTE", "performedBy", "performedByNEQ", "performedByIn", "performedByNotIn", "performedByGT", "performedByGTE", "performedByLT", "performedByLTE", "performedByContains", "performedByHasPrefix", "performedByHasSuffix", "performedByIsNil", "performedByNotNil", "performedByEqualFold", "performedByContainsFold", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasItems", "hasItemsWith", "hasSchedule", "hasScheduleWith", "hasOdometerReading", "hasOdometerReadingWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "datePerformed", "datePerformedNEQ", "datePerformedIn", "datePerformedNotIn", "datePerformedGT", "datePerformedGTE", "datePerformedLT", "datePerformedLTE", "performedBy", "performedByNEQ", "performedByIn", "performedByNotIn", "performedByGT", "performedByGTE", "performedByLT", "performedByLTE", "performedByContains", "performedByHasPrefix", "performedByHasSuffix", "performedByIsNil", "performedByNotNil", "performedByEqualFold", "performedByContainsFold", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasItems", "hasItemsWith", "hasSchedule", "hasScheduleWith", "hasOdometerReading", "hasOdometerReadingWith", "hasExpense", "hasExpenseWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -24077,6 +25615,20 @@ func (ec *executionContext) unmarshalInputServiceLogWhereInput(ctx context.Conte
 				return it, err
 			}
 			it.HasOdometerReadingWith = data
+		case "hasExpense":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasExpense"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasExpense = data
+		case "hasExpenseWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasExpenseWith"))
+			data, err := ec.unmarshalOExpenseWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpenseWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasExpenseWith = data
 		}
 	}
 
@@ -25313,7 +26865,7 @@ func (ec *executionContext) unmarshalInputUpdateCarInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "name", "make", "clearMake", "model", "clearModel", "type", "clearType", "year", "clearYear", "trim", "clearTrim", "ownerID", "clearOwner", "addDragSessionIDs", "removeDragSessionIDs", "clearDragSessions", "addFuelUpIDs", "removeFuelUpIDs", "clearFuelUps", "addOdometerReadingIDs", "removeOdometerReadingIDs", "clearOdometerReadings", "addServiceItemIDs", "removeServiceItemIDs", "clearServiceItems", "addServiceLogIDs", "removeServiceLogIDs", "clearServiceLogs", "addServiceScheduleIDs", "removeServiceScheduleIDs", "clearServiceSchedules", "addMediumIDs", "removeMediumIDs", "clearMedia", "addDocumentIDs", "removeDocumentIDs", "clearDocuments", "addDynoSessionIDs", "removeDynoSessionIDs", "clearDynoSessions", "bannerImageID", "clearBannerImage"}
+	fieldsInOrder := [...]string{"updateTime", "name", "make", "clearMake", "model", "clearModel", "type", "clearType", "year", "clearYear", "trim", "clearTrim", "ownerID", "clearOwner", "addDragSessionIDs", "removeDragSessionIDs", "clearDragSessions", "addFuelUpIDs", "removeFuelUpIDs", "clearFuelUps", "addOdometerReadingIDs", "removeOdometerReadingIDs", "clearOdometerReadings", "addServiceItemIDs", "removeServiceItemIDs", "clearServiceItems", "addServiceLogIDs", "removeServiceLogIDs", "clearServiceLogs", "addServiceScheduleIDs", "removeServiceScheduleIDs", "clearServiceSchedules", "addMediumIDs", "removeMediumIDs", "clearMedia", "addDocumentIDs", "removeDocumentIDs", "clearDocuments", "addDynoSessionIDs", "removeDynoSessionIDs", "clearDynoSessions", "addExpenseIDs", "removeExpenseIDs", "clearExpenses", "bannerImageID", "clearBannerImage"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -25607,6 +27159,27 @@ func (ec *executionContext) unmarshalInputUpdateCarInput(ctx context.Context, ob
 				return it, err
 			}
 			it.ClearDynoSessions = data
+		case "addExpenseIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addExpenseIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddExpenseIDs = data
+		case "removeExpenseIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeExpenseIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveExpenseIDs = data
+		case "clearExpenses":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearExpenses"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearExpenses = data
 		case "bannerImageID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bannerImageID"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -25951,6 +27524,103 @@ func (ec *executionContext) unmarshalInputUpdateDynoSessionInput(ctx context.Con
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateExpenseInput(ctx context.Context, obj any) (ent.UpdateExpenseInput, error) {
+	var it ent.UpdateExpenseInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"updateTime", "occurredAt", "type", "amount", "notes", "clearNotes", "carID", "fuelUpID", "clearFuelUp", "serviceLogID", "clearServiceLog"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "occurredAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurredAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.OccurredAt = data
+		case "type":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalOExpenseType2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "amount":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("amount"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Amount = data
+		case "notes":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Notes = data
+		case "clearNotes":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearNotes"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearNotes = data
+		case "carID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("carID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CarID = data
+		case "fuelUpID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelUpID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelUpID = data
+		case "clearFuelUp":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearFuelUp"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearFuelUp = data
+		case "serviceLogID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("serviceLogID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ServiceLogID = data
+		case "clearServiceLog":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearServiceLog"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearServiceLog = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateFuelUpInput(ctx context.Context, obj any) (ent.UpdateFuelUpInput, error) {
 	var it ent.UpdateFuelUpInput
 	asMap := map[string]any{}
@@ -25958,7 +27628,7 @@ func (ec *executionContext) unmarshalInputUpdateFuelUpInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "occurredAt", "station", "amountLiters", "cost", "fuelCategory", "octaneRating", "clearOctaneRating", "isFullTank", "notes", "clearNotes", "carID", "odometerReadingID", "clearOdometerReading"}
+	fieldsInOrder := [...]string{"updateTime", "occurredAt", "station", "amountLiters", "fuelCategory", "octaneRating", "clearOctaneRating", "isFullTank", "notes", "clearNotes", "carID", "odometerReadingID", "clearOdometerReading", "expenseID", "clearExpense"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -25993,13 +27663,6 @@ func (ec *executionContext) unmarshalInputUpdateFuelUpInput(ctx context.Context,
 				return it, err
 			}
 			it.AmountLiters = data
-		case "cost":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cost"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Cost = data
 		case "fuelCategory":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelCategory"))
 			data, err := ec.unmarshalOFuelCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋfuelupᚐFuelCategory(ctx, v)
@@ -26063,6 +27726,20 @@ func (ec *executionContext) unmarshalInputUpdateFuelUpInput(ctx context.Context,
 				return it, err
 			}
 			it.ClearOdometerReading = data
+		case "expenseID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expenseID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ExpenseID = data
+		case "clearExpense":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearExpense"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearExpense = data
 		}
 	}
 
@@ -26541,7 +28218,7 @@ func (ec *executionContext) unmarshalInputUpdateServiceLogInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "datePerformed", "performedBy", "clearPerformedBy", "notes", "clearNotes", "carID", "addItemIDs", "removeItemIDs", "clearItems", "scheduleID", "clearSchedule", "odometerReadingID", "clearOdometerReading"}
+	fieldsInOrder := [...]string{"updateTime", "datePerformed", "performedBy", "clearPerformedBy", "notes", "clearNotes", "carID", "addItemIDs", "removeItemIDs", "clearItems", "scheduleID", "clearSchedule", "odometerReadingID", "clearOdometerReading", "expenseID", "clearExpense"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -26646,6 +28323,20 @@ func (ec *executionContext) unmarshalInputUpdateServiceLogInput(ctx context.Cont
 				return it, err
 			}
 			it.ClearOdometerReading = data
+		case "expenseID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expenseID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ExpenseID = data
+		case "clearExpense":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearExpense"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearExpense = data
 		}
 	}
 
@@ -27804,6 +29495,39 @@ func (ec *executionContext) _Car(ctx context.Context, sel ast.SelectionSet, obj 
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "expenses":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Car_expenses(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "bannerImage":
 			field := field
 
@@ -28749,6 +30473,174 @@ func (ec *executionContext) _DynoSession(ctx context.Context, sel ast.SelectionS
 	return out
 }
 
+var expenseImplementors = []string{"Expense"}
+
+func (ec *executionContext) _Expense(ctx context.Context, sel ast.SelectionSet, obj *ent.Expense) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, expenseImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Expense")
+		case "id":
+			out.Values[i] = ec._Expense_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "createTime":
+			out.Values[i] = ec._Expense_createTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updateTime":
+			out.Values[i] = ec._Expense_updateTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "occurredAt":
+			out.Values[i] = ec._Expense_occurredAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "type":
+			out.Values[i] = ec._Expense_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "amount":
+			out.Values[i] = ec._Expense_amount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "notes":
+			out.Values[i] = ec._Expense_notes(ctx, field, obj)
+		case "car":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Expense_car(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "fuelUp":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Expense_fuelUp(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "serviceLog":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Expense_serviceLog(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var fileMetadataImplementors = []string{"FileMetadata"}
 
 func (ec *executionContext) _FileMetadata(ctx context.Context, sel ast.SelectionSet, obj *minio.ObjectInfo) graphql.Marshaler {
@@ -28846,11 +30738,6 @@ func (ec *executionContext) _FuelUp(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "cost":
-			out.Values[i] = ec._FuelUp_cost(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
 		case "fuelCategory":
 			out.Values[i] = ec._FuelUp_fuelCategory(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -28911,6 +30798,39 @@ func (ec *executionContext) _FuelUp(ctx context.Context, sel ast.SelectionSet, o
 					}
 				}()
 				res = ec._FuelUp_odometerReading(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "expense":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._FuelUp_expense(ctx, field, obj)
 				return res
 			}
 
@@ -29165,6 +31085,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "uploadDocument":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_uploadDocument(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createExpense":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createExpense(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -30073,6 +32000,39 @@ func (ec *executionContext) _ServiceLog(ctx context.Context, sel ast.SelectionSe
 					}
 				}()
 				res = ec._ServiceLog_odometerReading(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "expense":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ServiceLog_expense(ctx, field, obj)
 				return res
 			}
 
@@ -31208,6 +33168,11 @@ func (ec *executionContext) unmarshalNCreateDynoSessionInput2githubᚗcomᚋDan6
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreateExpenseInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐCreateExpenseInput(ctx context.Context, v any) (ent.CreateExpenseInput, error) {
+	res, err := ec.unmarshalInputCreateExpenseInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateFuelUpInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐCreateFuelUpInput(ctx context.Context, v any) (ent.CreateFuelUpInput, error) {
 	res, err := ec.unmarshalInputCreateFuelUpInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -31350,6 +33315,35 @@ func (ec *executionContext) marshalNDynoSession2ᚖgithubᚗcomᚋDan6erbondᚋr
 
 func (ec *executionContext) unmarshalNDynoSessionWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDynoSessionWhereInput(ctx context.Context, v any) (*ent.DynoSessionWhereInput, error) {
 	res, err := ec.unmarshalInputDynoSessionWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNExpense2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpense(ctx context.Context, sel ast.SelectionSet, v ent.Expense) graphql.Marshaler {
+	return ec._Expense(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNExpense2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpense(ctx context.Context, sel ast.SelectionSet, v *ent.Expense) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Expense(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNExpenseType2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐType(ctx context.Context, v any) (expense.Type, error) {
+	var res expense.Type
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNExpenseType2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐType(ctx context.Context, sel ast.SelectionSet, v expense.Type) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNExpenseWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpenseWhereInput(ctx context.Context, v any) (*ent.ExpenseWhereInput, error) {
+	res, err := ec.unmarshalInputExpenseWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -32884,6 +34878,167 @@ func (ec *executionContext) unmarshalODynoSessionWhereInput2ᚖgithubᚗcomᚋDa
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputDynoSessionWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOExpense2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpenseᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Expense) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNExpense2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpense(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalOExpense2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpense(ctx context.Context, sel ast.SelectionSet, v *ent.Expense) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Expense(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOExpenseType2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐTypeᚄ(ctx context.Context, v any) ([]expense.Type, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]expense.Type, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNExpenseType2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐType(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOExpenseType2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []expense.Type) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNExpenseType2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐType(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOExpenseType2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐType(ctx context.Context, v any) (*expense.Type, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(expense.Type)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOExpenseType2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋexpenseᚐType(ctx context.Context, sel ast.SelectionSet, v *expense.Type) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOExpenseWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpenseWhereInputᚄ(ctx context.Context, v any) ([]*ent.ExpenseWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*ent.ExpenseWhereInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNExpenseWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpenseWhereInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOExpenseWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpenseWhereInput(ctx context.Context, v any) (*ent.ExpenseWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputExpenseWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

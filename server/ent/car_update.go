@@ -15,6 +15,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/dynosession"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -320,6 +321,21 @@ func (cu *CarUpdate) AddDynoSessions(d ...*DynoSession) *CarUpdate {
 	return cu.AddDynoSessionIDs(ids...)
 }
 
+// AddExpenseIDs adds the "expenses" edge to the Expense entity by IDs.
+func (cu *CarUpdate) AddExpenseIDs(ids ...uuid.UUID) *CarUpdate {
+	cu.mutation.AddExpenseIDs(ids...)
+	return cu
+}
+
+// AddExpenses adds the "expenses" edges to the Expense entity.
+func (cu *CarUpdate) AddExpenses(e ...*Expense) *CarUpdate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return cu.AddExpenseIDs(ids...)
+}
+
 // SetBannerImageID sets the "banner_image" edge to the Media entity by ID.
 func (cu *CarUpdate) SetBannerImageID(id uuid.UUID) *CarUpdate {
 	cu.mutation.SetBannerImageID(id)
@@ -537,6 +553,27 @@ func (cu *CarUpdate) RemoveDynoSessions(d ...*DynoSession) *CarUpdate {
 		ids[i] = d[i].ID
 	}
 	return cu.RemoveDynoSessionIDs(ids...)
+}
+
+// ClearExpenses clears all "expenses" edges to the Expense entity.
+func (cu *CarUpdate) ClearExpenses() *CarUpdate {
+	cu.mutation.ClearExpenses()
+	return cu
+}
+
+// RemoveExpenseIDs removes the "expenses" edge to Expense entities by IDs.
+func (cu *CarUpdate) RemoveExpenseIDs(ids ...uuid.UUID) *CarUpdate {
+	cu.mutation.RemoveExpenseIDs(ids...)
+	return cu
+}
+
+// RemoveExpenses removes "expenses" edges to Expense entities.
+func (cu *CarUpdate) RemoveExpenses(e ...*Expense) *CarUpdate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return cu.RemoveExpenseIDs(ids...)
 }
 
 // ClearBannerImage clears the "banner_image" edge to the Media entity.
@@ -1063,6 +1100,51 @@ func (cu *CarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if cu.mutation.ExpensesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.ExpensesTable,
+			Columns: []string{car.ExpensesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedExpensesIDs(); len(nodes) > 0 && !cu.mutation.ExpensesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.ExpensesTable,
+			Columns: []string{car.ExpensesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.ExpensesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.ExpensesTable,
+			Columns: []string{car.ExpensesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if cu.mutation.BannerImageCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -1393,6 +1475,21 @@ func (cuo *CarUpdateOne) AddDynoSessions(d ...*DynoSession) *CarUpdateOne {
 	return cuo.AddDynoSessionIDs(ids...)
 }
 
+// AddExpenseIDs adds the "expenses" edge to the Expense entity by IDs.
+func (cuo *CarUpdateOne) AddExpenseIDs(ids ...uuid.UUID) *CarUpdateOne {
+	cuo.mutation.AddExpenseIDs(ids...)
+	return cuo
+}
+
+// AddExpenses adds the "expenses" edges to the Expense entity.
+func (cuo *CarUpdateOne) AddExpenses(e ...*Expense) *CarUpdateOne {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return cuo.AddExpenseIDs(ids...)
+}
+
 // SetBannerImageID sets the "banner_image" edge to the Media entity by ID.
 func (cuo *CarUpdateOne) SetBannerImageID(id uuid.UUID) *CarUpdateOne {
 	cuo.mutation.SetBannerImageID(id)
@@ -1610,6 +1707,27 @@ func (cuo *CarUpdateOne) RemoveDynoSessions(d ...*DynoSession) *CarUpdateOne {
 		ids[i] = d[i].ID
 	}
 	return cuo.RemoveDynoSessionIDs(ids...)
+}
+
+// ClearExpenses clears all "expenses" edges to the Expense entity.
+func (cuo *CarUpdateOne) ClearExpenses() *CarUpdateOne {
+	cuo.mutation.ClearExpenses()
+	return cuo
+}
+
+// RemoveExpenseIDs removes the "expenses" edge to Expense entities by IDs.
+func (cuo *CarUpdateOne) RemoveExpenseIDs(ids ...uuid.UUID) *CarUpdateOne {
+	cuo.mutation.RemoveExpenseIDs(ids...)
+	return cuo
+}
+
+// RemoveExpenses removes "expenses" edges to Expense entities.
+func (cuo *CarUpdateOne) RemoveExpenses(e ...*Expense) *CarUpdateOne {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return cuo.RemoveExpenseIDs(ids...)
 }
 
 // ClearBannerImage clears the "banner_image" edge to the Media entity.
@@ -2159,6 +2277,51 @@ func (cuo *CarUpdateOne) sqlSave(ctx context.Context) (_node *Car, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.ExpensesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.ExpensesTable,
+			Columns: []string{car.ExpensesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedExpensesIDs(); len(nodes) > 0 && !cuo.mutation.ExpensesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.ExpensesTable,
+			Columns: []string{car.ExpensesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.ExpensesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.ExpensesTable,
+			Columns: []string{car.ExpensesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

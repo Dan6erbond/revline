@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/google/uuid"
@@ -66,12 +67,6 @@ func (fuc *FuelUpCreate) SetStation(s string) *FuelUpCreate {
 // SetAmountLiters sets the "amount_liters" field.
 func (fuc *FuelUpCreate) SetAmountLiters(f float64) *FuelUpCreate {
 	fuc.mutation.SetAmountLiters(f)
-	return fuc
-}
-
-// SetCost sets the "cost" field.
-func (fuc *FuelUpCreate) SetCost(f float64) *FuelUpCreate {
-	fuc.mutation.SetCost(f)
 	return fuc
 }
 
@@ -167,6 +162,25 @@ func (fuc *FuelUpCreate) SetOdometerReading(o *OdometerReading) *FuelUpCreate {
 	return fuc.SetOdometerReadingID(o.ID)
 }
 
+// SetExpenseID sets the "expense" edge to the Expense entity by ID.
+func (fuc *FuelUpCreate) SetExpenseID(id uuid.UUID) *FuelUpCreate {
+	fuc.mutation.SetExpenseID(id)
+	return fuc
+}
+
+// SetNillableExpenseID sets the "expense" edge to the Expense entity by ID if the given value is not nil.
+func (fuc *FuelUpCreate) SetNillableExpenseID(id *uuid.UUID) *FuelUpCreate {
+	if id != nil {
+		fuc = fuc.SetExpenseID(*id)
+	}
+	return fuc
+}
+
+// SetExpense sets the "expense" edge to the Expense entity.
+func (fuc *FuelUpCreate) SetExpense(e *Expense) *FuelUpCreate {
+	return fuc.SetExpenseID(e.ID)
+}
+
 // Mutation returns the FuelUpMutation object of the builder.
 func (fuc *FuelUpCreate) Mutation() *FuelUpMutation {
 	return fuc.mutation
@@ -236,9 +250,6 @@ func (fuc *FuelUpCreate) check() error {
 	}
 	if _, ok := fuc.mutation.AmountLiters(); !ok {
 		return &ValidationError{Name: "amount_liters", err: errors.New(`ent: missing required field "FuelUp.amount_liters"`)}
-	}
-	if _, ok := fuc.mutation.Cost(); !ok {
-		return &ValidationError{Name: "cost", err: errors.New(`ent: missing required field "FuelUp.cost"`)}
 	}
 	if _, ok := fuc.mutation.FuelCategory(); !ok {
 		return &ValidationError{Name: "fuel_category", err: errors.New(`ent: missing required field "FuelUp.fuel_category"`)}
@@ -314,10 +325,6 @@ func (fuc *FuelUpCreate) createSpec() (*FuelUp, *sqlgraph.CreateSpec) {
 		_spec.SetField(fuelup.FieldAmountLiters, field.TypeFloat64, value)
 		_node.AmountLiters = value
 	}
-	if value, ok := fuc.mutation.Cost(); ok {
-		_spec.SetField(fuelup.FieldCost, field.TypeFloat64, value)
-		_node.Cost = value
-	}
 	if value, ok := fuc.mutation.FuelCategory(); ok {
 		_spec.SetField(fuelup.FieldFuelCategory, field.TypeEnum, value)
 		_node.FuelCategory = value
@@ -366,6 +373,22 @@ func (fuc *FuelUpCreate) createSpec() (*FuelUp, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.odometer_reading_fuel_up = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := fuc.mutation.ExpenseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   fuelup.ExpenseTable,
+			Columns: []string{fuelup.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
