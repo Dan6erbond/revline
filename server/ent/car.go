@@ -72,11 +72,13 @@ type CarEdges struct {
 	Expenses []*Expense `json:"expenses,omitempty"`
 	// BannerImage holds the value of the banner_image edge.
 	BannerImage *Media `json:"banner_image,omitempty"`
+	// Tasks holds the value of the tasks edge.
+	Tasks []*Task `json:"tasks,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [13]bool
+	loadedTypes [14]bool
 	// totalCount holds the count of the edges above.
-	totalCount [13]map[string]int
+	totalCount [14]map[string]int
 
 	namedDragSessions     map[string][]*DragSession
 	namedFuelUps          map[string][]*FuelUp
@@ -89,6 +91,7 @@ type CarEdges struct {
 	namedDocuments        map[string][]*Document
 	namedDynoSessions     map[string][]*DynoSession
 	namedExpenses         map[string][]*Expense
+	namedTasks            map[string][]*Task
 }
 
 // OwnerOrErr returns the Owner value or an error if the edge
@@ -210,6 +213,15 @@ func (e CarEdges) BannerImageOrErr() (*Media, error) {
 		return nil, &NotFoundError{label: media.Label}
 	}
 	return nil, &NotLoadedError{edge: "banner_image"}
+}
+
+// TasksOrErr returns the Tasks value or an error if the edge
+// was not loaded in eager-loading.
+func (e CarEdges) TasksOrErr() ([]*Task, error) {
+	if e.loadedTypes[13] {
+		return e.Tasks, nil
+	}
+	return nil, &NotLoadedError{edge: "tasks"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -393,6 +405,11 @@ func (c *Car) QueryExpenses() *ExpenseQuery {
 // QueryBannerImage queries the "banner_image" edge of the Car entity.
 func (c *Car) QueryBannerImage() *MediaQuery {
 	return NewCarClient(c.config).QueryBannerImage(c)
+}
+
+// QueryTasks queries the "tasks" edge of the Car entity.
+func (c *Car) QueryTasks() *TaskQuery {
+	return NewCarClient(c.config).QueryTasks(c)
 }
 
 // Update returns a builder for updating this Car.
@@ -716,6 +733,30 @@ func (c *Car) appendNamedExpenses(name string, edges ...*Expense) {
 		c.Edges.namedExpenses[name] = []*Expense{}
 	} else {
 		c.Edges.namedExpenses[name] = append(c.Edges.namedExpenses[name], edges...)
+	}
+}
+
+// NamedTasks returns the Tasks named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (c *Car) NamedTasks(name string) ([]*Task, error) {
+	if c.Edges.namedTasks == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := c.Edges.namedTasks[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (c *Car) appendNamedTasks(name string, edges ...*Task) {
+	if c.Edges.namedTasks == nil {
+		c.Edges.namedTasks = make(map[string][]*Task)
+	}
+	if len(edges) == 0 {
+		c.Edges.namedTasks[name] = []*Task{}
+	} else {
+		c.Edges.namedTasks[name] = append(c.Edges.namedTasks[name], edges...)
 	}
 }
 

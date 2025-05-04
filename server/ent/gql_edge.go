@@ -176,6 +176,27 @@ func (c *Car) BannerImage(ctx context.Context) (*Media, error) {
 	return result, MaskNotFound(err)
 }
 
+func (c *Car) Tasks(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy []*TaskOrder, where *TaskWhereInput,
+) (*TaskConnection, error) {
+	opts := []TaskPaginateOption{
+		WithTaskOrder(orderBy),
+		WithTaskFilter(where.Filter),
+	}
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := c.Edges.totalCount[13][alias]
+	if nodes, err := c.NamedTasks(alias); err == nil || hasTotalCount {
+		pager, err := newTaskPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &TaskConnection{Edges: []*TaskEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
+	}
+	return c.QueryTasks().Paginate(ctx, after, first, before, last, opts...)
+}
+
 func (cs *CheckoutSession) User(ctx context.Context) (*User, error) {
 	result, err := cs.Edges.UserOrErr()
 	if IsNotLoaded(err) {
@@ -478,6 +499,14 @@ func (s *Subscription) CheckoutSession(ctx context.Context) (*CheckoutSession, e
 		result, err = s.QueryCheckoutSession().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (t *Task) Car(ctx context.Context) (*Car, error) {
+	result, err := t.Edges.CarOrErr()
+	if IsNotLoaded(err) {
+		result, err = t.QueryCar().Only(ctx)
+	}
+	return result, err
 }
 
 func (u *User) Cars(ctx context.Context) (result []*Car, err error) {

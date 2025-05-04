@@ -25,6 +25,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/serviceitem"
 	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
+	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/google/uuid"
 )
@@ -49,6 +50,7 @@ type CarQuery struct {
 	withDynoSessions          *DynoSessionQuery
 	withExpenses              *ExpenseQuery
 	withBannerImage           *MediaQuery
+	withTasks                 *TaskQuery
 	withFKs                   bool
 	modifiers                 []func(*sql.Selector)
 	loadTotal                 []func(context.Context, []*Car) error
@@ -63,6 +65,7 @@ type CarQuery struct {
 	withNamedDocuments        map[string]*DocumentQuery
 	withNamedDynoSessions     map[string]*DynoSessionQuery
 	withNamedExpenses         map[string]*ExpenseQuery
+	withNamedTasks            map[string]*TaskQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -385,6 +388,28 @@ func (cq *CarQuery) QueryBannerImage() *MediaQuery {
 	return query
 }
 
+// QueryTasks chains the current query on the "tasks" edge.
+func (cq *CarQuery) QueryTasks() *TaskQuery {
+	query := (&TaskClient{config: cq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, selector),
+			sqlgraph.To(task.Table, task.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.TasksTable, car.TasksColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Car entity from the query.
 // Returns a *NotFoundError when no Car was found.
 func (cq *CarQuery) First(ctx context.Context) (*Car, error) {
@@ -590,6 +615,7 @@ func (cq *CarQuery) Clone() *CarQuery {
 		withDynoSessions:     cq.withDynoSessions.Clone(),
 		withExpenses:         cq.withExpenses.Clone(),
 		withBannerImage:      cq.withBannerImage.Clone(),
+		withTasks:            cq.withTasks.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
@@ -739,6 +765,17 @@ func (cq *CarQuery) WithBannerImage(opts ...func(*MediaQuery)) *CarQuery {
 	return cq
 }
 
+// WithTasks tells the query-builder to eager-load the nodes that are connected to
+// the "tasks" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CarQuery) WithTasks(opts ...func(*TaskQuery)) *CarQuery {
+	query := (&TaskClient{config: cq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withTasks = query
+	return cq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -818,7 +855,7 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 		nodes       = []*Car{}
 		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
-		loadedTypes = [13]bool{
+		loadedTypes = [14]bool{
 			cq.withOwner != nil,
 			cq.withDragSessions != nil,
 			cq.withFuelUps != nil,
@@ -832,6 +869,7 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 			cq.withDynoSessions != nil,
 			cq.withExpenses != nil,
 			cq.withBannerImage != nil,
+			cq.withTasks != nil,
 		}
 	)
 	if cq.withOwner != nil || cq.withBannerImage != nil {
@@ -950,6 +988,13 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 			return nil, err
 		}
 	}
+	if query := cq.withTasks; query != nil {
+		if err := cq.loadTasks(ctx, query, nodes,
+			func(n *Car) { n.Edges.Tasks = []*Task{} },
+			func(n *Car, e *Task) { n.Edges.Tasks = append(n.Edges.Tasks, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range cq.withNamedDragSessions {
 		if err := cq.loadDragSessions(ctx, query, nodes,
 			func(n *Car) { n.appendNamedDragSessions(name) },
@@ -1024,6 +1069,13 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 		if err := cq.loadExpenses(ctx, query, nodes,
 			func(n *Car) { n.appendNamedExpenses(name) },
 			func(n *Car, e *Expense) { n.appendNamedExpenses(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range cq.withNamedTasks {
+		if err := cq.loadTasks(ctx, query, nodes,
+			func(n *Car) { n.appendNamedTasks(name) },
+			func(n *Car, e *Task) { n.appendNamedTasks(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1440,6 +1492,37 @@ func (cq *CarQuery) loadBannerImage(ctx context.Context, query *MediaQuery, node
 	}
 	return nil
 }
+func (cq *CarQuery) loadTasks(ctx context.Context, query *TaskQuery, nodes []*Car, init func(*Car), assign func(*Car, *Task)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Car)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Task(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(car.TasksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.car_tasks
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "car_tasks" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "car_tasks" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (cq *CarQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := cq.querySpec()
@@ -1676,6 +1759,20 @@ func (cq *CarQuery) WithNamedExpenses(name string, opts ...func(*ExpenseQuery)) 
 		cq.withNamedExpenses = make(map[string]*ExpenseQuery)
 	}
 	cq.withNamedExpenses[name] = query
+	return cq
+}
+
+// WithNamedTasks tells the query-builder to eager-load the nodes that are connected to the "tasks"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (cq *CarQuery) WithNamedTasks(name string, opts ...func(*TaskQuery)) *CarQuery {
+	query := (&TaskClient{config: cq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if cq.withNamedTasks == nil {
+		cq.withNamedTasks = make(map[string]*TaskQuery)
+	}
+	cq.withNamedTasks[name] = query
 	return cq
 }
 

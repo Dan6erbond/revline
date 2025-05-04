@@ -9,6 +9,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/profile"
+	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/google/uuid"
 )
 
@@ -109,6 +110,7 @@ type CreateCarInput struct {
 	DynoSessionIDs     []uuid.UUID
 	ExpenseIDs         []uuid.UUID
 	BannerImageID      *uuid.UUID
+	TaskIDs            []uuid.UUID
 }
 
 // Mutate applies the CreateCarInput on the CarMutation builder.
@@ -174,6 +176,9 @@ func (i *CreateCarInput) Mutate(m *CarMutation) {
 	if v := i.BannerImageID; v != nil {
 		m.SetBannerImageID(*v)
 	}
+	if v := i.TaskIDs; len(v) > 0 {
+		m.AddTaskIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateCarInput on the CarCreate builder.
@@ -233,6 +238,9 @@ type UpdateCarInput struct {
 	RemoveExpenseIDs         []uuid.UUID
 	ClearBannerImage         bool
 	BannerImageID            *uuid.UUID
+	ClearTasks               bool
+	AddTaskIDs               []uuid.UUID
+	RemoveTaskIDs            []uuid.UUID
 }
 
 // Mutate applies the UpdateCarInput on the CarMutation builder.
@@ -383,6 +391,15 @@ func (i *UpdateCarInput) Mutate(m *CarMutation) {
 	}
 	if v := i.BannerImageID; v != nil {
 		m.SetBannerImageID(*v)
+	}
+	if i.ClearTasks {
+		m.ClearTasks()
+	}
+	if v := i.AddTaskIDs; len(v) > 0 {
+		m.AddTaskIDs(v...)
+	}
+	if v := i.RemoveTaskIDs; len(v) > 0 {
+		m.RemoveTaskIDs(v...)
 	}
 }
 
@@ -1840,6 +1857,78 @@ func (c *ServiceScheduleUpdate) SetInput(i UpdateServiceScheduleInput) *ServiceS
 
 // SetInput applies the change-set in the UpdateServiceScheduleInput on the ServiceScheduleUpdateOne builder.
 func (c *ServiceScheduleUpdateOne) SetInput(i UpdateServiceScheduleInput) *ServiceScheduleUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateTaskInput represents a mutation input for creating tasks.
+type CreateTaskInput struct {
+	CreateTime *time.Time
+	UpdateTime *time.Time
+	Status     task.Status
+	Title      string
+	Rank       *float64
+	CarID      uuid.UUID
+}
+
+// Mutate applies the CreateTaskInput on the TaskMutation builder.
+func (i *CreateTaskInput) Mutate(m *TaskMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	m.SetStatus(i.Status)
+	m.SetTitle(i.Title)
+	if v := i.Rank; v != nil {
+		m.SetRank(*v)
+	}
+	m.SetCarID(i.CarID)
+}
+
+// SetInput applies the change-set in the CreateTaskInput on the TaskCreate builder.
+func (c *TaskCreate) SetInput(i CreateTaskInput) *TaskCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateTaskInput represents a mutation input for updating tasks.
+type UpdateTaskInput struct {
+	UpdateTime *time.Time
+	Status     *task.Status
+	Title      *string
+	Rank       *float64
+	CarID      *uuid.UUID
+}
+
+// Mutate applies the UpdateTaskInput on the TaskMutation builder.
+func (i *UpdateTaskInput) Mutate(m *TaskMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.Status; v != nil {
+		m.SetStatus(*v)
+	}
+	if v := i.Title; v != nil {
+		m.SetTitle(*v)
+	}
+	if v := i.Rank; v != nil {
+		m.SetRank(*v)
+	}
+	if v := i.CarID; v != nil {
+		m.SetCarID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateTaskInput on the TaskUpdate builder.
+func (c *TaskUpdate) SetInput(i UpdateTaskInput) *TaskUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateTaskInput on the TaskUpdateOne builder.
+func (c *TaskUpdateOne) SetInput(i UpdateTaskInput) *TaskUpdateOne {
 	i.Mutate(c.Mutation())
 	return c
 }

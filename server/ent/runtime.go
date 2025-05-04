@@ -23,6 +23,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
 	"github.com/Dan6erbond/revline/ent/subscription"
+	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/google/uuid"
 )
@@ -386,6 +387,33 @@ func init() {
 	subscriptionDescID := subscriptionFields[0].Descriptor()
 	// subscription.DefaultID holds the default value on creation for the id field.
 	subscription.DefaultID = subscriptionDescID.Default.(func() uuid.UUID)
+	taskMixin := schema.Task{}.Mixin()
+	taskMixinFields0 := taskMixin[0].Fields()
+	_ = taskMixinFields0
+	taskFields := schema.Task{}.Fields()
+	_ = taskFields
+	// taskDescCreateTime is the schema descriptor for create_time field.
+	taskDescCreateTime := taskMixinFields0[0].Descriptor()
+	// task.DefaultCreateTime holds the default value on creation for the create_time field.
+	task.DefaultCreateTime = taskDescCreateTime.Default.(func() time.Time)
+	// taskDescUpdateTime is the schema descriptor for update_time field.
+	taskDescUpdateTime := taskMixinFields0[1].Descriptor()
+	// task.DefaultUpdateTime holds the default value on creation for the update_time field.
+	task.DefaultUpdateTime = taskDescUpdateTime.Default.(func() time.Time)
+	// task.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	task.UpdateDefaultUpdateTime = taskDescUpdateTime.UpdateDefault.(func() time.Time)
+	// taskDescTitle is the schema descriptor for title field.
+	taskDescTitle := taskFields[2].Descriptor()
+	// task.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	task.TitleValidator = taskDescTitle.Validators[0].(func(string) error)
+	// taskDescRank is the schema descriptor for rank field.
+	taskDescRank := taskFields[3].Descriptor()
+	// task.DefaultRank holds the default value on creation for the rank field.
+	task.DefaultRank = taskDescRank.Default.(float64)
+	// taskDescID is the schema descriptor for id field.
+	taskDescID := taskFields[0].Descriptor()
+	// task.DefaultID holds the default value on creation for the id field.
+	task.DefaultID = taskDescID.Default.(func() uuid.UUID)
 	userMixin := schema.User{}.Mixin()
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0

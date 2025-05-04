@@ -21,6 +21,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
 	"github.com/Dan6erbond/revline/ent/subscription"
+	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/user"
 
 	"entgo.io/ent/dialect/sql"
@@ -31,7 +32,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 18)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 19)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   album.Table,
@@ -362,6 +363,24 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[17] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   task.Table,
+			Columns: task.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: task.FieldID,
+			},
+		},
+		Type: "Task",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			task.FieldCreateTime: {Type: field.TypeTime, Column: task.FieldCreateTime},
+			task.FieldUpdateTime: {Type: field.TypeTime, Column: task.FieldUpdateTime},
+			task.FieldStatus:     {Type: field.TypeEnum, Column: task.FieldStatus},
+			task.FieldTitle:      {Type: field.TypeString, Column: task.FieldTitle},
+			task.FieldRank:       {Type: field.TypeFloat64, Column: task.FieldRank},
+		},
+	}
+	graph.Nodes[18] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -556,6 +575,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Car",
 		"Media",
+	)
+	graph.MustAddE(
+		"tasks",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.TasksTable,
+			Columns: []string{car.TasksColumn},
+			Bidi:    false,
+		},
+		"Car",
+		"Task",
 	)
 	graph.MustAddE(
 		"user",
@@ -966,6 +997,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"CheckoutSession",
 	)
 	graph.MustAddE(
+		"car",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.CarTable,
+			Columns: []string{task.CarColumn},
+			Bidi:    false,
+		},
+		"Task",
+		"Car",
+	)
+	graph.MustAddE(
 		"cars",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1361,6 +1404,20 @@ func (f *CarFilter) WhereHasBannerImage() {
 // WhereHasBannerImageWith applies a predicate to check if query has an edge banner_image with a given conditions (other predicates).
 func (f *CarFilter) WhereHasBannerImageWith(preds ...predicate.Media) {
 	f.Where(entql.HasEdgeWith("banner_image", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasTasks applies a predicate to check if query has an edge tasks.
+func (f *CarFilter) WhereHasTasks() {
+	f.Where(entql.HasEdge("tasks"))
+}
+
+// WhereHasTasksWith applies a predicate to check if query has an edge tasks with a given conditions (other predicates).
+func (f *CarFilter) WhereHasTasksWith(preds ...predicate.Task) {
+	f.Where(entql.HasEdgeWith("tasks", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -2924,6 +2981,85 @@ func (f *SubscriptionFilter) WhereHasCheckoutSessionWith(preds ...predicate.Chec
 }
 
 // addPredicate implements the predicateAdder interface.
+func (tq *TaskQuery) addPredicate(pred func(s *sql.Selector)) {
+	tq.predicates = append(tq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the TaskQuery builder.
+func (tq *TaskQuery) Filter() *TaskFilter {
+	return &TaskFilter{config: tq.config, predicateAdder: tq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *TaskMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the TaskMutation builder.
+func (m *TaskMutation) Filter() *TaskFilter {
+	return &TaskFilter{config: m.config, predicateAdder: m}
+}
+
+// TaskFilter provides a generic filtering capability at runtime for TaskQuery.
+type TaskFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *TaskFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[17].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *TaskFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(task.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *TaskFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(task.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *TaskFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(task.FieldUpdateTime))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *TaskFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(task.FieldStatus))
+}
+
+// WhereTitle applies the entql string predicate on the title field.
+func (f *TaskFilter) WhereTitle(p entql.StringP) {
+	f.Where(p.Field(task.FieldTitle))
+}
+
+// WhereRank applies the entql float64 predicate on the rank field.
+func (f *TaskFilter) WhereRank(p entql.Float64P) {
+	f.Where(p.Field(task.FieldRank))
+}
+
+// WhereHasCar applies a predicate to check if query has an edge car.
+func (f *TaskFilter) WhereHasCar() {
+	f.Where(entql.HasEdge("car"))
+}
+
+// WhereHasCarWith applies a predicate to check if query has an edge car with a given conditions (other predicates).
+func (f *TaskFilter) WhereHasCarWith(preds ...predicate.Car) {
+	f.Where(entql.HasEdgeWith("car", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (uq *UserQuery) addPredicate(pred func(s *sql.Selector)) {
 	uq.predicates = append(uq.predicates, pred)
 }
@@ -2952,7 +3088,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[17].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[18].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

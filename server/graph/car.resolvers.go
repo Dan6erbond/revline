@@ -533,6 +533,22 @@ func (r *mutationResolver) UpdateAlbum(ctx context.Context, id string, input ent
 	return r.entClient.Album.UpdateOneID(uid).SetInput(input).Save(ctx)
 }
 
+// CreateTask is the resolver for the createTask field.
+func (r *mutationResolver) CreateTask(ctx context.Context, input ent.CreateTaskInput) (*ent.Task, error) {
+	return r.entClient.Task.Create().SetInput(input).Save(ctx)
+}
+
+// UpdateTask is the resolver for the updateTask field.
+func (r *mutationResolver) UpdateTask(ctx context.Context, id string, input ent.UpdateTaskInput) (*ent.Task, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.Task.UpdateOneID(uid).SetInput(input).Save(ctx)
+}
+
 // Car is the resolver for the car field.
 func (r *queryResolver) Car(ctx context.Context, id string) (*ent.Car, error) {
 	uid, err := uuid.Parse(id)

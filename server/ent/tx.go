@@ -46,6 +46,8 @@ type Tx struct {
 	ServiceSchedule *ServiceScheduleClient
 	// Subscription is the client for interacting with the Subscription builders.
 	Subscription *SubscriptionClient
+	// Task is the client for interacting with the Task builders.
+	Task *TaskClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -196,6 +198,7 @@ func (tx *Tx) init() {
 	tx.ServiceLog = NewServiceLogClient(tx.config)
 	tx.ServiceSchedule = NewServiceScheduleClient(tx.config)
 	tx.Subscription = NewSubscriptionClient(tx.config)
+	tx.Task = NewTaskClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

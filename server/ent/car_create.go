@@ -22,6 +22,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/serviceitem"
 	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
+	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/google/uuid"
 )
@@ -352,6 +353,21 @@ func (cc *CarCreate) SetNillableBannerImageID(id *uuid.UUID) *CarCreate {
 // SetBannerImage sets the "banner_image" edge to the Media entity.
 func (cc *CarCreate) SetBannerImage(m *Media) *CarCreate {
 	return cc.SetBannerImageID(m.ID)
+}
+
+// AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
+func (cc *CarCreate) AddTaskIDs(ids ...uuid.UUID) *CarCreate {
+	cc.mutation.AddTaskIDs(ids...)
+	return cc
+}
+
+// AddTasks adds the "tasks" edges to the Task entity.
+func (cc *CarCreate) AddTasks(t ...*Task) *CarCreate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cc.AddTaskIDs(ids...)
 }
 
 // Mutation returns the CarMutation object of the builder.
@@ -689,6 +705,22 @@ func (cc *CarCreate) createSpec() (*Car, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.car_banner_image = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.TasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.TasksTable,
+			Columns: []string{car.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

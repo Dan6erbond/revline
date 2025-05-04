@@ -487,6 +487,30 @@ var (
 			},
 		},
 	}
+	// TasksColumns holds the columns for the "tasks" table.
+	TasksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"backlog", "todo", "in_progress", "blocked", "completed"}},
+		{Name: "title", Type: field.TypeString},
+		{Name: "rank", Type: field.TypeFloat64, Default: 0},
+		{Name: "car_tasks", Type: field.TypeUUID},
+	}
+	// TasksTable holds the schema information for the "tasks" table.
+	TasksTable = &schema.Table{
+		Name:       "tasks",
+		Columns:    TasksColumns,
+		PrimaryKey: []*schema.Column{TasksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "tasks_cars_tasks",
+				Columns:    []*schema.Column{TasksColumns[6]},
+				RefColumns: []*schema.Column{CarsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -595,6 +619,7 @@ var (
 		ServiceLogsTable,
 		ServiceSchedulesTable,
 		SubscriptionsTable,
+		TasksTable,
 		UsersTable,
 		AlbumMediaTable,
 		ServiceLogItemsTable,
@@ -627,6 +652,7 @@ func init() {
 	ServiceSchedulesTable.ForeignKeys[0].RefTable = CarsTable
 	SubscriptionsTable.ForeignKeys[0].RefTable = CheckoutSessionsTable
 	SubscriptionsTable.ForeignKeys[1].RefTable = UsersTable
+	TasksTable.ForeignKeys[0].RefTable = CarsTable
 	AlbumMediaTable.ForeignKeys[0].RefTable = AlbumsTable
 	AlbumMediaTable.ForeignKeys[1].RefTable = MediaTable
 	ServiceLogItemsTable.ForeignKeys[0].RefTable = ServiceLogsTable

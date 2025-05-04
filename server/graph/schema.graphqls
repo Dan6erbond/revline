@@ -14,7 +14,7 @@ scalar Upload
 
 directive @loggedIn on FIELD_DEFINITION
 
-type Query {
+extend type Query {
   me: User! @loggedIn
 }
 

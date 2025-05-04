@@ -29,6 +29,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
 	"github.com/Dan6erbond/revline/ent/subscription"
+	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/user"
 )
 
@@ -107,6 +108,7 @@ func checkColumn(table, column string) error {
 			servicelog.Table:      servicelog.ValidColumn,
 			serviceschedule.Table: serviceschedule.ValidColumn,
 			subscription.Table:    subscription.ValidColumn,
+			task.Table:            task.ValidColumn,
 			user.Table:            user.ValidColumn,
 		})
 	})

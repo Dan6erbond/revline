@@ -58,6 +58,8 @@ func (Car) Edges() []ent.Edge {
 		edge.To("expenses", Expense.Type),
 		edge.To("banner_image", Media.Type).
 			Unique(),
+		edge.To("tasks", Task.Type).
+			Annotations(entgql.RelayConnection()),
 	}
 }
 

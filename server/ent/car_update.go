@@ -24,6 +24,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/serviceitem"
 	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
+	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/google/uuid"
 )
@@ -371,6 +372,21 @@ func (cu *CarUpdate) SetBannerImage(m *Media) *CarUpdate {
 	return cu.SetBannerImageID(m.ID)
 }
 
+// AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
+func (cu *CarUpdate) AddTaskIDs(ids ...uuid.UUID) *CarUpdate {
+	cu.mutation.AddTaskIDs(ids...)
+	return cu
+}
+
+// AddTasks adds the "tasks" edges to the Task entity.
+func (cu *CarUpdate) AddTasks(t ...*Task) *CarUpdate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cu.AddTaskIDs(ids...)
+}
+
 // Mutation returns the CarMutation object of the builder.
 func (cu *CarUpdate) Mutation() *CarMutation {
 	return cu.mutation
@@ -617,6 +633,27 @@ func (cu *CarUpdate) RemoveExpenses(e ...*Expense) *CarUpdate {
 func (cu *CarUpdate) ClearBannerImage() *CarUpdate {
 	cu.mutation.ClearBannerImage()
 	return cu
+}
+
+// ClearTasks clears all "tasks" edges to the Task entity.
+func (cu *CarUpdate) ClearTasks() *CarUpdate {
+	cu.mutation.ClearTasks()
+	return cu
+}
+
+// RemoveTaskIDs removes the "tasks" edge to Task entities by IDs.
+func (cu *CarUpdate) RemoveTaskIDs(ids ...uuid.UUID) *CarUpdate {
+	cu.mutation.RemoveTaskIDs(ids...)
+	return cu
+}
+
+// RemoveTasks removes "tasks" edges to Task entities.
+func (cu *CarUpdate) RemoveTasks(t ...*Task) *CarUpdate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cu.RemoveTaskIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1256,6 +1293,51 @@ func (cu *CarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if cu.mutation.TasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.TasksTable,
+			Columns: []string{car.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedTasksIDs(); len(nodes) > 0 && !cu.mutation.TasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.TasksTable,
+			Columns: []string{car.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.TasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.TasksTable,
+			Columns: []string{car.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{car.Label}
@@ -1606,6 +1688,21 @@ func (cuo *CarUpdateOne) SetBannerImage(m *Media) *CarUpdateOne {
 	return cuo.SetBannerImageID(m.ID)
 }
 
+// AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
+func (cuo *CarUpdateOne) AddTaskIDs(ids ...uuid.UUID) *CarUpdateOne {
+	cuo.mutation.AddTaskIDs(ids...)
+	return cuo
+}
+
+// AddTasks adds the "tasks" edges to the Task entity.
+func (cuo *CarUpdateOne) AddTasks(t ...*Task) *CarUpdateOne {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cuo.AddTaskIDs(ids...)
+}
+
 // Mutation returns the CarMutation object of the builder.
 func (cuo *CarUpdateOne) Mutation() *CarMutation {
 	return cuo.mutation
@@ -1852,6 +1949,27 @@ func (cuo *CarUpdateOne) RemoveExpenses(e ...*Expense) *CarUpdateOne {
 func (cuo *CarUpdateOne) ClearBannerImage() *CarUpdateOne {
 	cuo.mutation.ClearBannerImage()
 	return cuo
+}
+
+// ClearTasks clears all "tasks" edges to the Task entity.
+func (cuo *CarUpdateOne) ClearTasks() *CarUpdateOne {
+	cuo.mutation.ClearTasks()
+	return cuo
+}
+
+// RemoveTaskIDs removes the "tasks" edge to Task entities by IDs.
+func (cuo *CarUpdateOne) RemoveTaskIDs(ids ...uuid.UUID) *CarUpdateOne {
+	cuo.mutation.RemoveTaskIDs(ids...)
+	return cuo
+}
+
+// RemoveTasks removes "tasks" edges to Task entities.
+func (cuo *CarUpdateOne) RemoveTasks(t ...*Task) *CarUpdateOne {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cuo.RemoveTaskIDs(ids...)
 }
 
 // Where appends a list predicates to the CarUpdate builder.
@@ -2514,6 +2632,51 @@ func (cuo *CarUpdateOne) sqlSave(ctx context.Context) (_node *Car, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.TasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.TasksTable,
+			Columns: []string{car.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedTasksIDs(); len(nodes) > 0 && !cuo.mutation.TasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.TasksTable,
+			Columns: []string{car.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.TasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.TasksTable,
+			Columns: []string{car.TasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

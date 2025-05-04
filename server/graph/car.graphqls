@@ -78,4 +78,6 @@ extend type Mutation {
   createDynoResult(input: CreateDynoResultInput!): DynoResult! @loggedIn
   createAlbum(input: CreateAlbumInput!): Album! @loggedIn
   updateAlbum(id: ID!, input: UpdateAlbumInput!): Album! @loggedIn
+  createTask(input: CreateTaskInput!): Task! @loggedIn
+  updateTask(id: ID!, input: UpdateTaskInput!): Task! @loggedIn
 }
