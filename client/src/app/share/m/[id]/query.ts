@@ -8,6 +8,9 @@ export const getMedia = graphql(`
       description
       url
       ...MediaItem
+      metadata {
+        contentType
+      }
       car {
         id
         name
