@@ -116,8 +116,8 @@ export default function MediaItem({
 
   return (
     <>
-      <Card className="relative group h-[400px]" isPressable onPress={onOpen}>
-        <div className="absolute top-6 right-6 z-20 hidden group-hover:block">
+      <Card className="relative h-[400px]" isPressable onPress={onOpen}>
+        <div className="absolute top-6 right-6 z-20">
           <Dropdown onClick={(e) => e.stopPropagation()}>
             <DropdownTrigger asChild>
               <Button

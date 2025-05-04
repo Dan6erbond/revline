@@ -103,7 +103,7 @@ export default function Create() {
                           startContent={
                             <Image
                               alt={item.data?.id}
-                              className="flex-shrink-0"
+                              className="flex-shrink-0 object-cover"
                               height={25}
                               width={25}
                               src={item.data?.url}
@@ -125,7 +125,7 @@ export default function Create() {
                     <div className="flex gap-2 items-center">
                       <Image
                         alt={id}
-                        className="flex-shrink-0"
+                        className="flex-shrink-0 object-cover"
                         height={50}
                         width={50}
                         src={url}
@@ -141,7 +141,7 @@ export default function Create() {
                 )}
               </Select>
             )}
-          ></Controller>
+          />
           <Button type="submit" className="self-end" isLoading={loading}>
             Create
           </Button>
