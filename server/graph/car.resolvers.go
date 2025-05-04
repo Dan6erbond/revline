@@ -15,6 +15,7 @@ import (
 	"github.com/Dan6erbond/revline/auth"
 	"github.com/Dan6erbond/revline/ent"
 	"github.com/Dan6erbond/revline/ent/album"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -604,6 +605,7 @@ func (r *createFuelUpInputResolver) Cost(ctx context.Context, obj *ent.CreateFue
 
 	ex, err := c.Expense.Create().
 		SetCarID(obj.CarID).
+		SetType(expense.TypeFuel).
 		SetAmount(data).
 		SetNotes("Created by fuel-up").
 		SetOccurredAt(obj.OccurredAt).
@@ -649,6 +651,7 @@ func (r *createServiceLogInputResolver) Cost(ctx context.Context, obj *ent.Creat
 
 		ex, err := c.Expense.Create().
 			SetCarID(obj.CarID).
+			SetType(expense.TypeService).
 			SetAmount(*data).
 			SetNotes("Created by service log").
 			SetOccurredAt(obj.DatePerformed).
