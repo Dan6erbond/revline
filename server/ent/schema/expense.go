@@ -25,6 +25,8 @@ func (Expense) Fields() []ent.Field {
 			NamedValues(
 				"Fuel", "fuel",
 				"Service", "service",
+				"Insurance", "insurance",
+				"Tax", "tax",
 				"Other", "other",
 			),
 		field.Float("amount").

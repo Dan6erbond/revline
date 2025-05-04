@@ -1050,6 +1050,8 @@ ExpenseType is enum for the field type
 enum ExpenseType @goModel(model: "github.com/Dan6erbond/revline/ent/expense.Type") {
   fuel
   service
+  insurance
+  tax
   other
 }
 """

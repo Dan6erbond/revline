@@ -191,7 +191,7 @@ var (
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "occurred_at", Type: field.TypeTime},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"fuel", "service", "other"}},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"fuel", "service", "insurance", "tax", "other"}},
 		{Name: "amount", Type: field.TypeFloat64},
 		{Name: "notes", Type: field.TypeString, Nullable: true},
 		{Name: "car_expenses", Type: field.TypeUUID},
