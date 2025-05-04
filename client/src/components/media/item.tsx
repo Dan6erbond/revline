@@ -21,6 +21,7 @@ import { Copy, Link, MoreHorizontal } from "lucide-react";
 import { FragmentType, graphql, useFragment } from "@/gql";
 import { Key, useState } from "react";
 
+import { CollectionElement } from "@react-types/shared";
 import { MediaItemFields } from "./shared";
 import useDebounce from "@/hooks/use-debounce";
 import { useHref } from "@/utils/use-href";
@@ -36,8 +37,14 @@ const updateMedia = graphql(`
 
 export default function MediaItem({
   item,
+  dropdownMenuChildren,
+  onAction: onActionParent,
 }: {
   item: FragmentType<typeof MediaItemFields>;
+  dropdownMenuChildren?:
+    | CollectionElement<object>
+    | CollectionElement<object>[];
+  onAction?(key: Key): void;
 }) {
   const href = useHref();
 
@@ -111,8 +118,16 @@ export default function MediaItem({
         });
 
         break;
+      default:
+        onActionParent?.(key);
     }
   };
+
+  const dropdownItems = [
+    <DropdownItem key="copy" startContent={<Copy />}>
+      Copy Share Link
+    </DropdownItem>,
+  ];
 
   return (
     <>
@@ -129,9 +144,11 @@ export default function MediaItem({
               </Button>
             </DropdownTrigger>
             <DropdownMenu className="w-48" onAction={onAction}>
-              <DropdownItem key="copy" startContent={<Copy />}>
-                Copy Share Link
-              </DropdownItem>
+              {Array.isArray(dropdownMenuChildren)
+                ? [...dropdownItems, ...dropdownMenuChildren]
+                : dropdownMenuChildren
+                ? [...dropdownItems, dropdownMenuChildren]
+                : dropdownItems}
             </DropdownMenu>
           </Dropdown>
         </div>
