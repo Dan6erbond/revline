@@ -47,7 +47,7 @@ export default function Performance() {
           items={tabs}
           variant="underlined"
           selectedKey={getQueryParam(router.query.tab) ?? tabs[0].id}
-          className="mt-2"
+          className="mt-2 max-w-full"
         >
           {({ id, icon, label, component: Component }) => (
             <Tab
