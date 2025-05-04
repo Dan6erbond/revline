@@ -4,6 +4,8 @@ export const getMedia = graphql(`
   query GetMedia($id: ID!) {
     media(id: $id) {
       id
+      title
+      description
       url
       metadata {
         contentType
