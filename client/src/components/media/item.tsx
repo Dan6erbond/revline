@@ -21,21 +21,10 @@ import { Copy, Link, MoreHorizontal } from "lucide-react";
 import { FragmentType, graphql, useFragment } from "@/gql";
 import { Key, useState } from "react";
 
-import useDebounce from "../../hooks/use-debounce";
+import { MediaItemFields } from "./shared";
+import useDebounce from "@/hooks/use-debounce";
+import { useHref } from "@/utils/use-href";
 import { useMutation } from "@apollo/client";
-import { useRouter } from "next/router";
-
-export const MediaItemFields = graphql(`
-  fragment MediaItem on Media {
-    id
-    url
-    title
-    description
-    metadata {
-      contentType
-    }
-  }
-`);
 
 const updateMedia = graphql(`
   mutation UpdateMedia($id: ID!, $input: UpdateMediaInput!) {
@@ -50,7 +39,7 @@ export default function MediaItem({
 }: {
   item: FragmentType<typeof MediaItemFields>;
 }) {
-  const router = useRouter();
+  const href = useHref();
 
   const [mutate, { loading }] = useMutation(updateMedia);
 
@@ -109,7 +98,7 @@ export default function MediaItem({
     switch (key) {
       case "copy":
         const shareUrl = new URL(
-          `${router.basePath}/share/m/${m.id}`,
+          href(`/share/m/${m.id}`),
           window.location.origin
         );
 

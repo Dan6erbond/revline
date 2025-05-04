@@ -1,13 +1,14 @@
 import { graphql } from "@/gql";
 
-export const getMedia = graphql(`
-  query GetMedia($id: ID!) {
-    media(id: $id) {
+export const getAlbum = graphql(`
+  query GetAlbum($id: ID!) {
+    album(id: $id) {
       id
       title
-      description
-      url
-      ...MediaItem
+      media {
+        id
+        ...MediaItem
+      }
       car {
         id
         name

@@ -1,5 +1,5 @@
-import { Album, ImageIcon, Images, Plus } from "lucide-react";
-import { Button, Card, CardBody, Image, Tab, Tabs } from "@heroui/react";
+import { Album, ImageIcon, Images, LinkIcon, Plus } from "lucide-react";
+import { Button, Card, CardBody, Image, Tab, Tabs, Tooltip, addToast } from "@heroui/react";
 
 import CarLayout from "@/components/layout/car-layout";
 import Link from "next/link";
@@ -7,6 +7,7 @@ import SubscriptionOverlay from "@/components/subscription-overlay";
 import { SubscriptionTier } from "@/gql/graphql";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
+import { useHref } from "@/utils/use-href";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
 
@@ -29,6 +30,7 @@ const getAlbums = graphql(`
 
 export default function Albums() {
   const router = useRouter();
+  const href = useHref()
 
   const { data } = useQuery(getAlbums, {
     variables: { id: getQueryParam(router.query.id) as string },
@@ -102,14 +104,39 @@ export default function Albums() {
                       <h3 className="text-lg font-semibold text-content1-foreground truncate">
                         {album.title}
                       </h3>
-                      <Button
-                        as={Link}
-                        href={`/cars/${router.query.id}/gallery/albums/${album.id}`}
-                        className="mt-2 w-full text-primary border-primary hover:bg-primary/10"
-                        variant="bordered"
-                      >
-                        View Album
-                      </Button>
+                      <div className="flex mt-2 gap-4">
+                        <Button
+                          as={Link}
+                          href={`/cars/${router.query.id}/gallery/albums/${album.id}`}
+                          className="w-full flex-1 text-primary border-primary hover:bg-primary/10"
+                          variant="bordered"
+                        >
+                          View Album
+                        </Button>
+                        <Tooltip content="Copy share link">
+                          <Button
+                            isIconOnly
+                            variant="light"
+                            onPress={() => {const shareUrl = new URL(
+                              href(`/share/a/${album.id}`),
+                              window.location.origin
+                            );
+
+                            navigator.clipboard
+                              .writeText(shareUrl.toString())
+                              .then(() => {
+                                addToast({
+                                  title: "Link copied",
+                                  description:
+                                    "The share link is now in your clipboard.",
+                                  color: "success",
+                                });
+                              });}}
+                          >
+                            <LinkIcon />
+                          </Button>
+                        </Tooltip>
+                      </div>
                     </CardBody>
                   </Card>
                 );

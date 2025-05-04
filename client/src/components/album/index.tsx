@@ -2,22 +2,10 @@ import { Input, Spinner } from "@heroui/react";
 import { useMutation, useSuspenseQuery } from "@apollo/client";
 
 import MediaItem from "@/components/media/item";
+import { getAlbum } from "@/components/album/shared";
 import { graphql } from "@/gql";
-import useDebounce from "../../hooks/use-debounce";
+import useDebounce from "@/hooks/use-debounce";
 import { useState } from "react";
-
-const getAlbum = graphql(`
-  query GetAlbum($id: ID!) {
-    album(id: $id) {
-      id
-      title
-      media {
-        id
-        ...MediaItem
-      }
-    }
-  }
-`);
 
 const updateAlbum = graphql(`
   mutation UpdateAlbum($id: ID!, $input: UpdateAlbumInput!) {

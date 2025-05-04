@@ -1,19 +1,17 @@
 "use client";
 
-import { Avatar, Card, CardBody, CardHeader, Image } from "@heroui/react";
+import { Avatar, Card, CardBody, CardHeader } from "@heroui/react";
 
+import MediaViewer from "@/components/media/viewer";
 import { getMedia } from "./query";
 import { useSuspenseQuery } from "@apollo/client";
 
 export default function Media({ id }: { id: string }) {
   const { data } = useSuspenseQuery(getMedia, { variables: { id } });
 
-  const { url, car, title, description, metadata } = data.media;
-  const { contentType } = metadata ?? {};
+  const { car, title, description } = data.media;
   const { name, owner } = car ?? {};
   const { email, profile } = owner ?? {};
-
-  const isVideo = contentType?.startsWith("video/");
 
   return (
     <div className="p-4 md:p-8">
@@ -33,17 +31,7 @@ export default function Media({ id }: { id: string }) {
           </div>
         </CardHeader>
         <CardBody className="gap-4">
-          {isVideo ? (
-            <video className="h-full w-full object-cover" controls>
-              <source src={url} type="video/mp4" />
-            </video>
-          ) : (
-            <Image
-              src={url}
-              alt={`Car media for ${name}`}
-              className="w-full h-auto rounded-xl border border-zinc-800"
-            />
-          )}
+          <MediaViewer item={data.media} />
           <div className="flex flex-col gap-2">
             <h3 className="text-content4-foreground">{description}</h3>
             <div className="flex gap-4 items-center">
