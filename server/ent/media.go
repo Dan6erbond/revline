@@ -23,6 +23,10 @@ type Media struct {
 	CreateTime time.Time `json:"create_time,omitempty"`
 	// UpdateTime holds the value of the "update_time" field.
 	UpdateTime time.Time `json:"update_time,omitempty"`
+	// Title holds the value of the "title" field.
+	Title *string `json:"title,omitempty"`
+	// Description holds the value of the "description" field.
+	Description *string `json:"description,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MediaQuery when eager-loading is set.
 	Edges        MediaEdges `json:"edges"`
@@ -34,11 +38,15 @@ type Media struct {
 type MediaEdges struct {
 	// Car holds the value of the car edge.
 	Car *Car `json:"car,omitempty"`
+	// Albums holds the value of the albums edge.
+	Albums []*Album `json:"albums,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
+	totalCount [2]map[string]int
+
+	namedAlbums map[string][]*Album
 }
 
 // CarOrErr returns the Car value or an error if the edge
@@ -52,11 +60,22 @@ func (e MediaEdges) CarOrErr() (*Car, error) {
 	return nil, &NotLoadedError{edge: "car"}
 }
 
+// AlbumsOrErr returns the Albums value or an error if the edge
+// was not loaded in eager-loading.
+func (e MediaEdges) AlbumsOrErr() ([]*Album, error) {
+	if e.loadedTypes[1] {
+		return e.Albums, nil
+	}
+	return nil, &NotLoadedError{edge: "albums"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Media) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case media.FieldTitle, media.FieldDescription:
+			values[i] = new(sql.NullString)
 		case media.FieldCreateTime, media.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
 		case media.FieldID:
@@ -96,6 +115,20 @@ func (m *Media) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				m.UpdateTime = value.Time
 			}
+		case media.FieldTitle:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field title", values[i])
+			} else if value.Valid {
+				m.Title = new(string)
+				*m.Title = value.String
+			}
+		case media.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				m.Description = new(string)
+				*m.Description = value.String
+			}
 		case media.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field car_media", values[i])
@@ -119,6 +152,11 @@ func (m *Media) Value(name string) (ent.Value, error) {
 // QueryCar queries the "car" edge of the Media entity.
 func (m *Media) QueryCar() *CarQuery {
 	return NewMediaClient(m.config).QueryCar(m)
+}
+
+// QueryAlbums queries the "albums" edge of the Media entity.
+func (m *Media) QueryAlbums() *AlbumQuery {
+	return NewMediaClient(m.config).QueryAlbums(m)
 }
 
 // Update returns a builder for updating this Media.
@@ -149,8 +187,42 @@ func (m *Media) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("update_time=")
 	builder.WriteString(m.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := m.Title; v != nil {
+		builder.WriteString("title=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := m.Description; v != nil {
+		builder.WriteString("description=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedAlbums returns the Albums named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (m *Media) NamedAlbums(name string) ([]*Album, error) {
+	if m.Edges.namedAlbums == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := m.Edges.namedAlbums[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (m *Media) appendNamedAlbums(name string, edges ...*Album) {
+	if m.Edges.namedAlbums == nil {
+		m.Edges.namedAlbums = make(map[string][]*Album)
+	}
+	if len(edges) == 0 {
+		m.Edges.namedAlbums[name] = []*Album{}
+	} else {
+		m.Edges.namedAlbums[name] = append(m.Edges.namedAlbums[name], edges...)
+	}
 }
 
 // MediaSlice is a parsable slice of Media.

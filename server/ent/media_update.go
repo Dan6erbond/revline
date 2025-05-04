@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -36,6 +37,46 @@ func (mu *MediaUpdate) SetUpdateTime(t time.Time) *MediaUpdate {
 	return mu
 }
 
+// SetTitle sets the "title" field.
+func (mu *MediaUpdate) SetTitle(s string) *MediaUpdate {
+	mu.mutation.SetTitle(s)
+	return mu
+}
+
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (mu *MediaUpdate) SetNillableTitle(s *string) *MediaUpdate {
+	if s != nil {
+		mu.SetTitle(*s)
+	}
+	return mu
+}
+
+// ClearTitle clears the value of the "title" field.
+func (mu *MediaUpdate) ClearTitle() *MediaUpdate {
+	mu.mutation.ClearTitle()
+	return mu
+}
+
+// SetDescription sets the "description" field.
+func (mu *MediaUpdate) SetDescription(s string) *MediaUpdate {
+	mu.mutation.SetDescription(s)
+	return mu
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (mu *MediaUpdate) SetNillableDescription(s *string) *MediaUpdate {
+	if s != nil {
+		mu.SetDescription(*s)
+	}
+	return mu
+}
+
+// ClearDescription clears the value of the "description" field.
+func (mu *MediaUpdate) ClearDescription() *MediaUpdate {
+	mu.mutation.ClearDescription()
+	return mu
+}
+
 // SetCarID sets the "car" edge to the Car entity by ID.
 func (mu *MediaUpdate) SetCarID(id uuid.UUID) *MediaUpdate {
 	mu.mutation.SetCarID(id)
@@ -55,6 +96,21 @@ func (mu *MediaUpdate) SetCar(c *Car) *MediaUpdate {
 	return mu.SetCarID(c.ID)
 }
 
+// AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
+func (mu *MediaUpdate) AddAlbumIDs(ids ...uuid.UUID) *MediaUpdate {
+	mu.mutation.AddAlbumIDs(ids...)
+	return mu
+}
+
+// AddAlbums adds the "albums" edges to the Album entity.
+func (mu *MediaUpdate) AddAlbums(a ...*Album) *MediaUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return mu.AddAlbumIDs(ids...)
+}
+
 // Mutation returns the MediaMutation object of the builder.
 func (mu *MediaUpdate) Mutation() *MediaMutation {
 	return mu.mutation
@@ -64,6 +120,27 @@ func (mu *MediaUpdate) Mutation() *MediaMutation {
 func (mu *MediaUpdate) ClearCar() *MediaUpdate {
 	mu.mutation.ClearCar()
 	return mu
+}
+
+// ClearAlbums clears all "albums" edges to the Album entity.
+func (mu *MediaUpdate) ClearAlbums() *MediaUpdate {
+	mu.mutation.ClearAlbums()
+	return mu
+}
+
+// RemoveAlbumIDs removes the "albums" edge to Album entities by IDs.
+func (mu *MediaUpdate) RemoveAlbumIDs(ids ...uuid.UUID) *MediaUpdate {
+	mu.mutation.RemoveAlbumIDs(ids...)
+	return mu
+}
+
+// RemoveAlbums removes "albums" edges to Album entities.
+func (mu *MediaUpdate) RemoveAlbums(a ...*Album) *MediaUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return mu.RemoveAlbumIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -114,6 +191,18 @@ func (mu *MediaUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := mu.mutation.UpdateTime(); ok {
 		_spec.SetField(media.FieldUpdateTime, field.TypeTime, value)
 	}
+	if value, ok := mu.mutation.Title(); ok {
+		_spec.SetField(media.FieldTitle, field.TypeString, value)
+	}
+	if mu.mutation.TitleCleared() {
+		_spec.ClearField(media.FieldTitle, field.TypeString)
+	}
+	if value, ok := mu.mutation.Description(); ok {
+		_spec.SetField(media.FieldDescription, field.TypeString, value)
+	}
+	if mu.mutation.DescriptionCleared() {
+		_spec.ClearField(media.FieldDescription, field.TypeString)
+	}
 	if mu.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -136,6 +225,51 @@ func (mu *MediaUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if mu.mutation.AlbumsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   media.AlbumsTable,
+			Columns: media.AlbumsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.RemovedAlbumsIDs(); len(nodes) > 0 && !mu.mutation.AlbumsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   media.AlbumsTable,
+			Columns: media.AlbumsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.AlbumsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   media.AlbumsTable,
+			Columns: media.AlbumsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -169,6 +303,46 @@ func (muo *MediaUpdateOne) SetUpdateTime(t time.Time) *MediaUpdateOne {
 	return muo
 }
 
+// SetTitle sets the "title" field.
+func (muo *MediaUpdateOne) SetTitle(s string) *MediaUpdateOne {
+	muo.mutation.SetTitle(s)
+	return muo
+}
+
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (muo *MediaUpdateOne) SetNillableTitle(s *string) *MediaUpdateOne {
+	if s != nil {
+		muo.SetTitle(*s)
+	}
+	return muo
+}
+
+// ClearTitle clears the value of the "title" field.
+func (muo *MediaUpdateOne) ClearTitle() *MediaUpdateOne {
+	muo.mutation.ClearTitle()
+	return muo
+}
+
+// SetDescription sets the "description" field.
+func (muo *MediaUpdateOne) SetDescription(s string) *MediaUpdateOne {
+	muo.mutation.SetDescription(s)
+	return muo
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (muo *MediaUpdateOne) SetNillableDescription(s *string) *MediaUpdateOne {
+	if s != nil {
+		muo.SetDescription(*s)
+	}
+	return muo
+}
+
+// ClearDescription clears the value of the "description" field.
+func (muo *MediaUpdateOne) ClearDescription() *MediaUpdateOne {
+	muo.mutation.ClearDescription()
+	return muo
+}
+
 // SetCarID sets the "car" edge to the Car entity by ID.
 func (muo *MediaUpdateOne) SetCarID(id uuid.UUID) *MediaUpdateOne {
 	muo.mutation.SetCarID(id)
@@ -188,6 +362,21 @@ func (muo *MediaUpdateOne) SetCar(c *Car) *MediaUpdateOne {
 	return muo.SetCarID(c.ID)
 }
 
+// AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
+func (muo *MediaUpdateOne) AddAlbumIDs(ids ...uuid.UUID) *MediaUpdateOne {
+	muo.mutation.AddAlbumIDs(ids...)
+	return muo
+}
+
+// AddAlbums adds the "albums" edges to the Album entity.
+func (muo *MediaUpdateOne) AddAlbums(a ...*Album) *MediaUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return muo.AddAlbumIDs(ids...)
+}
+
 // Mutation returns the MediaMutation object of the builder.
 func (muo *MediaUpdateOne) Mutation() *MediaMutation {
 	return muo.mutation
@@ -197,6 +386,27 @@ func (muo *MediaUpdateOne) Mutation() *MediaMutation {
 func (muo *MediaUpdateOne) ClearCar() *MediaUpdateOne {
 	muo.mutation.ClearCar()
 	return muo
+}
+
+// ClearAlbums clears all "albums" edges to the Album entity.
+func (muo *MediaUpdateOne) ClearAlbums() *MediaUpdateOne {
+	muo.mutation.ClearAlbums()
+	return muo
+}
+
+// RemoveAlbumIDs removes the "albums" edge to Album entities by IDs.
+func (muo *MediaUpdateOne) RemoveAlbumIDs(ids ...uuid.UUID) *MediaUpdateOne {
+	muo.mutation.RemoveAlbumIDs(ids...)
+	return muo
+}
+
+// RemoveAlbums removes "albums" edges to Album entities.
+func (muo *MediaUpdateOne) RemoveAlbums(a ...*Album) *MediaUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return muo.RemoveAlbumIDs(ids...)
 }
 
 // Where appends a list predicates to the MediaUpdate builder.
@@ -277,6 +487,18 @@ func (muo *MediaUpdateOne) sqlSave(ctx context.Context) (_node *Media, err error
 	if value, ok := muo.mutation.UpdateTime(); ok {
 		_spec.SetField(media.FieldUpdateTime, field.TypeTime, value)
 	}
+	if value, ok := muo.mutation.Title(); ok {
+		_spec.SetField(media.FieldTitle, field.TypeString, value)
+	}
+	if muo.mutation.TitleCleared() {
+		_spec.ClearField(media.FieldTitle, field.TypeString)
+	}
+	if value, ok := muo.mutation.Description(); ok {
+		_spec.SetField(media.FieldDescription, field.TypeString, value)
+	}
+	if muo.mutation.DescriptionCleared() {
+		_spec.ClearField(media.FieldDescription, field.TypeString)
+	}
 	if muo.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -299,6 +521,51 @@ func (muo *MediaUpdateOne) sqlSave(ctx context.Context) (_node *Media, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if muo.mutation.AlbumsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   media.AlbumsTable,
+			Columns: media.AlbumsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.RemovedAlbumsIDs(); len(nodes) > 0 && !muo.mutation.AlbumsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   media.AlbumsTable,
+			Columns: media.AlbumsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.AlbumsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   media.AlbumsTable,
+			Columns: media.AlbumsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

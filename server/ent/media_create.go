@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/google/uuid"
@@ -50,6 +51,34 @@ func (mc *MediaCreate) SetNillableUpdateTime(t *time.Time) *MediaCreate {
 	return mc
 }
 
+// SetTitle sets the "title" field.
+func (mc *MediaCreate) SetTitle(s string) *MediaCreate {
+	mc.mutation.SetTitle(s)
+	return mc
+}
+
+// SetNillableTitle sets the "title" field if the given value is not nil.
+func (mc *MediaCreate) SetNillableTitle(s *string) *MediaCreate {
+	if s != nil {
+		mc.SetTitle(*s)
+	}
+	return mc
+}
+
+// SetDescription sets the "description" field.
+func (mc *MediaCreate) SetDescription(s string) *MediaCreate {
+	mc.mutation.SetDescription(s)
+	return mc
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (mc *MediaCreate) SetNillableDescription(s *string) *MediaCreate {
+	if s != nil {
+		mc.SetDescription(*s)
+	}
+	return mc
+}
+
 // SetID sets the "id" field.
 func (mc *MediaCreate) SetID(u uuid.UUID) *MediaCreate {
 	mc.mutation.SetID(u)
@@ -81,6 +110,21 @@ func (mc *MediaCreate) SetNillableCarID(id *uuid.UUID) *MediaCreate {
 // SetCar sets the "car" edge to the Car entity.
 func (mc *MediaCreate) SetCar(c *Car) *MediaCreate {
 	return mc.SetCarID(c.ID)
+}
+
+// AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
+func (mc *MediaCreate) AddAlbumIDs(ids ...uuid.UUID) *MediaCreate {
+	mc.mutation.AddAlbumIDs(ids...)
+	return mc
+}
+
+// AddAlbums adds the "albums" edges to the Album entity.
+func (mc *MediaCreate) AddAlbums(a ...*Album) *MediaCreate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return mc.AddAlbumIDs(ids...)
 }
 
 // Mutation returns the MediaMutation object of the builder.
@@ -183,6 +227,14 @@ func (mc *MediaCreate) createSpec() (*Media, *sqlgraph.CreateSpec) {
 		_spec.SetField(media.FieldUpdateTime, field.TypeTime, value)
 		_node.UpdateTime = value
 	}
+	if value, ok := mc.mutation.Title(); ok {
+		_spec.SetField(media.FieldTitle, field.TypeString, value)
+		_node.Title = &value
+	}
+	if value, ok := mc.mutation.Description(); ok {
+		_spec.SetField(media.FieldDescription, field.TypeString, value)
+		_node.Description = &value
+	}
 	if nodes := mc.mutation.CarIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -198,6 +250,22 @@ func (mc *MediaCreate) createSpec() (*Media, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.car_media = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := mc.mutation.AlbumsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   media.AlbumsTable,
+			Columns: media.AlbumsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

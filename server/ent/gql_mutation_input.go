@@ -12,6 +12,80 @@ import (
 	"github.com/google/uuid"
 )
 
+// CreateAlbumInput represents a mutation input for creating albums.
+type CreateAlbumInput struct {
+	CreateTime *time.Time
+	UpdateTime *time.Time
+	Title      string
+	CarID      uuid.UUID
+	MediumIDs  []uuid.UUID
+}
+
+// Mutate applies the CreateAlbumInput on the AlbumMutation builder.
+func (i *CreateAlbumInput) Mutate(m *AlbumMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	m.SetTitle(i.Title)
+	m.SetCarID(i.CarID)
+	if v := i.MediumIDs; len(v) > 0 {
+		m.AddMediumIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the CreateAlbumInput on the AlbumCreate builder.
+func (c *AlbumCreate) SetInput(i CreateAlbumInput) *AlbumCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateAlbumInput represents a mutation input for updating albums.
+type UpdateAlbumInput struct {
+	UpdateTime      *time.Time
+	Title           *string
+	CarID           *uuid.UUID
+	ClearMedia      bool
+	AddMediumIDs    []uuid.UUID
+	RemoveMediumIDs []uuid.UUID
+}
+
+// Mutate applies the UpdateAlbumInput on the AlbumMutation builder.
+func (i *UpdateAlbumInput) Mutate(m *AlbumMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.Title; v != nil {
+		m.SetTitle(*v)
+	}
+	if v := i.CarID; v != nil {
+		m.SetCarID(*v)
+	}
+	if i.ClearMedia {
+		m.ClearMedia()
+	}
+	if v := i.AddMediumIDs; len(v) > 0 {
+		m.AddMediumIDs(v...)
+	}
+	if v := i.RemoveMediumIDs; len(v) > 0 {
+		m.RemoveMediumIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the UpdateAlbumInput on the AlbumUpdate builder.
+func (c *AlbumUpdate) SetInput(i UpdateAlbumInput) *AlbumUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateAlbumInput on the AlbumUpdateOne builder.
+func (c *AlbumUpdateOne) SetInput(i UpdateAlbumInput) *AlbumUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
 // CreateCarInput represents a mutation input for creating cars.
 type CreateCarInput struct {
 	CreateTime         *time.Time
@@ -30,6 +104,7 @@ type CreateCarInput struct {
 	ServiceLogIDs      []uuid.UUID
 	ServiceScheduleIDs []uuid.UUID
 	MediumIDs          []uuid.UUID
+	AlbumIDs           []uuid.UUID
 	DocumentIDs        []uuid.UUID
 	DynoSessionIDs     []uuid.UUID
 	ExpenseIDs         []uuid.UUID
@@ -83,6 +158,9 @@ func (i *CreateCarInput) Mutate(m *CarMutation) {
 	}
 	if v := i.MediumIDs; len(v) > 0 {
 		m.AddMediumIDs(v...)
+	}
+	if v := i.AlbumIDs; len(v) > 0 {
+		m.AddAlbumIDs(v...)
 	}
 	if v := i.DocumentIDs; len(v) > 0 {
 		m.AddDocumentIDs(v...)
@@ -141,6 +219,9 @@ type UpdateCarInput struct {
 	ClearMedia               bool
 	AddMediumIDs             []uuid.UUID
 	RemoveMediumIDs          []uuid.UUID
+	ClearAlbums              bool
+	AddAlbumIDs              []uuid.UUID
+	RemoveAlbumIDs           []uuid.UUID
 	ClearDocuments           bool
 	AddDocumentIDs           []uuid.UUID
 	RemoveDocumentIDs        []uuid.UUID
@@ -260,6 +341,15 @@ func (i *UpdateCarInput) Mutate(m *CarMutation) {
 	}
 	if v := i.RemoveMediumIDs; len(v) > 0 {
 		m.RemoveMediumIDs(v...)
+	}
+	if i.ClearAlbums {
+		m.ClearAlbums()
+	}
+	if v := i.AddAlbumIDs; len(v) > 0 {
+		m.AddAlbumIDs(v...)
+	}
+	if v := i.RemoveAlbumIDs; len(v) > 0 {
+		m.RemoveAlbumIDs(v...)
 	}
 	if i.ClearDocuments {
 		m.ClearDocuments()
@@ -936,9 +1026,12 @@ func (c *FuelUpUpdateOne) SetInput(i UpdateFuelUpInput) *FuelUpUpdateOne {
 
 // CreateMediaInput represents a mutation input for creating mediaslice.
 type CreateMediaInput struct {
-	CreateTime *time.Time
-	UpdateTime *time.Time
-	CarID      *uuid.UUID
+	CreateTime  *time.Time
+	UpdateTime  *time.Time
+	Title       *string
+	Description *string
+	CarID       *uuid.UUID
+	AlbumIDs    []uuid.UUID
 }
 
 // Mutate applies the CreateMediaInput on the MediaMutation builder.
@@ -949,8 +1042,17 @@ func (i *CreateMediaInput) Mutate(m *MediaMutation) {
 	if v := i.UpdateTime; v != nil {
 		m.SetUpdateTime(*v)
 	}
+	if v := i.Title; v != nil {
+		m.SetTitle(*v)
+	}
+	if v := i.Description; v != nil {
+		m.SetDescription(*v)
+	}
 	if v := i.CarID; v != nil {
 		m.SetCarID(*v)
+	}
+	if v := i.AlbumIDs; len(v) > 0 {
+		m.AddAlbumIDs(v...)
 	}
 }
 
@@ -962,9 +1064,16 @@ func (c *MediaCreate) SetInput(i CreateMediaInput) *MediaCreate {
 
 // UpdateMediaInput represents a mutation input for updating mediaslice.
 type UpdateMediaInput struct {
-	UpdateTime *time.Time
-	ClearCar   bool
-	CarID      *uuid.UUID
+	UpdateTime       *time.Time
+	ClearTitle       bool
+	Title            *string
+	ClearDescription bool
+	Description      *string
+	ClearCar         bool
+	CarID            *uuid.UUID
+	ClearAlbums      bool
+	AddAlbumIDs      []uuid.UUID
+	RemoveAlbumIDs   []uuid.UUID
 }
 
 // Mutate applies the UpdateMediaInput on the MediaMutation builder.
@@ -972,11 +1081,32 @@ func (i *UpdateMediaInput) Mutate(m *MediaMutation) {
 	if v := i.UpdateTime; v != nil {
 		m.SetUpdateTime(*v)
 	}
+	if i.ClearTitle {
+		m.ClearTitle()
+	}
+	if v := i.Title; v != nil {
+		m.SetTitle(*v)
+	}
+	if i.ClearDescription {
+		m.ClearDescription()
+	}
+	if v := i.Description; v != nil {
+		m.SetDescription(*v)
+	}
 	if i.ClearCar {
 		m.ClearCar()
 	}
 	if v := i.CarID; v != nil {
 		m.SetCarID(*v)
+	}
+	if i.ClearAlbums {
+		m.ClearAlbums()
+	}
+	if v := i.AddAlbumIDs; len(v) > 0 {
+		m.AddAlbumIDs(v...)
+	}
+	if v := i.RemoveAlbumIDs; len(v) > 0 {
+		m.RemoveAlbumIDs(v...)
 	}
 }
 

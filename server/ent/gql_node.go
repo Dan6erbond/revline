@@ -8,6 +8,7 @@ import (
 
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
@@ -33,6 +34,11 @@ import (
 type Noder interface {
 	IsNode()
 }
+
+var albumImplementors = []string{"Album", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*Album) IsNode() {}
 
 var carImplementors = []string{"Car", "Node"}
 
@@ -177,6 +183,15 @@ func (c *Client) Noder(ctx context.Context, id uuid.UUID, opts ...NodeOption) (_
 
 func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, error) {
 	switch table {
+	case album.Table:
+		query := c.Album.Query().
+			Where(album.ID(id))
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, albumImplementors...); err != nil {
+				return nil, err
+			}
+		}
+		return query.Only(ctx)
 	case car.Table:
 		query := c.Car.Query().
 			Where(car.ID(id))
@@ -403,6 +418,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		idmap[id] = append(idmap[id], &noders[i])
 	}
 	switch table {
+	case album.Table:
+		query := c.Album.Query().
+			Where(album.IDIn(ids...))
+		query, err := query.CollectFields(ctx, albumImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
 	case car.Table:
 		query := c.Car.Query().
 			Where(car.IDIn(ids...))

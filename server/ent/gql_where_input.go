@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
@@ -27,6 +28,296 @@ import (
 	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/google/uuid"
 )
+
+// AlbumWhereInput represents a where input for filtering Album queries.
+type AlbumWhereInput struct {
+	Predicates []predicate.Album  `json:"-"`
+	Not        *AlbumWhereInput   `json:"not,omitempty"`
+	Or         []*AlbumWhereInput `json:"or,omitempty"`
+	And        []*AlbumWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *uuid.UUID  `json:"id,omitempty"`
+	IDNEQ   *uuid.UUID  `json:"idNEQ,omitempty"`
+	IDIn    []uuid.UUID `json:"idIn,omitempty"`
+	IDNotIn []uuid.UUID `json:"idNotIn,omitempty"`
+	IDGT    *uuid.UUID  `json:"idGT,omitempty"`
+	IDGTE   *uuid.UUID  `json:"idGTE,omitempty"`
+	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
+	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
+
+	// "create_time" field predicates.
+	CreateTime      *time.Time  `json:"createTime,omitempty"`
+	CreateTimeNEQ   *time.Time  `json:"createTimeNEQ,omitempty"`
+	CreateTimeIn    []time.Time `json:"createTimeIn,omitempty"`
+	CreateTimeNotIn []time.Time `json:"createTimeNotIn,omitempty"`
+	CreateTimeGT    *time.Time  `json:"createTimeGT,omitempty"`
+	CreateTimeGTE   *time.Time  `json:"createTimeGTE,omitempty"`
+	CreateTimeLT    *time.Time  `json:"createTimeLT,omitempty"`
+	CreateTimeLTE   *time.Time  `json:"createTimeLTE,omitempty"`
+
+	// "update_time" field predicates.
+	UpdateTime      *time.Time  `json:"updateTime,omitempty"`
+	UpdateTimeNEQ   *time.Time  `json:"updateTimeNEQ,omitempty"`
+	UpdateTimeIn    []time.Time `json:"updateTimeIn,omitempty"`
+	UpdateTimeNotIn []time.Time `json:"updateTimeNotIn,omitempty"`
+	UpdateTimeGT    *time.Time  `json:"updateTimeGT,omitempty"`
+	UpdateTimeGTE   *time.Time  `json:"updateTimeGTE,omitempty"`
+	UpdateTimeLT    *time.Time  `json:"updateTimeLT,omitempty"`
+	UpdateTimeLTE   *time.Time  `json:"updateTimeLTE,omitempty"`
+
+	// "title" field predicates.
+	Title             *string  `json:"title,omitempty"`
+	TitleNEQ          *string  `json:"titleNEQ,omitempty"`
+	TitleIn           []string `json:"titleIn,omitempty"`
+	TitleNotIn        []string `json:"titleNotIn,omitempty"`
+	TitleGT           *string  `json:"titleGT,omitempty"`
+	TitleGTE          *string  `json:"titleGTE,omitempty"`
+	TitleLT           *string  `json:"titleLT,omitempty"`
+	TitleLTE          *string  `json:"titleLTE,omitempty"`
+	TitleContains     *string  `json:"titleContains,omitempty"`
+	TitleHasPrefix    *string  `json:"titleHasPrefix,omitempty"`
+	TitleHasSuffix    *string  `json:"titleHasSuffix,omitempty"`
+	TitleEqualFold    *string  `json:"titleEqualFold,omitempty"`
+	TitleContainsFold *string  `json:"titleContainsFold,omitempty"`
+
+	// "car" edge predicates.
+	HasCar     *bool            `json:"hasCar,omitempty"`
+	HasCarWith []*CarWhereInput `json:"hasCarWith,omitempty"`
+
+	// "media" edge predicates.
+	HasMedia     *bool              `json:"hasMedia,omitempty"`
+	HasMediaWith []*MediaWhereInput `json:"hasMediaWith,omitempty"`
+}
+
+// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
+func (i *AlbumWhereInput) AddPredicates(predicates ...predicate.Album) {
+	i.Predicates = append(i.Predicates, predicates...)
+}
+
+// Filter applies the AlbumWhereInput filter on the AlbumQuery builder.
+func (i *AlbumWhereInput) Filter(q *AlbumQuery) (*AlbumQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		if err == ErrEmptyAlbumWhereInput {
+			return q, nil
+		}
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// ErrEmptyAlbumWhereInput is returned in case the AlbumWhereInput is empty.
+var ErrEmptyAlbumWhereInput = errors.New("ent: empty predicate AlbumWhereInput")
+
+// P returns a predicate for filtering albums.
+// An error is returned if the input is empty or invalid.
+func (i *AlbumWhereInput) P() (predicate.Album, error) {
+	var predicates []predicate.Album
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'not'", err)
+		}
+		predicates = append(predicates, album.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'or'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.Album, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'or'", err)
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, album.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'and'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.Album, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'and'", err)
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, album.And(and...))
+	}
+	predicates = append(predicates, i.Predicates...)
+	if i.ID != nil {
+		predicates = append(predicates, album.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, album.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, album.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, album.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, album.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, album.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, album.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, album.IDLTE(*i.IDLTE))
+	}
+	if i.CreateTime != nil {
+		predicates = append(predicates, album.CreateTimeEQ(*i.CreateTime))
+	}
+	if i.CreateTimeNEQ != nil {
+		predicates = append(predicates, album.CreateTimeNEQ(*i.CreateTimeNEQ))
+	}
+	if len(i.CreateTimeIn) > 0 {
+		predicates = append(predicates, album.CreateTimeIn(i.CreateTimeIn...))
+	}
+	if len(i.CreateTimeNotIn) > 0 {
+		predicates = append(predicates, album.CreateTimeNotIn(i.CreateTimeNotIn...))
+	}
+	if i.CreateTimeGT != nil {
+		predicates = append(predicates, album.CreateTimeGT(*i.CreateTimeGT))
+	}
+	if i.CreateTimeGTE != nil {
+		predicates = append(predicates, album.CreateTimeGTE(*i.CreateTimeGTE))
+	}
+	if i.CreateTimeLT != nil {
+		predicates = append(predicates, album.CreateTimeLT(*i.CreateTimeLT))
+	}
+	if i.CreateTimeLTE != nil {
+		predicates = append(predicates, album.CreateTimeLTE(*i.CreateTimeLTE))
+	}
+	if i.UpdateTime != nil {
+		predicates = append(predicates, album.UpdateTimeEQ(*i.UpdateTime))
+	}
+	if i.UpdateTimeNEQ != nil {
+		predicates = append(predicates, album.UpdateTimeNEQ(*i.UpdateTimeNEQ))
+	}
+	if len(i.UpdateTimeIn) > 0 {
+		predicates = append(predicates, album.UpdateTimeIn(i.UpdateTimeIn...))
+	}
+	if len(i.UpdateTimeNotIn) > 0 {
+		predicates = append(predicates, album.UpdateTimeNotIn(i.UpdateTimeNotIn...))
+	}
+	if i.UpdateTimeGT != nil {
+		predicates = append(predicates, album.UpdateTimeGT(*i.UpdateTimeGT))
+	}
+	if i.UpdateTimeGTE != nil {
+		predicates = append(predicates, album.UpdateTimeGTE(*i.UpdateTimeGTE))
+	}
+	if i.UpdateTimeLT != nil {
+		predicates = append(predicates, album.UpdateTimeLT(*i.UpdateTimeLT))
+	}
+	if i.UpdateTimeLTE != nil {
+		predicates = append(predicates, album.UpdateTimeLTE(*i.UpdateTimeLTE))
+	}
+	if i.Title != nil {
+		predicates = append(predicates, album.TitleEQ(*i.Title))
+	}
+	if i.TitleNEQ != nil {
+		predicates = append(predicates, album.TitleNEQ(*i.TitleNEQ))
+	}
+	if len(i.TitleIn) > 0 {
+		predicates = append(predicates, album.TitleIn(i.TitleIn...))
+	}
+	if len(i.TitleNotIn) > 0 {
+		predicates = append(predicates, album.TitleNotIn(i.TitleNotIn...))
+	}
+	if i.TitleGT != nil {
+		predicates = append(predicates, album.TitleGT(*i.TitleGT))
+	}
+	if i.TitleGTE != nil {
+		predicates = append(predicates, album.TitleGTE(*i.TitleGTE))
+	}
+	if i.TitleLT != nil {
+		predicates = append(predicates, album.TitleLT(*i.TitleLT))
+	}
+	if i.TitleLTE != nil {
+		predicates = append(predicates, album.TitleLTE(*i.TitleLTE))
+	}
+	if i.TitleContains != nil {
+		predicates = append(predicates, album.TitleContains(*i.TitleContains))
+	}
+	if i.TitleHasPrefix != nil {
+		predicates = append(predicates, album.TitleHasPrefix(*i.TitleHasPrefix))
+	}
+	if i.TitleHasSuffix != nil {
+		predicates = append(predicates, album.TitleHasSuffix(*i.TitleHasSuffix))
+	}
+	if i.TitleEqualFold != nil {
+		predicates = append(predicates, album.TitleEqualFold(*i.TitleEqualFold))
+	}
+	if i.TitleContainsFold != nil {
+		predicates = append(predicates, album.TitleContainsFold(*i.TitleContainsFold))
+	}
+
+	if i.HasCar != nil {
+		p := album.HasCar()
+		if !*i.HasCar {
+			p = album.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasCarWith) > 0 {
+		with := make([]predicate.Car, 0, len(i.HasCarWith))
+		for _, w := range i.HasCarWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasCarWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, album.HasCarWith(with...))
+	}
+	if i.HasMedia != nil {
+		p := album.HasMedia()
+		if !*i.HasMedia {
+			p = album.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasMediaWith) > 0 {
+		with := make([]predicate.Media, 0, len(i.HasMediaWith))
+		for _, w := range i.HasMediaWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasMediaWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, album.HasMediaWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, ErrEmptyAlbumWhereInput
+	case 1:
+		return predicates[0], nil
+	default:
+		return album.And(predicates...), nil
+	}
+}
 
 // CarWhereInput represents a where input for filtering Car queries.
 type CarWhereInput struct {
@@ -191,6 +482,10 @@ type CarWhereInput struct {
 	// "media" edge predicates.
 	HasMedia     *bool              `json:"hasMedia,omitempty"`
 	HasMediaWith []*MediaWhereInput `json:"hasMediaWith,omitempty"`
+
+	// "albums" edge predicates.
+	HasAlbums     *bool              `json:"hasAlbums,omitempty"`
+	HasAlbumsWith []*AlbumWhereInput `json:"hasAlbumsWith,omitempty"`
 
 	// "documents" edge predicates.
 	HasDocuments     *bool                 `json:"hasDocuments,omitempty"`
@@ -745,6 +1040,24 @@ func (i *CarWhereInput) P() (predicate.Car, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, car.HasMediaWith(with...))
+	}
+	if i.HasAlbums != nil {
+		p := car.HasAlbums()
+		if !*i.HasAlbums {
+			p = car.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasAlbumsWith) > 0 {
+		with := make([]predicate.Album, 0, len(i.HasAlbumsWith))
+		for _, w := range i.HasAlbumsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasAlbumsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, car.HasAlbumsWith(with...))
 	}
 	if i.HasDocuments != nil {
 		p := car.HasDocuments()
@@ -3777,9 +4090,47 @@ type MediaWhereInput struct {
 	UpdateTimeLT    *time.Time  `json:"updateTimeLT,omitempty"`
 	UpdateTimeLTE   *time.Time  `json:"updateTimeLTE,omitempty"`
 
+	// "title" field predicates.
+	Title             *string  `json:"title,omitempty"`
+	TitleNEQ          *string  `json:"titleNEQ,omitempty"`
+	TitleIn           []string `json:"titleIn,omitempty"`
+	TitleNotIn        []string `json:"titleNotIn,omitempty"`
+	TitleGT           *string  `json:"titleGT,omitempty"`
+	TitleGTE          *string  `json:"titleGTE,omitempty"`
+	TitleLT           *string  `json:"titleLT,omitempty"`
+	TitleLTE          *string  `json:"titleLTE,omitempty"`
+	TitleContains     *string  `json:"titleContains,omitempty"`
+	TitleHasPrefix    *string  `json:"titleHasPrefix,omitempty"`
+	TitleHasSuffix    *string  `json:"titleHasSuffix,omitempty"`
+	TitleIsNil        bool     `json:"titleIsNil,omitempty"`
+	TitleNotNil       bool     `json:"titleNotNil,omitempty"`
+	TitleEqualFold    *string  `json:"titleEqualFold,omitempty"`
+	TitleContainsFold *string  `json:"titleContainsFold,omitempty"`
+
+	// "description" field predicates.
+	Description             *string  `json:"description,omitempty"`
+	DescriptionNEQ          *string  `json:"descriptionNEQ,omitempty"`
+	DescriptionIn           []string `json:"descriptionIn,omitempty"`
+	DescriptionNotIn        []string `json:"descriptionNotIn,omitempty"`
+	DescriptionGT           *string  `json:"descriptionGT,omitempty"`
+	DescriptionGTE          *string  `json:"descriptionGTE,omitempty"`
+	DescriptionLT           *string  `json:"descriptionLT,omitempty"`
+	DescriptionLTE          *string  `json:"descriptionLTE,omitempty"`
+	DescriptionContains     *string  `json:"descriptionContains,omitempty"`
+	DescriptionHasPrefix    *string  `json:"descriptionHasPrefix,omitempty"`
+	DescriptionHasSuffix    *string  `json:"descriptionHasSuffix,omitempty"`
+	DescriptionIsNil        bool     `json:"descriptionIsNil,omitempty"`
+	DescriptionNotNil       bool     `json:"descriptionNotNil,omitempty"`
+	DescriptionEqualFold    *string  `json:"descriptionEqualFold,omitempty"`
+	DescriptionContainsFold *string  `json:"descriptionContainsFold,omitempty"`
+
 	// "car" edge predicates.
 	HasCar     *bool            `json:"hasCar,omitempty"`
 	HasCarWith []*CarWhereInput `json:"hasCarWith,omitempty"`
+
+	// "albums" edge predicates.
+	HasAlbums     *bool              `json:"hasAlbums,omitempty"`
+	HasAlbumsWith []*AlbumWhereInput `json:"hasAlbumsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -3925,6 +4276,96 @@ func (i *MediaWhereInput) P() (predicate.Media, error) {
 	if i.UpdateTimeLTE != nil {
 		predicates = append(predicates, media.UpdateTimeLTE(*i.UpdateTimeLTE))
 	}
+	if i.Title != nil {
+		predicates = append(predicates, media.TitleEQ(*i.Title))
+	}
+	if i.TitleNEQ != nil {
+		predicates = append(predicates, media.TitleNEQ(*i.TitleNEQ))
+	}
+	if len(i.TitleIn) > 0 {
+		predicates = append(predicates, media.TitleIn(i.TitleIn...))
+	}
+	if len(i.TitleNotIn) > 0 {
+		predicates = append(predicates, media.TitleNotIn(i.TitleNotIn...))
+	}
+	if i.TitleGT != nil {
+		predicates = append(predicates, media.TitleGT(*i.TitleGT))
+	}
+	if i.TitleGTE != nil {
+		predicates = append(predicates, media.TitleGTE(*i.TitleGTE))
+	}
+	if i.TitleLT != nil {
+		predicates = append(predicates, media.TitleLT(*i.TitleLT))
+	}
+	if i.TitleLTE != nil {
+		predicates = append(predicates, media.TitleLTE(*i.TitleLTE))
+	}
+	if i.TitleContains != nil {
+		predicates = append(predicates, media.TitleContains(*i.TitleContains))
+	}
+	if i.TitleHasPrefix != nil {
+		predicates = append(predicates, media.TitleHasPrefix(*i.TitleHasPrefix))
+	}
+	if i.TitleHasSuffix != nil {
+		predicates = append(predicates, media.TitleHasSuffix(*i.TitleHasSuffix))
+	}
+	if i.TitleIsNil {
+		predicates = append(predicates, media.TitleIsNil())
+	}
+	if i.TitleNotNil {
+		predicates = append(predicates, media.TitleNotNil())
+	}
+	if i.TitleEqualFold != nil {
+		predicates = append(predicates, media.TitleEqualFold(*i.TitleEqualFold))
+	}
+	if i.TitleContainsFold != nil {
+		predicates = append(predicates, media.TitleContainsFold(*i.TitleContainsFold))
+	}
+	if i.Description != nil {
+		predicates = append(predicates, media.DescriptionEQ(*i.Description))
+	}
+	if i.DescriptionNEQ != nil {
+		predicates = append(predicates, media.DescriptionNEQ(*i.DescriptionNEQ))
+	}
+	if len(i.DescriptionIn) > 0 {
+		predicates = append(predicates, media.DescriptionIn(i.DescriptionIn...))
+	}
+	if len(i.DescriptionNotIn) > 0 {
+		predicates = append(predicates, media.DescriptionNotIn(i.DescriptionNotIn...))
+	}
+	if i.DescriptionGT != nil {
+		predicates = append(predicates, media.DescriptionGT(*i.DescriptionGT))
+	}
+	if i.DescriptionGTE != nil {
+		predicates = append(predicates, media.DescriptionGTE(*i.DescriptionGTE))
+	}
+	if i.DescriptionLT != nil {
+		predicates = append(predicates, media.DescriptionLT(*i.DescriptionLT))
+	}
+	if i.DescriptionLTE != nil {
+		predicates = append(predicates, media.DescriptionLTE(*i.DescriptionLTE))
+	}
+	if i.DescriptionContains != nil {
+		predicates = append(predicates, media.DescriptionContains(*i.DescriptionContains))
+	}
+	if i.DescriptionHasPrefix != nil {
+		predicates = append(predicates, media.DescriptionHasPrefix(*i.DescriptionHasPrefix))
+	}
+	if i.DescriptionHasSuffix != nil {
+		predicates = append(predicates, media.DescriptionHasSuffix(*i.DescriptionHasSuffix))
+	}
+	if i.DescriptionIsNil {
+		predicates = append(predicates, media.DescriptionIsNil())
+	}
+	if i.DescriptionNotNil {
+		predicates = append(predicates, media.DescriptionNotNil())
+	}
+	if i.DescriptionEqualFold != nil {
+		predicates = append(predicates, media.DescriptionEqualFold(*i.DescriptionEqualFold))
+	}
+	if i.DescriptionContainsFold != nil {
+		predicates = append(predicates, media.DescriptionContainsFold(*i.DescriptionContainsFold))
+	}
 
 	if i.HasCar != nil {
 		p := media.HasCar()
@@ -3943,6 +4384,24 @@ func (i *MediaWhereInput) P() (predicate.Media, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, media.HasCarWith(with...))
+	}
+	if i.HasAlbums != nil {
+		p := media.HasAlbums()
+		if !*i.HasAlbums {
+			p = media.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasAlbumsWith) > 0 {
+		with := make([]predicate.Album, 0, len(i.HasAlbumsWith))
+		for _, w := range i.HasAlbumsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasAlbumsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, media.HasAlbumsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

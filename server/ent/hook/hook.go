@@ -9,6 +9,18 @@ import (
 	"github.com/Dan6erbond/revline/ent"
 )
 
+// The AlbumFunc type is an adapter to allow the use of ordinary
+// function as Album mutator.
+type AlbumFunc func(context.Context, *ent.AlbumMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AlbumFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AlbumMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlbumMutation", m)
+}
+
 // The CarFunc type is an adapter to allow the use of ordinary
 // function as Car mutator.
 type CarFunc func(context.Context, *ent.CarMutation) (ent.Value, error)

@@ -20,6 +20,8 @@ func (Media) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
+		field.String("title").Optional().Nillable(),
+		field.String("description").Optional().Nillable(),
 	}
 }
 
@@ -29,6 +31,8 @@ func (Media) Edges() []ent.Edge {
 		edge.From("car", Car.Type).
 			Ref("media").
 			Unique(),
+		edge.From("albums", Album.Type).
+			Ref("media"),
 	}
 }
 

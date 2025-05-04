@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -11,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -20,14 +22,16 @@ import (
 // MediaQuery is the builder for querying Media entities.
 type MediaQuery struct {
 	config
-	ctx        *QueryContext
-	order      []media.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Media
-	withCar    *CarQuery
-	withFKs    bool
-	modifiers  []func(*sql.Selector)
-	loadTotal  []func(context.Context, []*Media) error
+	ctx             *QueryContext
+	order           []media.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.Media
+	withCar         *CarQuery
+	withAlbums      *AlbumQuery
+	withFKs         bool
+	modifiers       []func(*sql.Selector)
+	loadTotal       []func(context.Context, []*Media) error
+	withNamedAlbums map[string]*AlbumQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -79,6 +83,28 @@ func (mq *MediaQuery) QueryCar() *CarQuery {
 			sqlgraph.From(media.Table, media.FieldID, selector),
 			sqlgraph.To(car.Table, car.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, media.CarTable, media.CarColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAlbums chains the current query on the "albums" edge.
+func (mq *MediaQuery) QueryAlbums() *AlbumQuery {
+	query := (&AlbumClient{config: mq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := mq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := mq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(media.Table, media.FieldID, selector),
+			sqlgraph.To(album.Table, album.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, media.AlbumsTable, media.AlbumsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
 		return fromU, nil
@@ -279,6 +305,7 @@ func (mq *MediaQuery) Clone() *MediaQuery {
 		inters:     append([]Interceptor{}, mq.inters...),
 		predicates: append([]predicate.Media{}, mq.predicates...),
 		withCar:    mq.withCar.Clone(),
+		withAlbums: mq.withAlbums.Clone(),
 		// clone intermediate query.
 		sql:  mq.sql.Clone(),
 		path: mq.path,
@@ -293,6 +320,17 @@ func (mq *MediaQuery) WithCar(opts ...func(*CarQuery)) *MediaQuery {
 		opt(query)
 	}
 	mq.withCar = query
+	return mq
+}
+
+// WithAlbums tells the query-builder to eager-load the nodes that are connected to
+// the "albums" edge. The optional arguments are used to configure the query builder of the edge.
+func (mq *MediaQuery) WithAlbums(opts ...func(*AlbumQuery)) *MediaQuery {
+	query := (&AlbumClient{config: mq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	mq.withAlbums = query
 	return mq
 }
 
@@ -375,8 +413,9 @@ func (mq *MediaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Media,
 		nodes       = []*Media{}
 		withFKs     = mq.withFKs
 		_spec       = mq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			mq.withCar != nil,
+			mq.withAlbums != nil,
 		}
 	)
 	if mq.withCar != nil {
@@ -409,6 +448,20 @@ func (mq *MediaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Media,
 	if query := mq.withCar; query != nil {
 		if err := mq.loadCar(ctx, query, nodes, nil,
 			func(n *Media, e *Car) { n.Edges.Car = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := mq.withAlbums; query != nil {
+		if err := mq.loadAlbums(ctx, query, nodes,
+			func(n *Media) { n.Edges.Albums = []*Album{} },
+			func(n *Media, e *Album) { n.Edges.Albums = append(n.Edges.Albums, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range mq.withNamedAlbums {
+		if err := mq.loadAlbums(ctx, query, nodes,
+			func(n *Media) { n.appendNamedAlbums(name) },
+			func(n *Media, e *Album) { n.appendNamedAlbums(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -448,6 +501,67 @@ func (mq *MediaQuery) loadCar(ctx context.Context, query *CarQuery, nodes []*Med
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (mq *MediaQuery) loadAlbums(ctx context.Context, query *AlbumQuery, nodes []*Media, init func(*Media), assign func(*Media, *Album)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Media)
+	nids := make(map[uuid.UUID]map[*Media]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(media.AlbumsTable)
+		s.Join(joinT).On(s.C(album.FieldID), joinT.C(media.AlbumsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(media.AlbumsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(media.AlbumsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Media]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Album](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "albums" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
 		}
 	}
 	return nil
@@ -535,6 +649,20 @@ func (mq *MediaQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedAlbums tells the query-builder to eager-load the nodes that are connected to the "albums"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (mq *MediaQuery) WithNamedAlbums(name string, opts ...func(*AlbumQuery)) *MediaQuery {
+	query := (&AlbumClient{config: mq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if mq.withNamedAlbums == nil {
+		mq.withNamedAlbums = make(map[string]*AlbumQuery)
+	}
+	mq.withNamedAlbums[name] = query
+	return mq
 }
 
 // MediaGroupBy is the group-by builder for Media entities.

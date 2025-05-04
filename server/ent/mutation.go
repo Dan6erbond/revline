@@ -11,6 +11,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
@@ -41,6 +42,7 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeAlbum           = "Album"
 	TypeCar             = "Car"
 	TypeCheckoutSession = "CheckoutSession"
 	TypeDocument        = "Document"
@@ -59,6 +61,598 @@ const (
 	TypeSubscription    = "Subscription"
 	TypeUser            = "User"
 )
+
+// AlbumMutation represents an operation that mutates the Album nodes in the graph.
+type AlbumMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	create_time   *time.Time
+	update_time   *time.Time
+	title         *string
+	clearedFields map[string]struct{}
+	car           *uuid.UUID
+	clearedcar    bool
+	media         map[uuid.UUID]struct{}
+	removedmedia  map[uuid.UUID]struct{}
+	clearedmedia  bool
+	done          bool
+	oldValue      func(context.Context) (*Album, error)
+	predicates    []predicate.Album
+}
+
+var _ ent.Mutation = (*AlbumMutation)(nil)
+
+// albumOption allows management of the mutation configuration using functional options.
+type albumOption func(*AlbumMutation)
+
+// newAlbumMutation creates new mutation for the Album entity.
+func newAlbumMutation(c config, op Op, opts ...albumOption) *AlbumMutation {
+	m := &AlbumMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAlbum,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAlbumID sets the ID field of the mutation.
+func withAlbumID(id uuid.UUID) albumOption {
+	return func(m *AlbumMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Album
+		)
+		m.oldValue = func(ctx context.Context) (*Album, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Album.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAlbum sets the old Album of the mutation.
+func withAlbum(node *Album) albumOption {
+	return func(m *AlbumMutation) {
+		m.oldValue = func(context.Context) (*Album, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AlbumMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AlbumMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Album entities.
+func (m *AlbumMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AlbumMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AlbumMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Album.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *AlbumMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *AlbumMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the Album entity.
+// If the Album object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlbumMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *AlbumMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *AlbumMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *AlbumMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the Album entity.
+// If the Album object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlbumMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *AlbumMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetTitle sets the "title" field.
+func (m *AlbumMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *AlbumMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the Album entity.
+// If the Album object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlbumMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *AlbumMutation) ResetTitle() {
+	m.title = nil
+}
+
+// SetCarID sets the "car" edge to the Car entity by id.
+func (m *AlbumMutation) SetCarID(id uuid.UUID) {
+	m.car = &id
+}
+
+// ClearCar clears the "car" edge to the Car entity.
+func (m *AlbumMutation) ClearCar() {
+	m.clearedcar = true
+}
+
+// CarCleared reports if the "car" edge to the Car entity was cleared.
+func (m *AlbumMutation) CarCleared() bool {
+	return m.clearedcar
+}
+
+// CarID returns the "car" edge ID in the mutation.
+func (m *AlbumMutation) CarID() (id uuid.UUID, exists bool) {
+	if m.car != nil {
+		return *m.car, true
+	}
+	return
+}
+
+// CarIDs returns the "car" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CarID instead. It exists only for internal usage by the builders.
+func (m *AlbumMutation) CarIDs() (ids []uuid.UUID) {
+	if id := m.car; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCar resets all changes to the "car" edge.
+func (m *AlbumMutation) ResetCar() {
+	m.car = nil
+	m.clearedcar = false
+}
+
+// AddMediumIDs adds the "media" edge to the Media entity by ids.
+func (m *AlbumMutation) AddMediumIDs(ids ...uuid.UUID) {
+	if m.media == nil {
+		m.media = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.media[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMedia clears the "media" edge to the Media entity.
+func (m *AlbumMutation) ClearMedia() {
+	m.clearedmedia = true
+}
+
+// MediaCleared reports if the "media" edge to the Media entity was cleared.
+func (m *AlbumMutation) MediaCleared() bool {
+	return m.clearedmedia
+}
+
+// RemoveMediumIDs removes the "media" edge to the Media entity by IDs.
+func (m *AlbumMutation) RemoveMediumIDs(ids ...uuid.UUID) {
+	if m.removedmedia == nil {
+		m.removedmedia = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.media, ids[i])
+		m.removedmedia[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMedia returns the removed IDs of the "media" edge to the Media entity.
+func (m *AlbumMutation) RemovedMediaIDs() (ids []uuid.UUID) {
+	for id := range m.removedmedia {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MediaIDs returns the "media" edge IDs in the mutation.
+func (m *AlbumMutation) MediaIDs() (ids []uuid.UUID) {
+	for id := range m.media {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMedia resets all changes to the "media" edge.
+func (m *AlbumMutation) ResetMedia() {
+	m.media = nil
+	m.clearedmedia = false
+	m.removedmedia = nil
+}
+
+// Where appends a list predicates to the AlbumMutation builder.
+func (m *AlbumMutation) Where(ps ...predicate.Album) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the AlbumMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *AlbumMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Album, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *AlbumMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *AlbumMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Album).
+func (m *AlbumMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AlbumMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.create_time != nil {
+		fields = append(fields, album.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, album.FieldUpdateTime)
+	}
+	if m.title != nil {
+		fields = append(fields, album.FieldTitle)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AlbumMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case album.FieldCreateTime:
+		return m.CreateTime()
+	case album.FieldUpdateTime:
+		return m.UpdateTime()
+	case album.FieldTitle:
+		return m.Title()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AlbumMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case album.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case album.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case album.FieldTitle:
+		return m.OldTitle(ctx)
+	}
+	return nil, fmt.Errorf("unknown Album field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AlbumMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case album.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case album.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case album.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Album field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AlbumMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AlbumMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AlbumMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Album numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AlbumMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AlbumMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AlbumMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Album nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AlbumMutation) ResetField(name string) error {
+	switch name {
+	case album.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case album.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case album.FieldTitle:
+		m.ResetTitle()
+		return nil
+	}
+	return fmt.Errorf("unknown Album field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AlbumMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.car != nil {
+		edges = append(edges, album.EdgeCar)
+	}
+	if m.media != nil {
+		edges = append(edges, album.EdgeMedia)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AlbumMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case album.EdgeCar:
+		if id := m.car; id != nil {
+			return []ent.Value{*id}
+		}
+	case album.EdgeMedia:
+		ids := make([]ent.Value, 0, len(m.media))
+		for id := range m.media {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AlbumMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedmedia != nil {
+		edges = append(edges, album.EdgeMedia)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AlbumMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case album.EdgeMedia:
+		ids := make([]ent.Value, 0, len(m.removedmedia))
+		for id := range m.removedmedia {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AlbumMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedcar {
+		edges = append(edges, album.EdgeCar)
+	}
+	if m.clearedmedia {
+		edges = append(edges, album.EdgeMedia)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AlbumMutation) EdgeCleared(name string) bool {
+	switch name {
+	case album.EdgeCar:
+		return m.clearedcar
+	case album.EdgeMedia:
+		return m.clearedmedia
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AlbumMutation) ClearEdge(name string) error {
+	switch name {
+	case album.EdgeCar:
+		m.ClearCar()
+		return nil
+	}
+	return fmt.Errorf("unknown Album unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AlbumMutation) ResetEdge(name string) error {
+	switch name {
+	case album.EdgeCar:
+		m.ResetCar()
+		return nil
+	case album.EdgeMedia:
+		m.ResetMedia()
+		return nil
+	}
+	return fmt.Errorf("unknown Album edge %s", name)
+}
 
 // CarMutation represents an operation that mutates the Car nodes in the graph.
 type CarMutation struct {
@@ -99,6 +693,9 @@ type CarMutation struct {
 	media                    map[uuid.UUID]struct{}
 	removedmedia             map[uuid.UUID]struct{}
 	clearedmedia             bool
+	albums                   map[uuid.UUID]struct{}
+	removedalbums            map[uuid.UUID]struct{}
+	clearedalbums            bool
 	documents                map[uuid.UUID]struct{}
 	removeddocuments         map[uuid.UUID]struct{}
 	cleareddocuments         bool
@@ -1010,6 +1607,60 @@ func (m *CarMutation) ResetMedia() {
 	m.removedmedia = nil
 }
 
+// AddAlbumIDs adds the "albums" edge to the Album entity by ids.
+func (m *CarMutation) AddAlbumIDs(ids ...uuid.UUID) {
+	if m.albums == nil {
+		m.albums = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.albums[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAlbums clears the "albums" edge to the Album entity.
+func (m *CarMutation) ClearAlbums() {
+	m.clearedalbums = true
+}
+
+// AlbumsCleared reports if the "albums" edge to the Album entity was cleared.
+func (m *CarMutation) AlbumsCleared() bool {
+	return m.clearedalbums
+}
+
+// RemoveAlbumIDs removes the "albums" edge to the Album entity by IDs.
+func (m *CarMutation) RemoveAlbumIDs(ids ...uuid.UUID) {
+	if m.removedalbums == nil {
+		m.removedalbums = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.albums, ids[i])
+		m.removedalbums[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAlbums returns the removed IDs of the "albums" edge to the Album entity.
+func (m *CarMutation) RemovedAlbumsIDs() (ids []uuid.UUID) {
+	for id := range m.removedalbums {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AlbumsIDs returns the "albums" edge IDs in the mutation.
+func (m *CarMutation) AlbumsIDs() (ids []uuid.UUID) {
+	for id := range m.albums {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAlbums resets all changes to the "albums" edge.
+func (m *CarMutation) ResetAlbums() {
+	m.albums = nil
+	m.clearedalbums = false
+	m.removedalbums = nil
+}
+
 // AddDocumentIDs adds the "documents" edge to the Document entity by ids.
 func (m *CarMutation) AddDocumentIDs(ids ...uuid.UUID) {
 	if m.documents == nil {
@@ -1511,7 +2162,7 @@ func (m *CarMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *CarMutation) AddedEdges() []string {
-	edges := make([]string, 0, 12)
+	edges := make([]string, 0, 13)
 	if m.owner != nil {
 		edges = append(edges, car.EdgeOwner)
 	}
@@ -1535,6 +2186,9 @@ func (m *CarMutation) AddedEdges() []string {
 	}
 	if m.media != nil {
 		edges = append(edges, car.EdgeMedia)
+	}
+	if m.albums != nil {
+		edges = append(edges, car.EdgeAlbums)
 	}
 	if m.documents != nil {
 		edges = append(edges, car.EdgeDocuments)
@@ -1601,6 +2255,12 @@ func (m *CarMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case car.EdgeAlbums:
+		ids := make([]ent.Value, 0, len(m.albums))
+		for id := range m.albums {
+			ids = append(ids, id)
+		}
+		return ids
 	case car.EdgeDocuments:
 		ids := make([]ent.Value, 0, len(m.documents))
 		for id := range m.documents {
@@ -1629,7 +2289,7 @@ func (m *CarMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *CarMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 12)
+	edges := make([]string, 0, 13)
 	if m.removeddrag_sessions != nil {
 		edges = append(edges, car.EdgeDragSessions)
 	}
@@ -1650,6 +2310,9 @@ func (m *CarMutation) RemovedEdges() []string {
 	}
 	if m.removedmedia != nil {
 		edges = append(edges, car.EdgeMedia)
+	}
+	if m.removedalbums != nil {
+		edges = append(edges, car.EdgeAlbums)
 	}
 	if m.removeddocuments != nil {
 		edges = append(edges, car.EdgeDocuments)
@@ -1709,6 +2372,12 @@ func (m *CarMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case car.EdgeAlbums:
+		ids := make([]ent.Value, 0, len(m.removedalbums))
+		for id := range m.removedalbums {
+			ids = append(ids, id)
+		}
+		return ids
 	case car.EdgeDocuments:
 		ids := make([]ent.Value, 0, len(m.removeddocuments))
 		for id := range m.removeddocuments {
@@ -1733,7 +2402,7 @@ func (m *CarMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *CarMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 12)
+	edges := make([]string, 0, 13)
 	if m.clearedowner {
 		edges = append(edges, car.EdgeOwner)
 	}
@@ -1757,6 +2426,9 @@ func (m *CarMutation) ClearedEdges() []string {
 	}
 	if m.clearedmedia {
 		edges = append(edges, car.EdgeMedia)
+	}
+	if m.clearedalbums {
+		edges = append(edges, car.EdgeAlbums)
 	}
 	if m.cleareddocuments {
 		edges = append(edges, car.EdgeDocuments)
@@ -1793,6 +2465,8 @@ func (m *CarMutation) EdgeCleared(name string) bool {
 		return m.clearedservice_schedules
 	case car.EdgeMedia:
 		return m.clearedmedia
+	case car.EdgeAlbums:
+		return m.clearedalbums
 	case car.EdgeDocuments:
 		return m.cleareddocuments
 	case car.EdgeDynoSessions:
@@ -1846,6 +2520,9 @@ func (m *CarMutation) ResetEdge(name string) error {
 		return nil
 	case car.EdgeMedia:
 		m.ResetMedia()
+		return nil
+	case car.EdgeAlbums:
+		m.ResetAlbums()
 		return nil
 	case car.EdgeDocuments:
 		m.ResetDocuments()
@@ -7879,9 +8556,14 @@ type MediaMutation struct {
 	id            *uuid.UUID
 	create_time   *time.Time
 	update_time   *time.Time
+	title         *string
+	description   *string
 	clearedFields map[string]struct{}
 	car           *uuid.UUID
 	clearedcar    bool
+	albums        map[uuid.UUID]struct{}
+	removedalbums map[uuid.UUID]struct{}
+	clearedalbums bool
 	done          bool
 	oldValue      func(context.Context) (*Media, error)
 	predicates    []predicate.Media
@@ -8063,6 +8745,104 @@ func (m *MediaMutation) ResetUpdateTime() {
 	m.update_time = nil
 }
 
+// SetTitle sets the "title" field.
+func (m *MediaMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *MediaMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the Media entity.
+// If the Media object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MediaMutation) OldTitle(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ClearTitle clears the value of the "title" field.
+func (m *MediaMutation) ClearTitle() {
+	m.title = nil
+	m.clearedFields[media.FieldTitle] = struct{}{}
+}
+
+// TitleCleared returns if the "title" field was cleared in this mutation.
+func (m *MediaMutation) TitleCleared() bool {
+	_, ok := m.clearedFields[media.FieldTitle]
+	return ok
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *MediaMutation) ResetTitle() {
+	m.title = nil
+	delete(m.clearedFields, media.FieldTitle)
+}
+
+// SetDescription sets the "description" field.
+func (m *MediaMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *MediaMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Media entity.
+// If the Media object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MediaMutation) OldDescription(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *MediaMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[media.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *MediaMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[media.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *MediaMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, media.FieldDescription)
+}
+
 // SetCarID sets the "car" edge to the Car entity by id.
 func (m *MediaMutation) SetCarID(id uuid.UUID) {
 	m.car = &id
@@ -8102,6 +8882,60 @@ func (m *MediaMutation) ResetCar() {
 	m.clearedcar = false
 }
 
+// AddAlbumIDs adds the "albums" edge to the Album entity by ids.
+func (m *MediaMutation) AddAlbumIDs(ids ...uuid.UUID) {
+	if m.albums == nil {
+		m.albums = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.albums[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAlbums clears the "albums" edge to the Album entity.
+func (m *MediaMutation) ClearAlbums() {
+	m.clearedalbums = true
+}
+
+// AlbumsCleared reports if the "albums" edge to the Album entity was cleared.
+func (m *MediaMutation) AlbumsCleared() bool {
+	return m.clearedalbums
+}
+
+// RemoveAlbumIDs removes the "albums" edge to the Album entity by IDs.
+func (m *MediaMutation) RemoveAlbumIDs(ids ...uuid.UUID) {
+	if m.removedalbums == nil {
+		m.removedalbums = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.albums, ids[i])
+		m.removedalbums[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAlbums returns the removed IDs of the "albums" edge to the Album entity.
+func (m *MediaMutation) RemovedAlbumsIDs() (ids []uuid.UUID) {
+	for id := range m.removedalbums {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AlbumsIDs returns the "albums" edge IDs in the mutation.
+func (m *MediaMutation) AlbumsIDs() (ids []uuid.UUID) {
+	for id := range m.albums {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAlbums resets all changes to the "albums" edge.
+func (m *MediaMutation) ResetAlbums() {
+	m.albums = nil
+	m.clearedalbums = false
+	m.removedalbums = nil
+}
+
 // Where appends a list predicates to the MediaMutation builder.
 func (m *MediaMutation) Where(ps ...predicate.Media) {
 	m.predicates = append(m.predicates, ps...)
@@ -8136,12 +8970,18 @@ func (m *MediaMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MediaMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 4)
 	if m.create_time != nil {
 		fields = append(fields, media.FieldCreateTime)
 	}
 	if m.update_time != nil {
 		fields = append(fields, media.FieldUpdateTime)
+	}
+	if m.title != nil {
+		fields = append(fields, media.FieldTitle)
+	}
+	if m.description != nil {
+		fields = append(fields, media.FieldDescription)
 	}
 	return fields
 }
@@ -8155,6 +8995,10 @@ func (m *MediaMutation) Field(name string) (ent.Value, bool) {
 		return m.CreateTime()
 	case media.FieldUpdateTime:
 		return m.UpdateTime()
+	case media.FieldTitle:
+		return m.Title()
+	case media.FieldDescription:
+		return m.Description()
 	}
 	return nil, false
 }
@@ -8168,6 +9012,10 @@ func (m *MediaMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldCreateTime(ctx)
 	case media.FieldUpdateTime:
 		return m.OldUpdateTime(ctx)
+	case media.FieldTitle:
+		return m.OldTitle(ctx)
+	case media.FieldDescription:
+		return m.OldDescription(ctx)
 	}
 	return nil, fmt.Errorf("unknown Media field %s", name)
 }
@@ -8190,6 +9038,20 @@ func (m *MediaMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdateTime(v)
+		return nil
+	case media.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	case media.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Media field %s", name)
@@ -8220,7 +9082,14 @@ func (m *MediaMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *MediaMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(media.FieldTitle) {
+		fields = append(fields, media.FieldTitle)
+	}
+	if m.FieldCleared(media.FieldDescription) {
+		fields = append(fields, media.FieldDescription)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -8233,6 +9102,14 @@ func (m *MediaMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *MediaMutation) ClearField(name string) error {
+	switch name {
+	case media.FieldTitle:
+		m.ClearTitle()
+		return nil
+	case media.FieldDescription:
+		m.ClearDescription()
+		return nil
+	}
 	return fmt.Errorf("unknown Media nullable field %s", name)
 }
 
@@ -8246,15 +9123,24 @@ func (m *MediaMutation) ResetField(name string) error {
 	case media.FieldUpdateTime:
 		m.ResetUpdateTime()
 		return nil
+	case media.FieldTitle:
+		m.ResetTitle()
+		return nil
+	case media.FieldDescription:
+		m.ResetDescription()
+		return nil
 	}
 	return fmt.Errorf("unknown Media field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *MediaMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.car != nil {
 		edges = append(edges, media.EdgeCar)
+	}
+	if m.albums != nil {
+		edges = append(edges, media.EdgeAlbums)
 	}
 	return edges
 }
@@ -8267,27 +9153,47 @@ func (m *MediaMutation) AddedIDs(name string) []ent.Value {
 		if id := m.car; id != nil {
 			return []ent.Value{*id}
 		}
+	case media.EdgeAlbums:
+		ids := make([]ent.Value, 0, len(m.albums))
+		for id := range m.albums {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *MediaMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removedalbums != nil {
+		edges = append(edges, media.EdgeAlbums)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *MediaMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case media.EdgeAlbums:
+		ids := make([]ent.Value, 0, len(m.removedalbums))
+		for id := range m.removedalbums {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *MediaMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedcar {
 		edges = append(edges, media.EdgeCar)
+	}
+	if m.clearedalbums {
+		edges = append(edges, media.EdgeAlbums)
 	}
 	return edges
 }
@@ -8298,6 +9204,8 @@ func (m *MediaMutation) EdgeCleared(name string) bool {
 	switch name {
 	case media.EdgeCar:
 		return m.clearedcar
+	case media.EdgeAlbums:
+		return m.clearedalbums
 	}
 	return false
 }
@@ -8319,6 +9227,9 @@ func (m *MediaMutation) ResetEdge(name string) error {
 	switch name {
 	case media.EdgeCar:
 		m.ResetCar()
+		return nil
+	case media.EdgeAlbums:
+		m.ResetAlbums()
 		return nil
 	}
 	return fmt.Errorf("unknown Media edge %s", name)

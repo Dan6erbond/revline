@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/Dan6erbond/revline/auth"
 	"github.com/Dan6erbond/revline/ent"
+	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -421,6 +422,17 @@ func (r *mutationResolver) UploadMedia(ctx context.Context, input ent.CreateMedi
 	return &model.UploadMediaResult{media, url.String()}, nil
 }
 
+// UpdateMedia is the resolver for the updateMedia field.
+func (r *mutationResolver) UpdateMedia(ctx context.Context, id string, input ent.UpdateMediaInput) (*ent.Media, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.Media.UpdateOneID(uid).SetInput(input).Save(ctx)
+}
+
 // UploadDocument is the resolver for the uploadDocument field.
 func (r *mutationResolver) UploadDocument(ctx context.Context, input ent.CreateDocumentInput) (*model.UploadDocumentResult, error) {
 	user := auth.ForContext(ctx)
@@ -504,6 +516,22 @@ func (r *mutationResolver) CreateDynoResult(ctx context.Context, input ent.Creat
 	return r.entClient.DynoResult.Create().SetInput(input).Save(ctx)
 }
 
+// CreateAlbum is the resolver for the createAlbum field.
+func (r *mutationResolver) CreateAlbum(ctx context.Context, input ent.CreateAlbumInput) (*ent.Album, error) {
+	return r.entClient.Album.Create().SetInput(input).Save(ctx)
+}
+
+// UpdateAlbum is the resolver for the updateAlbum field.
+func (r *mutationResolver) UpdateAlbum(ctx context.Context, id string, input ent.UpdateAlbumInput) (*ent.Album, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.Album.UpdateOneID(uid).SetInput(input).Save(ctx)
+}
+
 // Car is the resolver for the car field.
 func (r *queryResolver) Car(ctx context.Context, id string) (*ent.Car, error) {
 	uid, err := uuid.Parse(id)
@@ -557,6 +585,17 @@ func (r *queryResolver) Media(ctx context.Context, id string) (*ent.Media, error
 	}
 
 	return r.entClient.Media.Query().Where(media.IDEQ(uid)).First(ctx)
+}
+
+// Album is the resolver for the album field.
+func (r *queryResolver) Album(ctx context.Context, id string) (*ent.Album, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.Album.Query().Where(album.IDEQ(uid)).First(ctx)
 }
 
 // Cost is the resolver for the cost field.

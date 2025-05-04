@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
@@ -24,6 +25,107 @@ import (
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/user"
 )
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (a *AlbumQuery) CollectFields(ctx context.Context, satisfies ...string) (*AlbumQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return a, nil
+	}
+	if err := a.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return a, nil
+}
+
+func (a *AlbumQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(album.Columns))
+		selectedFields = []string{album.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+
+		case "car":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&CarClient{config: a.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, carImplementors)...); err != nil {
+				return err
+			}
+			a.withCar = query
+
+		case "media":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&MediaClient{config: a.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, mediaImplementors)...); err != nil {
+				return err
+			}
+			a.WithNamedMedia(alias, func(wq *MediaQuery) {
+				*wq = *query
+			})
+		case "createTime":
+			if _, ok := fieldSeen[album.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, album.FieldCreateTime)
+				fieldSeen[album.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[album.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, album.FieldUpdateTime)
+				fieldSeen[album.FieldUpdateTime] = struct{}{}
+			}
+		case "title":
+			if _, ok := fieldSeen[album.FieldTitle]; !ok {
+				selectedFields = append(selectedFields, album.FieldTitle)
+				fieldSeen[album.FieldTitle] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		a.Select(selectedFields...)
+	}
+	return nil
+}
+
+type albumPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []AlbumPaginateOption
+}
+
+func newAlbumPaginateArgs(rv map[string]any) *albumPaginateArgs {
+	args := &albumPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*AlbumWhereInput); ok {
+		args.opts = append(args.opts, WithAlbumFilter(v.Filter))
+	}
+	return args
+}
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (c *CarQuery) CollectFields(ctx context.Context, satisfies ...string) (*CarQuery, error) {
@@ -146,6 +248,19 @@ func (c *CarQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphq
 				return err
 			}
 			c.WithNamedMedia(alias, func(wq *MediaQuery) {
+				*wq = *query
+			})
+
+		case "albums":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&AlbumClient{config: c.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, albumImplementors)...); err != nil {
+				return err
+			}
+			c.WithNamedAlbums(alias, func(wq *AlbumQuery) {
 				*wq = *query
 			})
 
@@ -1196,6 +1311,19 @@ func (m *MediaQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 				return err
 			}
 			m.withCar = query
+
+		case "albums":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&AlbumClient{config: m.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, albumImplementors)...); err != nil {
+				return err
+			}
+			m.WithNamedAlbums(alias, func(wq *AlbumQuery) {
+				*wq = *query
+			})
 		case "createTime":
 			if _, ok := fieldSeen[media.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, media.FieldCreateTime)
@@ -1205,6 +1333,16 @@ func (m *MediaQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 			if _, ok := fieldSeen[media.FieldUpdateTime]; !ok {
 				selectedFields = append(selectedFields, media.FieldUpdateTime)
 				fieldSeen[media.FieldUpdateTime] = struct{}{}
+			}
+		case "title":
+			if _, ok := fieldSeen[media.FieldTitle]; !ok {
+				selectedFields = append(selectedFields, media.FieldTitle)
+				fieldSeen[media.FieldTitle] = struct{}{}
+			}
+		case "description":
+			if _, ok := fieldSeen[media.FieldDescription]; !ok {
+				selectedFields = append(selectedFields, media.FieldDescription)
+				fieldSeen[media.FieldDescription] = struct{}{}
 			}
 		case "id":
 		case "__typename":

@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Album is the predicate function for album builders.
+type Album func(*sql.Selector)
+
 // Car is the predicate function for car builders.
 type Car func(*sql.Selector)
 

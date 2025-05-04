@@ -47,6 +47,8 @@ const (
 	EdgeServiceSchedules = "service_schedules"
 	// EdgeMedia holds the string denoting the media edge name in mutations.
 	EdgeMedia = "media"
+	// EdgeAlbums holds the string denoting the albums edge name in mutations.
+	EdgeAlbums = "albums"
 	// EdgeDocuments holds the string denoting the documents edge name in mutations.
 	EdgeDocuments = "documents"
 	// EdgeDynoSessions holds the string denoting the dyno_sessions edge name in mutations.
@@ -113,6 +115,13 @@ const (
 	MediaInverseTable = "media"
 	// MediaColumn is the table column denoting the media relation/edge.
 	MediaColumn = "car_media"
+	// AlbumsTable is the table that holds the albums relation/edge.
+	AlbumsTable = "albums"
+	// AlbumsInverseTable is the table name for the Album entity.
+	// It exists in this package in order to avoid circular dependency with the "album" package.
+	AlbumsInverseTable = "albums"
+	// AlbumsColumn is the table column denoting the albums relation/edge.
+	AlbumsColumn = "car_albums"
 	// DocumentsTable is the table that holds the documents relation/edge.
 	DocumentsTable = "documents"
 	// DocumentsInverseTable is the table name for the Document entity.
@@ -342,6 +351,20 @@ func ByMedia(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByAlbumsCount orders the results by albums count.
+func ByAlbumsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAlbumsStep(), opts...)
+	}
+}
+
+// ByAlbums orders the results by albums terms.
+func ByAlbums(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAlbumsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByDocumentsCount orders the results by documents count.
 func ByDocumentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -444,6 +467,13 @@ func newMediaStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MediaInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, MediaTable, MediaColumn),
+	)
+}
+func newAlbumsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AlbumsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AlbumsTable, AlbumsColumn),
 	)
 }
 func newDocumentsStep() *sqlgraph.Step {

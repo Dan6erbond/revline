@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragsession"
@@ -272,6 +273,21 @@ func (cc *CarCreate) AddMedia(m ...*Media) *CarCreate {
 		ids[i] = m[i].ID
 	}
 	return cc.AddMediumIDs(ids...)
+}
+
+// AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
+func (cc *CarCreate) AddAlbumIDs(ids ...uuid.UUID) *CarCreate {
+	cc.mutation.AddAlbumIDs(ids...)
+	return cc
+}
+
+// AddAlbums adds the "albums" edges to the Album entity.
+func (cc *CarCreate) AddAlbums(a ...*Album) *CarCreate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return cc.AddAlbumIDs(ids...)
 }
 
 // AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
@@ -587,6 +603,22 @@ func (cc *CarCreate) createSpec() (*Car, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.AlbumsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.AlbumsTable,
+			Columns: []string{car.AlbumsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

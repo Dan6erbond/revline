@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
@@ -30,6 +31,25 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	albumMixin := schema.Album{}.Mixin()
+	albumMixinFields0 := albumMixin[0].Fields()
+	_ = albumMixinFields0
+	albumFields := schema.Album{}.Fields()
+	_ = albumFields
+	// albumDescCreateTime is the schema descriptor for create_time field.
+	albumDescCreateTime := albumMixinFields0[0].Descriptor()
+	// album.DefaultCreateTime holds the default value on creation for the create_time field.
+	album.DefaultCreateTime = albumDescCreateTime.Default.(func() time.Time)
+	// albumDescUpdateTime is the schema descriptor for update_time field.
+	albumDescUpdateTime := albumMixinFields0[1].Descriptor()
+	// album.DefaultUpdateTime holds the default value on creation for the update_time field.
+	album.DefaultUpdateTime = albumDescUpdateTime.Default.(func() time.Time)
+	// album.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	album.UpdateDefaultUpdateTime = albumDescUpdateTime.UpdateDefault.(func() time.Time)
+	// albumDescID is the schema descriptor for id field.
+	albumDescID := albumFields[0].Descriptor()
+	// album.DefaultID holds the default value on creation for the id field.
+	album.DefaultID = albumDescID.Default.(func() uuid.UUID)
 	carMixin := schema.Car{}.Mixin()
 	carMixinFields0 := carMixin[0].Fields()
 	_ = carMixinFields0

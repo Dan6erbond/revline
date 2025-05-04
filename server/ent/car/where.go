@@ -775,6 +775,29 @@ func HasMediaWith(preds ...predicate.Media) predicate.Car {
 	})
 }
 
+// HasAlbums applies the HasEdge predicate on the "albums" edge.
+func HasAlbums() predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AlbumsTable, AlbumsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAlbumsWith applies the HasEdge predicate on the "albums" edge with a given conditions (other predicates).
+func HasAlbumsWith(preds ...predicate.Album) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := newAlbumsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasDocuments applies the HasEdge predicate on the "documents" edge.
 func HasDocuments() predicate.Car {
 	return predicate.Car(func(s *sql.Selector) {

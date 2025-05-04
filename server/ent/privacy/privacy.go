@@ -111,6 +111,30 @@ func DenyMutationOperationRule(op ent.Op) MutationRule {
 	return OnMutationOperation(rule, op)
 }
 
+// The AlbumQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AlbumQueryRuleFunc func(context.Context, *ent.AlbumQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AlbumQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AlbumQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AlbumQuery", q)
+}
+
+// The AlbumMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AlbumMutationRuleFunc func(context.Context, *ent.AlbumMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AlbumMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AlbumMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AlbumMutation", m)
+}
+
 // The CarQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type CarQueryRuleFunc func(context.Context, *ent.CarQuery) error
@@ -554,6 +578,8 @@ var _ QueryMutationRule = FilterFunc(nil)
 
 func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
+	case *ent.AlbumQuery:
+		return q.Filter(), nil
 	case *ent.CarQuery:
 		return q.Filter(), nil
 	case *ent.CheckoutSessionQuery:
@@ -595,6 +621,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 
 func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
+	case *ent.AlbumMutation:
+		return m.Filter(), nil
 	case *ent.CarMutation:
 		return m.Filter(), nil
 	case *ent.CheckoutSessionMutation:

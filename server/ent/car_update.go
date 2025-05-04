@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragsession"
@@ -291,6 +292,21 @@ func (cu *CarUpdate) AddMedia(m ...*Media) *CarUpdate {
 	return cu.AddMediumIDs(ids...)
 }
 
+// AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
+func (cu *CarUpdate) AddAlbumIDs(ids ...uuid.UUID) *CarUpdate {
+	cu.mutation.AddAlbumIDs(ids...)
+	return cu
+}
+
+// AddAlbums adds the "albums" edges to the Album entity.
+func (cu *CarUpdate) AddAlbums(a ...*Album) *CarUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return cu.AddAlbumIDs(ids...)
+}
+
 // AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
 func (cu *CarUpdate) AddDocumentIDs(ids ...uuid.UUID) *CarUpdate {
 	cu.mutation.AddDocumentIDs(ids...)
@@ -511,6 +527,27 @@ func (cu *CarUpdate) RemoveMedia(m ...*Media) *CarUpdate {
 		ids[i] = m[i].ID
 	}
 	return cu.RemoveMediumIDs(ids...)
+}
+
+// ClearAlbums clears all "albums" edges to the Album entity.
+func (cu *CarUpdate) ClearAlbums() *CarUpdate {
+	cu.mutation.ClearAlbums()
+	return cu
+}
+
+// RemoveAlbumIDs removes the "albums" edge to Album entities by IDs.
+func (cu *CarUpdate) RemoveAlbumIDs(ids ...uuid.UUID) *CarUpdate {
+	cu.mutation.RemoveAlbumIDs(ids...)
+	return cu
+}
+
+// RemoveAlbums removes "albums" edges to Album entities.
+func (cu *CarUpdate) RemoveAlbums(a ...*Album) *CarUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return cu.RemoveAlbumIDs(ids...)
 }
 
 // ClearDocuments clears all "documents" edges to the Document entity.
@@ -1010,6 +1047,51 @@ func (cu *CarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if cu.mutation.AlbumsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.AlbumsTable,
+			Columns: []string{car.AlbumsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedAlbumsIDs(); len(nodes) > 0 && !cu.mutation.AlbumsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.AlbumsTable,
+			Columns: []string{car.AlbumsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.AlbumsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.AlbumsTable,
+			Columns: []string{car.AlbumsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if cu.mutation.DocumentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1445,6 +1527,21 @@ func (cuo *CarUpdateOne) AddMedia(m ...*Media) *CarUpdateOne {
 	return cuo.AddMediumIDs(ids...)
 }
 
+// AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
+func (cuo *CarUpdateOne) AddAlbumIDs(ids ...uuid.UUID) *CarUpdateOne {
+	cuo.mutation.AddAlbumIDs(ids...)
+	return cuo
+}
+
+// AddAlbums adds the "albums" edges to the Album entity.
+func (cuo *CarUpdateOne) AddAlbums(a ...*Album) *CarUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return cuo.AddAlbumIDs(ids...)
+}
+
 // AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
 func (cuo *CarUpdateOne) AddDocumentIDs(ids ...uuid.UUID) *CarUpdateOne {
 	cuo.mutation.AddDocumentIDs(ids...)
@@ -1665,6 +1762,27 @@ func (cuo *CarUpdateOne) RemoveMedia(m ...*Media) *CarUpdateOne {
 		ids[i] = m[i].ID
 	}
 	return cuo.RemoveMediumIDs(ids...)
+}
+
+// ClearAlbums clears all "albums" edges to the Album entity.
+func (cuo *CarUpdateOne) ClearAlbums() *CarUpdateOne {
+	cuo.mutation.ClearAlbums()
+	return cuo
+}
+
+// RemoveAlbumIDs removes the "albums" edge to Album entities by IDs.
+func (cuo *CarUpdateOne) RemoveAlbumIDs(ids ...uuid.UUID) *CarUpdateOne {
+	cuo.mutation.RemoveAlbumIDs(ids...)
+	return cuo
+}
+
+// RemoveAlbums removes "albums" edges to Album entities.
+func (cuo *CarUpdateOne) RemoveAlbums(a ...*Album) *CarUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return cuo.RemoveAlbumIDs(ids...)
 }
 
 // ClearDocuments clears all "documents" edges to the Document entity.
@@ -2187,6 +2305,51 @@ func (cuo *CarUpdateOne) sqlSave(ctx context.Context) (_node *Car, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.AlbumsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.AlbumsTable,
+			Columns: []string{car.AlbumsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedAlbumsIDs(); len(nodes) > 0 && !cuo.mutation.AlbumsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.AlbumsTable,
+			Columns: []string{car.AlbumsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.AlbumsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.AlbumsTable,
+			Columns: []string{car.AlbumsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(album.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

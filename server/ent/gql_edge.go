@@ -8,6 +8,26 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 )
 
+func (a *Album) Car(ctx context.Context) (*Car, error) {
+	result, err := a.Edges.CarOrErr()
+	if IsNotLoaded(err) {
+		result, err = a.QueryCar().Only(ctx)
+	}
+	return result, err
+}
+
+func (a *Album) Media(ctx context.Context) (result []*Media, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = a.NamedMedia(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = a.Edges.MediaOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = a.QueryMedia().All(ctx)
+	}
+	return result, err
+}
+
 func (c *Car) Owner(ctx context.Context) (*User, error) {
 	result, err := c.Edges.OwnerOrErr()
 	if IsNotLoaded(err) {
@@ -96,6 +116,18 @@ func (c *Car) Media(ctx context.Context) (result []*Media, err error) {
 	}
 	if IsNotLoaded(err) {
 		result, err = c.QueryMedia().All(ctx)
+	}
+	return result, err
+}
+
+func (c *Car) Albums(ctx context.Context) (result []*Album, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = c.NamedAlbums(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = c.Edges.AlbumsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = c.QueryAlbums().All(ctx)
 	}
 	return result, err
 }
@@ -278,6 +310,18 @@ func (m *Media) Car(ctx context.Context) (*Car, error) {
 		result, err = m.QueryCar().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (m *Media) Albums(ctx context.Context) (result []*Album, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = m.NamedAlbums(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = m.Edges.AlbumsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = m.QueryAlbums().All(ctx)
+	}
+	return result, err
 }
 
 func (or *OdometerReading) Car(ctx context.Context) (*Car, error) {

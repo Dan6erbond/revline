@@ -62,6 +62,8 @@ type CarEdges struct {
 	ServiceSchedules []*ServiceSchedule `json:"service_schedules,omitempty"`
 	// Media holds the value of the media edge.
 	Media []*Media `json:"media,omitempty"`
+	// Albums holds the value of the albums edge.
+	Albums []*Album `json:"albums,omitempty"`
 	// Documents holds the value of the documents edge.
 	Documents []*Document `json:"documents,omitempty"`
 	// DynoSessions holds the value of the dyno_sessions edge.
@@ -72,9 +74,9 @@ type CarEdges struct {
 	BannerImage *Media `json:"banner_image,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [12]bool
+	loadedTypes [13]bool
 	// totalCount holds the count of the edges above.
-	totalCount [12]map[string]int
+	totalCount [13]map[string]int
 
 	namedDragSessions     map[string][]*DragSession
 	namedFuelUps          map[string][]*FuelUp
@@ -83,6 +85,7 @@ type CarEdges struct {
 	namedServiceLogs      map[string][]*ServiceLog
 	namedServiceSchedules map[string][]*ServiceSchedule
 	namedMedia            map[string][]*Media
+	namedAlbums           map[string][]*Album
 	namedDocuments        map[string][]*Document
 	namedDynoSessions     map[string][]*DynoSession
 	namedExpenses         map[string][]*Expense
@@ -162,10 +165,19 @@ func (e CarEdges) MediaOrErr() ([]*Media, error) {
 	return nil, &NotLoadedError{edge: "media"}
 }
 
+// AlbumsOrErr returns the Albums value or an error if the edge
+// was not loaded in eager-loading.
+func (e CarEdges) AlbumsOrErr() ([]*Album, error) {
+	if e.loadedTypes[8] {
+		return e.Albums, nil
+	}
+	return nil, &NotLoadedError{edge: "albums"}
+}
+
 // DocumentsOrErr returns the Documents value or an error if the edge
 // was not loaded in eager-loading.
 func (e CarEdges) DocumentsOrErr() ([]*Document, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[9] {
 		return e.Documents, nil
 	}
 	return nil, &NotLoadedError{edge: "documents"}
@@ -174,7 +186,7 @@ func (e CarEdges) DocumentsOrErr() ([]*Document, error) {
 // DynoSessionsOrErr returns the DynoSessions value or an error if the edge
 // was not loaded in eager-loading.
 func (e CarEdges) DynoSessionsOrErr() ([]*DynoSession, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[10] {
 		return e.DynoSessions, nil
 	}
 	return nil, &NotLoadedError{edge: "dyno_sessions"}
@@ -183,7 +195,7 @@ func (e CarEdges) DynoSessionsOrErr() ([]*DynoSession, error) {
 // ExpensesOrErr returns the Expenses value or an error if the edge
 // was not loaded in eager-loading.
 func (e CarEdges) ExpensesOrErr() ([]*Expense, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[11] {
 		return e.Expenses, nil
 	}
 	return nil, &NotLoadedError{edge: "expenses"}
@@ -194,7 +206,7 @@ func (e CarEdges) ExpensesOrErr() ([]*Expense, error) {
 func (e CarEdges) BannerImageOrErr() (*Media, error) {
 	if e.BannerImage != nil {
 		return e.BannerImage, nil
-	} else if e.loadedTypes[11] {
+	} else if e.loadedTypes[12] {
 		return nil, &NotFoundError{label: media.Label}
 	}
 	return nil, &NotLoadedError{edge: "banner_image"}
@@ -356,6 +368,11 @@ func (c *Car) QueryServiceSchedules() *ServiceScheduleQuery {
 // QueryMedia queries the "media" edge of the Car entity.
 func (c *Car) QueryMedia() *MediaQuery {
 	return NewCarClient(c.config).QueryMedia(c)
+}
+
+// QueryAlbums queries the "albums" edge of the Car entity.
+func (c *Car) QueryAlbums() *AlbumQuery {
+	return NewCarClient(c.config).QueryAlbums(c)
 }
 
 // QueryDocuments queries the "documents" edge of the Car entity.
@@ -603,6 +620,30 @@ func (c *Car) appendNamedMedia(name string, edges ...*Media) {
 		c.Edges.namedMedia[name] = []*Media{}
 	} else {
 		c.Edges.namedMedia[name] = append(c.Edges.namedMedia[name], edges...)
+	}
+}
+
+// NamedAlbums returns the Albums named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (c *Car) NamedAlbums(name string) ([]*Album, error) {
+	if c.Edges.namedAlbums == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := c.Edges.namedAlbums[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (c *Car) appendNamedAlbums(name string, edges ...*Album) {
+	if c.Edges.namedAlbums == nil {
+		c.Edges.namedAlbums = make(map[string][]*Album)
+	}
+	if len(edges) == 0 {
+		c.Edges.namedAlbums[name] = []*Album{}
+	} else {
+		c.Edges.namedAlbums[name] = append(c.Edges.namedAlbums[name], edges...)
 	}
 }
 

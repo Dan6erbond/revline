@@ -16,6 +16,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
@@ -40,6 +41,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Album is the client for interacting with the Album builders.
+	Album *AlbumClient
 	// Car is the client for interacting with the Car builders.
 	Car *CarClient
 	// CheckoutSession is the client for interacting with the CheckoutSession builders.
@@ -85,6 +88,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Album = NewAlbumClient(c.config)
 	c.Car = NewCarClient(c.config)
 	c.CheckoutSession = NewCheckoutSessionClient(c.config)
 	c.Document = NewDocumentClient(c.config)
@@ -194,6 +198,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:             ctx,
 		config:          cfg,
+		Album:           NewAlbumClient(cfg),
 		Car:             NewCarClient(cfg),
 		CheckoutSession: NewCheckoutSessionClient(cfg),
 		Document:        NewDocumentClient(cfg),
@@ -230,6 +235,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:             ctx,
 		config:          cfg,
+		Album:           NewAlbumClient(cfg),
 		Car:             NewCarClient(cfg),
 		CheckoutSession: NewCheckoutSessionClient(cfg),
 		Document:        NewDocumentClient(cfg),
@@ -253,7 +259,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Car.
+//		Album.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -276,9 +282,10 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Car, c.CheckoutSession, c.Document, c.DragResult, c.DragSession, c.DynoResult,
-		c.DynoSession, c.Expense, c.FuelUp, c.Media, c.OdometerReading, c.Profile,
-		c.ServiceItem, c.ServiceLog, c.ServiceSchedule, c.Subscription, c.User,
+		c.Album, c.Car, c.CheckoutSession, c.Document, c.DragResult, c.DragSession,
+		c.DynoResult, c.DynoSession, c.Expense, c.FuelUp, c.Media, c.OdometerReading,
+		c.Profile, c.ServiceItem, c.ServiceLog, c.ServiceSchedule, c.Subscription,
+		c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -288,9 +295,10 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Car, c.CheckoutSession, c.Document, c.DragResult, c.DragSession, c.DynoResult,
-		c.DynoSession, c.Expense, c.FuelUp, c.Media, c.OdometerReading, c.Profile,
-		c.ServiceItem, c.ServiceLog, c.ServiceSchedule, c.Subscription, c.User,
+		c.Album, c.Car, c.CheckoutSession, c.Document, c.DragResult, c.DragSession,
+		c.DynoResult, c.DynoSession, c.Expense, c.FuelUp, c.Media, c.OdometerReading,
+		c.Profile, c.ServiceItem, c.ServiceLog, c.ServiceSchedule, c.Subscription,
+		c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -299,6 +307,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *AlbumMutation:
+		return c.Album.mutate(ctx, m)
 	case *CarMutation:
 		return c.Car.mutate(ctx, m)
 	case *CheckoutSessionMutation:
@@ -335,6 +345,171 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// AlbumClient is a client for the Album schema.
+type AlbumClient struct {
+	config
+}
+
+// NewAlbumClient returns a client for the Album from the given config.
+func NewAlbumClient(c config) *AlbumClient {
+	return &AlbumClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `album.Hooks(f(g(h())))`.
+func (c *AlbumClient) Use(hooks ...Hook) {
+	c.hooks.Album = append(c.hooks.Album, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `album.Intercept(f(g(h())))`.
+func (c *AlbumClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Album = append(c.inters.Album, interceptors...)
+}
+
+// Create returns a builder for creating a Album entity.
+func (c *AlbumClient) Create() *AlbumCreate {
+	mutation := newAlbumMutation(c.config, OpCreate)
+	return &AlbumCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Album entities.
+func (c *AlbumClient) CreateBulk(builders ...*AlbumCreate) *AlbumCreateBulk {
+	return &AlbumCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AlbumClient) MapCreateBulk(slice any, setFunc func(*AlbumCreate, int)) *AlbumCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AlbumCreateBulk{err: fmt.Errorf("calling to AlbumClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AlbumCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AlbumCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Album.
+func (c *AlbumClient) Update() *AlbumUpdate {
+	mutation := newAlbumMutation(c.config, OpUpdate)
+	return &AlbumUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AlbumClient) UpdateOne(a *Album) *AlbumUpdateOne {
+	mutation := newAlbumMutation(c.config, OpUpdateOne, withAlbum(a))
+	return &AlbumUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AlbumClient) UpdateOneID(id uuid.UUID) *AlbumUpdateOne {
+	mutation := newAlbumMutation(c.config, OpUpdateOne, withAlbumID(id))
+	return &AlbumUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Album.
+func (c *AlbumClient) Delete() *AlbumDelete {
+	mutation := newAlbumMutation(c.config, OpDelete)
+	return &AlbumDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AlbumClient) DeleteOne(a *Album) *AlbumDeleteOne {
+	return c.DeleteOneID(a.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AlbumClient) DeleteOneID(id uuid.UUID) *AlbumDeleteOne {
+	builder := c.Delete().Where(album.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AlbumDeleteOne{builder}
+}
+
+// Query returns a query builder for Album.
+func (c *AlbumClient) Query() *AlbumQuery {
+	return &AlbumQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAlbum},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Album entity by its id.
+func (c *AlbumClient) Get(ctx context.Context, id uuid.UUID) (*Album, error) {
+	return c.Query().Where(album.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AlbumClient) GetX(ctx context.Context, id uuid.UUID) *Album {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryCar queries the car edge of a Album.
+func (c *AlbumClient) QueryCar(a *Album) *CarQuery {
+	query := (&CarClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(album.Table, album.FieldID, id),
+			sqlgraph.To(car.Table, car.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, album.CarTable, album.CarColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMedia queries the media edge of a Album.
+func (c *AlbumClient) QueryMedia(a *Album) *MediaQuery {
+	query := (&MediaClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(album.Table, album.FieldID, id),
+			sqlgraph.To(media.Table, media.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, album.MediaTable, album.MediaPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AlbumClient) Hooks() []Hook {
+	return c.hooks.Album
+}
+
+// Interceptors returns the client interceptors.
+func (c *AlbumClient) Interceptors() []Interceptor {
+	return c.inters.Album
+}
+
+func (c *AlbumClient) mutate(ctx context.Context, m *AlbumMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AlbumCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AlbumUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AlbumUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AlbumDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Album mutation op: %q", m.Op())
 	}
 }
 
@@ -567,6 +742,22 @@ func (c *CarClient) QueryMedia(ca *Car) *MediaQuery {
 			sqlgraph.From(car.Table, car.FieldID, id),
 			sqlgraph.To(media.Table, media.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, car.MediaTable, car.MediaColumn),
+		)
+		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAlbums queries the albums edge of a Car.
+func (c *CarClient) QueryAlbums(ca *Car) *AlbumQuery {
+	query := (&AlbumClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ca.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, id),
+			sqlgraph.To(album.Table, album.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.AlbumsTable, car.AlbumsColumn),
 		)
 		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
 		return fromV, nil
@@ -2091,6 +2282,22 @@ func (c *MediaClient) QueryCar(m *Media) *CarQuery {
 	return query
 }
 
+// QueryAlbums queries the albums edge of a Media.
+func (c *MediaClient) QueryAlbums(m *Media) *AlbumQuery {
+	query := (&AlbumClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(media.Table, media.FieldID, id),
+			sqlgraph.To(album.Table, album.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, media.AlbumsTable, media.AlbumsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *MediaClient) Hooks() []Hook {
 	return c.hooks.Media
@@ -3386,12 +3593,12 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Car, CheckoutSession, Document, DragResult, DragSession, DynoResult,
+		Album, Car, CheckoutSession, Document, DragResult, DragSession, DynoResult,
 		DynoSession, Expense, FuelUp, Media, OdometerReading, Profile, ServiceItem,
 		ServiceLog, ServiceSchedule, Subscription, User []ent.Hook
 	}
 	inters struct {
-		Car, CheckoutSession, Document, DragResult, DragSession, DynoResult,
+		Album, Car, CheckoutSession, Document, DragResult, DragSession, DynoResult,
 		DynoSession, Expense, FuelUp, Media, OdometerReading, Profile, ServiceItem,
 		ServiceLog, ServiceSchedule, Subscription, User []ent.Interceptor
 	}

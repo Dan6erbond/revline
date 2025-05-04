@@ -35,6 +35,7 @@ extend type Query {
   dynoSession(id: ID!): DynoSession!
   document(id: ID!): Document!
   media(id: ID!): Media!
+  album(id: ID!): Album!
 }
 
 type UploadMediaResult {
@@ -61,6 +62,7 @@ extend type Mutation {
   createCar(input: CreateCarInput!): Car! @loggedIn
   uploadBannerImage(input: CreateMediaInput!): UploadMediaResult! @loggedIn
   uploadMedia(input: CreateMediaInput!): UploadMediaResult! @loggedIn
+  updateMedia(id: ID!, input: UpdateMediaInput!): Media! @loggedIn
   uploadDocument(input: CreateDocumentInput!): UploadDocumentResult! @loggedIn
   createExpense(input: CreateExpenseInput!): Expense! @loggedIn
   createFuelUp(input: CreateFuelUpInput!): FuelUp! @loggedIn
@@ -74,4 +76,6 @@ extend type Mutation {
   createDragResult(input: CreateDragResultInput!): DragResult! @loggedIn
   createDynoSession(input: CreateDynoSessionInput!): DynoSession! @loggedIn
   createDynoResult(input: CreateDynoResultInput!): DynoResult! @loggedIn
+  createAlbum(input: CreateAlbumInput!): Album! @loggedIn
+  updateAlbum(id: ID!, input: UpdateAlbumInput!): Album! @loggedIn
 }

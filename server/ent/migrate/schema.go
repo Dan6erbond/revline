@@ -8,6 +8,28 @@ import (
 )
 
 var (
+	// AlbumsColumns holds the columns for the "albums" table.
+	AlbumsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "title", Type: field.TypeString},
+		{Name: "car_albums", Type: field.TypeUUID},
+	}
+	// AlbumsTable holds the schema information for the "albums" table.
+	AlbumsTable = &schema.Table{
+		Name:       "albums",
+		Columns:    AlbumsColumns,
+		PrimaryKey: []*schema.Column{AlbumsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "albums_cars_albums",
+				Columns:    []*schema.Column{AlbumsColumns[4]},
+				RefColumns: []*schema.Column{CarsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// CarsColumns holds the columns for the "cars" table.
 	CarsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -264,6 +286,8 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
+		{Name: "title", Type: field.TypeString, Nullable: true},
+		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "car_media", Type: field.TypeUUID, Nullable: true},
 	}
 	// MediaTable holds the schema information for the "media" table.
@@ -274,7 +298,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "media_cars_media",
-				Columns:    []*schema.Column{MediaColumns[3]},
+				Columns:    []*schema.Column{MediaColumns[5]},
 				RefColumns: []*schema.Column{CarsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -477,6 +501,31 @@ var (
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
+	// AlbumMediaColumns holds the columns for the "album_media" table.
+	AlbumMediaColumns = []*schema.Column{
+		{Name: "album_id", Type: field.TypeUUID},
+		{Name: "media_id", Type: field.TypeUUID},
+	}
+	// AlbumMediaTable holds the schema information for the "album_media" table.
+	AlbumMediaTable = &schema.Table{
+		Name:       "album_media",
+		Columns:    AlbumMediaColumns,
+		PrimaryKey: []*schema.Column{AlbumMediaColumns[0], AlbumMediaColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "album_media_album_id",
+				Columns:    []*schema.Column{AlbumMediaColumns[0]},
+				RefColumns: []*schema.Column{AlbumsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "album_media_media_id",
+				Columns:    []*schema.Column{AlbumMediaColumns[1]},
+				RefColumns: []*schema.Column{MediaColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// ServiceLogItemsColumns holds the columns for the "service_log_items" table.
 	ServiceLogItemsColumns = []*schema.Column{
 		{Name: "service_log_id", Type: field.TypeUUID},
@@ -529,6 +578,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AlbumsTable,
 		CarsTable,
 		CheckoutSessionsTable,
 		DocumentsTable,
@@ -546,12 +596,14 @@ var (
 		ServiceSchedulesTable,
 		SubscriptionsTable,
 		UsersTable,
+		AlbumMediaTable,
 		ServiceLogItemsTable,
 		ServiceScheduleItemsTable,
 	}
 )
 
 func init() {
+	AlbumsTable.ForeignKeys[0].RefTable = CarsTable
 	CarsTable.ForeignKeys[0].RefTable = MediaTable
 	CarsTable.ForeignKeys[1].RefTable = UsersTable
 	CheckoutSessionsTable.ForeignKeys[0].RefTable = UsersTable
@@ -575,6 +627,8 @@ func init() {
 	ServiceSchedulesTable.ForeignKeys[0].RefTable = CarsTable
 	SubscriptionsTable.ForeignKeys[0].RefTable = CheckoutSessionsTable
 	SubscriptionsTable.ForeignKeys[1].RefTable = UsersTable
+	AlbumMediaTable.ForeignKeys[0].RefTable = AlbumsTable
+	AlbumMediaTable.ForeignKeys[1].RefTable = MediaTable
 	ServiceLogItemsTable.ForeignKeys[0].RefTable = ServiceLogsTable
 	ServiceLogItemsTable.ForeignKeys[1].RefTable = ServiceItemsTable
 	ServiceScheduleItemsTable.ForeignKeys[0].RefTable = ServiceSchedulesTable
