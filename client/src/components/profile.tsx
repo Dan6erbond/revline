@@ -6,7 +6,6 @@ import {
   Input,
   Select,
   SelectItem,
-  addToast,
   cn,
 } from "@heroui/react";
 import {
@@ -18,7 +17,6 @@ import {
   useState,
 } from "react";
 import {
-  CheckCircle,
   CircleUserRound,
   Coins,
   Fuel,
@@ -40,6 +38,7 @@ import { skipToken, useMutation, useSuspenseQuery } from "@apollo/client";
 
 import { graphql } from "@/gql";
 import { useSession } from "next-auth/react";
+import { withNotification } from "../utils/with-notification";
 
 type Inputs = {
   username: string;
@@ -195,44 +194,37 @@ export default function ProfileForm() {
     [handleFileUpload]
   );
 
-  const onSubmit: SubmitHandler<Inputs> = ({
-    username,
-    firstName,
-    lastName,
-    currencyCode,
-    fuelVolumeUnit,
-    distanceUnit,
-    fuelConsumptionUnit,
-    temperatureUnit,
-    powerUnit,
-    torqueUnit
-  }) => {
-    mutateUpdateProfile({
-      variables: {
-        input: {
-          username,
-          firstName,
-          lastName,
-          currencyCode,
-          fuelVolumeUnit,
-          distanceUnit,
-          fuelConsumptionUnit,
-          temperatureUnit,
-          powerUnit,
-          torqueUnit,
+  const onSubmit: SubmitHandler<Inputs> = withNotification(
+    {},
+    ({
+      username,
+      firstName,
+      lastName,
+      currencyCode,
+      fuelVolumeUnit,
+      distanceUnit,
+      fuelConsumptionUnit,
+      temperatureUnit,
+      powerUnit,
+      torqueUnit,
+    }: Inputs) =>
+      mutateUpdateProfile({
+        variables: {
+          input: {
+            username,
+            firstName,
+            lastName,
+            currencyCode,
+            fuelVolumeUnit,
+            distanceUnit,
+            fuelConsumptionUnit,
+            temperatureUnit,
+            powerUnit,
+            torqueUnit,
+          },
         },
-      },
-    }).then(({ data }) => {
-      if (!data?.updateProfile) return;
-
-      addToast({
-        title: "Profile updated",
-        description: "Your profile changes have been saved successfully.",
-        color: "success",
-        icon: <CheckCircle color="hsl(var(--heroui-primary-700))" />,
-      });
-    });
-  };
+      })
+  );
 
   const currencyFilter = (textValue: string, inputValue: string) => {
     if (inputValue.length === 0) {
