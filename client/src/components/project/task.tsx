@@ -1,41 +1,166 @@
 import { CardBody, CardHeader, CardProps, Spinner, cn } from "@heroui/react";
 import { FragmentType, graphql, useFragment } from "@/gql";
 import { HTMLMotionProps, motion } from "framer-motion";
+import {
+  categoryColors,
+  categoryIcons,
+  categoryLabels,
+  difficultyColors,
+  difficultyIcons,
+  difficultyLabels,
+  effortColors,
+  effortIcons,
+  effortLabels,
+  priorityColors,
+  priorityIcons,
+  priorityLabels,
+} from "./shared";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 
 import { CSS } from "@dnd-kit/utilities";
+import { EnumChip } from "../enum-select";
 import { KanbanCard } from "./card";
+import Link from "next/link";
 import { forwardRef } from "react";
+import { useQuery } from "@apollo/client";
+import { useRouter } from "next/router";
 
-export const TaskFieldsFragment = graphql(`
+export const TaskFields = graphql(`
   fragment TaskFields on Task {
     id
     status
     title
+    description
     rank
+    effort
+    estimate
+    difficulty
+    category
+    priority
+    partsNeeded
+    budget
+  }
+`);
+
+const getProfile = graphql(`
+  query GetProfile {
+    me {
+      id
+      profile {
+        id
+        username
+        firstName
+        lastName
+        currencyCode
+        fuelVolumeUnit
+        distanceUnit
+        fuelConsumptionUnit
+        temperatureUnit
+        powerUnit
+        torqueUnit
+        pictureUrl
+      }
+    }
   }
 `);
 
 export const TaskCard = forwardRef<
   HTMLDivElement,
   {
-    task: FragmentType<typeof TaskFieldsFragment>;
+    task: FragmentType<typeof TaskFields>;
   } & CardProps
 >(({ task, className, ...props }, ref) => {
-  const t = useFragment(TaskFieldsFragment, task);
+  const router = useRouter();
+
+  const { data } = useQuery(getProfile);
+
+  const t = useFragment(TaskFields, task);
+
+  const currencyCode = data?.me?.profile?.currencyCode ?? "USD";
 
   return (
-    <KanbanCard ref={ref} className={cn("relative", className)} {...props}>
+    <KanbanCard
+      ref={ref}
+      as={Link}
+      href={`/cars/${router.query.id}/project/${t.id}`}
+      className={cn("relative", className)}
+      {...props}
+    >
       {t.id === "" && (
         <div className="absolute top-0 left-0 w-full h-full bg-background/20 backdrop-blur-xs z-20 rounded-xl flex items-center justify-center">
           <Spinner />
         </div>
       )}
-      <CardHeader>
-        <p className="text-base">{t.title}</p>
+      <CardHeader className="flex flex-col gap-1">
+        <p className="text-base font-medium">{t.title}</p>
+
+        {t.description && (
+          <p className="text-xs text-muted-foreground line-clamp-2">
+            {t.description}
+          </p>
+        )}
+
+        <div className="flex flex-wrap gap-2 mt-1">
+          {t.category && (
+            <EnumChip
+              size="sm"
+              item={t.category}
+              icons={categoryIcons}
+              labels={categoryLabels}
+              chipColor={(c) => categoryColors[c]}
+              variant="flat"
+            />
+          )}
+          {t.effort && (
+            <EnumChip
+              size="sm"
+              item={t.effort}
+              icons={effortIcons}
+              labels={effortLabels}
+              chipColor={(e) => effortColors[e]}
+              variant="flat"
+            />
+          )}
+          {t.difficulty && (
+            <EnumChip
+              size="sm"
+              item={t.difficulty}
+              icons={difficultyIcons}
+              labels={difficultyLabels}
+              chipColor={(d) => difficultyColors[d]}
+              variant="flat"
+            />
+          )}
+          {t.priority && (
+            <EnumChip
+              size="sm"
+              item={t.priority}
+              icons={priorityIcons}
+              labels={priorityLabels}
+              chipColor={(p) => priorityColors[p]}
+              variant="flat"
+            />
+          )}
+        </div>
       </CardHeader>
-      <CardBody>
-        <p className="text-sm text-gray-500">Rank: {t.rank}</p>
+
+      <CardBody className="text-xs text-muted-foreground flex flex-col gap-1">
+        {t.estimate && (
+          <div>
+            <span className="font-medium">Estimate:</span> {t.estimate}h
+          </div>
+        )}
+        {t.partsNeeded && (
+          <div>
+            <span className="font-medium">Parts:</span> {t.partsNeeded}
+          </div>
+        )}
+        {t.budget && (
+          <div>
+            <span className="font-medium">Budget:</span>{" "}
+            {t.budget.toLocaleString()} {currencyCode}
+          </div>
+        )}
       </CardBody>
     </KanbanCard>
   );
@@ -47,11 +172,11 @@ export default function Task({
   task,
   ...props
 }: {
-  task: FragmentType<typeof TaskFieldsFragment>;
+  task: FragmentType<typeof TaskFields>;
 } & HTMLMotionProps<"div"> & {
-    task: FragmentType<typeof TaskFieldsFragment>;
+    task: FragmentType<typeof TaskFields>;
   }) {
-  const t = useFragment(TaskFieldsFragment, task);
+  const t = useFragment(TaskFields, task);
 
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({

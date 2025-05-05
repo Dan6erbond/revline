@@ -136,28 +136,26 @@ export default function AlbumView({ id }: { id: string }) {
             (m) => data?.album.media?.findIndex((_m) => _m.id === m.id) === -1
           ) ?? []
         }
-        renderValue={(items) => {
-          return (
-            <div className="flex flex-wrap gap-2">
-              {items.map((item) => (
-                <Chip
-                  key={item.key}
-                  startContent={
-                    <Image
-                      alt={item.data?.id}
-                      className="flex-shrink-0 object-cover"
-                      height={25}
-                      width={25}
-                      src={item.data?.url}
-                    />
-                  }
-                >
-                  {item.data?.id}
-                </Chip>
-              ))}
-            </div>
-          );
-        }}
+        renderValue={(items) => (
+          <div className="flex flex-wrap gap-2">
+            {items.map((item) => (
+              <Chip
+                key={item.key}
+                startContent={
+                  <Image
+                    alt={item.data?.id}
+                    className="flex-shrink-0 object-cover"
+                    height={25}
+                    width={25}
+                    src={item.data?.url}
+                  />
+                }
+              >
+                {item.data?.id}
+              </Chip>
+            ))}
+          </div>
+        )}
         onSelectionChange={(value) => {
           if (!value.currentKey) return;
 

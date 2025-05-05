@@ -1,7 +1,7 @@
 import { Button, CardHeader, Input, Spinner, cn } from "@heroui/react";
 import { FragmentType, graphql } from "@/gql";
 import React, { useState } from "react";
-import Task, { TaskCard, TaskFieldsFragment } from "./task";
+import Task, { TaskCard, TaskFields } from "./task";
 import { useMutation, useQuery } from "@apollo/client";
 
 import { KanbanCard } from "./card";
@@ -53,7 +53,7 @@ export default function Column({
 }: {
   title: string;
   status: TaskStatus;
-  activeTask: (FragmentType<typeof TaskFieldsFragment> & { id: string }) | null;
+  activeTask: (FragmentType<typeof TaskFields> & { id: string }) | null;
 }) {
   const router = useRouter();
 

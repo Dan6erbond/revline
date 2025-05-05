@@ -9,10 +9,10 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { FragmentType, graphql } from "@/gql";
-import { TaskCard, TaskFieldsFragment } from "./task";
+import { TaskCard, TaskFields } from "./task";
+import { TaskFieldsFragment, TaskStatus } from "@/gql/graphql";
 import { useApolloClient, useMutation } from "@apollo/client";
 
-import { TaskStatus } from "@/gql/graphql";
 import { getQueryParam } from "@/utils/router";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -20,9 +20,7 @@ import { useState } from "react";
 const updateTask = graphql(`
   mutation UpdateTask($id: ID!, $input: UpdateTaskInput!) {
     updateTask(id: $id, input: $input) {
-      id
-      rank
-      ...TaskFields @unmask
+      ...TaskFields
     }
   }
 `);
@@ -42,7 +40,7 @@ export default function Kanban() {
   );
 
   const [activeTask, setActiveTask] = useState<
-    (FragmentType<typeof TaskFieldsFragment> & { id: string }) | null
+    (FragmentType<typeof TaskFields> & { id: string }) | null
   >(null);
 
   const [mutate] = useMutation(updateTask, {
@@ -73,23 +71,23 @@ export default function Kanban() {
           data.car.tasks.edges[overTaskIdx - 1]?.node?.rank ?? prevRank;
       }
 
+      const status = over.data.current.task.status;
       const rank = (prevRank + over.data.current.task.rank) / 2;
 
       mutate({
         variables: {
           id: active.id.toString(),
           input: {
-            status: over.data.current.task.status,
+            status,
             rank,
           },
         },
         optimisticResponse: {
           updateTask: {
-            ...active.data.current,
-            id: active.id.toString(),
+            ...(active.data.current as TaskFieldsFragment),
+            status,
             rank,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          } as any,
+          },
         },
         update: (proxy, res) => {
           if (!data?.car.tasks.edges || !res.data?.updateTask) return;
@@ -138,20 +136,21 @@ export default function Kanban() {
           prevRank;
       }
 
+      const status = over.id as TaskStatus;
       const rank = prevRank + 1000;
 
       mutate({
         variables: {
           id: active.id.toString(),
           input: {
-            status: over.id as TaskStatus,
+            status,
             rank,
           },
         },
         optimisticResponse: {
           updateTask: {
-            ...active.data.current,
-            id: active.id.toString(),
+            ...(active.data.current as TaskFieldsFragment),
+            status,
             rank,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any,
