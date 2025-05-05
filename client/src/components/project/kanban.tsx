@@ -200,7 +200,10 @@ export default function Kanban() {
       }}
     >
       <div className="w-full overflow-x-auto">
-        <div className="inline-flex gap-4 md:gap-8 p-4 md:p-8">
+        <div
+          className="inline-flex gap-4 md:gap-8 p-4 md:p-8"
+          style={{ minHeight: "calc(70vh - 5rem" }}
+        >
           {Object.entries(TaskStatus).map(([title, status]) => (
             <Column
               title={title}
