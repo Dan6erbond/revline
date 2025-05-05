@@ -14,10 +14,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/Dan6erbond/revline/auth"
 	"github.com/Dan6erbond/revline/ent"
-	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
-	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
 	"github.com/Dan6erbond/revline/graph/model"
@@ -601,7 +599,7 @@ func (r *queryResolver) Media(ctx context.Context, id string) (*ent.Media, error
 		return nil, err
 	}
 
-	return r.entClient.Media.Query().Where(media.IDEQ(uid)).First(ctx)
+	return r.entClient.Media.Get(ctx, uid)
 }
 
 // Album is the resolver for the album field.
@@ -612,7 +610,18 @@ func (r *queryResolver) Album(ctx context.Context, id string) (*ent.Album, error
 		return nil, err
 	}
 
-	return r.entClient.Album.Query().Where(album.IDEQ(uid)).First(ctx)
+	return r.entClient.Album.Get(ctx, uid)
+}
+
+// Task is the resolver for the task field.
+func (r *queryResolver) Task(ctx context.Context, id string) (*ent.Task, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.Task.Get(ctx, uid)
 }
 
 // Cost is the resolver for the cost field.

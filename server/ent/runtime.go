@@ -407,7 +407,7 @@ func init() {
 	// task.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	task.TitleValidator = taskDescTitle.Validators[0].(func(string) error)
 	// taskDescRank is the schema descriptor for rank field.
-	taskDescRank := taskFields[3].Descriptor()
+	taskDescRank := taskFields[4].Descriptor()
 	// task.DefaultRank holds the default value on creation for the rank field.
 	task.DefaultRank = taskDescRank.Default.(float64)
 	// taskDescID is the schema descriptor for id field.

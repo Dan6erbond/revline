@@ -372,11 +372,19 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Task",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			task.FieldCreateTime: {Type: field.TypeTime, Column: task.FieldCreateTime},
-			task.FieldUpdateTime: {Type: field.TypeTime, Column: task.FieldUpdateTime},
-			task.FieldStatus:     {Type: field.TypeEnum, Column: task.FieldStatus},
-			task.FieldTitle:      {Type: field.TypeString, Column: task.FieldTitle},
-			task.FieldRank:       {Type: field.TypeFloat64, Column: task.FieldRank},
+			task.FieldCreateTime:  {Type: field.TypeTime, Column: task.FieldCreateTime},
+			task.FieldUpdateTime:  {Type: field.TypeTime, Column: task.FieldUpdateTime},
+			task.FieldStatus:      {Type: field.TypeEnum, Column: task.FieldStatus},
+			task.FieldTitle:       {Type: field.TypeString, Column: task.FieldTitle},
+			task.FieldDescription: {Type: field.TypeString, Column: task.FieldDescription},
+			task.FieldRank:        {Type: field.TypeFloat64, Column: task.FieldRank},
+			task.FieldEstimate:    {Type: field.TypeFloat64, Column: task.FieldEstimate},
+			task.FieldPriority:    {Type: field.TypeEnum, Column: task.FieldPriority},
+			task.FieldEffort:      {Type: field.TypeEnum, Column: task.FieldEffort},
+			task.FieldDifficulty:  {Type: field.TypeEnum, Column: task.FieldDifficulty},
+			task.FieldCategory:    {Type: field.TypeEnum, Column: task.FieldCategory},
+			task.FieldBudget:      {Type: field.TypeFloat64, Column: task.FieldBudget},
+			task.FieldPartsNeeded: {Type: field.TypeString, Column: task.FieldPartsNeeded},
 		},
 	}
 	graph.Nodes[18] = &sqlgraph.Node{
@@ -3040,9 +3048,49 @@ func (f *TaskFilter) WhereTitle(p entql.StringP) {
 	f.Where(p.Field(task.FieldTitle))
 }
 
+// WhereDescription applies the entql string predicate on the description field.
+func (f *TaskFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(task.FieldDescription))
+}
+
 // WhereRank applies the entql float64 predicate on the rank field.
 func (f *TaskFilter) WhereRank(p entql.Float64P) {
 	f.Where(p.Field(task.FieldRank))
+}
+
+// WhereEstimate applies the entql float64 predicate on the estimate field.
+func (f *TaskFilter) WhereEstimate(p entql.Float64P) {
+	f.Where(p.Field(task.FieldEstimate))
+}
+
+// WherePriority applies the entql string predicate on the priority field.
+func (f *TaskFilter) WherePriority(p entql.StringP) {
+	f.Where(p.Field(task.FieldPriority))
+}
+
+// WhereEffort applies the entql string predicate on the effort field.
+func (f *TaskFilter) WhereEffort(p entql.StringP) {
+	f.Where(p.Field(task.FieldEffort))
+}
+
+// WhereDifficulty applies the entql string predicate on the difficulty field.
+func (f *TaskFilter) WhereDifficulty(p entql.StringP) {
+	f.Where(p.Field(task.FieldDifficulty))
+}
+
+// WhereCategory applies the entql string predicate on the category field.
+func (f *TaskFilter) WhereCategory(p entql.StringP) {
+	f.Where(p.Field(task.FieldCategory))
+}
+
+// WhereBudget applies the entql float64 predicate on the budget field.
+func (f *TaskFilter) WhereBudget(p entql.Float64P) {
+	f.Where(p.Field(task.FieldBudget))
+}
+
+// WherePartsNeeded applies the entql string predicate on the parts_needed field.
+func (f *TaskFilter) WherePartsNeeded(p entql.StringP) {
+	f.Where(p.Field(task.FieldPartsNeeded))
 }
 
 // WhereHasCar applies a predicate to check if query has an edge car.

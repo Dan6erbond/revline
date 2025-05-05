@@ -62,6 +62,20 @@ func (tc *TaskCreate) SetTitle(s string) *TaskCreate {
 	return tc
 }
 
+// SetDescription sets the "description" field.
+func (tc *TaskCreate) SetDescription(s string) *TaskCreate {
+	tc.mutation.SetDescription(s)
+	return tc
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableDescription(s *string) *TaskCreate {
+	if s != nil {
+		tc.SetDescription(*s)
+	}
+	return tc
+}
+
 // SetRank sets the "rank" field.
 func (tc *TaskCreate) SetRank(f float64) *TaskCreate {
 	tc.mutation.SetRank(f)
@@ -72,6 +86,104 @@ func (tc *TaskCreate) SetRank(f float64) *TaskCreate {
 func (tc *TaskCreate) SetNillableRank(f *float64) *TaskCreate {
 	if f != nil {
 		tc.SetRank(*f)
+	}
+	return tc
+}
+
+// SetEstimate sets the "estimate" field.
+func (tc *TaskCreate) SetEstimate(f float64) *TaskCreate {
+	tc.mutation.SetEstimate(f)
+	return tc
+}
+
+// SetNillableEstimate sets the "estimate" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableEstimate(f *float64) *TaskCreate {
+	if f != nil {
+		tc.SetEstimate(*f)
+	}
+	return tc
+}
+
+// SetPriority sets the "priority" field.
+func (tc *TaskCreate) SetPriority(t task.Priority) *TaskCreate {
+	tc.mutation.SetPriority(t)
+	return tc
+}
+
+// SetNillablePriority sets the "priority" field if the given value is not nil.
+func (tc *TaskCreate) SetNillablePriority(t *task.Priority) *TaskCreate {
+	if t != nil {
+		tc.SetPriority(*t)
+	}
+	return tc
+}
+
+// SetEffort sets the "effort" field.
+func (tc *TaskCreate) SetEffort(t task.Effort) *TaskCreate {
+	tc.mutation.SetEffort(t)
+	return tc
+}
+
+// SetNillableEffort sets the "effort" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableEffort(t *task.Effort) *TaskCreate {
+	if t != nil {
+		tc.SetEffort(*t)
+	}
+	return tc
+}
+
+// SetDifficulty sets the "difficulty" field.
+func (tc *TaskCreate) SetDifficulty(t task.Difficulty) *TaskCreate {
+	tc.mutation.SetDifficulty(t)
+	return tc
+}
+
+// SetNillableDifficulty sets the "difficulty" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableDifficulty(t *task.Difficulty) *TaskCreate {
+	if t != nil {
+		tc.SetDifficulty(*t)
+	}
+	return tc
+}
+
+// SetCategory sets the "category" field.
+func (tc *TaskCreate) SetCategory(t task.Category) *TaskCreate {
+	tc.mutation.SetCategory(t)
+	return tc
+}
+
+// SetNillableCategory sets the "category" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableCategory(t *task.Category) *TaskCreate {
+	if t != nil {
+		tc.SetCategory(*t)
+	}
+	return tc
+}
+
+// SetBudget sets the "budget" field.
+func (tc *TaskCreate) SetBudget(f float64) *TaskCreate {
+	tc.mutation.SetBudget(f)
+	return tc
+}
+
+// SetNillableBudget sets the "budget" field if the given value is not nil.
+func (tc *TaskCreate) SetNillableBudget(f *float64) *TaskCreate {
+	if f != nil {
+		tc.SetBudget(*f)
+	}
+	return tc
+}
+
+// SetPartsNeeded sets the "parts_needed" field.
+func (tc *TaskCreate) SetPartsNeeded(s string) *TaskCreate {
+	tc.mutation.SetPartsNeeded(s)
+	return tc
+}
+
+// SetNillablePartsNeeded sets the "parts_needed" field if the given value is not nil.
+func (tc *TaskCreate) SetNillablePartsNeeded(s *string) *TaskCreate {
+	if s != nil {
+		tc.SetPartsNeeded(*s)
 	}
 	return tc
 }
@@ -181,6 +293,26 @@ func (tc *TaskCreate) check() error {
 	if _, ok := tc.mutation.Rank(); !ok {
 		return &ValidationError{Name: "rank", err: errors.New(`ent: missing required field "Task.rank"`)}
 	}
+	if v, ok := tc.mutation.Priority(); ok {
+		if err := task.PriorityValidator(v); err != nil {
+			return &ValidationError{Name: "priority", err: fmt.Errorf(`ent: validator failed for field "Task.priority": %w`, err)}
+		}
+	}
+	if v, ok := tc.mutation.Effort(); ok {
+		if err := task.EffortValidator(v); err != nil {
+			return &ValidationError{Name: "effort", err: fmt.Errorf(`ent: validator failed for field "Task.effort": %w`, err)}
+		}
+	}
+	if v, ok := tc.mutation.Difficulty(); ok {
+		if err := task.DifficultyValidator(v); err != nil {
+			return &ValidationError{Name: "difficulty", err: fmt.Errorf(`ent: validator failed for field "Task.difficulty": %w`, err)}
+		}
+	}
+	if v, ok := tc.mutation.Category(); ok {
+		if err := task.CategoryValidator(v); err != nil {
+			return &ValidationError{Name: "category", err: fmt.Errorf(`ent: validator failed for field "Task.category": %w`, err)}
+		}
+	}
 	if len(tc.mutation.CarIDs()) == 0 {
 		return &ValidationError{Name: "car", err: errors.New(`ent: missing required edge "Task.car"`)}
 	}
@@ -235,9 +367,41 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		_spec.SetField(task.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
+	if value, ok := tc.mutation.Description(); ok {
+		_spec.SetField(task.FieldDescription, field.TypeString, value)
+		_node.Description = &value
+	}
 	if value, ok := tc.mutation.Rank(); ok {
 		_spec.SetField(task.FieldRank, field.TypeFloat64, value)
 		_node.Rank = value
+	}
+	if value, ok := tc.mutation.Estimate(); ok {
+		_spec.SetField(task.FieldEstimate, field.TypeFloat64, value)
+		_node.Estimate = &value
+	}
+	if value, ok := tc.mutation.Priority(); ok {
+		_spec.SetField(task.FieldPriority, field.TypeEnum, value)
+		_node.Priority = &value
+	}
+	if value, ok := tc.mutation.Effort(); ok {
+		_spec.SetField(task.FieldEffort, field.TypeEnum, value)
+		_node.Effort = &value
+	}
+	if value, ok := tc.mutation.Difficulty(); ok {
+		_spec.SetField(task.FieldDifficulty, field.TypeEnum, value)
+		_node.Difficulty = &value
+	}
+	if value, ok := tc.mutation.Category(); ok {
+		_spec.SetField(task.FieldCategory, field.TypeEnum, value)
+		_node.Category = &value
+	}
+	if value, ok := tc.mutation.Budget(); ok {
+		_spec.SetField(task.FieldBudget, field.TypeFloat64, value)
+		_node.Budget = &value
+	}
+	if value, ok := tc.mutation.PartsNeeded(); ok {
+		_spec.SetField(task.FieldPartsNeeded, field.TypeString, value)
+		_node.PartsNeeded = &value
 	}
 	if nodes := tc.mutation.CarIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

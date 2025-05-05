@@ -293,6 +293,7 @@ type ComplexityRoot struct {
 		Media       func(childComplexity int, id string) int
 		Node        func(childComplexity int, id string) int
 		Nodes       func(childComplexity int, ids []string) int
+		Task        func(childComplexity int, id string) int
 	}
 
 	ServiceItem struct {
@@ -354,13 +355,21 @@ type ComplexityRoot struct {
 	}
 
 	Task struct {
-		Car        func(childComplexity int) int
-		CreateTime func(childComplexity int) int
-		ID         func(childComplexity int) int
-		Rank       func(childComplexity int) int
-		Status     func(childComplexity int) int
-		Title      func(childComplexity int) int
-		UpdateTime func(childComplexity int) int
+		Budget      func(childComplexity int) int
+		Car         func(childComplexity int) int
+		Category    func(childComplexity int) int
+		CreateTime  func(childComplexity int) int
+		Description func(childComplexity int) int
+		Difficulty  func(childComplexity int) int
+		Effort      func(childComplexity int) int
+		Estimate    func(childComplexity int) int
+		ID          func(childComplexity int) int
+		PartsNeeded func(childComplexity int) int
+		Priority    func(childComplexity int) int
+		Rank        func(childComplexity int) int
+		Status      func(childComplexity int) int
+		Title       func(childComplexity int) int
+		UpdateTime  func(childComplexity int) int
 	}
 
 	TaskConnection struct {
@@ -455,6 +464,7 @@ type QueryResolver interface {
 	Document(ctx context.Context, id string) (*ent.Document, error)
 	Media(ctx context.Context, id string) (*ent.Media, error)
 	Album(ctx context.Context, id string) (*ent.Album, error)
+	Task(ctx context.Context, id string) (*ent.Task, error)
 	Me(ctx context.Context) (*ent.User, error)
 }
 type UserResolver interface {
@@ -1883,6 +1893,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.Nodes(childComplexity, args["ids"].([]string)), true
 
+	case "Query.task":
+		if e.complexity.Query.Task == nil {
+			break
+		}
+
+		args, err := ec.field_Query_task_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Task(childComplexity, args["id"].(string)), true
+
 	case "ServiceItem.car":
 		if e.complexity.ServiceItem.Car == nil {
 			break
@@ -2205,12 +2227,26 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.SubscriptionPlan.User(childComplexity), true
 
+	case "Task.budget":
+		if e.complexity.Task.Budget == nil {
+			break
+		}
+
+		return e.complexity.Task.Budget(childComplexity), true
+
 	case "Task.car":
 		if e.complexity.Task.Car == nil {
 			break
 		}
 
 		return e.complexity.Task.Car(childComplexity), true
+
+	case "Task.category":
+		if e.complexity.Task.Category == nil {
+			break
+		}
+
+		return e.complexity.Task.Category(childComplexity), true
 
 	case "Task.createTime":
 		if e.complexity.Task.CreateTime == nil {
@@ -2219,12 +2255,54 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Task.CreateTime(childComplexity), true
 
+	case "Task.description":
+		if e.complexity.Task.Description == nil {
+			break
+		}
+
+		return e.complexity.Task.Description(childComplexity), true
+
+	case "Task.difficulty":
+		if e.complexity.Task.Difficulty == nil {
+			break
+		}
+
+		return e.complexity.Task.Difficulty(childComplexity), true
+
+	case "Task.effort":
+		if e.complexity.Task.Effort == nil {
+			break
+		}
+
+		return e.complexity.Task.Effort(childComplexity), true
+
+	case "Task.estimate":
+		if e.complexity.Task.Estimate == nil {
+			break
+		}
+
+		return e.complexity.Task.Estimate(childComplexity), true
+
 	case "Task.id":
 		if e.complexity.Task.ID == nil {
 			break
 		}
 
 		return e.complexity.Task.ID(childComplexity), true
+
+	case "Task.partsNeeded":
+		if e.complexity.Task.PartsNeeded == nil {
+			break
+		}
+
+		return e.complexity.Task.PartsNeeded(childComplexity), true
+
+	case "Task.priority":
+		if e.complexity.Task.Priority == nil {
+			break
+		}
+
+		return e.complexity.Task.Priority(childComplexity), true
 
 	case "Task.rank":
 		if e.complexity.Task.Rank == nil {
@@ -3468,6 +3546,29 @@ func (ec *executionContext) field_Query_nodes_argsIds(
 	}
 
 	var zeroVal []string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_task_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Query_task_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_task_argsID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
 	return zeroVal, nil
 }
 
@@ -11438,8 +11539,24 @@ func (ec *executionContext) fieldContext_Mutation_createTask(ctx context.Context
 				return ec.fieldContext_Task_status(ctx, field)
 			case "title":
 				return ec.fieldContext_Task_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Task_description(ctx, field)
 			case "rank":
 				return ec.fieldContext_Task_rank(ctx, field)
+			case "estimate":
+				return ec.fieldContext_Task_estimate(ctx, field)
+			case "priority":
+				return ec.fieldContext_Task_priority(ctx, field)
+			case "effort":
+				return ec.fieldContext_Task_effort(ctx, field)
+			case "difficulty":
+				return ec.fieldContext_Task_difficulty(ctx, field)
+			case "category":
+				return ec.fieldContext_Task_category(ctx, field)
+			case "budget":
+				return ec.fieldContext_Task_budget(ctx, field)
+			case "partsNeeded":
+				return ec.fieldContext_Task_partsNeeded(ctx, field)
 			case "car":
 				return ec.fieldContext_Task_car(ctx, field)
 			}
@@ -11531,8 +11648,24 @@ func (ec *executionContext) fieldContext_Mutation_updateTask(ctx context.Context
 				return ec.fieldContext_Task_status(ctx, field)
 			case "title":
 				return ec.fieldContext_Task_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Task_description(ctx, field)
 			case "rank":
 				return ec.fieldContext_Task_rank(ctx, field)
+			case "estimate":
+				return ec.fieldContext_Task_estimate(ctx, field)
+			case "priority":
+				return ec.fieldContext_Task_priority(ctx, field)
+			case "effort":
+				return ec.fieldContext_Task_effort(ctx, field)
+			case "difficulty":
+				return ec.fieldContext_Task_difficulty(ctx, field)
+			case "category":
+				return ec.fieldContext_Task_category(ctx, field)
+			case "budget":
+				return ec.fieldContext_Task_budget(ctx, field)
+			case "partsNeeded":
+				return ec.fieldContext_Task_partsNeeded(ctx, field)
 			case "car":
 				return ec.fieldContext_Task_car(ctx, field)
 			}
@@ -13625,6 +13758,93 @@ func (ec *executionContext) fieldContext_Query_album(ctx context.Context, field 
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_album_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_task(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_task(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Task(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Task)
+	fc.Result = res
+	return ec.marshalNTask2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTask(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_task(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Task_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Task_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Task_updateTime(ctx, field)
+			case "status":
+				return ec.fieldContext_Task_status(ctx, field)
+			case "title":
+				return ec.fieldContext_Task_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Task_description(ctx, field)
+			case "rank":
+				return ec.fieldContext_Task_rank(ctx, field)
+			case "estimate":
+				return ec.fieldContext_Task_estimate(ctx, field)
+			case "priority":
+				return ec.fieldContext_Task_priority(ctx, field)
+			case "effort":
+				return ec.fieldContext_Task_effort(ctx, field)
+			case "difficulty":
+				return ec.fieldContext_Task_difficulty(ctx, field)
+			case "category":
+				return ec.fieldContext_Task_category(ctx, field)
+			case "budget":
+				return ec.fieldContext_Task_budget(ctx, field)
+			case "partsNeeded":
+				return ec.fieldContext_Task_partsNeeded(ctx, field)
+			case "car":
+				return ec.fieldContext_Task_car(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_task_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -16438,6 +16658,47 @@ func (ec *executionContext) fieldContext_Task_title(_ context.Context, field gra
 	return fc, nil
 }
 
+func (ec *executionContext) _Task_description(ctx context.Context, field graphql.CollectedField, obj *ent.Task) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Task_description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Task_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Task",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Task_rank(ctx context.Context, field graphql.CollectedField, obj *ent.Task) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Task_rank(ctx, field)
 	if err != nil {
@@ -16477,6 +16738,293 @@ func (ec *executionContext) fieldContext_Task_rank(_ context.Context, field grap
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Task_estimate(ctx context.Context, field graphql.CollectedField, obj *ent.Task) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Task_estimate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Estimate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Task_estimate(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Task",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Task_priority(ctx context.Context, field graphql.CollectedField, obj *ent.Task) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Task_priority(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Priority, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*task.Priority)
+	fc.Result = res
+	return ec.marshalOTaskPriority2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriority(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Task_priority(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Task",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type TaskPriority does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Task_effort(ctx context.Context, field graphql.CollectedField, obj *ent.Task) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Task_effort(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Effort, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*task.Effort)
+	fc.Result = res
+	return ec.marshalOTaskEffort2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffort(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Task_effort(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Task",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type TaskEffort does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Task_difficulty(ctx context.Context, field graphql.CollectedField, obj *ent.Task) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Task_difficulty(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Difficulty, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*task.Difficulty)
+	fc.Result = res
+	return ec.marshalOTaskDifficulty2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficulty(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Task_difficulty(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Task",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type TaskDifficulty does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Task_category(ctx context.Context, field graphql.CollectedField, obj *ent.Task) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Task_category(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Category, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*task.Category)
+	fc.Result = res
+	return ec.marshalOTaskCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategory(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Task_category(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Task",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type TaskCategory does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Task_budget(ctx context.Context, field graphql.CollectedField, obj *ent.Task) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Task_budget(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Budget, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Task_budget(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Task",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Task_partsNeeded(ctx context.Context, field graphql.CollectedField, obj *ent.Task) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Task_partsNeeded(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PartsNeeded, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Task_partsNeeded(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Task",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -16773,8 +17321,24 @@ func (ec *executionContext) fieldContext_TaskEdge_node(_ context.Context, field 
 				return ec.fieldContext_Task_status(ctx, field)
 			case "title":
 				return ec.fieldContext_Task_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Task_description(ctx, field)
 			case "rank":
 				return ec.fieldContext_Task_rank(ctx, field)
+			case "estimate":
+				return ec.fieldContext_Task_estimate(ctx, field)
+			case "priority":
+				return ec.fieldContext_Task_priority(ctx, field)
+			case "effort":
+				return ec.fieldContext_Task_effort(ctx, field)
+			case "difficulty":
+				return ec.fieldContext_Task_difficulty(ctx, field)
+			case "category":
+				return ec.fieldContext_Task_category(ctx, field)
+			case "budget":
+				return ec.fieldContext_Task_budget(ctx, field)
+			case "partsNeeded":
+				return ec.fieldContext_Task_partsNeeded(ctx, field)
 			case "car":
 				return ec.fieldContext_Task_car(ctx, field)
 			}
@@ -22920,7 +23484,7 @@ func (ec *executionContext) unmarshalInputCreateTaskInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "status", "title", "rank", "carID"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "status", "title", "description", "rank", "estimate", "priority", "effort", "difficulty", "category", "budget", "partsNeeded", "carID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -22955,6 +23519,13 @@ func (ec *executionContext) unmarshalInputCreateTaskInput(ctx context.Context, o
 				return it, err
 			}
 			it.Title = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
 		case "rank":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rank"))
 			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
@@ -22962,6 +23533,55 @@ func (ec *executionContext) unmarshalInputCreateTaskInput(ctx context.Context, o
 				return it, err
 			}
 			it.Rank = data
+		case "estimate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("estimate"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Estimate = data
+		case "priority":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priority"))
+			data, err := ec.unmarshalOTaskPriority2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriority(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Priority = data
+		case "effort":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("effort"))
+			data, err := ec.unmarshalOTaskEffort2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffort(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Effort = data
+		case "difficulty":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("difficulty"))
+			data, err := ec.unmarshalOTaskDifficulty2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficulty(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Difficulty = data
+		case "category":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
+			data, err := ec.unmarshalOTaskCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategory(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Category = data
+		case "budget":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("budget"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Budget = data
+		case "partsNeeded":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeeded"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeeded = data
 		case "carID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("carID"))
 			data, err := ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -30432,7 +31052,7 @@ func (ec *executionContext) unmarshalInputTaskWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "status", "statusNEQ", "statusIn", "statusNotIn", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "rank", "rankNEQ", "rankIn", "rankNotIn", "rankGT", "rankGTE", "rankLT", "rankLTE", "hasCar", "hasCarWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "status", "statusNEQ", "statusIn", "statusNotIn", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "rank", "rankNEQ", "rankIn", "rankNotIn", "rankGT", "rankGTE", "rankLT", "rankLTE", "estimate", "estimateNEQ", "estimateIn", "estimateNotIn", "estimateGT", "estimateGTE", "estimateLT", "estimateLTE", "estimateIsNil", "estimateNotNil", "priority", "priorityNEQ", "priorityIn", "priorityNotIn", "priorityIsNil", "priorityNotNil", "effort", "effortNEQ", "effortIn", "effortNotIn", "effortIsNil", "effortNotNil", "difficulty", "difficultyNEQ", "difficultyIn", "difficultyNotIn", "difficultyIsNil", "difficultyNotNil", "category", "categoryNEQ", "categoryIn", "categoryNotIn", "categoryIsNil", "categoryNotNil", "budget", "budgetNEQ", "budgetIn", "budgetNotIn", "budgetGT", "budgetGTE", "budgetLT", "budgetLTE", "budgetIsNil", "budgetNotNil", "partsNeeded", "partsNeededNEQ", "partsNeededIn", "partsNeededNotIn", "partsNeededGT", "partsNeededGTE", "partsNeededLT", "partsNeededLTE", "partsNeededContains", "partsNeededHasPrefix", "partsNeededHasSuffix", "partsNeededIsNil", "partsNeededNotNil", "partsNeededEqualFold", "partsNeededContainsFold", "hasCar", "hasCarWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -30747,6 +31367,111 @@ func (ec *executionContext) unmarshalInputTaskWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.TitleContainsFold = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "descriptionNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionNEQ = data
+		case "descriptionIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionIn = data
+		case "descriptionNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionNotIn = data
+		case "descriptionGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionGT = data
+		case "descriptionGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionGTE = data
+		case "descriptionLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionLT = data
+		case "descriptionLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionLTE = data
+		case "descriptionContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionContains = data
+		case "descriptionHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionHasPrefix = data
+		case "descriptionHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionHasSuffix = data
+		case "descriptionIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionIsNil = data
+		case "descriptionNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionNotNil = data
+		case "descriptionEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionEqualFold = data
+		case "descriptionContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionContainsFold = data
 		case "rank":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rank"))
 			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
@@ -30803,6 +31528,419 @@ func (ec *executionContext) unmarshalInputTaskWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.RankLTE = data
+		case "estimate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("estimate"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Estimate = data
+		case "estimateNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("estimateNEQ"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EstimateNEQ = data
+		case "estimateIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("estimateIn"))
+			data, err := ec.unmarshalOFloat2ᚕfloat64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EstimateIn = data
+		case "estimateNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("estimateNotIn"))
+			data, err := ec.unmarshalOFloat2ᚕfloat64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EstimateNotIn = data
+		case "estimateGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("estimateGT"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EstimateGT = data
+		case "estimateGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("estimateGTE"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EstimateGTE = data
+		case "estimateLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("estimateLT"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EstimateLT = data
+		case "estimateLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("estimateLTE"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EstimateLTE = data
+		case "estimateIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("estimateIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EstimateIsNil = data
+		case "estimateNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("estimateNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EstimateNotNil = data
+		case "priority":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priority"))
+			data, err := ec.unmarshalOTaskPriority2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriority(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Priority = data
+		case "priorityNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priorityNEQ"))
+			data, err := ec.unmarshalOTaskPriority2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriority(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PriorityNEQ = data
+		case "priorityIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priorityIn"))
+			data, err := ec.unmarshalOTaskPriority2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriorityᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PriorityIn = data
+		case "priorityNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priorityNotIn"))
+			data, err := ec.unmarshalOTaskPriority2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriorityᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PriorityNotIn = data
+		case "priorityIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priorityIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PriorityIsNil = data
+		case "priorityNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priorityNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PriorityNotNil = data
+		case "effort":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("effort"))
+			data, err := ec.unmarshalOTaskEffort2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffort(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Effort = data
+		case "effortNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("effortNEQ"))
+			data, err := ec.unmarshalOTaskEffort2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffort(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EffortNEQ = data
+		case "effortIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("effortIn"))
+			data, err := ec.unmarshalOTaskEffort2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffortᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EffortIn = data
+		case "effortNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("effortNotIn"))
+			data, err := ec.unmarshalOTaskEffort2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffortᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EffortNotIn = data
+		case "effortIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("effortIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EffortIsNil = data
+		case "effortNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("effortNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EffortNotNil = data
+		case "difficulty":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("difficulty"))
+			data, err := ec.unmarshalOTaskDifficulty2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficulty(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Difficulty = data
+		case "difficultyNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("difficultyNEQ"))
+			data, err := ec.unmarshalOTaskDifficulty2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficulty(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DifficultyNEQ = data
+		case "difficultyIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("difficultyIn"))
+			data, err := ec.unmarshalOTaskDifficulty2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficultyᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DifficultyIn = data
+		case "difficultyNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("difficultyNotIn"))
+			data, err := ec.unmarshalOTaskDifficulty2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficultyᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DifficultyNotIn = data
+		case "difficultyIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("difficultyIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DifficultyIsNil = data
+		case "difficultyNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("difficultyNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DifficultyNotNil = data
+		case "category":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
+			data, err := ec.unmarshalOTaskCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategory(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Category = data
+		case "categoryNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryNEQ"))
+			data, err := ec.unmarshalOTaskCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategory(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CategoryNEQ = data
+		case "categoryIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryIn"))
+			data, err := ec.unmarshalOTaskCategory2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategoryᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CategoryIn = data
+		case "categoryNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryNotIn"))
+			data, err := ec.unmarshalOTaskCategory2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategoryᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CategoryNotIn = data
+		case "categoryIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CategoryIsNil = data
+		case "categoryNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CategoryNotNil = data
+		case "budget":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("budget"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Budget = data
+		case "budgetNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("budgetNEQ"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BudgetNEQ = data
+		case "budgetIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("budgetIn"))
+			data, err := ec.unmarshalOFloat2ᚕfloat64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BudgetIn = data
+		case "budgetNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("budgetNotIn"))
+			data, err := ec.unmarshalOFloat2ᚕfloat64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BudgetNotIn = data
+		case "budgetGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("budgetGT"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BudgetGT = data
+		case "budgetGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("budgetGTE"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BudgetGTE = data
+		case "budgetLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("budgetLT"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BudgetLT = data
+		case "budgetLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("budgetLTE"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BudgetLTE = data
+		case "budgetIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("budgetIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BudgetIsNil = data
+		case "budgetNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("budgetNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BudgetNotNil = data
+		case "partsNeeded":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeeded"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeeded = data
+		case "partsNeededNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeededNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeededNEQ = data
+		case "partsNeededIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeededIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeededIn = data
+		case "partsNeededNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeededNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeededNotIn = data
+		case "partsNeededGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeededGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeededGT = data
+		case "partsNeededGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeededGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeededGTE = data
+		case "partsNeededLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeededLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeededLT = data
+		case "partsNeededLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeededLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeededLTE = data
+		case "partsNeededContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeededContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeededContains = data
+		case "partsNeededHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeededHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeededHasPrefix = data
+		case "partsNeededHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeededHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeededHasSuffix = data
+		case "partsNeededIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeededIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeededIsNil = data
+		case "partsNeededNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeededNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeededNotNil = data
+		case "partsNeededEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeededEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeededEqualFold = data
+		case "partsNeededContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeededContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeededContainsFold = data
 		case "hasCar":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCar"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -32628,7 +33766,7 @@ func (ec *executionContext) unmarshalInputUpdateTaskInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "status", "title", "rank", "carID"}
+	fieldsInOrder := [...]string{"updateTime", "status", "title", "description", "clearDescription", "rank", "estimate", "clearEstimate", "priority", "clearPriority", "effort", "clearEffort", "difficulty", "clearDifficulty", "category", "clearCategory", "budget", "clearBudget", "partsNeeded", "clearPartsNeeded", "carID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -32656,6 +33794,20 @@ func (ec *executionContext) unmarshalInputUpdateTaskInput(ctx context.Context, o
 				return it, err
 			}
 			it.Title = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "clearDescription":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearDescription"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearDescription = data
 		case "rank":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rank"))
 			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
@@ -32663,6 +33815,104 @@ func (ec *executionContext) unmarshalInputUpdateTaskInput(ctx context.Context, o
 				return it, err
 			}
 			it.Rank = data
+		case "estimate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("estimate"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Estimate = data
+		case "clearEstimate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearEstimate"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearEstimate = data
+		case "priority":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priority"))
+			data, err := ec.unmarshalOTaskPriority2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriority(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Priority = data
+		case "clearPriority":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearPriority"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearPriority = data
+		case "effort":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("effort"))
+			data, err := ec.unmarshalOTaskEffort2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffort(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Effort = data
+		case "clearEffort":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearEffort"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearEffort = data
+		case "difficulty":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("difficulty"))
+			data, err := ec.unmarshalOTaskDifficulty2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficulty(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Difficulty = data
+		case "clearDifficulty":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearDifficulty"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearDifficulty = data
+		case "category":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
+			data, err := ec.unmarshalOTaskCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategory(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Category = data
+		case "clearCategory":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearCategory"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearCategory = data
+		case "budget":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("budget"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Budget = data
+		case "clearBudget":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearBudget"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearBudget = data
+		case "partsNeeded":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsNeeded"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsNeeded = data
+		case "clearPartsNeeded":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearPartsNeeded"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearPartsNeeded = data
 		case "carID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("carID"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -36283,6 +37533,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "task":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_task(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "me":
 			field := field
 
@@ -37075,11 +38347,27 @@ func (ec *executionContext) _Task(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "description":
+			out.Values[i] = ec._Task_description(ctx, field, obj)
 		case "rank":
 			out.Values[i] = ec._Task_rank(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "estimate":
+			out.Values[i] = ec._Task_estimate(ctx, field, obj)
+		case "priority":
+			out.Values[i] = ec._Task_priority(ctx, field, obj)
+		case "effort":
+			out.Values[i] = ec._Task_effort(ctx, field, obj)
+		case "difficulty":
+			out.Values[i] = ec._Task_difficulty(ctx, field, obj)
+		case "category":
+			out.Values[i] = ec._Task_category(ctx, field, obj)
+		case "budget":
+			out.Values[i] = ec._Task_budget(ctx, field, obj)
+		case "partsNeeded":
+			out.Values[i] = ec._Task_partsNeeded(ctx, field, obj)
 		case "car":
 			field := field
 
@@ -38669,6 +39957,16 @@ func (ec *executionContext) marshalNTask2ᚖgithubᚗcomᚋDan6erbondᚋrevline�
 	return ec._Task(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNTaskCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategory(ctx context.Context, v any) (task.Category, error) {
+	var res task.Category
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTaskCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategory(ctx context.Context, sel ast.SelectionSet, v task.Category) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) marshalNTaskConnection2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTaskConnection(ctx context.Context, sel ast.SelectionSet, v *ent.TaskConnection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -38677,6 +39975,26 @@ func (ec *executionContext) marshalNTaskConnection2ᚖgithubᚗcomᚋDan6erbond�
 		return graphql.Null
 	}
 	return ec._TaskConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNTaskDifficulty2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficulty(ctx context.Context, v any) (task.Difficulty, error) {
+	var res task.Difficulty
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTaskDifficulty2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficulty(ctx context.Context, sel ast.SelectionSet, v task.Difficulty) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNTaskEffort2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffort(ctx context.Context, v any) (task.Effort, error) {
+	var res task.Effort
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTaskEffort2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffort(ctx context.Context, sel ast.SelectionSet, v task.Effort) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNTaskOrder2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTaskOrder(ctx context.Context, v any) (*ent.TaskOrder, error) {
@@ -38697,6 +40015,16 @@ func (ec *executionContext) marshalNTaskOrderField2ᚖgithubᚗcomᚋDan6erbond�
 		}
 		return graphql.Null
 	}
+	return v
+}
+
+func (ec *executionContext) unmarshalNTaskPriority2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriority(ctx context.Context, v any) (task.Priority, error) {
+	var res task.Priority
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTaskPriority2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriority(ctx context.Context, sel ast.SelectionSet, v task.Priority) graphql.Marshaler {
 	return v
 }
 
@@ -41629,6 +42957,168 @@ func (ec *executionContext) marshalOTask2ᚖgithubᚗcomᚋDan6erbondᚋrevline�
 	return ec._Task(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalOTaskCategory2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategoryᚄ(ctx context.Context, v any) ([]task.Category, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]task.Category, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNTaskCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategory(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOTaskCategory2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []task.Category) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTaskCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategory(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOTaskCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategory(ctx context.Context, v any) (*task.Category, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(task.Category)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTaskCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐCategory(ctx context.Context, sel ast.SelectionSet, v *task.Category) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOTaskDifficulty2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficultyᚄ(ctx context.Context, v any) ([]task.Difficulty, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]task.Difficulty, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNTaskDifficulty2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficulty(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOTaskDifficulty2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficultyᚄ(ctx context.Context, sel ast.SelectionSet, v []task.Difficulty) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTaskDifficulty2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficulty(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOTaskDifficulty2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficulty(ctx context.Context, v any) (*task.Difficulty, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(task.Difficulty)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTaskDifficulty2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐDifficulty(ctx context.Context, sel ast.SelectionSet, v *task.Difficulty) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) marshalOTaskEdge2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTaskEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.TaskEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -41677,6 +43167,87 @@ func (ec *executionContext) marshalOTaskEdge2ᚖgithubᚗcomᚋDan6erbondᚋrevl
 	return ec._TaskEdge(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalOTaskEffort2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffortᚄ(ctx context.Context, v any) ([]task.Effort, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]task.Effort, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNTaskEffort2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffort(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOTaskEffort2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffortᚄ(ctx context.Context, sel ast.SelectionSet, v []task.Effort) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTaskEffort2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffort(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOTaskEffort2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffort(ctx context.Context, v any) (*task.Effort, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(task.Effort)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTaskEffort2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐEffort(ctx context.Context, sel ast.SelectionSet, v *task.Effort) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) unmarshalOTaskOrder2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTaskOrderᚄ(ctx context.Context, v any) ([]*ent.TaskOrder, error) {
 	if v == nil {
 		return nil, nil
@@ -41693,6 +43264,87 @@ func (ec *executionContext) unmarshalOTaskOrder2ᚕᚖgithubᚗcomᚋDan6erbond�
 		}
 	}
 	return res, nil
+}
+
+func (ec *executionContext) unmarshalOTaskPriority2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriorityᚄ(ctx context.Context, v any) ([]task.Priority, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]task.Priority, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNTaskPriority2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriority(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOTaskPriority2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriorityᚄ(ctx context.Context, sel ast.SelectionSet, v []task.Priority) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTaskPriority2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriority(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOTaskPriority2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriority(ctx context.Context, v any) (*task.Priority, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(task.Priority)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTaskPriority2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐPriority(ctx context.Context, sel ast.SelectionSet, v *task.Priority) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOTaskStatus2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋtaskᚐStatusᚄ(ctx context.Context, v any) ([]task.Status, error) {

@@ -64,6 +64,26 @@ func (tu *TaskUpdate) SetNillableTitle(s *string) *TaskUpdate {
 	return tu
 }
 
+// SetDescription sets the "description" field.
+func (tu *TaskUpdate) SetDescription(s string) *TaskUpdate {
+	tu.mutation.SetDescription(s)
+	return tu
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableDescription(s *string) *TaskUpdate {
+	if s != nil {
+		tu.SetDescription(*s)
+	}
+	return tu
+}
+
+// ClearDescription clears the value of the "description" field.
+func (tu *TaskUpdate) ClearDescription() *TaskUpdate {
+	tu.mutation.ClearDescription()
+	return tu
+}
+
 // SetRank sets the "rank" field.
 func (tu *TaskUpdate) SetRank(f float64) *TaskUpdate {
 	tu.mutation.ResetRank()
@@ -82,6 +102,160 @@ func (tu *TaskUpdate) SetNillableRank(f *float64) *TaskUpdate {
 // AddRank adds f to the "rank" field.
 func (tu *TaskUpdate) AddRank(f float64) *TaskUpdate {
 	tu.mutation.AddRank(f)
+	return tu
+}
+
+// SetEstimate sets the "estimate" field.
+func (tu *TaskUpdate) SetEstimate(f float64) *TaskUpdate {
+	tu.mutation.ResetEstimate()
+	tu.mutation.SetEstimate(f)
+	return tu
+}
+
+// SetNillableEstimate sets the "estimate" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableEstimate(f *float64) *TaskUpdate {
+	if f != nil {
+		tu.SetEstimate(*f)
+	}
+	return tu
+}
+
+// AddEstimate adds f to the "estimate" field.
+func (tu *TaskUpdate) AddEstimate(f float64) *TaskUpdate {
+	tu.mutation.AddEstimate(f)
+	return tu
+}
+
+// ClearEstimate clears the value of the "estimate" field.
+func (tu *TaskUpdate) ClearEstimate() *TaskUpdate {
+	tu.mutation.ClearEstimate()
+	return tu
+}
+
+// SetPriority sets the "priority" field.
+func (tu *TaskUpdate) SetPriority(t task.Priority) *TaskUpdate {
+	tu.mutation.SetPriority(t)
+	return tu
+}
+
+// SetNillablePriority sets the "priority" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillablePriority(t *task.Priority) *TaskUpdate {
+	if t != nil {
+		tu.SetPriority(*t)
+	}
+	return tu
+}
+
+// ClearPriority clears the value of the "priority" field.
+func (tu *TaskUpdate) ClearPriority() *TaskUpdate {
+	tu.mutation.ClearPriority()
+	return tu
+}
+
+// SetEffort sets the "effort" field.
+func (tu *TaskUpdate) SetEffort(t task.Effort) *TaskUpdate {
+	tu.mutation.SetEffort(t)
+	return tu
+}
+
+// SetNillableEffort sets the "effort" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableEffort(t *task.Effort) *TaskUpdate {
+	if t != nil {
+		tu.SetEffort(*t)
+	}
+	return tu
+}
+
+// ClearEffort clears the value of the "effort" field.
+func (tu *TaskUpdate) ClearEffort() *TaskUpdate {
+	tu.mutation.ClearEffort()
+	return tu
+}
+
+// SetDifficulty sets the "difficulty" field.
+func (tu *TaskUpdate) SetDifficulty(t task.Difficulty) *TaskUpdate {
+	tu.mutation.SetDifficulty(t)
+	return tu
+}
+
+// SetNillableDifficulty sets the "difficulty" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableDifficulty(t *task.Difficulty) *TaskUpdate {
+	if t != nil {
+		tu.SetDifficulty(*t)
+	}
+	return tu
+}
+
+// ClearDifficulty clears the value of the "difficulty" field.
+func (tu *TaskUpdate) ClearDifficulty() *TaskUpdate {
+	tu.mutation.ClearDifficulty()
+	return tu
+}
+
+// SetCategory sets the "category" field.
+func (tu *TaskUpdate) SetCategory(t task.Category) *TaskUpdate {
+	tu.mutation.SetCategory(t)
+	return tu
+}
+
+// SetNillableCategory sets the "category" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableCategory(t *task.Category) *TaskUpdate {
+	if t != nil {
+		tu.SetCategory(*t)
+	}
+	return tu
+}
+
+// ClearCategory clears the value of the "category" field.
+func (tu *TaskUpdate) ClearCategory() *TaskUpdate {
+	tu.mutation.ClearCategory()
+	return tu
+}
+
+// SetBudget sets the "budget" field.
+func (tu *TaskUpdate) SetBudget(f float64) *TaskUpdate {
+	tu.mutation.ResetBudget()
+	tu.mutation.SetBudget(f)
+	return tu
+}
+
+// SetNillableBudget sets the "budget" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillableBudget(f *float64) *TaskUpdate {
+	if f != nil {
+		tu.SetBudget(*f)
+	}
+	return tu
+}
+
+// AddBudget adds f to the "budget" field.
+func (tu *TaskUpdate) AddBudget(f float64) *TaskUpdate {
+	tu.mutation.AddBudget(f)
+	return tu
+}
+
+// ClearBudget clears the value of the "budget" field.
+func (tu *TaskUpdate) ClearBudget() *TaskUpdate {
+	tu.mutation.ClearBudget()
+	return tu
+}
+
+// SetPartsNeeded sets the "parts_needed" field.
+func (tu *TaskUpdate) SetPartsNeeded(s string) *TaskUpdate {
+	tu.mutation.SetPartsNeeded(s)
+	return tu
+}
+
+// SetNillablePartsNeeded sets the "parts_needed" field if the given value is not nil.
+func (tu *TaskUpdate) SetNillablePartsNeeded(s *string) *TaskUpdate {
+	if s != nil {
+		tu.SetPartsNeeded(*s)
+	}
+	return tu
+}
+
+// ClearPartsNeeded clears the value of the "parts_needed" field.
+func (tu *TaskUpdate) ClearPartsNeeded() *TaskUpdate {
+	tu.mutation.ClearPartsNeeded()
 	return tu
 }
 
@@ -155,6 +329,26 @@ func (tu *TaskUpdate) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Task.title": %w`, err)}
 		}
 	}
+	if v, ok := tu.mutation.Priority(); ok {
+		if err := task.PriorityValidator(v); err != nil {
+			return &ValidationError{Name: "priority", err: fmt.Errorf(`ent: validator failed for field "Task.priority": %w`, err)}
+		}
+	}
+	if v, ok := tu.mutation.Effort(); ok {
+		if err := task.EffortValidator(v); err != nil {
+			return &ValidationError{Name: "effort", err: fmt.Errorf(`ent: validator failed for field "Task.effort": %w`, err)}
+		}
+	}
+	if v, ok := tu.mutation.Difficulty(); ok {
+		if err := task.DifficultyValidator(v); err != nil {
+			return &ValidationError{Name: "difficulty", err: fmt.Errorf(`ent: validator failed for field "Task.difficulty": %w`, err)}
+		}
+	}
+	if v, ok := tu.mutation.Category(); ok {
+		if err := task.CategoryValidator(v); err != nil {
+			return &ValidationError{Name: "category", err: fmt.Errorf(`ent: validator failed for field "Task.category": %w`, err)}
+		}
+	}
 	if tu.mutation.CarCleared() && len(tu.mutation.CarIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Task.car"`)
 	}
@@ -182,11 +376,65 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := tu.mutation.Title(); ok {
 		_spec.SetField(task.FieldTitle, field.TypeString, value)
 	}
+	if value, ok := tu.mutation.Description(); ok {
+		_spec.SetField(task.FieldDescription, field.TypeString, value)
+	}
+	if tu.mutation.DescriptionCleared() {
+		_spec.ClearField(task.FieldDescription, field.TypeString)
+	}
 	if value, ok := tu.mutation.Rank(); ok {
 		_spec.SetField(task.FieldRank, field.TypeFloat64, value)
 	}
 	if value, ok := tu.mutation.AddedRank(); ok {
 		_spec.AddField(task.FieldRank, field.TypeFloat64, value)
+	}
+	if value, ok := tu.mutation.Estimate(); ok {
+		_spec.SetField(task.FieldEstimate, field.TypeFloat64, value)
+	}
+	if value, ok := tu.mutation.AddedEstimate(); ok {
+		_spec.AddField(task.FieldEstimate, field.TypeFloat64, value)
+	}
+	if tu.mutation.EstimateCleared() {
+		_spec.ClearField(task.FieldEstimate, field.TypeFloat64)
+	}
+	if value, ok := tu.mutation.Priority(); ok {
+		_spec.SetField(task.FieldPriority, field.TypeEnum, value)
+	}
+	if tu.mutation.PriorityCleared() {
+		_spec.ClearField(task.FieldPriority, field.TypeEnum)
+	}
+	if value, ok := tu.mutation.Effort(); ok {
+		_spec.SetField(task.FieldEffort, field.TypeEnum, value)
+	}
+	if tu.mutation.EffortCleared() {
+		_spec.ClearField(task.FieldEffort, field.TypeEnum)
+	}
+	if value, ok := tu.mutation.Difficulty(); ok {
+		_spec.SetField(task.FieldDifficulty, field.TypeEnum, value)
+	}
+	if tu.mutation.DifficultyCleared() {
+		_spec.ClearField(task.FieldDifficulty, field.TypeEnum)
+	}
+	if value, ok := tu.mutation.Category(); ok {
+		_spec.SetField(task.FieldCategory, field.TypeEnum, value)
+	}
+	if tu.mutation.CategoryCleared() {
+		_spec.ClearField(task.FieldCategory, field.TypeEnum)
+	}
+	if value, ok := tu.mutation.Budget(); ok {
+		_spec.SetField(task.FieldBudget, field.TypeFloat64, value)
+	}
+	if value, ok := tu.mutation.AddedBudget(); ok {
+		_spec.AddField(task.FieldBudget, field.TypeFloat64, value)
+	}
+	if tu.mutation.BudgetCleared() {
+		_spec.ClearField(task.FieldBudget, field.TypeFloat64)
+	}
+	if value, ok := tu.mutation.PartsNeeded(); ok {
+		_spec.SetField(task.FieldPartsNeeded, field.TypeString, value)
+	}
+	if tu.mutation.PartsNeededCleared() {
+		_spec.ClearField(task.FieldPartsNeeded, field.TypeString)
 	}
 	if tu.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -271,6 +519,26 @@ func (tuo *TaskUpdateOne) SetNillableTitle(s *string) *TaskUpdateOne {
 	return tuo
 }
 
+// SetDescription sets the "description" field.
+func (tuo *TaskUpdateOne) SetDescription(s string) *TaskUpdateOne {
+	tuo.mutation.SetDescription(s)
+	return tuo
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableDescription(s *string) *TaskUpdateOne {
+	if s != nil {
+		tuo.SetDescription(*s)
+	}
+	return tuo
+}
+
+// ClearDescription clears the value of the "description" field.
+func (tuo *TaskUpdateOne) ClearDescription() *TaskUpdateOne {
+	tuo.mutation.ClearDescription()
+	return tuo
+}
+
 // SetRank sets the "rank" field.
 func (tuo *TaskUpdateOne) SetRank(f float64) *TaskUpdateOne {
 	tuo.mutation.ResetRank()
@@ -289,6 +557,160 @@ func (tuo *TaskUpdateOne) SetNillableRank(f *float64) *TaskUpdateOne {
 // AddRank adds f to the "rank" field.
 func (tuo *TaskUpdateOne) AddRank(f float64) *TaskUpdateOne {
 	tuo.mutation.AddRank(f)
+	return tuo
+}
+
+// SetEstimate sets the "estimate" field.
+func (tuo *TaskUpdateOne) SetEstimate(f float64) *TaskUpdateOne {
+	tuo.mutation.ResetEstimate()
+	tuo.mutation.SetEstimate(f)
+	return tuo
+}
+
+// SetNillableEstimate sets the "estimate" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableEstimate(f *float64) *TaskUpdateOne {
+	if f != nil {
+		tuo.SetEstimate(*f)
+	}
+	return tuo
+}
+
+// AddEstimate adds f to the "estimate" field.
+func (tuo *TaskUpdateOne) AddEstimate(f float64) *TaskUpdateOne {
+	tuo.mutation.AddEstimate(f)
+	return tuo
+}
+
+// ClearEstimate clears the value of the "estimate" field.
+func (tuo *TaskUpdateOne) ClearEstimate() *TaskUpdateOne {
+	tuo.mutation.ClearEstimate()
+	return tuo
+}
+
+// SetPriority sets the "priority" field.
+func (tuo *TaskUpdateOne) SetPriority(t task.Priority) *TaskUpdateOne {
+	tuo.mutation.SetPriority(t)
+	return tuo
+}
+
+// SetNillablePriority sets the "priority" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillablePriority(t *task.Priority) *TaskUpdateOne {
+	if t != nil {
+		tuo.SetPriority(*t)
+	}
+	return tuo
+}
+
+// ClearPriority clears the value of the "priority" field.
+func (tuo *TaskUpdateOne) ClearPriority() *TaskUpdateOne {
+	tuo.mutation.ClearPriority()
+	return tuo
+}
+
+// SetEffort sets the "effort" field.
+func (tuo *TaskUpdateOne) SetEffort(t task.Effort) *TaskUpdateOne {
+	tuo.mutation.SetEffort(t)
+	return tuo
+}
+
+// SetNillableEffort sets the "effort" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableEffort(t *task.Effort) *TaskUpdateOne {
+	if t != nil {
+		tuo.SetEffort(*t)
+	}
+	return tuo
+}
+
+// ClearEffort clears the value of the "effort" field.
+func (tuo *TaskUpdateOne) ClearEffort() *TaskUpdateOne {
+	tuo.mutation.ClearEffort()
+	return tuo
+}
+
+// SetDifficulty sets the "difficulty" field.
+func (tuo *TaskUpdateOne) SetDifficulty(t task.Difficulty) *TaskUpdateOne {
+	tuo.mutation.SetDifficulty(t)
+	return tuo
+}
+
+// SetNillableDifficulty sets the "difficulty" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableDifficulty(t *task.Difficulty) *TaskUpdateOne {
+	if t != nil {
+		tuo.SetDifficulty(*t)
+	}
+	return tuo
+}
+
+// ClearDifficulty clears the value of the "difficulty" field.
+func (tuo *TaskUpdateOne) ClearDifficulty() *TaskUpdateOne {
+	tuo.mutation.ClearDifficulty()
+	return tuo
+}
+
+// SetCategory sets the "category" field.
+func (tuo *TaskUpdateOne) SetCategory(t task.Category) *TaskUpdateOne {
+	tuo.mutation.SetCategory(t)
+	return tuo
+}
+
+// SetNillableCategory sets the "category" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableCategory(t *task.Category) *TaskUpdateOne {
+	if t != nil {
+		tuo.SetCategory(*t)
+	}
+	return tuo
+}
+
+// ClearCategory clears the value of the "category" field.
+func (tuo *TaskUpdateOne) ClearCategory() *TaskUpdateOne {
+	tuo.mutation.ClearCategory()
+	return tuo
+}
+
+// SetBudget sets the "budget" field.
+func (tuo *TaskUpdateOne) SetBudget(f float64) *TaskUpdateOne {
+	tuo.mutation.ResetBudget()
+	tuo.mutation.SetBudget(f)
+	return tuo
+}
+
+// SetNillableBudget sets the "budget" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillableBudget(f *float64) *TaskUpdateOne {
+	if f != nil {
+		tuo.SetBudget(*f)
+	}
+	return tuo
+}
+
+// AddBudget adds f to the "budget" field.
+func (tuo *TaskUpdateOne) AddBudget(f float64) *TaskUpdateOne {
+	tuo.mutation.AddBudget(f)
+	return tuo
+}
+
+// ClearBudget clears the value of the "budget" field.
+func (tuo *TaskUpdateOne) ClearBudget() *TaskUpdateOne {
+	tuo.mutation.ClearBudget()
+	return tuo
+}
+
+// SetPartsNeeded sets the "parts_needed" field.
+func (tuo *TaskUpdateOne) SetPartsNeeded(s string) *TaskUpdateOne {
+	tuo.mutation.SetPartsNeeded(s)
+	return tuo
+}
+
+// SetNillablePartsNeeded sets the "parts_needed" field if the given value is not nil.
+func (tuo *TaskUpdateOne) SetNillablePartsNeeded(s *string) *TaskUpdateOne {
+	if s != nil {
+		tuo.SetPartsNeeded(*s)
+	}
+	return tuo
+}
+
+// ClearPartsNeeded clears the value of the "parts_needed" field.
+func (tuo *TaskUpdateOne) ClearPartsNeeded() *TaskUpdateOne {
+	tuo.mutation.ClearPartsNeeded()
 	return tuo
 }
 
@@ -375,6 +797,26 @@ func (tuo *TaskUpdateOne) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Task.title": %w`, err)}
 		}
 	}
+	if v, ok := tuo.mutation.Priority(); ok {
+		if err := task.PriorityValidator(v); err != nil {
+			return &ValidationError{Name: "priority", err: fmt.Errorf(`ent: validator failed for field "Task.priority": %w`, err)}
+		}
+	}
+	if v, ok := tuo.mutation.Effort(); ok {
+		if err := task.EffortValidator(v); err != nil {
+			return &ValidationError{Name: "effort", err: fmt.Errorf(`ent: validator failed for field "Task.effort": %w`, err)}
+		}
+	}
+	if v, ok := tuo.mutation.Difficulty(); ok {
+		if err := task.DifficultyValidator(v); err != nil {
+			return &ValidationError{Name: "difficulty", err: fmt.Errorf(`ent: validator failed for field "Task.difficulty": %w`, err)}
+		}
+	}
+	if v, ok := tuo.mutation.Category(); ok {
+		if err := task.CategoryValidator(v); err != nil {
+			return &ValidationError{Name: "category", err: fmt.Errorf(`ent: validator failed for field "Task.category": %w`, err)}
+		}
+	}
 	if tuo.mutation.CarCleared() && len(tuo.mutation.CarIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Task.car"`)
 	}
@@ -419,11 +861,65 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 	if value, ok := tuo.mutation.Title(); ok {
 		_spec.SetField(task.FieldTitle, field.TypeString, value)
 	}
+	if value, ok := tuo.mutation.Description(); ok {
+		_spec.SetField(task.FieldDescription, field.TypeString, value)
+	}
+	if tuo.mutation.DescriptionCleared() {
+		_spec.ClearField(task.FieldDescription, field.TypeString)
+	}
 	if value, ok := tuo.mutation.Rank(); ok {
 		_spec.SetField(task.FieldRank, field.TypeFloat64, value)
 	}
 	if value, ok := tuo.mutation.AddedRank(); ok {
 		_spec.AddField(task.FieldRank, field.TypeFloat64, value)
+	}
+	if value, ok := tuo.mutation.Estimate(); ok {
+		_spec.SetField(task.FieldEstimate, field.TypeFloat64, value)
+	}
+	if value, ok := tuo.mutation.AddedEstimate(); ok {
+		_spec.AddField(task.FieldEstimate, field.TypeFloat64, value)
+	}
+	if tuo.mutation.EstimateCleared() {
+		_spec.ClearField(task.FieldEstimate, field.TypeFloat64)
+	}
+	if value, ok := tuo.mutation.Priority(); ok {
+		_spec.SetField(task.FieldPriority, field.TypeEnum, value)
+	}
+	if tuo.mutation.PriorityCleared() {
+		_spec.ClearField(task.FieldPriority, field.TypeEnum)
+	}
+	if value, ok := tuo.mutation.Effort(); ok {
+		_spec.SetField(task.FieldEffort, field.TypeEnum, value)
+	}
+	if tuo.mutation.EffortCleared() {
+		_spec.ClearField(task.FieldEffort, field.TypeEnum)
+	}
+	if value, ok := tuo.mutation.Difficulty(); ok {
+		_spec.SetField(task.FieldDifficulty, field.TypeEnum, value)
+	}
+	if tuo.mutation.DifficultyCleared() {
+		_spec.ClearField(task.FieldDifficulty, field.TypeEnum)
+	}
+	if value, ok := tuo.mutation.Category(); ok {
+		_spec.SetField(task.FieldCategory, field.TypeEnum, value)
+	}
+	if tuo.mutation.CategoryCleared() {
+		_spec.ClearField(task.FieldCategory, field.TypeEnum)
+	}
+	if value, ok := tuo.mutation.Budget(); ok {
+		_spec.SetField(task.FieldBudget, field.TypeFloat64, value)
+	}
+	if value, ok := tuo.mutation.AddedBudget(); ok {
+		_spec.AddField(task.FieldBudget, field.TypeFloat64, value)
+	}
+	if tuo.mutation.BudgetCleared() {
+		_spec.ClearField(task.FieldBudget, field.TypeFloat64)
+	}
+	if value, ok := tuo.mutation.PartsNeeded(); ok {
+		_spec.SetField(task.FieldPartsNeeded, field.TypeString, value)
+	}
+	if tuo.mutation.PartsNeededCleared() {
+		_spec.ClearField(task.FieldPartsNeeded, field.TypeString)
 	}
 	if tuo.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{

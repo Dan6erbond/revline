@@ -36,6 +36,7 @@ extend type Query {
   document(id: ID!): Document!
   media(id: ID!): Media!
   album(id: ID!): Album!
+  task(id: ID!): Task!
 }
 
 type UploadMediaResult {

@@ -71,9 +71,29 @@ func Title(v string) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldTitle, v))
 }
 
+// Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
+func Description(v string) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldDescription, v))
+}
+
 // Rank applies equality check predicate on the "rank" field. It's identical to RankEQ.
 func Rank(v float64) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldRank, v))
+}
+
+// Estimate applies equality check predicate on the "estimate" field. It's identical to EstimateEQ.
+func Estimate(v float64) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldEstimate, v))
+}
+
+// Budget applies equality check predicate on the "budget" field. It's identical to BudgetEQ.
+func Budget(v float64) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldBudget, v))
+}
+
+// PartsNeeded applies equality check predicate on the "parts_needed" field. It's identical to PartsNeededEQ.
+func PartsNeeded(v string) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldPartsNeeded, v))
 }
 
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
@@ -241,6 +261,81 @@ func TitleContainsFold(v string) predicate.Task {
 	return predicate.Task(sql.FieldContainsFold(FieldTitle, v))
 }
 
+// DescriptionEQ applies the EQ predicate on the "description" field.
+func DescriptionEQ(v string) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldDescription, v))
+}
+
+// DescriptionNEQ applies the NEQ predicate on the "description" field.
+func DescriptionNEQ(v string) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldDescription, v))
+}
+
+// DescriptionIn applies the In predicate on the "description" field.
+func DescriptionIn(vs ...string) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldDescription, vs...))
+}
+
+// DescriptionNotIn applies the NotIn predicate on the "description" field.
+func DescriptionNotIn(vs ...string) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldDescription, vs...))
+}
+
+// DescriptionGT applies the GT predicate on the "description" field.
+func DescriptionGT(v string) predicate.Task {
+	return predicate.Task(sql.FieldGT(FieldDescription, v))
+}
+
+// DescriptionGTE applies the GTE predicate on the "description" field.
+func DescriptionGTE(v string) predicate.Task {
+	return predicate.Task(sql.FieldGTE(FieldDescription, v))
+}
+
+// DescriptionLT applies the LT predicate on the "description" field.
+func DescriptionLT(v string) predicate.Task {
+	return predicate.Task(sql.FieldLT(FieldDescription, v))
+}
+
+// DescriptionLTE applies the LTE predicate on the "description" field.
+func DescriptionLTE(v string) predicate.Task {
+	return predicate.Task(sql.FieldLTE(FieldDescription, v))
+}
+
+// DescriptionContains applies the Contains predicate on the "description" field.
+func DescriptionContains(v string) predicate.Task {
+	return predicate.Task(sql.FieldContains(FieldDescription, v))
+}
+
+// DescriptionHasPrefix applies the HasPrefix predicate on the "description" field.
+func DescriptionHasPrefix(v string) predicate.Task {
+	return predicate.Task(sql.FieldHasPrefix(FieldDescription, v))
+}
+
+// DescriptionHasSuffix applies the HasSuffix predicate on the "description" field.
+func DescriptionHasSuffix(v string) predicate.Task {
+	return predicate.Task(sql.FieldHasSuffix(FieldDescription, v))
+}
+
+// DescriptionIsNil applies the IsNil predicate on the "description" field.
+func DescriptionIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldDescription))
+}
+
+// DescriptionNotNil applies the NotNil predicate on the "description" field.
+func DescriptionNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldDescription))
+}
+
+// DescriptionEqualFold applies the EqualFold predicate on the "description" field.
+func DescriptionEqualFold(v string) predicate.Task {
+	return predicate.Task(sql.FieldEqualFold(FieldDescription, v))
+}
+
+// DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
+func DescriptionContainsFold(v string) predicate.Task {
+	return predicate.Task(sql.FieldContainsFold(FieldDescription, v))
+}
+
 // RankEQ applies the EQ predicate on the "rank" field.
 func RankEQ(v float64) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldRank, v))
@@ -279,6 +374,301 @@ func RankLT(v float64) predicate.Task {
 // RankLTE applies the LTE predicate on the "rank" field.
 func RankLTE(v float64) predicate.Task {
 	return predicate.Task(sql.FieldLTE(FieldRank, v))
+}
+
+// EstimateEQ applies the EQ predicate on the "estimate" field.
+func EstimateEQ(v float64) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldEstimate, v))
+}
+
+// EstimateNEQ applies the NEQ predicate on the "estimate" field.
+func EstimateNEQ(v float64) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldEstimate, v))
+}
+
+// EstimateIn applies the In predicate on the "estimate" field.
+func EstimateIn(vs ...float64) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldEstimate, vs...))
+}
+
+// EstimateNotIn applies the NotIn predicate on the "estimate" field.
+func EstimateNotIn(vs ...float64) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldEstimate, vs...))
+}
+
+// EstimateGT applies the GT predicate on the "estimate" field.
+func EstimateGT(v float64) predicate.Task {
+	return predicate.Task(sql.FieldGT(FieldEstimate, v))
+}
+
+// EstimateGTE applies the GTE predicate on the "estimate" field.
+func EstimateGTE(v float64) predicate.Task {
+	return predicate.Task(sql.FieldGTE(FieldEstimate, v))
+}
+
+// EstimateLT applies the LT predicate on the "estimate" field.
+func EstimateLT(v float64) predicate.Task {
+	return predicate.Task(sql.FieldLT(FieldEstimate, v))
+}
+
+// EstimateLTE applies the LTE predicate on the "estimate" field.
+func EstimateLTE(v float64) predicate.Task {
+	return predicate.Task(sql.FieldLTE(FieldEstimate, v))
+}
+
+// EstimateIsNil applies the IsNil predicate on the "estimate" field.
+func EstimateIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldEstimate))
+}
+
+// EstimateNotNil applies the NotNil predicate on the "estimate" field.
+func EstimateNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldEstimate))
+}
+
+// PriorityEQ applies the EQ predicate on the "priority" field.
+func PriorityEQ(v Priority) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldPriority, v))
+}
+
+// PriorityNEQ applies the NEQ predicate on the "priority" field.
+func PriorityNEQ(v Priority) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldPriority, v))
+}
+
+// PriorityIn applies the In predicate on the "priority" field.
+func PriorityIn(vs ...Priority) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldPriority, vs...))
+}
+
+// PriorityNotIn applies the NotIn predicate on the "priority" field.
+func PriorityNotIn(vs ...Priority) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldPriority, vs...))
+}
+
+// PriorityIsNil applies the IsNil predicate on the "priority" field.
+func PriorityIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldPriority))
+}
+
+// PriorityNotNil applies the NotNil predicate on the "priority" field.
+func PriorityNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldPriority))
+}
+
+// EffortEQ applies the EQ predicate on the "effort" field.
+func EffortEQ(v Effort) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldEffort, v))
+}
+
+// EffortNEQ applies the NEQ predicate on the "effort" field.
+func EffortNEQ(v Effort) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldEffort, v))
+}
+
+// EffortIn applies the In predicate on the "effort" field.
+func EffortIn(vs ...Effort) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldEffort, vs...))
+}
+
+// EffortNotIn applies the NotIn predicate on the "effort" field.
+func EffortNotIn(vs ...Effort) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldEffort, vs...))
+}
+
+// EffortIsNil applies the IsNil predicate on the "effort" field.
+func EffortIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldEffort))
+}
+
+// EffortNotNil applies the NotNil predicate on the "effort" field.
+func EffortNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldEffort))
+}
+
+// DifficultyEQ applies the EQ predicate on the "difficulty" field.
+func DifficultyEQ(v Difficulty) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldDifficulty, v))
+}
+
+// DifficultyNEQ applies the NEQ predicate on the "difficulty" field.
+func DifficultyNEQ(v Difficulty) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldDifficulty, v))
+}
+
+// DifficultyIn applies the In predicate on the "difficulty" field.
+func DifficultyIn(vs ...Difficulty) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldDifficulty, vs...))
+}
+
+// DifficultyNotIn applies the NotIn predicate on the "difficulty" field.
+func DifficultyNotIn(vs ...Difficulty) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldDifficulty, vs...))
+}
+
+// DifficultyIsNil applies the IsNil predicate on the "difficulty" field.
+func DifficultyIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldDifficulty))
+}
+
+// DifficultyNotNil applies the NotNil predicate on the "difficulty" field.
+func DifficultyNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldDifficulty))
+}
+
+// CategoryEQ applies the EQ predicate on the "category" field.
+func CategoryEQ(v Category) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldCategory, v))
+}
+
+// CategoryNEQ applies the NEQ predicate on the "category" field.
+func CategoryNEQ(v Category) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldCategory, v))
+}
+
+// CategoryIn applies the In predicate on the "category" field.
+func CategoryIn(vs ...Category) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldCategory, vs...))
+}
+
+// CategoryNotIn applies the NotIn predicate on the "category" field.
+func CategoryNotIn(vs ...Category) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldCategory, vs...))
+}
+
+// CategoryIsNil applies the IsNil predicate on the "category" field.
+func CategoryIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldCategory))
+}
+
+// CategoryNotNil applies the NotNil predicate on the "category" field.
+func CategoryNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldCategory))
+}
+
+// BudgetEQ applies the EQ predicate on the "budget" field.
+func BudgetEQ(v float64) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldBudget, v))
+}
+
+// BudgetNEQ applies the NEQ predicate on the "budget" field.
+func BudgetNEQ(v float64) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldBudget, v))
+}
+
+// BudgetIn applies the In predicate on the "budget" field.
+func BudgetIn(vs ...float64) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldBudget, vs...))
+}
+
+// BudgetNotIn applies the NotIn predicate on the "budget" field.
+func BudgetNotIn(vs ...float64) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldBudget, vs...))
+}
+
+// BudgetGT applies the GT predicate on the "budget" field.
+func BudgetGT(v float64) predicate.Task {
+	return predicate.Task(sql.FieldGT(FieldBudget, v))
+}
+
+// BudgetGTE applies the GTE predicate on the "budget" field.
+func BudgetGTE(v float64) predicate.Task {
+	return predicate.Task(sql.FieldGTE(FieldBudget, v))
+}
+
+// BudgetLT applies the LT predicate on the "budget" field.
+func BudgetLT(v float64) predicate.Task {
+	return predicate.Task(sql.FieldLT(FieldBudget, v))
+}
+
+// BudgetLTE applies the LTE predicate on the "budget" field.
+func BudgetLTE(v float64) predicate.Task {
+	return predicate.Task(sql.FieldLTE(FieldBudget, v))
+}
+
+// BudgetIsNil applies the IsNil predicate on the "budget" field.
+func BudgetIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldBudget))
+}
+
+// BudgetNotNil applies the NotNil predicate on the "budget" field.
+func BudgetNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldBudget))
+}
+
+// PartsNeededEQ applies the EQ predicate on the "parts_needed" field.
+func PartsNeededEQ(v string) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldPartsNeeded, v))
+}
+
+// PartsNeededNEQ applies the NEQ predicate on the "parts_needed" field.
+func PartsNeededNEQ(v string) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldPartsNeeded, v))
+}
+
+// PartsNeededIn applies the In predicate on the "parts_needed" field.
+func PartsNeededIn(vs ...string) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldPartsNeeded, vs...))
+}
+
+// PartsNeededNotIn applies the NotIn predicate on the "parts_needed" field.
+func PartsNeededNotIn(vs ...string) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldPartsNeeded, vs...))
+}
+
+// PartsNeededGT applies the GT predicate on the "parts_needed" field.
+func PartsNeededGT(v string) predicate.Task {
+	return predicate.Task(sql.FieldGT(FieldPartsNeeded, v))
+}
+
+// PartsNeededGTE applies the GTE predicate on the "parts_needed" field.
+func PartsNeededGTE(v string) predicate.Task {
+	return predicate.Task(sql.FieldGTE(FieldPartsNeeded, v))
+}
+
+// PartsNeededLT applies the LT predicate on the "parts_needed" field.
+func PartsNeededLT(v string) predicate.Task {
+	return predicate.Task(sql.FieldLT(FieldPartsNeeded, v))
+}
+
+// PartsNeededLTE applies the LTE predicate on the "parts_needed" field.
+func PartsNeededLTE(v string) predicate.Task {
+	return predicate.Task(sql.FieldLTE(FieldPartsNeeded, v))
+}
+
+// PartsNeededContains applies the Contains predicate on the "parts_needed" field.
+func PartsNeededContains(v string) predicate.Task {
+	return predicate.Task(sql.FieldContains(FieldPartsNeeded, v))
+}
+
+// PartsNeededHasPrefix applies the HasPrefix predicate on the "parts_needed" field.
+func PartsNeededHasPrefix(v string) predicate.Task {
+	return predicate.Task(sql.FieldHasPrefix(FieldPartsNeeded, v))
+}
+
+// PartsNeededHasSuffix applies the HasSuffix predicate on the "parts_needed" field.
+func PartsNeededHasSuffix(v string) predicate.Task {
+	return predicate.Task(sql.FieldHasSuffix(FieldPartsNeeded, v))
+}
+
+// PartsNeededIsNil applies the IsNil predicate on the "parts_needed" field.
+func PartsNeededIsNil() predicate.Task {
+	return predicate.Task(sql.FieldIsNull(FieldPartsNeeded))
+}
+
+// PartsNeededNotNil applies the NotNil predicate on the "parts_needed" field.
+func PartsNeededNotNil() predicate.Task {
+	return predicate.Task(sql.FieldNotNull(FieldPartsNeeded))
+}
+
+// PartsNeededEqualFold applies the EqualFold predicate on the "parts_needed" field.
+func PartsNeededEqualFold(v string) predicate.Task {
+	return predicate.Task(sql.FieldEqualFold(FieldPartsNeeded, v))
+}
+
+// PartsNeededContainsFold applies the ContainsFold predicate on the "parts_needed" field.
+func PartsNeededContainsFold(v string) predicate.Task {
+	return predicate.Task(sql.FieldContainsFold(FieldPartsNeeded, v))
 }
 
 // HasCar applies the HasEdge predicate on the "car" edge.

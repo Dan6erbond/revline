@@ -213,7 +213,7 @@ var (
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "occurred_at", Type: field.TypeTime},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"fuel", "service", "insurance", "tax", "other"}},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"fuel", "service", "insurance", "tax", "toll", "parking", "loan", "registration", "maintenance", "repair", "upgrade", "cleaning", "accessories", "inspection", "other"}},
 		{Name: "amount", Type: field.TypeFloat64},
 		{Name: "notes", Type: field.TypeString, Nullable: true},
 		{Name: "car_expenses", Type: field.TypeUUID},
@@ -494,7 +494,15 @@ var (
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"backlog", "todo", "in_progress", "blocked", "completed"}},
 		{Name: "title", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "rank", Type: field.TypeFloat64, Default: 0},
+		{Name: "estimate", Type: field.TypeFloat64, Nullable: true},
+		{Name: "priority", Type: field.TypeEnum, Nullable: true, Enums: []string{"low", "mid", "high", "urgent"}},
+		{Name: "effort", Type: field.TypeEnum, Nullable: true, Enums: []string{"trivial", "easy", "moderate", "hard", "extreme"}},
+		{Name: "difficulty", Type: field.TypeEnum, Nullable: true, Enums: []string{"beginner", "intermediate", "advanced", "expert"}},
+		{Name: "category", Type: field.TypeEnum, Nullable: true, Enums: []string{"maintenance", "service", "repair", "modification", "cosmetic", "cleaning", "detailing", "inspection", "registration", "insurance", "accessory", "diagnostics", "other"}},
+		{Name: "budget", Type: field.TypeFloat64, Nullable: true},
+		{Name: "parts_needed", Type: field.TypeString, Nullable: true},
 		{Name: "car_tasks", Type: field.TypeUUID},
 	}
 	// TasksTable holds the schema information for the "tasks" table.
@@ -505,7 +513,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "tasks_cars_tasks",
-				Columns:    []*schema.Column{TasksColumns[6]},
+				Columns:    []*schema.Column{TasksColumns[14]},
 				RefColumns: []*schema.Column{CarsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

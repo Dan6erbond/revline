@@ -15556,8 +15556,18 @@ type TaskMutation struct {
 	update_time   *time.Time
 	status        *task.Status
 	title         *string
+	description   *string
 	rank          *float64
 	addrank       *float64
+	estimate      *float64
+	addestimate   *float64
+	priority      *task.Priority
+	effort        *task.Effort
+	difficulty    *task.Difficulty
+	category      *task.Category
+	budget        *float64
+	addbudget     *float64
+	parts_needed  *string
 	clearedFields map[string]struct{}
 	car           *uuid.UUID
 	clearedcar    bool
@@ -15814,6 +15824,55 @@ func (m *TaskMutation) ResetTitle() {
 	m.title = nil
 }
 
+// SetDescription sets the "description" field.
+func (m *TaskMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *TaskMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldDescription(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *TaskMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[task.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *TaskMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[task.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *TaskMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, task.FieldDescription)
+}
+
 // SetRank sets the "rank" field.
 func (m *TaskMutation) SetRank(f float64) {
 	m.rank = &f
@@ -15868,6 +15927,391 @@ func (m *TaskMutation) AddedRank() (r float64, exists bool) {
 func (m *TaskMutation) ResetRank() {
 	m.rank = nil
 	m.addrank = nil
+}
+
+// SetEstimate sets the "estimate" field.
+func (m *TaskMutation) SetEstimate(f float64) {
+	m.estimate = &f
+	m.addestimate = nil
+}
+
+// Estimate returns the value of the "estimate" field in the mutation.
+func (m *TaskMutation) Estimate() (r float64, exists bool) {
+	v := m.estimate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEstimate returns the old "estimate" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldEstimate(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEstimate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEstimate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEstimate: %w", err)
+	}
+	return oldValue.Estimate, nil
+}
+
+// AddEstimate adds f to the "estimate" field.
+func (m *TaskMutation) AddEstimate(f float64) {
+	if m.addestimate != nil {
+		*m.addestimate += f
+	} else {
+		m.addestimate = &f
+	}
+}
+
+// AddedEstimate returns the value that was added to the "estimate" field in this mutation.
+func (m *TaskMutation) AddedEstimate() (r float64, exists bool) {
+	v := m.addestimate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearEstimate clears the value of the "estimate" field.
+func (m *TaskMutation) ClearEstimate() {
+	m.estimate = nil
+	m.addestimate = nil
+	m.clearedFields[task.FieldEstimate] = struct{}{}
+}
+
+// EstimateCleared returns if the "estimate" field was cleared in this mutation.
+func (m *TaskMutation) EstimateCleared() bool {
+	_, ok := m.clearedFields[task.FieldEstimate]
+	return ok
+}
+
+// ResetEstimate resets all changes to the "estimate" field.
+func (m *TaskMutation) ResetEstimate() {
+	m.estimate = nil
+	m.addestimate = nil
+	delete(m.clearedFields, task.FieldEstimate)
+}
+
+// SetPriority sets the "priority" field.
+func (m *TaskMutation) SetPriority(t task.Priority) {
+	m.priority = &t
+}
+
+// Priority returns the value of the "priority" field in the mutation.
+func (m *TaskMutation) Priority() (r task.Priority, exists bool) {
+	v := m.priority
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPriority returns the old "priority" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldPriority(ctx context.Context) (v *task.Priority, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPriority is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPriority requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPriority: %w", err)
+	}
+	return oldValue.Priority, nil
+}
+
+// ClearPriority clears the value of the "priority" field.
+func (m *TaskMutation) ClearPriority() {
+	m.priority = nil
+	m.clearedFields[task.FieldPriority] = struct{}{}
+}
+
+// PriorityCleared returns if the "priority" field was cleared in this mutation.
+func (m *TaskMutation) PriorityCleared() bool {
+	_, ok := m.clearedFields[task.FieldPriority]
+	return ok
+}
+
+// ResetPriority resets all changes to the "priority" field.
+func (m *TaskMutation) ResetPriority() {
+	m.priority = nil
+	delete(m.clearedFields, task.FieldPriority)
+}
+
+// SetEffort sets the "effort" field.
+func (m *TaskMutation) SetEffort(t task.Effort) {
+	m.effort = &t
+}
+
+// Effort returns the value of the "effort" field in the mutation.
+func (m *TaskMutation) Effort() (r task.Effort, exists bool) {
+	v := m.effort
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEffort returns the old "effort" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldEffort(ctx context.Context) (v *task.Effort, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEffort is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEffort requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEffort: %w", err)
+	}
+	return oldValue.Effort, nil
+}
+
+// ClearEffort clears the value of the "effort" field.
+func (m *TaskMutation) ClearEffort() {
+	m.effort = nil
+	m.clearedFields[task.FieldEffort] = struct{}{}
+}
+
+// EffortCleared returns if the "effort" field was cleared in this mutation.
+func (m *TaskMutation) EffortCleared() bool {
+	_, ok := m.clearedFields[task.FieldEffort]
+	return ok
+}
+
+// ResetEffort resets all changes to the "effort" field.
+func (m *TaskMutation) ResetEffort() {
+	m.effort = nil
+	delete(m.clearedFields, task.FieldEffort)
+}
+
+// SetDifficulty sets the "difficulty" field.
+func (m *TaskMutation) SetDifficulty(t task.Difficulty) {
+	m.difficulty = &t
+}
+
+// Difficulty returns the value of the "difficulty" field in the mutation.
+func (m *TaskMutation) Difficulty() (r task.Difficulty, exists bool) {
+	v := m.difficulty
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDifficulty returns the old "difficulty" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldDifficulty(ctx context.Context) (v *task.Difficulty, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDifficulty is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDifficulty requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDifficulty: %w", err)
+	}
+	return oldValue.Difficulty, nil
+}
+
+// ClearDifficulty clears the value of the "difficulty" field.
+func (m *TaskMutation) ClearDifficulty() {
+	m.difficulty = nil
+	m.clearedFields[task.FieldDifficulty] = struct{}{}
+}
+
+// DifficultyCleared returns if the "difficulty" field was cleared in this mutation.
+func (m *TaskMutation) DifficultyCleared() bool {
+	_, ok := m.clearedFields[task.FieldDifficulty]
+	return ok
+}
+
+// ResetDifficulty resets all changes to the "difficulty" field.
+func (m *TaskMutation) ResetDifficulty() {
+	m.difficulty = nil
+	delete(m.clearedFields, task.FieldDifficulty)
+}
+
+// SetCategory sets the "category" field.
+func (m *TaskMutation) SetCategory(t task.Category) {
+	m.category = &t
+}
+
+// Category returns the value of the "category" field in the mutation.
+func (m *TaskMutation) Category() (r task.Category, exists bool) {
+	v := m.category
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCategory returns the old "category" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldCategory(ctx context.Context) (v *task.Category, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCategory is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCategory requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCategory: %w", err)
+	}
+	return oldValue.Category, nil
+}
+
+// ClearCategory clears the value of the "category" field.
+func (m *TaskMutation) ClearCategory() {
+	m.category = nil
+	m.clearedFields[task.FieldCategory] = struct{}{}
+}
+
+// CategoryCleared returns if the "category" field was cleared in this mutation.
+func (m *TaskMutation) CategoryCleared() bool {
+	_, ok := m.clearedFields[task.FieldCategory]
+	return ok
+}
+
+// ResetCategory resets all changes to the "category" field.
+func (m *TaskMutation) ResetCategory() {
+	m.category = nil
+	delete(m.clearedFields, task.FieldCategory)
+}
+
+// SetBudget sets the "budget" field.
+func (m *TaskMutation) SetBudget(f float64) {
+	m.budget = &f
+	m.addbudget = nil
+}
+
+// Budget returns the value of the "budget" field in the mutation.
+func (m *TaskMutation) Budget() (r float64, exists bool) {
+	v := m.budget
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBudget returns the old "budget" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldBudget(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBudget is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBudget requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBudget: %w", err)
+	}
+	return oldValue.Budget, nil
+}
+
+// AddBudget adds f to the "budget" field.
+func (m *TaskMutation) AddBudget(f float64) {
+	if m.addbudget != nil {
+		*m.addbudget += f
+	} else {
+		m.addbudget = &f
+	}
+}
+
+// AddedBudget returns the value that was added to the "budget" field in this mutation.
+func (m *TaskMutation) AddedBudget() (r float64, exists bool) {
+	v := m.addbudget
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearBudget clears the value of the "budget" field.
+func (m *TaskMutation) ClearBudget() {
+	m.budget = nil
+	m.addbudget = nil
+	m.clearedFields[task.FieldBudget] = struct{}{}
+}
+
+// BudgetCleared returns if the "budget" field was cleared in this mutation.
+func (m *TaskMutation) BudgetCleared() bool {
+	_, ok := m.clearedFields[task.FieldBudget]
+	return ok
+}
+
+// ResetBudget resets all changes to the "budget" field.
+func (m *TaskMutation) ResetBudget() {
+	m.budget = nil
+	m.addbudget = nil
+	delete(m.clearedFields, task.FieldBudget)
+}
+
+// SetPartsNeeded sets the "parts_needed" field.
+func (m *TaskMutation) SetPartsNeeded(s string) {
+	m.parts_needed = &s
+}
+
+// PartsNeeded returns the value of the "parts_needed" field in the mutation.
+func (m *TaskMutation) PartsNeeded() (r string, exists bool) {
+	v := m.parts_needed
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPartsNeeded returns the old "parts_needed" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldPartsNeeded(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPartsNeeded is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPartsNeeded requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPartsNeeded: %w", err)
+	}
+	return oldValue.PartsNeeded, nil
+}
+
+// ClearPartsNeeded clears the value of the "parts_needed" field.
+func (m *TaskMutation) ClearPartsNeeded() {
+	m.parts_needed = nil
+	m.clearedFields[task.FieldPartsNeeded] = struct{}{}
+}
+
+// PartsNeededCleared returns if the "parts_needed" field was cleared in this mutation.
+func (m *TaskMutation) PartsNeededCleared() bool {
+	_, ok := m.clearedFields[task.FieldPartsNeeded]
+	return ok
+}
+
+// ResetPartsNeeded resets all changes to the "parts_needed" field.
+func (m *TaskMutation) ResetPartsNeeded() {
+	m.parts_needed = nil
+	delete(m.clearedFields, task.FieldPartsNeeded)
 }
 
 // SetCarID sets the "car" edge to the Car entity by id.
@@ -15943,7 +16387,7 @@ func (m *TaskMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TaskMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 13)
 	if m.create_time != nil {
 		fields = append(fields, task.FieldCreateTime)
 	}
@@ -15956,8 +16400,32 @@ func (m *TaskMutation) Fields() []string {
 	if m.title != nil {
 		fields = append(fields, task.FieldTitle)
 	}
+	if m.description != nil {
+		fields = append(fields, task.FieldDescription)
+	}
 	if m.rank != nil {
 		fields = append(fields, task.FieldRank)
+	}
+	if m.estimate != nil {
+		fields = append(fields, task.FieldEstimate)
+	}
+	if m.priority != nil {
+		fields = append(fields, task.FieldPriority)
+	}
+	if m.effort != nil {
+		fields = append(fields, task.FieldEffort)
+	}
+	if m.difficulty != nil {
+		fields = append(fields, task.FieldDifficulty)
+	}
+	if m.category != nil {
+		fields = append(fields, task.FieldCategory)
+	}
+	if m.budget != nil {
+		fields = append(fields, task.FieldBudget)
+	}
+	if m.parts_needed != nil {
+		fields = append(fields, task.FieldPartsNeeded)
 	}
 	return fields
 }
@@ -15975,8 +16443,24 @@ func (m *TaskMutation) Field(name string) (ent.Value, bool) {
 		return m.Status()
 	case task.FieldTitle:
 		return m.Title()
+	case task.FieldDescription:
+		return m.Description()
 	case task.FieldRank:
 		return m.Rank()
+	case task.FieldEstimate:
+		return m.Estimate()
+	case task.FieldPriority:
+		return m.Priority()
+	case task.FieldEffort:
+		return m.Effort()
+	case task.FieldDifficulty:
+		return m.Difficulty()
+	case task.FieldCategory:
+		return m.Category()
+	case task.FieldBudget:
+		return m.Budget()
+	case task.FieldPartsNeeded:
+		return m.PartsNeeded()
 	}
 	return nil, false
 }
@@ -15994,8 +16478,24 @@ func (m *TaskMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldStatus(ctx)
 	case task.FieldTitle:
 		return m.OldTitle(ctx)
+	case task.FieldDescription:
+		return m.OldDescription(ctx)
 	case task.FieldRank:
 		return m.OldRank(ctx)
+	case task.FieldEstimate:
+		return m.OldEstimate(ctx)
+	case task.FieldPriority:
+		return m.OldPriority(ctx)
+	case task.FieldEffort:
+		return m.OldEffort(ctx)
+	case task.FieldDifficulty:
+		return m.OldDifficulty(ctx)
+	case task.FieldCategory:
+		return m.OldCategory(ctx)
+	case task.FieldBudget:
+		return m.OldBudget(ctx)
+	case task.FieldPartsNeeded:
+		return m.OldPartsNeeded(ctx)
 	}
 	return nil, fmt.Errorf("unknown Task field %s", name)
 }
@@ -16033,12 +16533,68 @@ func (m *TaskMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTitle(v)
 		return nil
+	case task.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
 	case task.FieldRank:
 		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRank(v)
+		return nil
+	case task.FieldEstimate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEstimate(v)
+		return nil
+	case task.FieldPriority:
+		v, ok := value.(task.Priority)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPriority(v)
+		return nil
+	case task.FieldEffort:
+		v, ok := value.(task.Effort)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEffort(v)
+		return nil
+	case task.FieldDifficulty:
+		v, ok := value.(task.Difficulty)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDifficulty(v)
+		return nil
+	case task.FieldCategory:
+		v, ok := value.(task.Category)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCategory(v)
+		return nil
+	case task.FieldBudget:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBudget(v)
+		return nil
+	case task.FieldPartsNeeded:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPartsNeeded(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Task field %s", name)
@@ -16051,6 +16607,12 @@ func (m *TaskMutation) AddedFields() []string {
 	if m.addrank != nil {
 		fields = append(fields, task.FieldRank)
 	}
+	if m.addestimate != nil {
+		fields = append(fields, task.FieldEstimate)
+	}
+	if m.addbudget != nil {
+		fields = append(fields, task.FieldBudget)
+	}
 	return fields
 }
 
@@ -16061,6 +16623,10 @@ func (m *TaskMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case task.FieldRank:
 		return m.AddedRank()
+	case task.FieldEstimate:
+		return m.AddedEstimate()
+	case task.FieldBudget:
+		return m.AddedBudget()
 	}
 	return nil, false
 }
@@ -16077,6 +16643,20 @@ func (m *TaskMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddRank(v)
 		return nil
+	case task.FieldEstimate:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddEstimate(v)
+		return nil
+	case task.FieldBudget:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBudget(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Task numeric field %s", name)
 }
@@ -16084,7 +16664,32 @@ func (m *TaskMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *TaskMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(task.FieldDescription) {
+		fields = append(fields, task.FieldDescription)
+	}
+	if m.FieldCleared(task.FieldEstimate) {
+		fields = append(fields, task.FieldEstimate)
+	}
+	if m.FieldCleared(task.FieldPriority) {
+		fields = append(fields, task.FieldPriority)
+	}
+	if m.FieldCleared(task.FieldEffort) {
+		fields = append(fields, task.FieldEffort)
+	}
+	if m.FieldCleared(task.FieldDifficulty) {
+		fields = append(fields, task.FieldDifficulty)
+	}
+	if m.FieldCleared(task.FieldCategory) {
+		fields = append(fields, task.FieldCategory)
+	}
+	if m.FieldCleared(task.FieldBudget) {
+		fields = append(fields, task.FieldBudget)
+	}
+	if m.FieldCleared(task.FieldPartsNeeded) {
+		fields = append(fields, task.FieldPartsNeeded)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -16097,6 +16702,32 @@ func (m *TaskMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *TaskMutation) ClearField(name string) error {
+	switch name {
+	case task.FieldDescription:
+		m.ClearDescription()
+		return nil
+	case task.FieldEstimate:
+		m.ClearEstimate()
+		return nil
+	case task.FieldPriority:
+		m.ClearPriority()
+		return nil
+	case task.FieldEffort:
+		m.ClearEffort()
+		return nil
+	case task.FieldDifficulty:
+		m.ClearDifficulty()
+		return nil
+	case task.FieldCategory:
+		m.ClearCategory()
+		return nil
+	case task.FieldBudget:
+		m.ClearBudget()
+		return nil
+	case task.FieldPartsNeeded:
+		m.ClearPartsNeeded()
+		return nil
+	}
 	return fmt.Errorf("unknown Task nullable field %s", name)
 }
 
@@ -16116,8 +16747,32 @@ func (m *TaskMutation) ResetField(name string) error {
 	case task.FieldTitle:
 		m.ResetTitle()
 		return nil
+	case task.FieldDescription:
+		m.ResetDescription()
+		return nil
 	case task.FieldRank:
 		m.ResetRank()
+		return nil
+	case task.FieldEstimate:
+		m.ResetEstimate()
+		return nil
+	case task.FieldPriority:
+		m.ResetPriority()
+		return nil
+	case task.FieldEffort:
+		m.ResetEffort()
+		return nil
+	case task.FieldDifficulty:
+		m.ResetDifficulty()
+		return nil
+	case task.FieldCategory:
+		m.ResetCategory()
+		return nil
+	case task.FieldBudget:
+		m.ResetBudget()
+		return nil
+	case task.FieldPartsNeeded:
+		m.ResetPartsNeeded()
 		return nil
 	}
 	return fmt.Errorf("unknown Task field %s", name)

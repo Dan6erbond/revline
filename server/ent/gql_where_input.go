@@ -7416,6 +7416,23 @@ type TaskWhereInput struct {
 	TitleEqualFold    *string  `json:"titleEqualFold,omitempty"`
 	TitleContainsFold *string  `json:"titleContainsFold,omitempty"`
 
+	// "description" field predicates.
+	Description             *string  `json:"description,omitempty"`
+	DescriptionNEQ          *string  `json:"descriptionNEQ,omitempty"`
+	DescriptionIn           []string `json:"descriptionIn,omitempty"`
+	DescriptionNotIn        []string `json:"descriptionNotIn,omitempty"`
+	DescriptionGT           *string  `json:"descriptionGT,omitempty"`
+	DescriptionGTE          *string  `json:"descriptionGTE,omitempty"`
+	DescriptionLT           *string  `json:"descriptionLT,omitempty"`
+	DescriptionLTE          *string  `json:"descriptionLTE,omitempty"`
+	DescriptionContains     *string  `json:"descriptionContains,omitempty"`
+	DescriptionHasPrefix    *string  `json:"descriptionHasPrefix,omitempty"`
+	DescriptionHasSuffix    *string  `json:"descriptionHasSuffix,omitempty"`
+	DescriptionIsNil        bool     `json:"descriptionIsNil,omitempty"`
+	DescriptionNotNil       bool     `json:"descriptionNotNil,omitempty"`
+	DescriptionEqualFold    *string  `json:"descriptionEqualFold,omitempty"`
+	DescriptionContainsFold *string  `json:"descriptionContainsFold,omitempty"`
+
 	// "rank" field predicates.
 	Rank      *float64  `json:"rank,omitempty"`
 	RankNEQ   *float64  `json:"rankNEQ,omitempty"`
@@ -7425,6 +7442,79 @@ type TaskWhereInput struct {
 	RankGTE   *float64  `json:"rankGTE,omitempty"`
 	RankLT    *float64  `json:"rankLT,omitempty"`
 	RankLTE   *float64  `json:"rankLTE,omitempty"`
+
+	// "estimate" field predicates.
+	Estimate       *float64  `json:"estimate,omitempty"`
+	EstimateNEQ    *float64  `json:"estimateNEQ,omitempty"`
+	EstimateIn     []float64 `json:"estimateIn,omitempty"`
+	EstimateNotIn  []float64 `json:"estimateNotIn,omitempty"`
+	EstimateGT     *float64  `json:"estimateGT,omitempty"`
+	EstimateGTE    *float64  `json:"estimateGTE,omitempty"`
+	EstimateLT     *float64  `json:"estimateLT,omitempty"`
+	EstimateLTE    *float64  `json:"estimateLTE,omitempty"`
+	EstimateIsNil  bool      `json:"estimateIsNil,omitempty"`
+	EstimateNotNil bool      `json:"estimateNotNil,omitempty"`
+
+	// "priority" field predicates.
+	Priority       *task.Priority  `json:"priority,omitempty"`
+	PriorityNEQ    *task.Priority  `json:"priorityNEQ,omitempty"`
+	PriorityIn     []task.Priority `json:"priorityIn,omitempty"`
+	PriorityNotIn  []task.Priority `json:"priorityNotIn,omitempty"`
+	PriorityIsNil  bool            `json:"priorityIsNil,omitempty"`
+	PriorityNotNil bool            `json:"priorityNotNil,omitempty"`
+
+	// "effort" field predicates.
+	Effort       *task.Effort  `json:"effort,omitempty"`
+	EffortNEQ    *task.Effort  `json:"effortNEQ,omitempty"`
+	EffortIn     []task.Effort `json:"effortIn,omitempty"`
+	EffortNotIn  []task.Effort `json:"effortNotIn,omitempty"`
+	EffortIsNil  bool          `json:"effortIsNil,omitempty"`
+	EffortNotNil bool          `json:"effortNotNil,omitempty"`
+
+	// "difficulty" field predicates.
+	Difficulty       *task.Difficulty  `json:"difficulty,omitempty"`
+	DifficultyNEQ    *task.Difficulty  `json:"difficultyNEQ,omitempty"`
+	DifficultyIn     []task.Difficulty `json:"difficultyIn,omitempty"`
+	DifficultyNotIn  []task.Difficulty `json:"difficultyNotIn,omitempty"`
+	DifficultyIsNil  bool              `json:"difficultyIsNil,omitempty"`
+	DifficultyNotNil bool              `json:"difficultyNotNil,omitempty"`
+
+	// "category" field predicates.
+	Category       *task.Category  `json:"category,omitempty"`
+	CategoryNEQ    *task.Category  `json:"categoryNEQ,omitempty"`
+	CategoryIn     []task.Category `json:"categoryIn,omitempty"`
+	CategoryNotIn  []task.Category `json:"categoryNotIn,omitempty"`
+	CategoryIsNil  bool            `json:"categoryIsNil,omitempty"`
+	CategoryNotNil bool            `json:"categoryNotNil,omitempty"`
+
+	// "budget" field predicates.
+	Budget       *float64  `json:"budget,omitempty"`
+	BudgetNEQ    *float64  `json:"budgetNEQ,omitempty"`
+	BudgetIn     []float64 `json:"budgetIn,omitempty"`
+	BudgetNotIn  []float64 `json:"budgetNotIn,omitempty"`
+	BudgetGT     *float64  `json:"budgetGT,omitempty"`
+	BudgetGTE    *float64  `json:"budgetGTE,omitempty"`
+	BudgetLT     *float64  `json:"budgetLT,omitempty"`
+	BudgetLTE    *float64  `json:"budgetLTE,omitempty"`
+	BudgetIsNil  bool      `json:"budgetIsNil,omitempty"`
+	BudgetNotNil bool      `json:"budgetNotNil,omitempty"`
+
+	// "parts_needed" field predicates.
+	PartsNeeded             *string  `json:"partsNeeded,omitempty"`
+	PartsNeededNEQ          *string  `json:"partsNeededNEQ,omitempty"`
+	PartsNeededIn           []string `json:"partsNeededIn,omitempty"`
+	PartsNeededNotIn        []string `json:"partsNeededNotIn,omitempty"`
+	PartsNeededGT           *string  `json:"partsNeededGT,omitempty"`
+	PartsNeededGTE          *string  `json:"partsNeededGTE,omitempty"`
+	PartsNeededLT           *string  `json:"partsNeededLT,omitempty"`
+	PartsNeededLTE          *string  `json:"partsNeededLTE,omitempty"`
+	PartsNeededContains     *string  `json:"partsNeededContains,omitempty"`
+	PartsNeededHasPrefix    *string  `json:"partsNeededHasPrefix,omitempty"`
+	PartsNeededHasSuffix    *string  `json:"partsNeededHasSuffix,omitempty"`
+	PartsNeededIsNil        bool     `json:"partsNeededIsNil,omitempty"`
+	PartsNeededNotNil       bool     `json:"partsNeededNotNil,omitempty"`
+	PartsNeededEqualFold    *string  `json:"partsNeededEqualFold,omitempty"`
+	PartsNeededContainsFold *string  `json:"partsNeededContainsFold,omitempty"`
 
 	// "car" edge predicates.
 	HasCar     *bool            `json:"hasCar,omitempty"`
@@ -7625,6 +7715,51 @@ func (i *TaskWhereInput) P() (predicate.Task, error) {
 	if i.TitleContainsFold != nil {
 		predicates = append(predicates, task.TitleContainsFold(*i.TitleContainsFold))
 	}
+	if i.Description != nil {
+		predicates = append(predicates, task.DescriptionEQ(*i.Description))
+	}
+	if i.DescriptionNEQ != nil {
+		predicates = append(predicates, task.DescriptionNEQ(*i.DescriptionNEQ))
+	}
+	if len(i.DescriptionIn) > 0 {
+		predicates = append(predicates, task.DescriptionIn(i.DescriptionIn...))
+	}
+	if len(i.DescriptionNotIn) > 0 {
+		predicates = append(predicates, task.DescriptionNotIn(i.DescriptionNotIn...))
+	}
+	if i.DescriptionGT != nil {
+		predicates = append(predicates, task.DescriptionGT(*i.DescriptionGT))
+	}
+	if i.DescriptionGTE != nil {
+		predicates = append(predicates, task.DescriptionGTE(*i.DescriptionGTE))
+	}
+	if i.DescriptionLT != nil {
+		predicates = append(predicates, task.DescriptionLT(*i.DescriptionLT))
+	}
+	if i.DescriptionLTE != nil {
+		predicates = append(predicates, task.DescriptionLTE(*i.DescriptionLTE))
+	}
+	if i.DescriptionContains != nil {
+		predicates = append(predicates, task.DescriptionContains(*i.DescriptionContains))
+	}
+	if i.DescriptionHasPrefix != nil {
+		predicates = append(predicates, task.DescriptionHasPrefix(*i.DescriptionHasPrefix))
+	}
+	if i.DescriptionHasSuffix != nil {
+		predicates = append(predicates, task.DescriptionHasSuffix(*i.DescriptionHasSuffix))
+	}
+	if i.DescriptionIsNil {
+		predicates = append(predicates, task.DescriptionIsNil())
+	}
+	if i.DescriptionNotNil {
+		predicates = append(predicates, task.DescriptionNotNil())
+	}
+	if i.DescriptionEqualFold != nil {
+		predicates = append(predicates, task.DescriptionEqualFold(*i.DescriptionEqualFold))
+	}
+	if i.DescriptionContainsFold != nil {
+		predicates = append(predicates, task.DescriptionContainsFold(*i.DescriptionContainsFold))
+	}
 	if i.Rank != nil {
 		predicates = append(predicates, task.RankEQ(*i.Rank))
 	}
@@ -7648,6 +7783,183 @@ func (i *TaskWhereInput) P() (predicate.Task, error) {
 	}
 	if i.RankLTE != nil {
 		predicates = append(predicates, task.RankLTE(*i.RankLTE))
+	}
+	if i.Estimate != nil {
+		predicates = append(predicates, task.EstimateEQ(*i.Estimate))
+	}
+	if i.EstimateNEQ != nil {
+		predicates = append(predicates, task.EstimateNEQ(*i.EstimateNEQ))
+	}
+	if len(i.EstimateIn) > 0 {
+		predicates = append(predicates, task.EstimateIn(i.EstimateIn...))
+	}
+	if len(i.EstimateNotIn) > 0 {
+		predicates = append(predicates, task.EstimateNotIn(i.EstimateNotIn...))
+	}
+	if i.EstimateGT != nil {
+		predicates = append(predicates, task.EstimateGT(*i.EstimateGT))
+	}
+	if i.EstimateGTE != nil {
+		predicates = append(predicates, task.EstimateGTE(*i.EstimateGTE))
+	}
+	if i.EstimateLT != nil {
+		predicates = append(predicates, task.EstimateLT(*i.EstimateLT))
+	}
+	if i.EstimateLTE != nil {
+		predicates = append(predicates, task.EstimateLTE(*i.EstimateLTE))
+	}
+	if i.EstimateIsNil {
+		predicates = append(predicates, task.EstimateIsNil())
+	}
+	if i.EstimateNotNil {
+		predicates = append(predicates, task.EstimateNotNil())
+	}
+	if i.Priority != nil {
+		predicates = append(predicates, task.PriorityEQ(*i.Priority))
+	}
+	if i.PriorityNEQ != nil {
+		predicates = append(predicates, task.PriorityNEQ(*i.PriorityNEQ))
+	}
+	if len(i.PriorityIn) > 0 {
+		predicates = append(predicates, task.PriorityIn(i.PriorityIn...))
+	}
+	if len(i.PriorityNotIn) > 0 {
+		predicates = append(predicates, task.PriorityNotIn(i.PriorityNotIn...))
+	}
+	if i.PriorityIsNil {
+		predicates = append(predicates, task.PriorityIsNil())
+	}
+	if i.PriorityNotNil {
+		predicates = append(predicates, task.PriorityNotNil())
+	}
+	if i.Effort != nil {
+		predicates = append(predicates, task.EffortEQ(*i.Effort))
+	}
+	if i.EffortNEQ != nil {
+		predicates = append(predicates, task.EffortNEQ(*i.EffortNEQ))
+	}
+	if len(i.EffortIn) > 0 {
+		predicates = append(predicates, task.EffortIn(i.EffortIn...))
+	}
+	if len(i.EffortNotIn) > 0 {
+		predicates = append(predicates, task.EffortNotIn(i.EffortNotIn...))
+	}
+	if i.EffortIsNil {
+		predicates = append(predicates, task.EffortIsNil())
+	}
+	if i.EffortNotNil {
+		predicates = append(predicates, task.EffortNotNil())
+	}
+	if i.Difficulty != nil {
+		predicates = append(predicates, task.DifficultyEQ(*i.Difficulty))
+	}
+	if i.DifficultyNEQ != nil {
+		predicates = append(predicates, task.DifficultyNEQ(*i.DifficultyNEQ))
+	}
+	if len(i.DifficultyIn) > 0 {
+		predicates = append(predicates, task.DifficultyIn(i.DifficultyIn...))
+	}
+	if len(i.DifficultyNotIn) > 0 {
+		predicates = append(predicates, task.DifficultyNotIn(i.DifficultyNotIn...))
+	}
+	if i.DifficultyIsNil {
+		predicates = append(predicates, task.DifficultyIsNil())
+	}
+	if i.DifficultyNotNil {
+		predicates = append(predicates, task.DifficultyNotNil())
+	}
+	if i.Category != nil {
+		predicates = append(predicates, task.CategoryEQ(*i.Category))
+	}
+	if i.CategoryNEQ != nil {
+		predicates = append(predicates, task.CategoryNEQ(*i.CategoryNEQ))
+	}
+	if len(i.CategoryIn) > 0 {
+		predicates = append(predicates, task.CategoryIn(i.CategoryIn...))
+	}
+	if len(i.CategoryNotIn) > 0 {
+		predicates = append(predicates, task.CategoryNotIn(i.CategoryNotIn...))
+	}
+	if i.CategoryIsNil {
+		predicates = append(predicates, task.CategoryIsNil())
+	}
+	if i.CategoryNotNil {
+		predicates = append(predicates, task.CategoryNotNil())
+	}
+	if i.Budget != nil {
+		predicates = append(predicates, task.BudgetEQ(*i.Budget))
+	}
+	if i.BudgetNEQ != nil {
+		predicates = append(predicates, task.BudgetNEQ(*i.BudgetNEQ))
+	}
+	if len(i.BudgetIn) > 0 {
+		predicates = append(predicates, task.BudgetIn(i.BudgetIn...))
+	}
+	if len(i.BudgetNotIn) > 0 {
+		predicates = append(predicates, task.BudgetNotIn(i.BudgetNotIn...))
+	}
+	if i.BudgetGT != nil {
+		predicates = append(predicates, task.BudgetGT(*i.BudgetGT))
+	}
+	if i.BudgetGTE != nil {
+		predicates = append(predicates, task.BudgetGTE(*i.BudgetGTE))
+	}
+	if i.BudgetLT != nil {
+		predicates = append(predicates, task.BudgetLT(*i.BudgetLT))
+	}
+	if i.BudgetLTE != nil {
+		predicates = append(predicates, task.BudgetLTE(*i.BudgetLTE))
+	}
+	if i.BudgetIsNil {
+		predicates = append(predicates, task.BudgetIsNil())
+	}
+	if i.BudgetNotNil {
+		predicates = append(predicates, task.BudgetNotNil())
+	}
+	if i.PartsNeeded != nil {
+		predicates = append(predicates, task.PartsNeededEQ(*i.PartsNeeded))
+	}
+	if i.PartsNeededNEQ != nil {
+		predicates = append(predicates, task.PartsNeededNEQ(*i.PartsNeededNEQ))
+	}
+	if len(i.PartsNeededIn) > 0 {
+		predicates = append(predicates, task.PartsNeededIn(i.PartsNeededIn...))
+	}
+	if len(i.PartsNeededNotIn) > 0 {
+		predicates = append(predicates, task.PartsNeededNotIn(i.PartsNeededNotIn...))
+	}
+	if i.PartsNeededGT != nil {
+		predicates = append(predicates, task.PartsNeededGT(*i.PartsNeededGT))
+	}
+	if i.PartsNeededGTE != nil {
+		predicates = append(predicates, task.PartsNeededGTE(*i.PartsNeededGTE))
+	}
+	if i.PartsNeededLT != nil {
+		predicates = append(predicates, task.PartsNeededLT(*i.PartsNeededLT))
+	}
+	if i.PartsNeededLTE != nil {
+		predicates = append(predicates, task.PartsNeededLTE(*i.PartsNeededLTE))
+	}
+	if i.PartsNeededContains != nil {
+		predicates = append(predicates, task.PartsNeededContains(*i.PartsNeededContains))
+	}
+	if i.PartsNeededHasPrefix != nil {
+		predicates = append(predicates, task.PartsNeededHasPrefix(*i.PartsNeededHasPrefix))
+	}
+	if i.PartsNeededHasSuffix != nil {
+		predicates = append(predicates, task.PartsNeededHasSuffix(*i.PartsNeededHasSuffix))
+	}
+	if i.PartsNeededIsNil {
+		predicates = append(predicates, task.PartsNeededIsNil())
+	}
+	if i.PartsNeededNotNil {
+		predicates = append(predicates, task.PartsNeededNotNil())
+	}
+	if i.PartsNeededEqualFold != nil {
+		predicates = append(predicates, task.PartsNeededEqualFold(*i.PartsNeededEqualFold))
+	}
+	if i.PartsNeededContainsFold != nil {
+		predicates = append(predicates, task.PartsNeededContainsFold(*i.PartsNeededContainsFold))
 	}
 
 	if i.HasCar != nil {

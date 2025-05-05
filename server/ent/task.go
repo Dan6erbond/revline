@@ -27,8 +27,24 @@ type Task struct {
 	Status task.Status `json:"status,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
+	// Description holds the value of the "description" field.
+	Description *string `json:"description,omitempty"`
 	// Rank holds the value of the "rank" field.
 	Rank float64 `json:"rank,omitempty"`
+	// Estimate holds the value of the "estimate" field.
+	Estimate *float64 `json:"estimate,omitempty"`
+	// Priority holds the value of the "priority" field.
+	Priority *task.Priority `json:"priority,omitempty"`
+	// Effort holds the value of the "effort" field.
+	Effort *task.Effort `json:"effort,omitempty"`
+	// Difficulty holds the value of the "difficulty" field.
+	Difficulty *task.Difficulty `json:"difficulty,omitempty"`
+	// Category holds the value of the "category" field.
+	Category *task.Category `json:"category,omitempty"`
+	// Budget holds the value of the "budget" field.
+	Budget *float64 `json:"budget,omitempty"`
+	// PartsNeeded holds the value of the "parts_needed" field.
+	PartsNeeded *string `json:"parts_needed,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TaskQuery when eager-loading is set.
 	Edges        TaskEdges `json:"edges"`
@@ -63,9 +79,9 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case task.FieldRank:
+		case task.FieldRank, task.FieldEstimate, task.FieldBudget:
 			values[i] = new(sql.NullFloat64)
-		case task.FieldStatus, task.FieldTitle:
+		case task.FieldStatus, task.FieldTitle, task.FieldDescription, task.FieldPriority, task.FieldEffort, task.FieldDifficulty, task.FieldCategory, task.FieldPartsNeeded:
 			values[i] = new(sql.NullString)
 		case task.FieldCreateTime, task.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
@@ -118,11 +134,67 @@ func (t *Task) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.Title = value.String
 			}
+		case task.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				t.Description = new(string)
+				*t.Description = value.String
+			}
 		case task.FieldRank:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field rank", values[i])
 			} else if value.Valid {
 				t.Rank = value.Float64
+			}
+		case task.FieldEstimate:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field estimate", values[i])
+			} else if value.Valid {
+				t.Estimate = new(float64)
+				*t.Estimate = value.Float64
+			}
+		case task.FieldPriority:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field priority", values[i])
+			} else if value.Valid {
+				t.Priority = new(task.Priority)
+				*t.Priority = task.Priority(value.String)
+			}
+		case task.FieldEffort:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field effort", values[i])
+			} else if value.Valid {
+				t.Effort = new(task.Effort)
+				*t.Effort = task.Effort(value.String)
+			}
+		case task.FieldDifficulty:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field difficulty", values[i])
+			} else if value.Valid {
+				t.Difficulty = new(task.Difficulty)
+				*t.Difficulty = task.Difficulty(value.String)
+			}
+		case task.FieldCategory:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field category", values[i])
+			} else if value.Valid {
+				t.Category = new(task.Category)
+				*t.Category = task.Category(value.String)
+			}
+		case task.FieldBudget:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field budget", values[i])
+			} else if value.Valid {
+				t.Budget = new(float64)
+				*t.Budget = value.Float64
+			}
+		case task.FieldPartsNeeded:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field parts_needed", values[i])
+			} else if value.Valid {
+				t.PartsNeeded = new(string)
+				*t.PartsNeeded = value.String
 			}
 		case task.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -184,8 +256,48 @@ func (t *Task) String() string {
 	builder.WriteString("title=")
 	builder.WriteString(t.Title)
 	builder.WriteString(", ")
+	if v := t.Description; v != nil {
+		builder.WriteString("description=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
 	builder.WriteString("rank=")
 	builder.WriteString(fmt.Sprintf("%v", t.Rank))
+	builder.WriteString(", ")
+	if v := t.Estimate; v != nil {
+		builder.WriteString("estimate=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := t.Priority; v != nil {
+		builder.WriteString("priority=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := t.Effort; v != nil {
+		builder.WriteString("effort=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := t.Difficulty; v != nil {
+		builder.WriteString("difficulty=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := t.Category; v != nil {
+		builder.WriteString("category=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := t.Budget; v != nil {
+		builder.WriteString("budget=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := t.PartsNeeded; v != nil {
+		builder.WriteString("parts_needed=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

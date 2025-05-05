@@ -2336,10 +2336,50 @@ func (t *TaskQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 				selectedFields = append(selectedFields, task.FieldTitle)
 				fieldSeen[task.FieldTitle] = struct{}{}
 			}
+		case "description":
+			if _, ok := fieldSeen[task.FieldDescription]; !ok {
+				selectedFields = append(selectedFields, task.FieldDescription)
+				fieldSeen[task.FieldDescription] = struct{}{}
+			}
 		case "rank":
 			if _, ok := fieldSeen[task.FieldRank]; !ok {
 				selectedFields = append(selectedFields, task.FieldRank)
 				fieldSeen[task.FieldRank] = struct{}{}
+			}
+		case "estimate":
+			if _, ok := fieldSeen[task.FieldEstimate]; !ok {
+				selectedFields = append(selectedFields, task.FieldEstimate)
+				fieldSeen[task.FieldEstimate] = struct{}{}
+			}
+		case "priority":
+			if _, ok := fieldSeen[task.FieldPriority]; !ok {
+				selectedFields = append(selectedFields, task.FieldPriority)
+				fieldSeen[task.FieldPriority] = struct{}{}
+			}
+		case "effort":
+			if _, ok := fieldSeen[task.FieldEffort]; !ok {
+				selectedFields = append(selectedFields, task.FieldEffort)
+				fieldSeen[task.FieldEffort] = struct{}{}
+			}
+		case "difficulty":
+			if _, ok := fieldSeen[task.FieldDifficulty]; !ok {
+				selectedFields = append(selectedFields, task.FieldDifficulty)
+				fieldSeen[task.FieldDifficulty] = struct{}{}
+			}
+		case "category":
+			if _, ok := fieldSeen[task.FieldCategory]; !ok {
+				selectedFields = append(selectedFields, task.FieldCategory)
+				fieldSeen[task.FieldCategory] = struct{}{}
+			}
+		case "budget":
+			if _, ok := fieldSeen[task.FieldBudget]; !ok {
+				selectedFields = append(selectedFields, task.FieldBudget)
+				fieldSeen[task.FieldBudget] = struct{}{}
+			}
+		case "partsNeeded":
+			if _, ok := fieldSeen[task.FieldPartsNeeded]; !ok {
+				selectedFields = append(selectedFields, task.FieldPartsNeeded)
+				fieldSeen[task.FieldPartsNeeded] = struct{}{}
 			}
 		case "id":
 		case "__typename":

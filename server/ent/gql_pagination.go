@@ -4640,6 +4640,20 @@ var (
 			}
 		},
 	}
+	// TaskOrderFieldDescription orders Task by description.
+	TaskOrderFieldDescription = &TaskOrderField{
+		Value: func(t *Task) (ent.Value, error) {
+			return t.Description, nil
+		},
+		column: task.FieldDescription,
+		toTerm: task.ByDescription,
+		toCursor: func(t *Task) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.Description,
+			}
+		},
+	}
 	// TaskOrderFieldRank orders Task by rank.
 	TaskOrderFieldRank = &TaskOrderField{
 		Value: func(t *Task) (ent.Value, error) {
@@ -4651,6 +4665,104 @@ var (
 			return Cursor{
 				ID:    t.ID,
 				Value: t.Rank,
+			}
+		},
+	}
+	// TaskOrderFieldEstimate orders Task by estimate.
+	TaskOrderFieldEstimate = &TaskOrderField{
+		Value: func(t *Task) (ent.Value, error) {
+			return t.Estimate, nil
+		},
+		column: task.FieldEstimate,
+		toTerm: task.ByEstimate,
+		toCursor: func(t *Task) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.Estimate,
+			}
+		},
+	}
+	// TaskOrderFieldPriority orders Task by priority.
+	TaskOrderFieldPriority = &TaskOrderField{
+		Value: func(t *Task) (ent.Value, error) {
+			return t.Priority, nil
+		},
+		column: task.FieldPriority,
+		toTerm: task.ByPriority,
+		toCursor: func(t *Task) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.Priority,
+			}
+		},
+	}
+	// TaskOrderFieldEffort orders Task by effort.
+	TaskOrderFieldEffort = &TaskOrderField{
+		Value: func(t *Task) (ent.Value, error) {
+			return t.Effort, nil
+		},
+		column: task.FieldEffort,
+		toTerm: task.ByEffort,
+		toCursor: func(t *Task) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.Effort,
+			}
+		},
+	}
+	// TaskOrderFieldDifficulty orders Task by difficulty.
+	TaskOrderFieldDifficulty = &TaskOrderField{
+		Value: func(t *Task) (ent.Value, error) {
+			return t.Difficulty, nil
+		},
+		column: task.FieldDifficulty,
+		toTerm: task.ByDifficulty,
+		toCursor: func(t *Task) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.Difficulty,
+			}
+		},
+	}
+	// TaskOrderFieldCategory orders Task by category.
+	TaskOrderFieldCategory = &TaskOrderField{
+		Value: func(t *Task) (ent.Value, error) {
+			return t.Category, nil
+		},
+		column: task.FieldCategory,
+		toTerm: task.ByCategory,
+		toCursor: func(t *Task) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.Category,
+			}
+		},
+	}
+	// TaskOrderFieldBudget orders Task by budget.
+	TaskOrderFieldBudget = &TaskOrderField{
+		Value: func(t *Task) (ent.Value, error) {
+			return t.Budget, nil
+		},
+		column: task.FieldBudget,
+		toTerm: task.ByBudget,
+		toCursor: func(t *Task) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.Budget,
+			}
+		},
+	}
+	// TaskOrderFieldPartsNeeded orders Task by parts_needed.
+	TaskOrderFieldPartsNeeded = &TaskOrderField{
+		Value: func(t *Task) (ent.Value, error) {
+			return t.PartsNeeded, nil
+		},
+		column: task.FieldPartsNeeded,
+		toTerm: task.ByPartsNeeded,
+		toCursor: func(t *Task) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.PartsNeeded,
 			}
 		},
 	}
@@ -4666,8 +4778,24 @@ func (f TaskOrderField) String() string {
 		str = "STATUS"
 	case TaskOrderFieldTitle.column:
 		str = "TITLE"
+	case TaskOrderFieldDescription.column:
+		str = "DESCRIPTION"
 	case TaskOrderFieldRank.column:
 		str = "RANK"
+	case TaskOrderFieldEstimate.column:
+		str = "ESTIMATE"
+	case TaskOrderFieldPriority.column:
+		str = "PRIORITY"
+	case TaskOrderFieldEffort.column:
+		str = "EFFORT"
+	case TaskOrderFieldDifficulty.column:
+		str = "DIFFICULTY"
+	case TaskOrderFieldCategory.column:
+		str = "CATEGORY"
+	case TaskOrderFieldBudget.column:
+		str = "BUDGET"
+	case TaskOrderFieldPartsNeeded.column:
+		str = "PARTS_NEEDED"
 	}
 	return str
 }
@@ -4690,8 +4818,24 @@ func (f *TaskOrderField) UnmarshalGQL(v interface{}) error {
 		*f = *TaskOrderFieldStatus
 	case "TITLE":
 		*f = *TaskOrderFieldTitle
+	case "DESCRIPTION":
+		*f = *TaskOrderFieldDescription
 	case "RANK":
 		*f = *TaskOrderFieldRank
+	case "ESTIMATE":
+		*f = *TaskOrderFieldEstimate
+	case "PRIORITY":
+		*f = *TaskOrderFieldPriority
+	case "EFFORT":
+		*f = *TaskOrderFieldEffort
+	case "DIFFICULTY":
+		*f = *TaskOrderFieldDifficulty
+	case "CATEGORY":
+		*f = *TaskOrderFieldCategory
+	case "BUDGET":
+		*f = *TaskOrderFieldBudget
+	case "PARTS_NEEDED":
+		*f = *TaskOrderFieldPartsNeeded
 	default:
 		return fmt.Errorf("%s is not a valid TaskOrderField", str)
 	}

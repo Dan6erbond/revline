@@ -712,7 +712,15 @@ input CreateTaskInput {
   updateTime: Time
   status: TaskStatus!
   title: String!
+  description: String
   rank: Float
+  estimate: Float
+  priority: TaskPriority
+  effort: TaskEffort
+  difficulty: TaskDifficulty
+  category: TaskCategory
+  budget: Float
+  partsNeeded: String
   carID: ID!
 }
 """
@@ -1203,6 +1211,16 @@ enum ExpenseType @goModel(model: "github.com/Dan6erbond/revline/ent/expense.Type
   service
   insurance
   tax
+  toll
+  parking
+  loan
+  registration
+  maintenance
+  repair
+  upgrade
+  cleaning
+  accessories
+  inspection
   other
 }
 """
@@ -2553,8 +2571,34 @@ type Task implements Node {
   updateTime: Time!
   status: TaskStatus!
   title: String!
+  description: String
   rank: Float!
+  estimate: Float
+  priority: TaskPriority
+  effort: TaskEffort
+  difficulty: TaskDifficulty
+  category: TaskCategory
+  budget: Float
+  partsNeeded: String
   car: Car!
+}
+"""
+TaskCategory is enum for the field category
+"""
+enum TaskCategory @goModel(model: "github.com/Dan6erbond/revline/ent/task.Category") {
+  maintenance
+  service
+  repair
+  modification
+  cosmetic
+  cleaning
+  detailing
+  inspection
+  registration
+  insurance
+  accessory
+  diagnostics
+  other
 }
 """
 A connection to a list of items.
@@ -2574,6 +2618,15 @@ type TaskConnection {
   totalCount: Int!
 }
 """
+TaskDifficulty is enum for the field difficulty
+"""
+enum TaskDifficulty @goModel(model: "github.com/Dan6erbond/revline/ent/task.Difficulty") {
+  beginner
+  intermediate
+  advanced
+  expert
+}
+"""
 An edge in a connection.
 """
 type TaskEdge {
@@ -2585,6 +2638,16 @@ type TaskEdge {
   A cursor for use in pagination.
   """
   cursor: Cursor!
+}
+"""
+TaskEffort is enum for the field effort
+"""
+enum TaskEffort @goModel(model: "github.com/Dan6erbond/revline/ent/task.Effort") {
+  trivial
+  easy
+  moderate
+  hard
+  extreme
 }
 """
 Ordering options for Task connections
@@ -2606,7 +2669,24 @@ enum TaskOrderField {
   ID
   STATUS
   TITLE
+  DESCRIPTION
   RANK
+  ESTIMATE
+  PRIORITY
+  EFFORT
+  DIFFICULTY
+  CATEGORY
+  BUDGET
+  PARTS_NEEDED
+}
+"""
+TaskPriority is enum for the field priority
+"""
+enum TaskPriority @goModel(model: "github.com/Dan6erbond/revline/ent/task.Priority") {
+  low
+  mid
+  high
+  urgent
 }
 """
 TaskStatus is enum for the field status
@@ -2683,6 +2763,24 @@ input TaskWhereInput {
   titleEqualFold: String
   titleContainsFold: String
   """
+  description field predicates
+  """
+  description: String
+  descriptionNEQ: String
+  descriptionIn: [String!]
+  descriptionNotIn: [String!]
+  descriptionGT: String
+  descriptionGTE: String
+  descriptionLT: String
+  descriptionLTE: String
+  descriptionContains: String
+  descriptionHasPrefix: String
+  descriptionHasSuffix: String
+  descriptionIsNil: Boolean
+  descriptionNotNil: Boolean
+  descriptionEqualFold: String
+  descriptionContainsFold: String
+  """
   rank field predicates
   """
   rank: Float
@@ -2693,6 +2791,86 @@ input TaskWhereInput {
   rankGTE: Float
   rankLT: Float
   rankLTE: Float
+  """
+  estimate field predicates
+  """
+  estimate: Float
+  estimateNEQ: Float
+  estimateIn: [Float!]
+  estimateNotIn: [Float!]
+  estimateGT: Float
+  estimateGTE: Float
+  estimateLT: Float
+  estimateLTE: Float
+  estimateIsNil: Boolean
+  estimateNotNil: Boolean
+  """
+  priority field predicates
+  """
+  priority: TaskPriority
+  priorityNEQ: TaskPriority
+  priorityIn: [TaskPriority!]
+  priorityNotIn: [TaskPriority!]
+  priorityIsNil: Boolean
+  priorityNotNil: Boolean
+  """
+  effort field predicates
+  """
+  effort: TaskEffort
+  effortNEQ: TaskEffort
+  effortIn: [TaskEffort!]
+  effortNotIn: [TaskEffort!]
+  effortIsNil: Boolean
+  effortNotNil: Boolean
+  """
+  difficulty field predicates
+  """
+  difficulty: TaskDifficulty
+  difficultyNEQ: TaskDifficulty
+  difficultyIn: [TaskDifficulty!]
+  difficultyNotIn: [TaskDifficulty!]
+  difficultyIsNil: Boolean
+  difficultyNotNil: Boolean
+  """
+  category field predicates
+  """
+  category: TaskCategory
+  categoryNEQ: TaskCategory
+  categoryIn: [TaskCategory!]
+  categoryNotIn: [TaskCategory!]
+  categoryIsNil: Boolean
+  categoryNotNil: Boolean
+  """
+  budget field predicates
+  """
+  budget: Float
+  budgetNEQ: Float
+  budgetIn: [Float!]
+  budgetNotIn: [Float!]
+  budgetGT: Float
+  budgetGTE: Float
+  budgetLT: Float
+  budgetLTE: Float
+  budgetIsNil: Boolean
+  budgetNotNil: Boolean
+  """
+  parts_needed field predicates
+  """
+  partsNeeded: String
+  partsNeededNEQ: String
+  partsNeededIn: [String!]
+  partsNeededNotIn: [String!]
+  partsNeededGT: String
+  partsNeededGTE: String
+  partsNeededLT: String
+  partsNeededLTE: String
+  partsNeededContains: String
+  partsNeededHasPrefix: String
+  partsNeededHasSuffix: String
+  partsNeededIsNil: Boolean
+  partsNeededNotNil: Boolean
+  partsNeededEqualFold: String
+  partsNeededContainsFold: String
   """
   car edge predicates
   """
@@ -3030,7 +3208,23 @@ input UpdateTaskInput {
   updateTime: Time
   status: TaskStatus
   title: String
+  description: String
+  clearDescription: Boolean
   rank: Float
+  estimate: Float
+  clearEstimate: Boolean
+  priority: TaskPriority
+  clearPriority: Boolean
+  effort: TaskEffort
+  clearEffort: Boolean
+  difficulty: TaskDifficulty
+  clearDifficulty: Boolean
+  category: TaskCategory
+  clearCategory: Boolean
+  budget: Float
+  clearBudget: Boolean
+  partsNeeded: String
+  clearPartsNeeded: Boolean
   carID: ID
 }
 """

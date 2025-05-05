@@ -1863,12 +1863,20 @@ func (c *ServiceScheduleUpdateOne) SetInput(i UpdateServiceScheduleInput) *Servi
 
 // CreateTaskInput represents a mutation input for creating tasks.
 type CreateTaskInput struct {
-	CreateTime *time.Time
-	UpdateTime *time.Time
-	Status     task.Status
-	Title      string
-	Rank       *float64
-	CarID      uuid.UUID
+	CreateTime  *time.Time
+	UpdateTime  *time.Time
+	Status      task.Status
+	Title       string
+	Description *string
+	Rank        *float64
+	Estimate    *float64
+	Priority    *task.Priority
+	Effort      *task.Effort
+	Difficulty  *task.Difficulty
+	Category    *task.Category
+	Budget      *float64
+	PartsNeeded *string
+	CarID       uuid.UUID
 }
 
 // Mutate applies the CreateTaskInput on the TaskMutation builder.
@@ -1881,8 +1889,32 @@ func (i *CreateTaskInput) Mutate(m *TaskMutation) {
 	}
 	m.SetStatus(i.Status)
 	m.SetTitle(i.Title)
+	if v := i.Description; v != nil {
+		m.SetDescription(*v)
+	}
 	if v := i.Rank; v != nil {
 		m.SetRank(*v)
+	}
+	if v := i.Estimate; v != nil {
+		m.SetEstimate(*v)
+	}
+	if v := i.Priority; v != nil {
+		m.SetPriority(*v)
+	}
+	if v := i.Effort; v != nil {
+		m.SetEffort(*v)
+	}
+	if v := i.Difficulty; v != nil {
+		m.SetDifficulty(*v)
+	}
+	if v := i.Category; v != nil {
+		m.SetCategory(*v)
+	}
+	if v := i.Budget; v != nil {
+		m.SetBudget(*v)
+	}
+	if v := i.PartsNeeded; v != nil {
+		m.SetPartsNeeded(*v)
 	}
 	m.SetCarID(i.CarID)
 }
@@ -1895,11 +1927,27 @@ func (c *TaskCreate) SetInput(i CreateTaskInput) *TaskCreate {
 
 // UpdateTaskInput represents a mutation input for updating tasks.
 type UpdateTaskInput struct {
-	UpdateTime *time.Time
-	Status     *task.Status
-	Title      *string
-	Rank       *float64
-	CarID      *uuid.UUID
+	UpdateTime       *time.Time
+	Status           *task.Status
+	Title            *string
+	ClearDescription bool
+	Description      *string
+	Rank             *float64
+	ClearEstimate    bool
+	Estimate         *float64
+	ClearPriority    bool
+	Priority         *task.Priority
+	ClearEffort      bool
+	Effort           *task.Effort
+	ClearDifficulty  bool
+	Difficulty       *task.Difficulty
+	ClearCategory    bool
+	Category         *task.Category
+	ClearBudget      bool
+	Budget           *float64
+	ClearPartsNeeded bool
+	PartsNeeded      *string
+	CarID            *uuid.UUID
 }
 
 // Mutate applies the UpdateTaskInput on the TaskMutation builder.
@@ -1913,8 +1961,56 @@ func (i *UpdateTaskInput) Mutate(m *TaskMutation) {
 	if v := i.Title; v != nil {
 		m.SetTitle(*v)
 	}
+	if i.ClearDescription {
+		m.ClearDescription()
+	}
+	if v := i.Description; v != nil {
+		m.SetDescription(*v)
+	}
 	if v := i.Rank; v != nil {
 		m.SetRank(*v)
+	}
+	if i.ClearEstimate {
+		m.ClearEstimate()
+	}
+	if v := i.Estimate; v != nil {
+		m.SetEstimate(*v)
+	}
+	if i.ClearPriority {
+		m.ClearPriority()
+	}
+	if v := i.Priority; v != nil {
+		m.SetPriority(*v)
+	}
+	if i.ClearEffort {
+		m.ClearEffort()
+	}
+	if v := i.Effort; v != nil {
+		m.SetEffort(*v)
+	}
+	if i.ClearDifficulty {
+		m.ClearDifficulty()
+	}
+	if v := i.Difficulty; v != nil {
+		m.SetDifficulty(*v)
+	}
+	if i.ClearCategory {
+		m.ClearCategory()
+	}
+	if v := i.Category; v != nil {
+		m.SetCategory(*v)
+	}
+	if i.ClearBudget {
+		m.ClearBudget()
+	}
+	if v := i.Budget; v != nil {
+		m.SetBudget(*v)
+	}
+	if i.ClearPartsNeeded {
+		m.ClearPartsNeeded()
+	}
+	if v := i.PartsNeeded; v != nil {
+		m.SetPartsNeeded(*v)
 	}
 	if v := i.CarID; v != nil {
 		m.SetCarID(*v)

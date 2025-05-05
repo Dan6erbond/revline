@@ -113,11 +113,21 @@ type Type string
 
 // Type values.
 const (
-	TypeFuel      Type = "fuel"
-	TypeService   Type = "service"
-	TypeInsurance Type = "insurance"
-	TypeTax       Type = "tax"
-	TypeOther     Type = "other"
+	TypeFuel         Type = "fuel"
+	TypeService      Type = "service"
+	TypeInsurance    Type = "insurance"
+	TypeTax          Type = "tax"
+	TypeToll         Type = "toll"
+	TypeParking      Type = "parking"
+	TypeLoan         Type = "loan"
+	TypeRegistration Type = "registration"
+	TypeMaintenance  Type = "maintenance"
+	TypeRepair       Type = "repair"
+	TypeUpgrade      Type = "upgrade"
+	TypeCleaning     Type = "cleaning"
+	TypeAccessories  Type = "accessories"
+	TypeInspection   Type = "inspection"
+	TypeOther        Type = "other"
 )
 
 func (_type Type) String() string {
@@ -127,7 +137,7 @@ func (_type Type) String() string {
 // TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
 func TypeValidator(_type Type) error {
 	switch _type {
-	case TypeFuel, TypeService, TypeInsurance, TypeTax, TypeOther:
+	case TypeFuel, TypeService, TypeInsurance, TypeTax, TypeToll, TypeParking, TypeLoan, TypeRegistration, TypeMaintenance, TypeRepair, TypeUpgrade, TypeCleaning, TypeAccessories, TypeInspection, TypeOther:
 		return nil
 	default:
 		return fmt.Errorf("expense: invalid enum value for type field: %q", _type)

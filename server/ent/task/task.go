@@ -26,8 +26,24 @@ const (
 	FieldStatus = "status"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
+	// FieldDescription holds the string denoting the description field in the database.
+	FieldDescription = "description"
 	// FieldRank holds the string denoting the rank field in the database.
 	FieldRank = "rank"
+	// FieldEstimate holds the string denoting the estimate field in the database.
+	FieldEstimate = "estimate"
+	// FieldPriority holds the string denoting the priority field in the database.
+	FieldPriority = "priority"
+	// FieldEffort holds the string denoting the effort field in the database.
+	FieldEffort = "effort"
+	// FieldDifficulty holds the string denoting the difficulty field in the database.
+	FieldDifficulty = "difficulty"
+	// FieldCategory holds the string denoting the category field in the database.
+	FieldCategory = "category"
+	// FieldBudget holds the string denoting the budget field in the database.
+	FieldBudget = "budget"
+	// FieldPartsNeeded holds the string denoting the parts_needed field in the database.
+	FieldPartsNeeded = "parts_needed"
 	// EdgeCar holds the string denoting the car edge name in mutations.
 	EdgeCar = "car"
 	// Table holds the table name of the task in the database.
@@ -48,7 +64,15 @@ var Columns = []string{
 	FieldUpdateTime,
 	FieldStatus,
 	FieldTitle,
+	FieldDescription,
 	FieldRank,
+	FieldEstimate,
+	FieldPriority,
+	FieldEffort,
+	FieldDifficulty,
+	FieldCategory,
+	FieldBudget,
+	FieldPartsNeeded,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "tasks"
@@ -113,6 +137,116 @@ func StatusValidator(s Status) error {
 	}
 }
 
+// Priority defines the type for the "priority" enum field.
+type Priority string
+
+// Priority values.
+const (
+	PriorityLow    Priority = "low"
+	PriorityMedium Priority = "mid"
+	PriorityHigh   Priority = "high"
+	PriorityUrgent Priority = "urgent"
+)
+
+func (pr Priority) String() string {
+	return string(pr)
+}
+
+// PriorityValidator is a validator for the "priority" field enum values. It is called by the builders before save.
+func PriorityValidator(pr Priority) error {
+	switch pr {
+	case PriorityLow, PriorityMedium, PriorityHigh, PriorityUrgent:
+		return nil
+	default:
+		return fmt.Errorf("task: invalid enum value for priority field: %q", pr)
+	}
+}
+
+// Effort defines the type for the "effort" enum field.
+type Effort string
+
+// Effort values.
+const (
+	EffortTrivial  Effort = "trivial"
+	EffortEasy     Effort = "easy"
+	EffortModerate Effort = "moderate"
+	EffortHard     Effort = "hard"
+	EffortExtreme  Effort = "extreme"
+)
+
+func (e Effort) String() string {
+	return string(e)
+}
+
+// EffortValidator is a validator for the "effort" field enum values. It is called by the builders before save.
+func EffortValidator(e Effort) error {
+	switch e {
+	case EffortTrivial, EffortEasy, EffortModerate, EffortHard, EffortExtreme:
+		return nil
+	default:
+		return fmt.Errorf("task: invalid enum value for effort field: %q", e)
+	}
+}
+
+// Difficulty defines the type for the "difficulty" enum field.
+type Difficulty string
+
+// Difficulty values.
+const (
+	DifficultyBeginner     Difficulty = "beginner"
+	DifficultyIntermediate Difficulty = "intermediate"
+	DifficultyAdvanced     Difficulty = "advanced"
+	DifficultyExpert       Difficulty = "expert"
+)
+
+func (d Difficulty) String() string {
+	return string(d)
+}
+
+// DifficultyValidator is a validator for the "difficulty" field enum values. It is called by the builders before save.
+func DifficultyValidator(d Difficulty) error {
+	switch d {
+	case DifficultyBeginner, DifficultyIntermediate, DifficultyAdvanced, DifficultyExpert:
+		return nil
+	default:
+		return fmt.Errorf("task: invalid enum value for difficulty field: %q", d)
+	}
+}
+
+// Category defines the type for the "category" enum field.
+type Category string
+
+// Category values.
+const (
+	CategoryMaintenance  Category = "maintenance"
+	CategoryService      Category = "service"
+	CategoryRepair       Category = "repair"
+	CategoryModification Category = "modification"
+	CategoryCosmetic     Category = "cosmetic"
+	CategoryCleaning     Category = "cleaning"
+	CategoryDetailing    Category = "detailing"
+	CategoryInspection   Category = "inspection"
+	CategoryRegistration Category = "registration"
+	CategoryInsurance    Category = "insurance"
+	CategoryAccessory    Category = "accessory"
+	CategoryDiagnostics  Category = "diagnostics"
+	CategoryOther        Category = "other"
+)
+
+func (c Category) String() string {
+	return string(c)
+}
+
+// CategoryValidator is a validator for the "category" field enum values. It is called by the builders before save.
+func CategoryValidator(c Category) error {
+	switch c {
+	case CategoryMaintenance, CategoryService, CategoryRepair, CategoryModification, CategoryCosmetic, CategoryCleaning, CategoryDetailing, CategoryInspection, CategoryRegistration, CategoryInsurance, CategoryAccessory, CategoryDiagnostics, CategoryOther:
+		return nil
+	default:
+		return fmt.Errorf("task: invalid enum value for category field: %q", c)
+	}
+}
+
 // OrderOption defines the ordering options for the Task queries.
 type OrderOption func(*sql.Selector)
 
@@ -141,9 +275,49 @@ func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
 }
 
+// ByDescription orders the results by the description field.
+func ByDescription(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
 // ByRank orders the results by the rank field.
 func ByRank(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRank, opts...).ToFunc()
+}
+
+// ByEstimate orders the results by the estimate field.
+func ByEstimate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEstimate, opts...).ToFunc()
+}
+
+// ByPriority orders the results by the priority field.
+func ByPriority(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPriority, opts...).ToFunc()
+}
+
+// ByEffort orders the results by the effort field.
+func ByEffort(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEffort, opts...).ToFunc()
+}
+
+// ByDifficulty orders the results by the difficulty field.
+func ByDifficulty(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDifficulty, opts...).ToFunc()
+}
+
+// ByCategory orders the results by the category field.
+func ByCategory(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCategory, opts...).ToFunc()
+}
+
+// ByBudget orders the results by the budget field.
+func ByBudget(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBudget, opts...).ToFunc()
+}
+
+// ByPartsNeeded orders the results by the parts_needed field.
+func ByPartsNeeded(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPartsNeeded, opts...).ToFunc()
 }
 
 // ByCarField orders the results by car field.
@@ -174,6 +348,78 @@ func (e *Status) UnmarshalGQL(val interface{}) error {
 	*e = Status(str)
 	if err := StatusValidator(*e); err != nil {
 		return fmt.Errorf("%s is not a valid Status", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e Priority) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *Priority) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = Priority(str)
+	if err := PriorityValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid Priority", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e Effort) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *Effort) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = Effort(str)
+	if err := EffortValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid Effort", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e Difficulty) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *Difficulty) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = Difficulty(str)
+	if err := DifficultyValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid Difficulty", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e Category) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *Category) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = Category(str)
+	if err := CategoryValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid Category", str)
 	}
 	return nil
 }

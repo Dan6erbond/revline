@@ -27,8 +27,19 @@ func (Expense) Fields() []ent.Field {
 				"Service", "service",
 				"Insurance", "insurance",
 				"Tax", "tax",
+				"Toll", "toll",
+				"Parking", "parking",
+				"Loan", "loan",
+				"Registration", "registration",
+				"Maintenance", "maintenance",
+				"Repair", "repair",
+				"Upgrade", "upgrade",
+				"Cleaning", "cleaning",
+				"Accessories", "accessories",
+				"Inspection", "inspection",
 				"Other", "other",
 			),
+
 		field.Float("amount").
 			Positive(),
 		field.String("notes").
