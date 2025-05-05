@@ -1,10 +1,11 @@
 import { Card, CardProps, cn } from "@heroui/react";
 
+import { LinkProps } from "next/link";
 import { forwardRef } from "react";
 
 export const KanbanCard = forwardRef<
   HTMLDivElement,
-  CardProps & { href?: string }
+  CardProps & Omit<Partial<LinkProps>, keyof CardProps>
 >(({ className, ...props }, ref) => {
   return (
     <Card

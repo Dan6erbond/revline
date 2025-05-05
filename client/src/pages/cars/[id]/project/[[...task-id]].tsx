@@ -10,21 +10,18 @@ export default function Project() {
   const router = useRouter();
   const taskId = getQueryParam(router.query["task-id"]);
 
+  const onClose = () =>
+    router.push(`/cars/${router.query.id}/project`, undefined, {
+      shallow: true,
+    });
+
   return (
     <CarLayout>
       <Kanban />
 
-      <Drawer
-        isOpen={taskId != null}
-        onClose={() => router.push(`/cars/${router.query.id}/project`)}
-      >
+      <Drawer isOpen={taskId != null} onClose={onClose}>
         <Suspense fallback="Loading...">
-          {taskId && (
-            <TaskDrawerContent
-              id={taskId}
-              onClose={() => router.push(`/cars/${router.query.id}/project`)}
-            />
-          )}
+          {taskId && <TaskDrawerContent id={taskId} onClose={onClose} />}
         </Suspense>
       </Drawer>
     </CarLayout>

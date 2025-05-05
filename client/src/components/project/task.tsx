@@ -83,7 +83,14 @@ export const TaskCard = forwardRef<
       ref={ref}
       as={Link}
       href={`/cars/${router.query.id}/project/${t.id}`}
+      shallow
       className={cn("relative", className)}
+      onClick={(e) => {
+        e.preventDefault();
+        router.push(`/cars/${router.query.id}/project/${t.id}`, undefined, {
+          shallow: true,
+        });
+      }}
       {...props}
     >
       {t.id === "" && (
