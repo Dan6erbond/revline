@@ -8,6 +8,7 @@ import { RefObject } from "react";
 import { Session } from "next-auth";
 import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 import { setContext } from "@apollo/client/link/context";
+import { relayStylePagination } from "@apollo/client/utilities";
 
 export const httpLink = createUploadLink({
   uri: process.env.NEXT_PUBLIC_GRAPHQL_URL,
@@ -36,6 +37,11 @@ export const cacheConfig = {
   typePolicies: {
     UpcomingService: {
       keyFields: false,
+    },
+    Car: {
+      fields: {
+        tasks: relayStylePagination(["orderBy", "where"]),
+      },
     },
   },
 } satisfies InMemoryCacheConfig;
