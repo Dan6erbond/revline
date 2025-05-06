@@ -1,9 +1,8 @@
-import { MetadataRoute } from "next";
+import type { Manifest } from "next/dist/lib/metadata/types/manifest-types";
 
 const basePath = process.env.BASE_PATH ?? "";
-
-export default function manifest(): MetadataRoute.Manifest {
-  return {
+export async function GET() {
+  return Response.json({
     name: "Revline 1",
     short_name: "Revline 1",
     start_url: basePath,
@@ -22,5 +21,5 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#022f2e",
     background_color: "#022f2e",
     display: "standalone",
-  };
+  } satisfies Manifest);
 }

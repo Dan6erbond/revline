@@ -55,7 +55,7 @@ export default function App({
           href={href("/apple-touch-icon.png")}
         />
         <meta name="apple-mobile-web-app-title" content="Revline 1" />
-        <link rel="manifest" href={href("/site.webmanifest")} />
+        <link rel="manifest" href={href("/manifest.json")} />
       </Head>
       <SessionProvider
         session={session}
