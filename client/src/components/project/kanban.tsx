@@ -199,14 +199,12 @@ export default function Kanban({ showSubtasks }: { showSubtasks: boolean }) {
         setActiveTask(null);
       }}
     >
-      <div className="w-full overflow-x-auto">
+      <div className="w-full overflow-x-auto flex-1 flex items-stretch flex-nowrap pb-4">
         <div
-          className="inline-flex gap-4 md:gap-8 min-w-full justify-center"
-          style={{ minHeight: "calc(70vh - 5rem" }}
+          className="inline-flex gap-4 md:gap-8 min-w-full min-h-full justify-center shrink-0"
         >
-          {Object.entries(TaskStatus).map(([title, status]) => (
+          {[TaskStatus.Backlog, TaskStatus.Blocked, TaskStatus.Todo, TaskStatus.InProgress, TaskStatus.Completed].map((status) => (
             <Column
-              title={title}
               status={status}
               key={status}
               activeTask={activeTask}

@@ -1,5 +1,14 @@
 import { Album, ImageIcon, Images, LinkIcon, Plus } from "lucide-react";
-import { Button, Card, CardBody, Image, Tab, Tabs, Tooltip, addToast } from "@heroui/react";
+import {
+  Button,
+  Card,
+  CardBody,
+  Image,
+  Tab,
+  Tabs,
+  Tooltip,
+  addToast,
+} from "@heroui/react";
 
 import CarLayout from "@/components/layout/car-layout";
 import Link from "next/link";
@@ -30,7 +39,7 @@ const getAlbums = graphql(`
 
 export default function Albums() {
   const router = useRouter();
-  const href = useHref()
+  const href = useHref();
 
   const { data } = useQuery(getAlbums, {
     variables: { id: getQueryParam(router.query.id) as string },
@@ -38,10 +47,15 @@ export default function Albums() {
   });
 
   return (
-    <CarLayout>
-      <div className="p-4 flex flex-col gap-4 max-w-screen-xl mx-auto relative min-h-[300px]">
-        <SubscriptionOverlay requiredTiers={[SubscriptionTier.Enthusiast]} />
+    <CarLayout
+      className="relative"
+      style={{
+        minHeight: "calc(70vh - 4rem)",
+      }}
+    >
+      <SubscriptionOverlay requiredTiers={[SubscriptionTier.Enthusiast]} />
 
+      <div className="flex flex-col gap-4 max-w-screen-xl mx-auto p-4">
         <div className="flex justify-between">
           <h1 className="text-3xl">Gallery</h1>
 
@@ -117,21 +131,23 @@ export default function Albums() {
                           <Button
                             isIconOnly
                             variant="light"
-                            onPress={() => {const shareUrl = new URL(
-                              href(`/share/a/${album.id}`),
-                              window.location.origin
-                            );
+                            onPress={() => {
+                              const shareUrl = new URL(
+                                href(`/share/a/${album.id}`),
+                                window.location.origin
+                              );
 
-                            navigator.clipboard
-                              .writeText(shareUrl.toString())
-                              .then(() => {
-                                addToast({
-                                  title: "Link copied",
-                                  description:
-                                    "The share link is now in your clipboard.",
-                                  color: "success",
+                              navigator.clipboard
+                                .writeText(shareUrl.toString())
+                                .then(() => {
+                                  addToast({
+                                    title: "Link copied",
+                                    description:
+                                      "The share link is now in your clipboard.",
+                                    color: "success",
+                                  });
                                 });
-                              });}}
+                            }}
                           >
                             <LinkIcon />
                           </Button>

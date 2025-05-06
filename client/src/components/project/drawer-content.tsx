@@ -138,6 +138,7 @@ export default function TaskDrawerContent({
         idNEQ: id,
       },
     },
+    fetchPolicy: "cache-and-network",
     skip: !getQueryParam(router.query.id),
   });
 
@@ -422,8 +423,8 @@ export default function TaskDrawerContent({
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       e.preventDefault();
-                                      handleRemove(st.id);
                                     }}
+                                    onPress={() => handleRemove(st.id)}
                                     isIconOnly
                                     color="danger"
                                     variant="light"

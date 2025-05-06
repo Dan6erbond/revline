@@ -1,15 +1,16 @@
-import { Button, CardHeader, Input, Spinner, cn } from "@heroui/react";
 import { FragmentType, graphql } from "@/gql";
+import { useMutation, useQuery } from "@apollo/client";
+import { Button, CardHeader, Input, Spinner, cn } from "@heroui/react";
 import React, { useState } from "react";
 import Task, { TaskCard, TaskFields } from "./task";
-import { useMutation, useQuery } from "@apollo/client";
 
-import { KanbanCard } from "./card";
-import { Plus } from "lucide-react";
-import { TaskStatus } from "@/gql/graphql";
+import { GetTasksByRankQueryVariables, TaskStatus } from "@/gql/graphql";
 import { getQueryParam } from "@/utils/router";
 import { useDroppable } from "@dnd-kit/core";
+import { Plus } from "lucide-react";
 import { useRouter } from "next/router";
+import { KanbanCard } from "./card";
+import { getTasks } from "./drawer-content";
 
 export const getTasksByRank = graphql(`
   query GetTasksByRank($id: ID!, $where: TaskWhereInput) {
@@ -46,13 +47,19 @@ export const createTask = graphql(`
   }
 `);
 
+export const statusLabels: Record<TaskStatus, string> = {
+  backlog: "Backlog",
+  blocked: "Blocked",
+  in_progress: "In progress",
+  completed: "Completed",
+  todo: "To do",
+};
+
 export default function Column({
-  title,
   status,
   activeTask,
   showSubtasks,
 }: {
-  title: string;
   status: TaskStatus;
   activeTask: (FragmentType<typeof TaskFields> & { id: string }) | null;
   showSubtasks: boolean;
@@ -63,11 +70,13 @@ export default function Column({
 
   const [isAdding, setIsAdding] = useState(false);
 
+  const variables = {
+    id: getQueryParam(router.query.id) as string,
+    where: { status, hasParent: showSubtasks ? undefined : false },
+  } satisfies GetTasksByRankQueryVariables;
+
   const { data } = useQuery(getTasksByRank, {
-    variables: {
-      id: getQueryParam(router.query.id) as string,
-      where: { status, hasParent: showSubtasks ? undefined : false },
-    },
+    variables,
     skip: !getQueryParam(router.query.id),
   });
 
@@ -75,11 +84,9 @@ export default function Column({
     refetchQueries: [
       {
         query: getTasksByRank,
-        variables: {
-          id: getQueryParam(router.query.id) as string,
-          where: { status },
-        },
+        variables,
       },
+      getTasks,
     ],
     update: (cache, res) => {
       if (!data?.car.tasks.edges || !res.data?.createTask) return;
@@ -115,13 +122,13 @@ export default function Column({
       <div
         ref={setNodeRef}
         className={cn(
-          "rounded-xl shadow-inner p-4 flex flex-col gap-4 max-h-screen overflow-y-auto overflow-x-visible",
+          "rounded-xl shadow-inner p-4 flex flex-col gap-4 max-h-full overflow-y-auto overflow-x-visible",
           isOver ? "bg-content4" : "bg-content2"
         )}
       >
         <div className="flex justify-between w-80">
           <h2 className="text-lg font-semibold text-content2-foreground">
-            {title}
+            {statusLabels[status]}
           </h2>
           <Button
             isIconOnly

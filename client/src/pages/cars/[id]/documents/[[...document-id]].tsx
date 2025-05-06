@@ -1,3 +1,4 @@
+import { Car, SubscriptionTier } from "@/gql/graphql";
 import {
   ChangeEvent,
   DragEvent,
@@ -22,10 +23,10 @@ import { Eye, ImageUp } from "lucide-react";
 import { formatBytes, uploadFile } from "@/utils/upload-file";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
-import { Car } from "@/gql/graphql";
 import CarLayout from "@/components/layout/car-layout";
 import Details from "@/components/documents/details";
 import FileIcon from "@/components/file-icon";
+import SubscriptionOverlay from "../../../../components/subscription-overlay";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
@@ -210,7 +211,16 @@ export default function Documents() {
   );
 
   return (
-    <CarLayout>
+    <CarLayout
+      className="relative"
+      style={{
+        minHeight: "calc(70vh - 4rem)",
+      }}
+    >
+      <SubscriptionOverlay
+        requiredTiers={[SubscriptionTier.Diy, SubscriptionTier.Enthusiast]}
+      />
+
       <div className="p-4 flex flex-col gap-8 max-w-screen-xl mx-auto">
         <h1 className="text-3xl">Documents</h1>
         <Table isHeaderSticky>

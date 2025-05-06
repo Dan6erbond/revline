@@ -169,9 +169,15 @@ export default function Gallery() {
   );
 
   return (
-    <CarLayout>
-      <div className="p-4 flex flex-col gap-4 max-w-screen-xl mx-auto relative min-h-[300px]">
-        <SubscriptionOverlay requiredTiers={[SubscriptionTier.Enthusiast]} />
+    <CarLayout
+      className="relative"
+      style={{
+        minHeight: "calc(70vh - 4rem)",
+      }}
+    >
+      <SubscriptionOverlay requiredTiers={[SubscriptionTier.Enthusiast]} />
+
+      <div className="flex flex-col gap-4 max-w-screen-xl mx-auto p-4">
         <h1 className="text-3xl">Gallery</h1>
         <Tabs
           variant="underlined"

@@ -39,33 +39,37 @@ export default function Performance() {
   const router = useRouter();
 
   return (
-    <CarLayout>
-      <div className="relative min-h-[300px]">
-        <SubscriptionOverlay requiredTiers={[SubscriptionTier.Enthusiast]} />
-        <Tabs
-          key={getQueryParam(router.query.id)}
-          items={tabs}
-          variant="underlined"
-          selectedKey={getQueryParam(router.query.tab) ?? tabs[0].id}
-          className="mt-2 max-w-full"
-        >
-          {({ id, icon, label, component: Component }) => (
-            <Tab
-              key={id}
-              title={
-                <div className="flex items-center space-x-2">
-                  {icon}
-                  <span>{label}</span>
-                </div>
-              }
-              href={`/cars/${router.query.id}/performance/${id}`}
-              isDisabled={Component == null}
-            >
-              <div className="p-4 md:p-8">{Component && <Component />}</div>
-            </Tab>
-          )}
-        </Tabs>
-      </div>
+    <CarLayout
+      className="relative"
+      style={{
+        minHeight: "calc(70vh - 4rem)",
+      }}
+    >
+      <SubscriptionOverlay requiredTiers={[SubscriptionTier.Enthusiast]} />
+
+      <Tabs
+        key={getQueryParam(router.query.id)}
+        items={tabs}
+        variant="underlined"
+        selectedKey={getQueryParam(router.query.tab) ?? tabs[0].id}
+        className="mt-2 max-w-full"
+      >
+        {({ id, icon, label, component: Component }) => (
+          <Tab
+            key={id}
+            title={
+              <div className="flex items-center space-x-2">
+                {icon}
+                <span>{label}</span>
+              </div>
+            }
+            href={`/cars/${router.query.id}/performance/${id}`}
+            isDisabled={Component == null}
+          >
+            <div className="p-4 md:p-8">{Component && <Component />}</div>
+          </Tab>
+        )}
+      </Tabs>
     </CarLayout>
   );
 }

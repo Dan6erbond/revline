@@ -11,8 +11,8 @@ import {
 } from "@heroui/react";
 import {
   ChangeEvent,
+  ComponentProps,
   DragEvent,
-  ReactNode,
   useCallback,
   useRef,
   useState,
@@ -62,13 +62,7 @@ const uploadBannerImage = graphql(`
   }
 `);
 
-export default function CarLayout({
-  children,
-  className,
-}: {
-  children?: ReactNode;
-  className?: string;
-}) {
+export default function CarLayout(props: ComponentProps<"main">) {
   const router = useRouter();
   const href = useHref();
 
@@ -318,7 +312,7 @@ export default function CarLayout({
           )}
         </ModalContent>
       </Modal>
-      <main className={className}>{children}</main>
+      <main {...props} />
     </>
   );
 }
