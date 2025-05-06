@@ -1,7 +1,7 @@
-import AlbumView from "../../../../../components/album";
+import AlbumView from "@/components/album";
 import CarLayout from "@/components/layout/car-layout";
 import { Suspense } from "react";
-import { getQueryParam } from "../../../../../utils/router";
+import { getQueryParam } from "@/utils/router";
 import { useRouter } from "next/router";
 
 export default function Album() {

@@ -39,6 +39,34 @@ export const TaskFields = graphql(`
     priority
     partsNeeded
     budget
+    parent {
+      id
+      status
+      title
+      description
+      rank
+      effort
+      estimate
+      difficulty
+      category
+      priority
+      partsNeeded
+      budget
+    }
+    subtasks {
+      id
+      status
+      title
+      description
+      rank
+      effort
+      estimate
+      difficulty
+      category
+      priority
+      partsNeeded
+      budget
+    }
   }
 `);
 
@@ -166,6 +194,24 @@ export const TaskCard = forwardRef<
           <div>
             <span className="font-medium">Budget:</span>{" "}
             {t.budget.toLocaleString()} {currencyCode}
+          </div>
+        )}
+
+        {t.parent && (
+          <div className="pt-2 border-t border-border mt-2 flex gap-2 items-center">
+            <p className="font-medium text-muted-foreground">Parent:</p>
+            <p>{t.parent.title}</p>
+          </div>
+        )}
+
+        {t.subtasks && t.subtasks.length > 0 && (
+          <div className="pt-2 border-t border-border mt-2 flex flex-col gap-1">
+            <p className="font-medium text-muted-foreground">Subtasks:</p>
+            <ul className="list-disc list-inside">
+              {t.subtasks.map((subtask) => (
+                <li key={subtask.id}>{subtask.title}</li>
+              ))}
+            </ul>
           </div>
         )}
       </CardBody>

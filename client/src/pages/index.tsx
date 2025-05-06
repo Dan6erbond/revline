@@ -89,7 +89,7 @@ export default function Home() {
               key={car.id}
               isPressable
               as={Link}
-              href={`/cars/${car.id}/maintenance`}
+              href={`/cars/${car.id}`}
               className="overflow-hidden bg-primary-50/5 backdrop-blur hover:shadow-lg transition-shadow rounded-xl group"
             >
               <CardHeader className="relative h-[200px] w-full p-0 overflow-hidden">

@@ -62,7 +62,13 @@ const uploadBannerImage = graphql(`
   }
 `);
 
-export default function CarLayout({ children }: { children?: ReactNode }) {
+export default function CarLayout({
+  children,
+  className,
+}: {
+  children?: ReactNode;
+  className?: string;
+}) {
   const router = useRouter();
   const href = useHref();
 
@@ -312,7 +318,7 @@ export default function CarLayout({ children }: { children?: ReactNode }) {
           )}
         </ModalContent>
       </Modal>
-      <main>{children}</main>
+      <main className={className}>{children}</main>
     </>
   );
 }

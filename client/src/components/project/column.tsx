@@ -11,8 +11,8 @@ import { getQueryParam } from "@/utils/router";
 import { useDroppable } from "@dnd-kit/core";
 import { useRouter } from "next/router";
 
-export const getTasks = graphql(`
-  query GetTasks($id: ID!, $where: TaskWhereInput) {
+export const getTasksByRank = graphql(`
+  query GetTasksByRank($id: ID!, $where: TaskWhereInput) {
     car(id: $id) {
       id
       tasks(orderBy: [{ field: RANK }], where: $where) {
@@ -50,10 +50,12 @@ export default function Column({
   title,
   status,
   activeTask,
+  showSubtasks,
 }: {
   title: string;
   status: TaskStatus;
   activeTask: (FragmentType<typeof TaskFields> & { id: string }) | null;
+  showSubtasks: boolean;
 }) {
   const router = useRouter();
 
@@ -61,10 +63,10 @@ export default function Column({
 
   const [isAdding, setIsAdding] = useState(false);
 
-  const { data } = useQuery(getTasks, {
+  const { data } = useQuery(getTasksByRank, {
     variables: {
       id: getQueryParam(router.query.id) as string,
-      where: { status },
+      where: { status, hasParent: showSubtasks ? undefined : false },
     },
     skip: !getQueryParam(router.query.id),
   });
@@ -72,7 +74,7 @@ export default function Column({
   const [mutate, { loading }] = useMutation(createTask, {
     refetchQueries: [
       {
-        query: getTasks,
+        query: getTasksByRank,
         variables: {
           id: getQueryParam(router.query.id) as string,
           where: { status },
@@ -83,7 +85,7 @@ export default function Column({
       if (!data?.car.tasks.edges || !res.data?.createTask) return;
 
       cache.writeQuery({
-        query: getTasks,
+        query: getTasksByRank,
         variables: {
           id: getQueryParam(router.query.id) as string,
           where: { status },

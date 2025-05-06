@@ -1,13 +1,16 @@
 import {
   Button,
+  Chip,
   DrawerBody,
   DrawerContent,
   DrawerFooter,
   DrawerHeader,
   Input,
+  Select,
+  SelectItem,
   Textarea,
 } from "@heroui/react";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import {
   TaskCategory,
   TaskDifficulty,
@@ -30,10 +33,15 @@ import {
   priorityLabels,
 } from "./shared";
 import { graphql, useFragment } from "@/gql";
-import { useMutation, useSuspenseQuery } from "@apollo/client";
+import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
 
 import { EnumSelect } from "../enum-select";
+import Link from "next/link";
 import { TaskFields } from "./task";
+import { X } from "lucide-react";
+import { getQueryParam } from "@/utils/router";
+import { getTasksByRank } from "./column";
+import { useRouter } from "next/router";
 import { withNotification } from "@/utils/with-notification";
 
 const getTask = graphql(`
@@ -62,12 +70,48 @@ type Inputs = {
   difficulty: TaskDifficulty | null;
   category: TaskCategory | null;
   priority: TaskPriority | null;
+  parentId?: string | null;
+  subTaskIds?: Set<string> | null;
 };
 
-const updateTask = graphql(`
-  mutation UpdateTask($id: ID!, $input: UpdateTaskInput!) {
+const updateTaskDetails = graphql(`
+  mutation UpdateTaskDetails($id: ID!, $input: UpdateTaskInput!) {
     updateTask(id: $id, input: $input) {
       ...TaskFields
+    }
+  }
+`);
+
+export const getTasks = graphql(`
+  query GetTasks($id: ID!, $where: TaskWhereInput) {
+    car(id: $id) {
+      id
+      tasks(where: $where) {
+        edges {
+          node {
+            id
+            title
+            category
+            budget
+            estimate
+            parent {
+              id
+              title
+              category
+              budget
+              estimate
+            }
+          }
+          cursor
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+        totalCount
+      }
     }
   }
 `);
@@ -79,19 +123,40 @@ export default function TaskDrawerContent({
   id: string;
   onClose(): void;
 }) {
+  const router = useRouter();
+
   const { data } = useSuspenseQuery(getTask, {
     variables: { id },
   });
 
+  const { data: tasksData } = useQuery(getTasks, {
+    variables: {
+      id: getQueryParam(router.query.id) as string,
+      where: {
+        or: [{ hasParent: false }, { hasParentWith: [{ id }] }],
+        idNEQ: id,
+      },
+    },
+    skip: !getQueryParam(router.query.id),
+  });
+
   const task = useFragment(TaskFields, data.task);
 
-  const [mutate] = useMutation(updateTask);
+  const [mutate] = useMutation(updateTaskDetails, {
+    refetchQueries: [getTasks, getTasksByRank],
+  });
 
   const currencyCode = data.me.profile?.currencyCode ?? "USD";
 
-  const { register, handleSubmit } = useForm<Inputs>({
-    defaultValues: { ...task },
+  const { register, handleSubmit, watch, control, setValue } = useForm<Inputs>({
+    defaultValues: {
+      ...task,
+      parentId: task.parent?.id,
+      subTaskIds: task.subtasks?.map((st) => st.id) ?? [],
+    },
   });
+
+  const [parentId, subTaskIds] = watch(["parentId", "subTaskIds"]);
 
   const onSubmit: SubmitHandler<Inputs> = withNotification(
     {},
@@ -106,6 +171,8 @@ export default function TaskDrawerContent({
       effort,
       difficulty,
       partsNeeded,
+      parentId,
+      subTaskIds,
     }: Inputs) => {
       mutate({
         variables: {
@@ -121,6 +188,14 @@ export default function TaskDrawerContent({
             effort,
             difficulty,
             partsNeeded,
+            parentID: parentId ? parentId : null,
+            clearParent: parentId === null,
+            addSubtaskIDs: [...(subTaskIds ?? [])].filter(
+              (id) => task.subtasks?.findIndex((st) => st.id === id) === -1
+            ),
+            removeSubtaskIDs: task.subtasks
+              ?.filter((st) => ![...(subTaskIds ?? [])].includes(st.id))
+              .map((st) => st.id),
           },
         },
       }).then(onClose);
@@ -139,9 +214,93 @@ export default function TaskDrawerContent({
             </span>
           </DrawerHeader>
 
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <DrawerBody className="flex flex-col gap-6">
+          <DrawerBody>
+            <form
+              id="task"
+              className="flex-1 flex flex-col gap-6"
+              onSubmit={handleSubmit(onSubmit)}
+            >
               <Input label="Title" isRequired {...register("title")} />
+
+              <div className="flex gap-2 items-end">
+                <Select
+                  label="Parent"
+                  labelPlacement="outside"
+                  classNames={{ innerWrapper: "py-4" }}
+                  items={
+                    tasksData?.car.tasks.edges
+                      ?.filter(
+                        (e) =>
+                          e?.node &&
+                          ![...(subTaskIds ?? [])].includes(e.node.id) &&
+                          e.node.parent?.id !== id
+                      )
+                      .map((e) => e!.node!) ?? []
+                  }
+                  renderValue={(items) => (
+                    <div className="flex flex-wrap gap-2">
+                      {items.map((item) => {
+                        const Icon =
+                          item.data?.category &&
+                          categoryIcons[item.data.category];
+                        return (
+                          <Chip
+                            key={item.key}
+                            startContent={
+                              Icon ? (
+                                <Icon className="w-3.5 h-3.5" />
+                              ) : undefined
+                            }
+                          >
+                            {item.data?.title}
+                          </Chip>
+                        );
+                      })}
+                    </div>
+                  )}
+                  selectedKeys={parentId ? [parentId] : []}
+                  {...register("parentId")}
+                >
+                  {({ id, title, category, estimate, budget }) => (
+                    <SelectItem key={id} textValue={title}>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm font-medium">{title}</span>
+                        <div className="text-xs text-default-500 flex flex-wrap gap-3">
+                          {category && <span>Category: {category}</span>}
+                          {estimate && <span>Est.: {estimate}</span>}
+                          {budget && (
+                            <span>
+                              Budget: {budget.toLocaleString()} {currencyCode}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </SelectItem>
+                  )}
+                </Select>
+
+                {parentId && (
+                  <Button
+                    isIconOnly
+                    variant="light"
+                    onPress={() => setValue("parentId", null)}
+                  >
+                    <X size={16} />
+                  </Button>
+                )}
+              </div>
+
+              {parentId && task.parent && (
+                <Button
+                  as={Link}
+                  href={`/cars/${router.query.id}/project/${task.parent.id}`}
+                  shallow
+                  variant="light"
+                  className="self-start"
+                >
+                  {task.parent.title}
+                </Button>
+              )}
 
               <Textarea
                 label="Description"
@@ -210,17 +369,103 @@ export default function TaskDrawerContent({
                 minRows={2}
                 {...register("partsNeeded")}
               />
-            </DrawerBody>
 
-            <DrawerFooter className="flex justify-between">
-              <Button color="danger" variant="light" onPress={onClose}>
-                Cancel
-              </Button>
-              <Button color="primary" type="submit">
-                Save Task
-              </Button>
-            </DrawerFooter>
-          </form>
+              <Controller
+                control={control}
+                name="subTaskIds"
+                render={({ field: { onChange, value, ...field } }) => (
+                  <Select
+                    label="Subtasks"
+                    labelPlacement="outside"
+                    classNames={{
+                      innerWrapper: "py-4",
+                      trigger: "h-auto",
+                    }}
+                    selectionMode="multiple"
+                    items={
+                      tasksData?.car.tasks.edges
+                        ?.filter(
+                          (e) =>
+                            e?.node &&
+                            e.node.id !== parentId &&
+                            (e.node.parent?.id === task.id ||
+                              e.node.parent == null)
+                        )
+                        .map((e) => e!.node!) ?? []
+                    }
+                    renderValue={(items) => (
+                      <div className="flex flex-wrap gap-2">
+                        {items.map((item) => {
+                          const Icon =
+                            item.data?.category &&
+                            categoryIcons[item.data.category];
+                          return (
+                            <Chip
+                              key={item.key}
+                              startContent={
+                                Icon ? (
+                                  <Icon className="w-3.5 h-3.5" />
+                                ) : undefined
+                              }
+                            >
+                              {item.data?.title}
+                            </Chip>
+                          );
+                        })}
+                      </div>
+                    )}
+                    isMultiline
+                    selectedKeys={value ?? undefined}
+                    onSelectionChange={onChange}
+                    {...field}
+                  >
+                    {({ id, title, category, estimate, budget }) => (
+                      <SelectItem key={id} textValue={title}>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-medium">{title}</span>
+                          <div className="text-xs text-default-500 flex flex-wrap gap-3">
+                            {category && <span>Category: {category}</span>}
+                            {estimate && <span>Est.: {estimate}</span>}
+                            {budget && (
+                              <span>
+                                Budget: {budget.toLocaleString()} {currencyCode}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </SelectItem>
+                    )}
+                  </Select>
+                )}
+              />
+
+              {task.subtasks && task.subtasks?.length > 0 && (
+                <ul className="ml-4 list-disc">
+                  {task.subtasks.map((st) => (
+                    <li key={st.id}>
+                      <Button
+                        as={Link}
+                        href={`/cars/${router.query.id}/project/${st.id}`}
+                        shallow
+                        variant="light"
+                      >
+                        {st.title}
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </form>
+          </DrawerBody>
+
+          <DrawerFooter className="flex justify-between">
+            <Button color="danger" variant="light" onPress={onClose}>
+              Cancel
+            </Button>
+            <Button color="primary" type="submit" form="task">
+              Save Task
+            </Button>
+          </DrawerFooter>
         </>
       )}
     </DrawerContent>

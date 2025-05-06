@@ -1,4 +1,4 @@
-import Column, { getTasks } from "./column";
+import Column, { getTasksByRank } from "./column";
 import {
   DndContext,
   DragEndEvent,
@@ -25,7 +25,7 @@ const updateTask = graphql(`
   }
 `);
 
-export default function Kanban() {
+export default function Kanban({ showSubtasks }: { showSubtasks: boolean }) {
   const router = useRouter();
 
   const client = useApolloClient();
@@ -44,7 +44,7 @@ export default function Kanban() {
   >(null);
 
   const [mutate] = useMutation(updateTask, {
-    refetchQueries: [getTasks],
+    refetchQueries: [getTasksByRank],
   });
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -54,7 +54,7 @@ export default function Kanban() {
 
     if (over.data.current?.task) {
       const data = client.readQuery({
-        query: getTasks,
+        query: getTasksByRank,
         variables: {
           id: getQueryParam(router.query.id) as string,
           where: { status: over.data.current.task.status },
@@ -93,7 +93,7 @@ export default function Kanban() {
           if (!data?.car.tasks.edges || !res.data?.updateTask) return;
 
           proxy.writeQuery({
-            query: getTasks,
+            query: getTasksByRank,
             variables: {
               id: getQueryParam(router.query.id) as string,
               where: { status: over.data.current?.task.status },
@@ -121,7 +121,7 @@ export default function Kanban() {
       });
     } else if (over.id !== active.data.current?.task.status) {
       const data = client.readQuery({
-        query: getTasks,
+        query: getTasksByRank,
         variables: {
           id: getQueryParam(router.query.id) as string,
           where: { status: over.id as TaskStatus },
@@ -159,7 +159,7 @@ export default function Kanban() {
           if (!data?.car.tasks.edges || !res.data?.updateTask) return;
 
           proxy.writeQuery({
-            query: getTasks,
+            query: getTasksByRank,
             variables: {
               id: getQueryParam(router.query.id) as string,
               where: { status: over.data.current?.task.status },
@@ -201,7 +201,7 @@ export default function Kanban() {
     >
       <div className="w-full overflow-x-auto">
         <div
-          className="inline-flex gap-4 md:gap-8 p-4 md:p-8 min-w-full justify-center"
+          className="inline-flex gap-4 md:gap-8 min-w-full justify-center"
           style={{ minHeight: "calc(70vh - 5rem" }}
         >
           {Object.entries(TaskStatus).map(([title, status]) => (
@@ -210,6 +210,7 @@ export default function Kanban() {
               status={status}
               key={status}
               activeTask={activeTask}
+              showSubtasks={showSubtasks}
             />
           ))}
         </div>
