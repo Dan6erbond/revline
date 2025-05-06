@@ -11,6 +11,7 @@ import {
 import { FragmentType, graphql } from "@/gql";
 import {
   GetTasksByRankQuery,
+  GetTasksByRankQueryVariables,
   TaskFieldsFragment,
   TaskStatus,
   UpdateTaskMutation,
@@ -18,6 +19,7 @@ import {
 import { TaskCard, TaskFields } from "./task";
 import { Unmasked, useApolloClient, useMutation } from "@apollo/client";
 
+import { DataProxy } from "@apollo/client/cache";
 import { getQueryParam } from "@/utils/router";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -65,17 +67,23 @@ export default function Kanban({ showSubtasks }: { showSubtasks: boolean }) {
       edges: Required<GetTasksByRankQuery["car"]["tasks"]["edges"]>
     ) => GetTasksByRankQuery["car"]["tasks"]["edges"];
 
+    let queryOptions: DataProxy.Query<
+      GetTasksByRankQueryVariables,
+      GetTasksByRankQuery
+    >;
+
     if (over.data.current?.task) {
       nextRank = over.data.current.task.rank;
       status = over.data.current.task.status;
 
-      data = client.readQuery({
+      queryOptions = {
         query: getTasksByRank,
         variables: {
           id: getQueryParam(router.query.id) as string,
           where: { status, hasParent: showSubtasks ? undefined : false },
         },
-      });
+      };
+      data = client.readQuery(queryOptions);
 
       const overTaskIdx =
         data?.car.tasks.edges?.findIndex((e) => e?.node?.id === over.id) ?? -1;
@@ -99,13 +107,14 @@ export default function Kanban({ showSubtasks }: { showSubtasks: boolean }) {
     } else if (over.id !== active.data.current?.task.status) {
       status = over.id as TaskStatus;
 
-      data = client.readQuery({
+      queryOptions = {
         query: getTasksByRank,
         variables: {
           id: getQueryParam(router.query.id) as string,
           where: { status, hasParent: showSubtasks ? undefined : false },
         },
-      });
+      };
+      data = client.readQuery(queryOptions);
 
       if (data?.car.tasks.edges && data.car.tasks.edges.length > 0) {
         prevRank =
@@ -152,11 +161,7 @@ export default function Kanban({ showSubtasks }: { showSubtasks: boolean }) {
         if (!data?.car.tasks.edges || !res.data?.updateTask) return;
 
         proxy.writeQuery({
-          query: getTasksByRank,
-          variables: {
-            id: getQueryParam(router.query.id) as string,
-            where: { status, hasParent: showSubtasks ? undefined : false },
-          },
+          ...queryOptions,
           data: {
             car: {
               ...data.car,
