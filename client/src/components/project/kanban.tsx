@@ -155,7 +155,7 @@ export default function Kanban({ showSubtasks }: { showSubtasks: boolean }) {
           query: getTasksByRank,
           variables: {
             id: getQueryParam(router.query.id) as string,
-            where: { status: over.data.current?.task.status },
+            where: { status, hasParent: showSubtasks ? undefined : false },
           },
           data: {
             car: {
