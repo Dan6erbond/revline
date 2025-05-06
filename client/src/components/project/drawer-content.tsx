@@ -10,6 +10,7 @@ import {
   SelectItem,
   Textarea,
 } from "@heroui/react";
+import { ChevronRight, X } from "lucide-react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import {
   TaskCategory,
@@ -36,9 +37,9 @@ import { graphql, useFragment } from "@/gql";
 import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
 
 import { EnumSelect } from "../enum-select";
+import { Key } from "react";
 import Link from "next/link";
 import { TaskFields } from "./task";
-import { X } from "lucide-react";
 import { getQueryParam } from "@/utils/router";
 import { getTasksByRank } from "./column";
 import { useRouter } from "next/router";
@@ -71,7 +72,7 @@ type Inputs = {
   category: TaskCategory | null;
   priority: TaskPriority | null;
   parentId?: string | null;
-  subTaskIds?: Set<string> | null;
+  subTaskIds?: string[] | null;
 };
 
 const updateTaskDetails = graphql(`
@@ -190,11 +191,11 @@ export default function TaskDrawerContent({
             partsNeeded,
             parentID: parentId ? parentId : null,
             clearParent: parentId === null,
-            addSubtaskIDs: [...(subTaskIds ?? [])].filter(
+            addSubtaskIDs: subTaskIds?.filter(
               (id) => task.subtasks?.findIndex((st) => st.id === id) === -1
             ),
             removeSubtaskIDs: task.subtasks
-              ?.filter((st) => ![...(subTaskIds ?? [])].includes(st.id))
+              ?.filter((st) => !subTaskIds?.includes(st.id))
               .map((st) => st.id),
           },
         },
@@ -230,10 +231,7 @@ export default function TaskDrawerContent({
                   items={
                     tasksData?.car.tasks.edges
                       ?.filter(
-                        (e) =>
-                          e?.node &&
-                          ![...(subTaskIds ?? [])].includes(e.node.id) &&
-                          e.node.parent?.id !== id
+                        (e) => e?.node && !subTaskIds?.includes(e.node.id)
                       )
                       .map((e) => e!.node!) ?? []
                   }
@@ -280,27 +278,27 @@ export default function TaskDrawerContent({
                 </Select>
 
                 {parentId && (
-                  <Button
-                    isIconOnly
-                    variant="light"
-                    onPress={() => setValue("parentId", null)}
-                  >
-                    <X size={16} />
-                  </Button>
+                  <>
+                    <Button
+                      isIconOnly
+                      as={Link}
+                      href={`/cars/${router.query.id}/project/${parentId}`}
+                      shallow
+                      variant="light"
+                    >
+                      <ChevronRight size={16} />
+                    </Button>
+
+                    <Button
+                      isIconOnly
+                      variant="light"
+                      onPress={() => setValue("parentId", null)}
+                    >
+                      <X size={16} />
+                    </Button>
+                  </>
                 )}
               </div>
-
-              {parentId && task.parent && (
-                <Button
-                  as={Link}
-                  href={`/cars/${router.query.id}/project/${task.parent.id}`}
-                  shallow
-                  variant="light"
-                  className="self-start"
-                >
-                  {task.parent.title}
-                </Button>
-              )}
 
               <Textarea
                 label="Description"
@@ -373,88 +371,113 @@ export default function TaskDrawerContent({
               <Controller
                 control={control}
                 name="subTaskIds"
-                render={({ field: { onChange, value, ...field } }) => (
-                  <Select
-                    label="Subtasks"
-                    labelPlacement="outside"
-                    classNames={{
-                      innerWrapper: "py-4",
-                      trigger: "h-auto",
-                    }}
-                    selectionMode="multiple"
-                    items={
-                      tasksData?.car.tasks.edges
-                        ?.filter(
-                          (e) =>
-                            e?.node &&
-                            e.node.id !== parentId &&
-                            (e.node.parent?.id === task.id ||
-                              e.node.parent == null)
-                        )
-                        .map((e) => e!.node!) ?? []
-                    }
-                    renderValue={(items) => (
-                      <div className="flex flex-wrap gap-2">
-                        {items.map((item) => {
-                          const Icon =
-                            item.data?.category &&
-                            categoryIcons[item.data.category];
-                          return (
-                            <Chip
-                              key={item.key}
-                              startContent={
-                                Icon ? (
-                                  <Icon className="w-3.5 h-3.5" />
-                                ) : undefined
-                              }
-                            >
-                              {item.data?.title}
-                            </Chip>
-                          );
-                        })}
-                      </div>
-                    )}
-                    isMultiline
-                    selectedKeys={value ?? undefined}
-                    onSelectionChange={onChange}
-                    {...field}
-                  >
-                    {({ id, title, category, estimate, budget }) => (
-                      <SelectItem key={id} textValue={title}>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-sm font-medium">{title}</span>
-                          <div className="text-xs text-default-500 flex flex-wrap gap-3">
-                            {category && <span>Category: {category}</span>}
-                            {estimate && <span>Est.: {estimate}</span>}
-                            {budget && (
-                              <span>
-                                Budget: {budget.toLocaleString()} {currencyCode}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </SelectItem>
-                    )}
-                  </Select>
-                )}
-              />
+                render={({ field: { value, onChange } }) => {
+                  const availableTasks =
+                    tasksData?.car.tasks.edges
+                      ?.filter(
+                        (e) =>
+                          e?.node &&
+                          e.node.id !== parentId &&
+                          (e.node.parent?.id === task.id ||
+                            e.node.parent == null) &&
+                          !value?.includes(e.node.id) // prevent re-selecting
+                      )
+                      .map((e) => e!.node!) ?? [];
 
-              {task.subtasks && task.subtasks?.length > 0 && (
-                <ul className="ml-4 list-disc">
-                  {task.subtasks.map((st) => (
-                    <li key={st.id}>
-                      <Button
-                        as={Link}
-                        href={`/cars/${router.query.id}/project/${st.id}`}
-                        shallow
-                        variant="light"
+                  const handleSelect = (key: Key) => {
+                    if (!value?.includes(key.toString())) {
+                      onChange([...(value ?? []), key]);
+                    }
+                  };
+
+                  const handleRemove = (idToRemove: string) => {
+                    onChange(value?.filter((id) => id !== idToRemove));
+                  };
+
+                  return (
+                    <div className="flex flex-col gap-4">
+                      <p>Subtasks</p>
+
+                      {value && value.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {value.map((subtaskId) => {
+                            const st = tasksData?.car.tasks.edges?.find(
+                              (e) => e?.node?.id === subtaskId
+                            )?.node;
+                            if (!st) return null;
+
+                            const Icon =
+                              st.category && categoryIcons[st.category];
+
+                            return (
+                              <Chip
+                                key={st.id}
+                                startContent={
+                                  Icon ? (
+                                    <Icon className="w-3.5 h-3.5" />
+                                  ) : undefined
+                                }
+                                endContent={
+                                  <Button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      e.preventDefault();
+                                      handleRemove(st.id);
+                                    }}
+                                    isIconOnly
+                                    color="danger"
+                                    variant="light"
+                                    size="sm"
+                                    radius="full"
+                                    className="h-6"
+                                  >
+                                    <X size={12} />
+                                  </Button>
+                                }
+                                as={Link}
+                                href={`/cars/${router.query.id}/project/${st.id}`}
+                              >
+                                {st.title}
+                              </Chip>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      <Select
+                        placeholder="Add"
+                        classNames={{ innerWrapper: "py-4" }}
+                        items={availableTasks}
+                        selectedKeys={new Set()}
+                        onSelectionChange={(keys) => {
+                          const key = Array.from(keys)[0];
+                          if (key) handleSelect(key);
+                        }}
                       >
-                        {st.title}
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                        {({ id, title, category, estimate, budget }) => (
+                          <SelectItem key={id} textValue={title}>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-sm font-medium">
+                                {title}
+                              </span>
+                              <div className="text-xs text-default-500 flex flex-wrap gap-3">
+                                {category && <span>Category: {category}</span>}
+                                {estimate && <span>Est.: {estimate}</span>}
+                                {budget && (
+                                  <span>
+                                    Budget: {budget.toLocaleString()}{" "}
+                                    {currencyCode}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </SelectItem>
+                        )}
+                      </Select>
+                    </div>
+                  );
+                }}
+              />
             </form>
           </DrawerBody>
 
