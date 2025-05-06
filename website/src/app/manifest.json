@@ -1,6 +1,6 @@
 {
   "name": "Revline 1",
-  "short_name": "Revline",
+  "short_name": "Revline 1",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +15,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#022f2e",
+  "background_color": "#022f2e",
   "display": "standalone"
 }
