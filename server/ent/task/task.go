@@ -46,6 +46,10 @@ const (
 	FieldPartsNeeded = "parts_needed"
 	// EdgeCar holds the string denoting the car edge name in mutations.
 	EdgeCar = "car"
+	// EdgeParent holds the string denoting the parent edge name in mutations.
+	EdgeParent = "parent"
+	// EdgeSubtasks holds the string denoting the subtasks edge name in mutations.
+	EdgeSubtasks = "subtasks"
 	// Table holds the table name of the task in the database.
 	Table = "tasks"
 	// CarTable is the table that holds the car relation/edge.
@@ -55,6 +59,14 @@ const (
 	CarInverseTable = "cars"
 	// CarColumn is the table column denoting the car relation/edge.
 	CarColumn = "car_tasks"
+	// ParentTable is the table that holds the parent relation/edge.
+	ParentTable = "tasks"
+	// ParentColumn is the table column denoting the parent relation/edge.
+	ParentColumn = "task_subtasks"
+	// SubtasksTable is the table that holds the subtasks relation/edge.
+	SubtasksTable = "tasks"
+	// SubtasksColumn is the table column denoting the subtasks relation/edge.
+	SubtasksColumn = "task_subtasks"
 )
 
 // Columns holds all SQL columns for task fields.
@@ -79,6 +91,7 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"car_tasks",
+	"task_subtasks",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -326,11 +339,46 @@ func ByCarField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newCarStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByParentField orders the results by parent field.
+func ByParentField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newParentStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// BySubtasksCount orders the results by subtasks count.
+func BySubtasksCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSubtasksStep(), opts...)
+	}
+}
+
+// BySubtasks orders the results by subtasks terms.
+func BySubtasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSubtasksStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newCarStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CarInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, CarTable, CarColumn),
+	)
+}
+func newParentStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ParentTable, ParentColumn),
+	)
+}
+func newSubtasksStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SubtasksTable, SubtasksColumn),
 	)
 }
 

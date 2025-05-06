@@ -213,6 +213,40 @@ func (tc *TaskCreate) SetCar(c *Car) *TaskCreate {
 	return tc.SetCarID(c.ID)
 }
 
+// SetParentID sets the "parent" edge to the Task entity by ID.
+func (tc *TaskCreate) SetParentID(id uuid.UUID) *TaskCreate {
+	tc.mutation.SetParentID(id)
+	return tc
+}
+
+// SetNillableParentID sets the "parent" edge to the Task entity by ID if the given value is not nil.
+func (tc *TaskCreate) SetNillableParentID(id *uuid.UUID) *TaskCreate {
+	if id != nil {
+		tc = tc.SetParentID(*id)
+	}
+	return tc
+}
+
+// SetParent sets the "parent" edge to the Task entity.
+func (tc *TaskCreate) SetParent(t *Task) *TaskCreate {
+	return tc.SetParentID(t.ID)
+}
+
+// AddSubtaskIDs adds the "subtasks" edge to the Task entity by IDs.
+func (tc *TaskCreate) AddSubtaskIDs(ids ...uuid.UUID) *TaskCreate {
+	tc.mutation.AddSubtaskIDs(ids...)
+	return tc
+}
+
+// AddSubtasks adds the "subtasks" edges to the Task entity.
+func (tc *TaskCreate) AddSubtasks(t ...*Task) *TaskCreate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tc.AddSubtaskIDs(ids...)
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (tc *TaskCreate) Mutation() *TaskMutation {
 	return tc.mutation
@@ -418,6 +452,39 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.car_tasks = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tc.mutation.ParentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.ParentTable,
+			Columns: []string{task.ParentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.task_subtasks = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tc.mutation.SubtasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.SubtasksTable,
+			Columns: []string{task.SubtasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

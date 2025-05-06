@@ -47,20 +47,27 @@ type Task struct {
 	PartsNeeded *string `json:"parts_needed,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TaskQuery when eager-loading is set.
-	Edges        TaskEdges `json:"edges"`
-	car_tasks    *uuid.UUID
-	selectValues sql.SelectValues
+	Edges         TaskEdges `json:"edges"`
+	car_tasks     *uuid.UUID
+	task_subtasks *uuid.UUID
+	selectValues  sql.SelectValues
 }
 
 // TaskEdges holds the relations/edges for other nodes in the graph.
 type TaskEdges struct {
 	// Car holds the value of the car edge.
 	Car *Car `json:"car,omitempty"`
+	// Parent holds the value of the parent edge.
+	Parent *Task `json:"parent,omitempty"`
+	// Subtasks holds the value of the subtasks edge.
+	Subtasks []*Task `json:"subtasks,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
+	totalCount [3]map[string]int
+
+	namedSubtasks map[string][]*Task
 }
 
 // CarOrErr returns the Car value or an error if the edge
@@ -72,6 +79,26 @@ func (e TaskEdges) CarOrErr() (*Car, error) {
 		return nil, &NotFoundError{label: car.Label}
 	}
 	return nil, &NotLoadedError{edge: "car"}
+}
+
+// ParentOrErr returns the Parent value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TaskEdges) ParentOrErr() (*Task, error) {
+	if e.Parent != nil {
+		return e.Parent, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: task.Label}
+	}
+	return nil, &NotLoadedError{edge: "parent"}
+}
+
+// SubtasksOrErr returns the Subtasks value or an error if the edge
+// was not loaded in eager-loading.
+func (e TaskEdges) SubtasksOrErr() ([]*Task, error) {
+	if e.loadedTypes[2] {
+		return e.Subtasks, nil
+	}
+	return nil, &NotLoadedError{edge: "subtasks"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -88,6 +115,8 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 		case task.FieldID:
 			values[i] = new(uuid.UUID)
 		case task.ForeignKeys[0]: // car_tasks
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case task.ForeignKeys[1]: // task_subtasks
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -203,6 +232,13 @@ func (t *Task) assignValues(columns []string, values []any) error {
 				t.car_tasks = new(uuid.UUID)
 				*t.car_tasks = *value.S.(*uuid.UUID)
 			}
+		case task.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field task_subtasks", values[i])
+			} else if value.Valid {
+				t.task_subtasks = new(uuid.UUID)
+				*t.task_subtasks = *value.S.(*uuid.UUID)
+			}
 		default:
 			t.selectValues.Set(columns[i], values[i])
 		}
@@ -219,6 +255,16 @@ func (t *Task) Value(name string) (ent.Value, error) {
 // QueryCar queries the "car" edge of the Task entity.
 func (t *Task) QueryCar() *CarQuery {
 	return NewTaskClient(t.config).QueryCar(t)
+}
+
+// QueryParent queries the "parent" edge of the Task entity.
+func (t *Task) QueryParent() *TaskQuery {
+	return NewTaskClient(t.config).QueryParent(t)
+}
+
+// QuerySubtasks queries the "subtasks" edge of the Task entity.
+func (t *Task) QuerySubtasks() *TaskQuery {
+	return NewTaskClient(t.config).QuerySubtasks(t)
 }
 
 // Update returns a builder for updating this Task.
@@ -300,6 +346,30 @@ func (t *Task) String() string {
 	}
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedSubtasks returns the Subtasks named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (t *Task) NamedSubtasks(name string) ([]*Task, error) {
+	if t.Edges.namedSubtasks == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := t.Edges.namedSubtasks[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (t *Task) appendNamedSubtasks(name string, edges ...*Task) {
+	if t.Edges.namedSubtasks == nil {
+		t.Edges.namedSubtasks = make(map[string][]*Task)
+	}
+	if len(edges) == 0 {
+		t.Edges.namedSubtasks[name] = []*Task{}
+	} else {
+		t.Edges.namedSubtasks[name] = append(t.Edges.namedSubtasks[name], edges...)
+	}
 }
 
 // Tasks is a parsable slice of Task.

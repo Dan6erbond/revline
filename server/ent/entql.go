@@ -1017,6 +1017,30 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Car",
 	)
 	graph.MustAddE(
+		"parent",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   task.ParentTable,
+			Columns: []string{task.ParentColumn},
+			Bidi:    false,
+		},
+		"Task",
+		"Task",
+	)
+	graph.MustAddE(
+		"subtasks",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   task.SubtasksTable,
+			Columns: []string{task.SubtasksColumn},
+			Bidi:    false,
+		},
+		"Task",
+		"Task",
+	)
+	graph.MustAddE(
 		"cars",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -3101,6 +3125,34 @@ func (f *TaskFilter) WhereHasCar() {
 // WhereHasCarWith applies a predicate to check if query has an edge car with a given conditions (other predicates).
 func (f *TaskFilter) WhereHasCarWith(preds ...predicate.Car) {
 	f.Where(entql.HasEdgeWith("car", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasParent applies a predicate to check if query has an edge parent.
+func (f *TaskFilter) WhereHasParent() {
+	f.Where(entql.HasEdge("parent"))
+}
+
+// WhereHasParentWith applies a predicate to check if query has an edge parent with a given conditions (other predicates).
+func (f *TaskFilter) WhereHasParentWith(preds ...predicate.Task) {
+	f.Where(entql.HasEdgeWith("parent", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasSubtasks applies a predicate to check if query has an edge subtasks.
+func (f *TaskFilter) WhereHasSubtasks() {
+	f.Where(entql.HasEdge("subtasks"))
+}
+
+// WhereHasSubtasksWith applies a predicate to check if query has an edge subtasks with a given conditions (other predicates).
+func (f *TaskFilter) WhereHasSubtasksWith(preds ...predicate.Task) {
+	f.Where(entql.HasEdgeWith("subtasks", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

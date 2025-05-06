@@ -504,6 +504,7 @@ var (
 		{Name: "budget", Type: field.TypeFloat64, Nullable: true},
 		{Name: "parts_needed", Type: field.TypeString, Nullable: true},
 		{Name: "car_tasks", Type: field.TypeUUID},
+		{Name: "task_subtasks", Type: field.TypeUUID, Nullable: true},
 	}
 	// TasksTable holds the schema information for the "tasks" table.
 	TasksTable = &schema.Table{
@@ -516,6 +517,12 @@ var (
 				Columns:    []*schema.Column{TasksColumns[14]},
 				RefColumns: []*schema.Column{CarsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "tasks_tasks_subtasks",
+				Columns:    []*schema.Column{TasksColumns[15]},
+				RefColumns: []*schema.Column{TasksColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -661,6 +668,7 @@ func init() {
 	SubscriptionsTable.ForeignKeys[0].RefTable = CheckoutSessionsTable
 	SubscriptionsTable.ForeignKeys[1].RefTable = UsersTable
 	TasksTable.ForeignKeys[0].RefTable = CarsTable
+	TasksTable.ForeignKeys[1].RefTable = TasksTable
 	AlbumMediaTable.ForeignKeys[0].RefTable = AlbumsTable
 	AlbumMediaTable.ForeignKeys[1].RefTable = MediaTable
 	ServiceLogItemsTable.ForeignKeys[0].RefTable = ServiceLogsTable

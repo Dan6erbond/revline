@@ -15549,31 +15549,36 @@ func (m *SubscriptionMutation) ResetEdge(name string) error {
 // TaskMutation represents an operation that mutates the Task nodes in the graph.
 type TaskMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	create_time   *time.Time
-	update_time   *time.Time
-	status        *task.Status
-	title         *string
-	description   *string
-	rank          *float64
-	addrank       *float64
-	estimate      *float64
-	addestimate   *float64
-	priority      *task.Priority
-	effort        *task.Effort
-	difficulty    *task.Difficulty
-	category      *task.Category
-	budget        *float64
-	addbudget     *float64
-	parts_needed  *string
-	clearedFields map[string]struct{}
-	car           *uuid.UUID
-	clearedcar    bool
-	done          bool
-	oldValue      func(context.Context) (*Task, error)
-	predicates    []predicate.Task
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	create_time     *time.Time
+	update_time     *time.Time
+	status          *task.Status
+	title           *string
+	description     *string
+	rank            *float64
+	addrank         *float64
+	estimate        *float64
+	addestimate     *float64
+	priority        *task.Priority
+	effort          *task.Effort
+	difficulty      *task.Difficulty
+	category        *task.Category
+	budget          *float64
+	addbudget       *float64
+	parts_needed    *string
+	clearedFields   map[string]struct{}
+	car             *uuid.UUID
+	clearedcar      bool
+	parent          *uuid.UUID
+	clearedparent   bool
+	subtasks        map[uuid.UUID]struct{}
+	removedsubtasks map[uuid.UUID]struct{}
+	clearedsubtasks bool
+	done            bool
+	oldValue        func(context.Context) (*Task, error)
+	predicates      []predicate.Task
 }
 
 var _ ent.Mutation = (*TaskMutation)(nil)
@@ -16353,6 +16358,99 @@ func (m *TaskMutation) ResetCar() {
 	m.clearedcar = false
 }
 
+// SetParentID sets the "parent" edge to the Task entity by id.
+func (m *TaskMutation) SetParentID(id uuid.UUID) {
+	m.parent = &id
+}
+
+// ClearParent clears the "parent" edge to the Task entity.
+func (m *TaskMutation) ClearParent() {
+	m.clearedparent = true
+}
+
+// ParentCleared reports if the "parent" edge to the Task entity was cleared.
+func (m *TaskMutation) ParentCleared() bool {
+	return m.clearedparent
+}
+
+// ParentID returns the "parent" edge ID in the mutation.
+func (m *TaskMutation) ParentID() (id uuid.UUID, exists bool) {
+	if m.parent != nil {
+		return *m.parent, true
+	}
+	return
+}
+
+// ParentIDs returns the "parent" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ParentID instead. It exists only for internal usage by the builders.
+func (m *TaskMutation) ParentIDs() (ids []uuid.UUID) {
+	if id := m.parent; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetParent resets all changes to the "parent" edge.
+func (m *TaskMutation) ResetParent() {
+	m.parent = nil
+	m.clearedparent = false
+}
+
+// AddSubtaskIDs adds the "subtasks" edge to the Task entity by ids.
+func (m *TaskMutation) AddSubtaskIDs(ids ...uuid.UUID) {
+	if m.subtasks == nil {
+		m.subtasks = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.subtasks[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSubtasks clears the "subtasks" edge to the Task entity.
+func (m *TaskMutation) ClearSubtasks() {
+	m.clearedsubtasks = true
+}
+
+// SubtasksCleared reports if the "subtasks" edge to the Task entity was cleared.
+func (m *TaskMutation) SubtasksCleared() bool {
+	return m.clearedsubtasks
+}
+
+// RemoveSubtaskIDs removes the "subtasks" edge to the Task entity by IDs.
+func (m *TaskMutation) RemoveSubtaskIDs(ids ...uuid.UUID) {
+	if m.removedsubtasks == nil {
+		m.removedsubtasks = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.subtasks, ids[i])
+		m.removedsubtasks[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSubtasks returns the removed IDs of the "subtasks" edge to the Task entity.
+func (m *TaskMutation) RemovedSubtasksIDs() (ids []uuid.UUID) {
+	for id := range m.removedsubtasks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SubtasksIDs returns the "subtasks" edge IDs in the mutation.
+func (m *TaskMutation) SubtasksIDs() (ids []uuid.UUID) {
+	for id := range m.subtasks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSubtasks resets all changes to the "subtasks" edge.
+func (m *TaskMutation) ResetSubtasks() {
+	m.subtasks = nil
+	m.clearedsubtasks = false
+	m.removedsubtasks = nil
+}
+
 // Where appends a list predicates to the TaskMutation builder.
 func (m *TaskMutation) Where(ps ...predicate.Task) {
 	m.predicates = append(m.predicates, ps...)
@@ -16780,9 +16878,15 @@ func (m *TaskMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TaskMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
 	if m.car != nil {
 		edges = append(edges, task.EdgeCar)
+	}
+	if m.parent != nil {
+		edges = append(edges, task.EdgeParent)
+	}
+	if m.subtasks != nil {
+		edges = append(edges, task.EdgeSubtasks)
 	}
 	return edges
 }
@@ -16795,27 +16899,54 @@ func (m *TaskMutation) AddedIDs(name string) []ent.Value {
 		if id := m.car; id != nil {
 			return []ent.Value{*id}
 		}
+	case task.EdgeParent:
+		if id := m.parent; id != nil {
+			return []ent.Value{*id}
+		}
+	case task.EdgeSubtasks:
+		ids := make([]ent.Value, 0, len(m.subtasks))
+		for id := range m.subtasks {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TaskMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
+	if m.removedsubtasks != nil {
+		edges = append(edges, task.EdgeSubtasks)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *TaskMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case task.EdgeSubtasks:
+		ids := make([]ent.Value, 0, len(m.removedsubtasks))
+		for id := range m.removedsubtasks {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TaskMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
 	if m.clearedcar {
 		edges = append(edges, task.EdgeCar)
+	}
+	if m.clearedparent {
+		edges = append(edges, task.EdgeParent)
+	}
+	if m.clearedsubtasks {
+		edges = append(edges, task.EdgeSubtasks)
 	}
 	return edges
 }
@@ -16826,6 +16957,10 @@ func (m *TaskMutation) EdgeCleared(name string) bool {
 	switch name {
 	case task.EdgeCar:
 		return m.clearedcar
+	case task.EdgeParent:
+		return m.clearedparent
+	case task.EdgeSubtasks:
+		return m.clearedsubtasks
 	}
 	return false
 }
@@ -16837,6 +16972,9 @@ func (m *TaskMutation) ClearEdge(name string) error {
 	case task.EdgeCar:
 		m.ClearCar()
 		return nil
+	case task.EdgeParent:
+		m.ClearParent()
+		return nil
 	}
 	return fmt.Errorf("unknown Task unique edge %s", name)
 }
@@ -16847,6 +16985,12 @@ func (m *TaskMutation) ResetEdge(name string) error {
 	switch name {
 	case task.EdgeCar:
 		m.ResetCar()
+		return nil
+	case task.EdgeParent:
+		m.ResetParent()
+		return nil
+	case task.EdgeSubtasks:
+		m.ResetSubtasks()
 		return nil
 	}
 	return fmt.Errorf("unknown Task edge %s", name)

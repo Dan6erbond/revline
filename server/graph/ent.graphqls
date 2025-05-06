@@ -722,6 +722,8 @@ input CreateTaskInput {
   budget: Float
   partsNeeded: String
   carID: ID!
+  parentID: ID
+  subtaskIDs: [ID!]
 }
 """
 CreateUserInput is used for create User object.
@@ -2581,6 +2583,8 @@ type Task implements Node {
   budget: Float
   partsNeeded: String
   car: Car!
+  parent: Task
+  subtasks: [Task!]
 }
 """
 TaskCategory is enum for the field category
@@ -2876,6 +2880,16 @@ input TaskWhereInput {
   """
   hasCar: Boolean
   hasCarWith: [CarWhereInput!]
+  """
+  parent edge predicates
+  """
+  hasParent: Boolean
+  hasParentWith: [TaskWhereInput!]
+  """
+  subtasks edge predicates
+  """
+  hasSubtasks: Boolean
+  hasSubtasksWith: [TaskWhereInput!]
 }
 """
 TemperatureUnit is enum for the field temperature_unit
@@ -3226,6 +3240,11 @@ input UpdateTaskInput {
   partsNeeded: String
   clearPartsNeeded: Boolean
   carID: ID
+  parentID: ID
+  clearParent: Boolean
+  addSubtaskIDs: [ID!]
+  removeSubtaskIDs: [ID!]
+  clearSubtasks: Boolean
 }
 """
 UpdateUserInput is used for update User object.

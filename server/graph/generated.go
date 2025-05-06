@@ -364,10 +364,12 @@ type ComplexityRoot struct {
 		Effort      func(childComplexity int) int
 		Estimate    func(childComplexity int) int
 		ID          func(childComplexity int) int
+		Parent      func(childComplexity int) int
 		PartsNeeded func(childComplexity int) int
 		Priority    func(childComplexity int) int
 		Rank        func(childComplexity int) int
 		Status      func(childComplexity int) int
+		Subtasks    func(childComplexity int) int
 		Title       func(childComplexity int) int
 		UpdateTime  func(childComplexity int) int
 	}
@@ -2290,6 +2292,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Task.ID(childComplexity), true
 
+	case "Task.parent":
+		if e.complexity.Task.Parent == nil {
+			break
+		}
+
+		return e.complexity.Task.Parent(childComplexity), true
+
 	case "Task.partsNeeded":
 		if e.complexity.Task.PartsNeeded == nil {
 			break
@@ -2317,6 +2326,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Task.Status(childComplexity), true
+
+	case "Task.subtasks":
+		if e.complexity.Task.Subtasks == nil {
+			break
+		}
+
+		return e.complexity.Task.Subtasks(childComplexity), true
 
 	case "Task.title":
 		if e.complexity.Task.Title == nil {
@@ -11559,6 +11575,10 @@ func (ec *executionContext) fieldContext_Mutation_createTask(ctx context.Context
 				return ec.fieldContext_Task_partsNeeded(ctx, field)
 			case "car":
 				return ec.fieldContext_Task_car(ctx, field)
+			case "parent":
+				return ec.fieldContext_Task_parent(ctx, field)
+			case "subtasks":
+				return ec.fieldContext_Task_subtasks(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -11668,6 +11688,10 @@ func (ec *executionContext) fieldContext_Mutation_updateTask(ctx context.Context
 				return ec.fieldContext_Task_partsNeeded(ctx, field)
 			case "car":
 				return ec.fieldContext_Task_car(ctx, field)
+			case "parent":
+				return ec.fieldContext_Task_parent(ctx, field)
+			case "subtasks":
+				return ec.fieldContext_Task_subtasks(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -13833,6 +13857,10 @@ func (ec *executionContext) fieldContext_Query_task(ctx context.Context, field g
 				return ec.fieldContext_Task_partsNeeded(ctx, field)
 			case "car":
 				return ec.fieldContext_Task_car(ctx, field)
+			case "parent":
+				return ec.fieldContext_Task_parent(ctx, field)
+			case "subtasks":
+				return ec.fieldContext_Task_subtasks(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -17130,6 +17158,160 @@ func (ec *executionContext) fieldContext_Task_car(_ context.Context, field graph
 	return fc, nil
 }
 
+func (ec *executionContext) _Task_parent(ctx context.Context, field graphql.CollectedField, obj *ent.Task) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Task_parent(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Parent(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Task)
+	fc.Result = res
+	return ec.marshalOTask2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTask(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Task_parent(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Task",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Task_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Task_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Task_updateTime(ctx, field)
+			case "status":
+				return ec.fieldContext_Task_status(ctx, field)
+			case "title":
+				return ec.fieldContext_Task_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Task_description(ctx, field)
+			case "rank":
+				return ec.fieldContext_Task_rank(ctx, field)
+			case "estimate":
+				return ec.fieldContext_Task_estimate(ctx, field)
+			case "priority":
+				return ec.fieldContext_Task_priority(ctx, field)
+			case "effort":
+				return ec.fieldContext_Task_effort(ctx, field)
+			case "difficulty":
+				return ec.fieldContext_Task_difficulty(ctx, field)
+			case "category":
+				return ec.fieldContext_Task_category(ctx, field)
+			case "budget":
+				return ec.fieldContext_Task_budget(ctx, field)
+			case "partsNeeded":
+				return ec.fieldContext_Task_partsNeeded(ctx, field)
+			case "car":
+				return ec.fieldContext_Task_car(ctx, field)
+			case "parent":
+				return ec.fieldContext_Task_parent(ctx, field)
+			case "subtasks":
+				return ec.fieldContext_Task_subtasks(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Task_subtasks(ctx context.Context, field graphql.CollectedField, obj *ent.Task) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Task_subtasks(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Subtasks(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Task)
+	fc.Result = res
+	return ec.marshalOTask2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTaskᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Task_subtasks(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Task",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Task_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Task_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Task_updateTime(ctx, field)
+			case "status":
+				return ec.fieldContext_Task_status(ctx, field)
+			case "title":
+				return ec.fieldContext_Task_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Task_description(ctx, field)
+			case "rank":
+				return ec.fieldContext_Task_rank(ctx, field)
+			case "estimate":
+				return ec.fieldContext_Task_estimate(ctx, field)
+			case "priority":
+				return ec.fieldContext_Task_priority(ctx, field)
+			case "effort":
+				return ec.fieldContext_Task_effort(ctx, field)
+			case "difficulty":
+				return ec.fieldContext_Task_difficulty(ctx, field)
+			case "category":
+				return ec.fieldContext_Task_category(ctx, field)
+			case "budget":
+				return ec.fieldContext_Task_budget(ctx, field)
+			case "partsNeeded":
+				return ec.fieldContext_Task_partsNeeded(ctx, field)
+			case "car":
+				return ec.fieldContext_Task_car(ctx, field)
+			case "parent":
+				return ec.fieldContext_Task_parent(ctx, field)
+			case "subtasks":
+				return ec.fieldContext_Task_subtasks(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _TaskConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.TaskConnection) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TaskConnection_edges(ctx, field)
 	if err != nil {
@@ -17341,6 +17523,10 @@ func (ec *executionContext) fieldContext_TaskEdge_node(_ context.Context, field 
 				return ec.fieldContext_Task_partsNeeded(ctx, field)
 			case "car":
 				return ec.fieldContext_Task_car(ctx, field)
+			case "parent":
+				return ec.fieldContext_Task_parent(ctx, field)
+			case "subtasks":
+				return ec.fieldContext_Task_subtasks(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -23484,7 +23670,7 @@ func (ec *executionContext) unmarshalInputCreateTaskInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "status", "title", "description", "rank", "estimate", "priority", "effort", "difficulty", "category", "budget", "partsNeeded", "carID"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "status", "title", "description", "rank", "estimate", "priority", "effort", "difficulty", "category", "budget", "partsNeeded", "carID", "parentID", "subtaskIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -23589,6 +23775,20 @@ func (ec *executionContext) unmarshalInputCreateTaskInput(ctx context.Context, o
 				return it, err
 			}
 			it.CarID = data
+		case "parentID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ParentID = data
+		case "subtaskIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subtaskIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SubtaskIDs = data
 		}
 	}
 
@@ -31052,7 +31252,7 @@ func (ec *executionContext) unmarshalInputTaskWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "status", "statusNEQ", "statusIn", "statusNotIn", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "rank", "rankNEQ", "rankIn", "rankNotIn", "rankGT", "rankGTE", "rankLT", "rankLTE", "estimate", "estimateNEQ", "estimateIn", "estimateNotIn", "estimateGT", "estimateGTE", "estimateLT", "estimateLTE", "estimateIsNil", "estimateNotNil", "priority", "priorityNEQ", "priorityIn", "priorityNotIn", "priorityIsNil", "priorityNotNil", "effort", "effortNEQ", "effortIn", "effortNotIn", "effortIsNil", "effortNotNil", "difficulty", "difficultyNEQ", "difficultyIn", "difficultyNotIn", "difficultyIsNil", "difficultyNotNil", "category", "categoryNEQ", "categoryIn", "categoryNotIn", "categoryIsNil", "categoryNotNil", "budget", "budgetNEQ", "budgetIn", "budgetNotIn", "budgetGT", "budgetGTE", "budgetLT", "budgetLTE", "budgetIsNil", "budgetNotNil", "partsNeeded", "partsNeededNEQ", "partsNeededIn", "partsNeededNotIn", "partsNeededGT", "partsNeededGTE", "partsNeededLT", "partsNeededLTE", "partsNeededContains", "partsNeededHasPrefix", "partsNeededHasSuffix", "partsNeededIsNil", "partsNeededNotNil", "partsNeededEqualFold", "partsNeededContainsFold", "hasCar", "hasCarWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "status", "statusNEQ", "statusIn", "statusNotIn", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "rank", "rankNEQ", "rankIn", "rankNotIn", "rankGT", "rankGTE", "rankLT", "rankLTE", "estimate", "estimateNEQ", "estimateIn", "estimateNotIn", "estimateGT", "estimateGTE", "estimateLT", "estimateLTE", "estimateIsNil", "estimateNotNil", "priority", "priorityNEQ", "priorityIn", "priorityNotIn", "priorityIsNil", "priorityNotNil", "effort", "effortNEQ", "effortIn", "effortNotIn", "effortIsNil", "effortNotNil", "difficulty", "difficultyNEQ", "difficultyIn", "difficultyNotIn", "difficultyIsNil", "difficultyNotNil", "category", "categoryNEQ", "categoryIn", "categoryNotIn", "categoryIsNil", "categoryNotNil", "budget", "budgetNEQ", "budgetIn", "budgetNotIn", "budgetGT", "budgetGTE", "budgetLT", "budgetLTE", "budgetIsNil", "budgetNotNil", "partsNeeded", "partsNeededNEQ", "partsNeededIn", "partsNeededNotIn", "partsNeededGT", "partsNeededGTE", "partsNeededLT", "partsNeededLTE", "partsNeededContains", "partsNeededHasPrefix", "partsNeededHasSuffix", "partsNeededIsNil", "partsNeededNotNil", "partsNeededEqualFold", "partsNeededContainsFold", "hasCar", "hasCarWith", "hasParent", "hasParentWith", "hasSubtasks", "hasSubtasksWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -31955,6 +32155,34 @@ func (ec *executionContext) unmarshalInputTaskWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.HasCarWith = data
+		case "hasParent":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasParent"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasParent = data
+		case "hasParentWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasParentWith"))
+			data, err := ec.unmarshalOTaskWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTaskWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasParentWith = data
+		case "hasSubtasks":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSubtasks"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasSubtasks = data
+		case "hasSubtasksWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSubtasksWith"))
+			data, err := ec.unmarshalOTaskWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTaskWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasSubtasksWith = data
 		}
 	}
 
@@ -33766,7 +33994,7 @@ func (ec *executionContext) unmarshalInputUpdateTaskInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "status", "title", "description", "clearDescription", "rank", "estimate", "clearEstimate", "priority", "clearPriority", "effort", "clearEffort", "difficulty", "clearDifficulty", "category", "clearCategory", "budget", "clearBudget", "partsNeeded", "clearPartsNeeded", "carID"}
+	fieldsInOrder := [...]string{"updateTime", "status", "title", "description", "clearDescription", "rank", "estimate", "clearEstimate", "priority", "clearPriority", "effort", "clearEffort", "difficulty", "clearDifficulty", "category", "clearCategory", "budget", "clearBudget", "partsNeeded", "clearPartsNeeded", "carID", "parentID", "clearParent", "addSubtaskIDs", "removeSubtaskIDs", "clearSubtasks"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -33920,6 +34148,41 @@ func (ec *executionContext) unmarshalInputUpdateTaskInput(ctx context.Context, o
 				return it, err
 			}
 			it.CarID = data
+		case "parentID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parentID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ParentID = data
+		case "clearParent":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearParent"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearParent = data
+		case "addSubtaskIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addSubtaskIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddSubtaskIDs = data
+		case "removeSubtaskIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeSubtaskIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveSubtaskIDs = data
+		case "clearSubtasks":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearSubtasks"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearSubtasks = data
 		}
 	}
 
@@ -38381,6 +38644,72 @@ func (ec *executionContext) _Task(ctx context.Context, sel ast.SelectionSet, obj
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "parent":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Task_parent(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "subtasks":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Task_subtasks(ctx, field, obj)
 				return res
 			}
 
@@ -42948,6 +43277,53 @@ func (ec *executionContext) marshalOSubscriptionTier2ᚖgithubᚗcomᚋDan6erbon
 		return graphql.Null
 	}
 	return v
+}
+
+func (ec *executionContext) marshalOTask2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTaskᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Task) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTask2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTask(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalOTask2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTask(ctx context.Context, sel ast.SelectionSet, v *ent.Task) graphql.Marshaler {

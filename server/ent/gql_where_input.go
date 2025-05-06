@@ -7519,6 +7519,14 @@ type TaskWhereInput struct {
 	// "car" edge predicates.
 	HasCar     *bool            `json:"hasCar,omitempty"`
 	HasCarWith []*CarWhereInput `json:"hasCarWith,omitempty"`
+
+	// "parent" edge predicates.
+	HasParent     *bool             `json:"hasParent,omitempty"`
+	HasParentWith []*TaskWhereInput `json:"hasParentWith,omitempty"`
+
+	// "subtasks" edge predicates.
+	HasSubtasks     *bool             `json:"hasSubtasks,omitempty"`
+	HasSubtasksWith []*TaskWhereInput `json:"hasSubtasksWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -7979,6 +7987,42 @@ func (i *TaskWhereInput) P() (predicate.Task, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, task.HasCarWith(with...))
+	}
+	if i.HasParent != nil {
+		p := task.HasParent()
+		if !*i.HasParent {
+			p = task.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasParentWith) > 0 {
+		with := make([]predicate.Task, 0, len(i.HasParentWith))
+		for _, w := range i.HasParentWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasParentWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, task.HasParentWith(with...))
+	}
+	if i.HasSubtasks != nil {
+		p := task.HasSubtasks()
+		if !*i.HasSubtasks {
+			p = task.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasSubtasksWith) > 0 {
+		with := make([]predicate.Task, 0, len(i.HasSubtasksWith))
+		for _, w := range i.HasSubtasksWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasSubtasksWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, task.HasSubtasksWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

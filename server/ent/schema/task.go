@@ -136,6 +136,9 @@ func (Task) Edges() []ent.Edge {
 			Ref("tasks").
 			Unique().
 			Required(),
+		edge.To("subtasks", Task.Type).
+			From("parent").
+			Unique(),
 	}
 }
 

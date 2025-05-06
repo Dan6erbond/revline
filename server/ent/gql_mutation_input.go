@@ -1877,6 +1877,8 @@ type CreateTaskInput struct {
 	Budget      *float64
 	PartsNeeded *string
 	CarID       uuid.UUID
+	ParentID    *uuid.UUID
+	SubtaskIDs  []uuid.UUID
 }
 
 // Mutate applies the CreateTaskInput on the TaskMutation builder.
@@ -1917,6 +1919,12 @@ func (i *CreateTaskInput) Mutate(m *TaskMutation) {
 		m.SetPartsNeeded(*v)
 	}
 	m.SetCarID(i.CarID)
+	if v := i.ParentID; v != nil {
+		m.SetParentID(*v)
+	}
+	if v := i.SubtaskIDs; len(v) > 0 {
+		m.AddSubtaskIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateTaskInput on the TaskCreate builder.
@@ -1948,6 +1956,11 @@ type UpdateTaskInput struct {
 	ClearPartsNeeded bool
 	PartsNeeded      *string
 	CarID            *uuid.UUID
+	ClearParent      bool
+	ParentID         *uuid.UUID
+	ClearSubtasks    bool
+	AddSubtaskIDs    []uuid.UUID
+	RemoveSubtaskIDs []uuid.UUID
 }
 
 // Mutate applies the UpdateTaskInput on the TaskMutation builder.
@@ -2014,6 +2027,21 @@ func (i *UpdateTaskInput) Mutate(m *TaskMutation) {
 	}
 	if v := i.CarID; v != nil {
 		m.SetCarID(*v)
+	}
+	if i.ClearParent {
+		m.ClearParent()
+	}
+	if v := i.ParentID; v != nil {
+		m.SetParentID(*v)
+	}
+	if i.ClearSubtasks {
+		m.ClearSubtasks()
+	}
+	if v := i.AddSubtaskIDs; len(v) > 0 {
+		m.AddSubtaskIDs(v...)
+	}
+	if v := i.RemoveSubtaskIDs; len(v) > 0 {
+		m.RemoveSubtaskIDs(v...)
 	}
 }
 

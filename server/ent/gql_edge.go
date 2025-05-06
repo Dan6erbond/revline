@@ -509,6 +509,26 @@ func (t *Task) Car(ctx context.Context) (*Car, error) {
 	return result, err
 }
 
+func (t *Task) Parent(ctx context.Context) (*Task, error) {
+	result, err := t.Edges.ParentOrErr()
+	if IsNotLoaded(err) {
+		result, err = t.QueryParent().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (t *Task) Subtasks(ctx context.Context) (result []*Task, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = t.NamedSubtasks(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = t.Edges.SubtasksOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = t.QuerySubtasks().All(ctx)
+	}
+	return result, err
+}
+
 func (u *User) Cars(ctx context.Context) (result []*Car, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = u.NamedCars(graphql.GetFieldContext(ctx).Field.Alias)

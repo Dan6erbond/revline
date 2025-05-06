@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -20,14 +21,17 @@ import (
 // TaskQuery is the builder for querying Task entities.
 type TaskQuery struct {
 	config
-	ctx        *QueryContext
-	order      []task.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Task
-	withCar    *CarQuery
-	withFKs    bool
-	modifiers  []func(*sql.Selector)
-	loadTotal  []func(context.Context, []*Task) error
+	ctx               *QueryContext
+	order             []task.OrderOption
+	inters            []Interceptor
+	predicates        []predicate.Task
+	withCar           *CarQuery
+	withParent        *TaskQuery
+	withSubtasks      *TaskQuery
+	withFKs           bool
+	modifiers         []func(*sql.Selector)
+	loadTotal         []func(context.Context, []*Task) error
+	withNamedSubtasks map[string]*TaskQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -79,6 +83,50 @@ func (tq *TaskQuery) QueryCar() *CarQuery {
 			sqlgraph.From(task.Table, task.FieldID, selector),
 			sqlgraph.To(car.Table, car.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, task.CarTable, task.CarColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryParent chains the current query on the "parent" edge.
+func (tq *TaskQuery) QueryParent() *TaskQuery {
+	query := (&TaskClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, selector),
+			sqlgraph.To(task.Table, task.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, task.ParentTable, task.ParentColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySubtasks chains the current query on the "subtasks" edge.
+func (tq *TaskQuery) QuerySubtasks() *TaskQuery {
+	query := (&TaskClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, selector),
+			sqlgraph.To(task.Table, task.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, task.SubtasksTable, task.SubtasksColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -273,12 +321,14 @@ func (tq *TaskQuery) Clone() *TaskQuery {
 		return nil
 	}
 	return &TaskQuery{
-		config:     tq.config,
-		ctx:        tq.ctx.Clone(),
-		order:      append([]task.OrderOption{}, tq.order...),
-		inters:     append([]Interceptor{}, tq.inters...),
-		predicates: append([]predicate.Task{}, tq.predicates...),
-		withCar:    tq.withCar.Clone(),
+		config:       tq.config,
+		ctx:          tq.ctx.Clone(),
+		order:        append([]task.OrderOption{}, tq.order...),
+		inters:       append([]Interceptor{}, tq.inters...),
+		predicates:   append([]predicate.Task{}, tq.predicates...),
+		withCar:      tq.withCar.Clone(),
+		withParent:   tq.withParent.Clone(),
+		withSubtasks: tq.withSubtasks.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
@@ -293,6 +343,28 @@ func (tq *TaskQuery) WithCar(opts ...func(*CarQuery)) *TaskQuery {
 		opt(query)
 	}
 	tq.withCar = query
+	return tq
+}
+
+// WithParent tells the query-builder to eager-load the nodes that are connected to
+// the "parent" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TaskQuery) WithParent(opts ...func(*TaskQuery)) *TaskQuery {
+	query := (&TaskClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withParent = query
+	return tq
+}
+
+// WithSubtasks tells the query-builder to eager-load the nodes that are connected to
+// the "subtasks" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TaskQuery) WithSubtasks(opts ...func(*TaskQuery)) *TaskQuery {
+	query := (&TaskClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withSubtasks = query
 	return tq
 }
 
@@ -375,11 +447,13 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 		nodes       = []*Task{}
 		withFKs     = tq.withFKs
 		_spec       = tq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [3]bool{
 			tq.withCar != nil,
+			tq.withParent != nil,
+			tq.withSubtasks != nil,
 		}
 	)
-	if tq.withCar != nil {
+	if tq.withCar != nil || tq.withParent != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -409,6 +483,26 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 	if query := tq.withCar; query != nil {
 		if err := tq.loadCar(ctx, query, nodes, nil,
 			func(n *Task, e *Car) { n.Edges.Car = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := tq.withParent; query != nil {
+		if err := tq.loadParent(ctx, query, nodes, nil,
+			func(n *Task, e *Task) { n.Edges.Parent = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := tq.withSubtasks; query != nil {
+		if err := tq.loadSubtasks(ctx, query, nodes,
+			func(n *Task) { n.Edges.Subtasks = []*Task{} },
+			func(n *Task, e *Task) { n.Edges.Subtasks = append(n.Edges.Subtasks, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range tq.withNamedSubtasks {
+		if err := tq.loadSubtasks(ctx, query, nodes,
+			func(n *Task) { n.appendNamedSubtasks(name) },
+			func(n *Task, e *Task) { n.appendNamedSubtasks(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -449,6 +543,69 @@ func (tq *TaskQuery) loadCar(ctx context.Context, query *CarQuery, nodes []*Task
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (tq *TaskQuery) loadParent(ctx context.Context, query *TaskQuery, nodes []*Task, init func(*Task), assign func(*Task, *Task)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Task)
+	for i := range nodes {
+		if nodes[i].task_subtasks == nil {
+			continue
+		}
+		fk := *nodes[i].task_subtasks
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(task.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "task_subtasks" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (tq *TaskQuery) loadSubtasks(ctx context.Context, query *TaskQuery, nodes []*Task, init func(*Task), assign func(*Task, *Task)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Task)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Task(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(task.SubtasksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.task_subtasks
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "task_subtasks" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "task_subtasks" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }
@@ -535,6 +692,20 @@ func (tq *TaskQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedSubtasks tells the query-builder to eager-load the nodes that are connected to the "subtasks"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (tq *TaskQuery) WithNamedSubtasks(name string, opts ...func(*TaskQuery)) *TaskQuery {
+	query := (&TaskClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if tq.withNamedSubtasks == nil {
+		tq.withNamedSubtasks = make(map[string]*TaskQuery)
+	}
+	tq.withNamedSubtasks[name] = query
+	return tq
 }
 
 // TaskGroupBy is the group-by builder for Task entities.

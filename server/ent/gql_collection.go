@@ -2316,6 +2316,30 @@ func (t *TaskQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 				return err
 			}
 			t.withCar = query
+
+		case "parent":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&TaskClient{config: t.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, taskImplementors)...); err != nil {
+				return err
+			}
+			t.withParent = query
+
+		case "subtasks":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&TaskClient{config: t.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, taskImplementors)...); err != nil {
+				return err
+			}
+			t.WithNamedSubtasks(alias, func(wq *TaskQuery) {
+				*wq = *query
+			})
 		case "createTime":
 			if _, ok := fieldSeen[task.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, task.FieldCreateTime)
