@@ -114,7 +114,9 @@ export default function Service() {
         key={getQueryParam(router.query.id)}
         items={tabs}
         variant="bordered"
-        selectedKey={router.query.tab?.[1] ?? tabs[0].id}
+        selectedKey={
+          router.query.tab?.[1] ?? tabs.filter((tab) => tab.component)[0].id
+        }
       >
         {({ id, icon, label, disabled, component: Component }) => (
           <Tab
