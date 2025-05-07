@@ -188,7 +188,7 @@ export default function CarLayout(props: ComponentProps<"main">) {
         </Button>
         <h2 className="text-3xl text-white">{data?.car?.name}</h2>
         <div className="hidden md:flex gap-4 items-center text-sm text-white/80 pl-2 pr-4">
-          {data?.car.odometerKm && (
+          {data?.car.odometerKm != null && (
             <div className="flex items-center gap-1">
               <Gauge className="w-4 h-4" />
               <span>
@@ -200,7 +200,7 @@ export default function CarLayout(props: ComponentProps<"main">) {
               </span>
             </div>
           )}
-          {data?.car.averageConsumptionLitersPerKm && (
+          {data?.car.averageConsumptionLitersPerKm != null && (
             <div className="flex items-center gap-1">
               <Fuel className="w-4 h-4" />
               <span>
