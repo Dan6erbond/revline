@@ -7,6 +7,7 @@ import { ModCategory } from "@/gql/graphql";
 import { Plus } from "lucide-react";
 import { ProductOptionCard } from "./product-option/card";
 import ProductOptionModal from "./product-option/modal";
+import { TaskCard } from "../components/project/task";
 import { graphql } from "@/gql";
 import { useForm } from "react-hook-form";
 import { withNotification } from "../utils/with-notification";
@@ -36,6 +37,10 @@ export const getModIdea = graphql(`
       productOptions {
         id
         ...ModProductOptionDetails
+      }
+      tasks {
+        id
+        ...TaskFields
       }
     }
   }
@@ -92,6 +97,7 @@ export default function ModIdea({ id }: { id: string }) {
           labels={categoryLabels}
           icons={categoryIcons}
           chipColor={(c) => categoryColors[c]}
+          variant="bordered"
           {...register("category", { required: true })}
         />
 
@@ -130,6 +136,21 @@ export default function ModIdea({ id }: { id: string }) {
           </div>
         ) : (
           <p>No product options associated.</p>
+        )}
+      </div>
+
+      <div className="mt-6 flex flex-col gap-4">
+        <div className="flex justify-between">
+          <h2 className="text-xl font-semibold mb-2">Tasks</h2>
+        </div>
+        {data.modIdea.tasks && data.modIdea.tasks.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {data.modIdea.tasks.map((task) => (
+              <TaskCard key={task.id} task={task} />
+            ))}
+          </div>
+        ) : (
+          <p>No tasks associated.</p>
         )}
       </div>
 

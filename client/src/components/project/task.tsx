@@ -67,6 +67,16 @@ export const TaskFields = graphql(`
       partsNeeded
       budget
     }
+    modIdeas {
+      id
+      title
+      stage
+      category
+      description
+      productOptions {
+        id
+      }
+    }
   }
 `);
 

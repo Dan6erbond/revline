@@ -103,7 +103,6 @@ export default function Create() {
             icons={categoryIcons}
             chipColor={(c) => categoryColors[c]}
             variant="bordered"
-            labelPlacement="outside"
             {...register("category", { required: true })}
           />
 
