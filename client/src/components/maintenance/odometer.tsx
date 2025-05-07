@@ -132,7 +132,7 @@ export default function Odometer() {
   };
 
   return (
-    <div className="flex flex-col gap-4 md:gap-8 pt-4 md:pt-8 max-w-screen-xl mx-auto">
+    <div className="flex flex-col gap-4 md:gap-8 pt-4 md:pt-8 container mx-auto">
       <div className="flex justify-between">
         <div></div>
         <div>

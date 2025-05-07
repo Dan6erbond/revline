@@ -221,7 +221,7 @@ export default function Documents() {
         requiredTiers={[SubscriptionTier.Diy, SubscriptionTier.Enthusiast]}
       />
 
-      <div className="p-4 flex flex-col gap-8 max-w-screen-xl mx-auto">
+      <div className="p-4 flex flex-col gap-8 container mx-auto">
         <h1 className="text-3xl">Documents</h1>
         <Table isHeaderSticky>
           <TableHeader columns={columns}>

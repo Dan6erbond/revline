@@ -55,7 +55,7 @@ export default function Albums() {
     >
       <SubscriptionOverlay requiredTiers={[SubscriptionTier.Enthusiast]} />
 
-      <div className="flex flex-col gap-4 max-w-screen-xl mx-auto p-4">
+      <div className="flex flex-col gap-4 container mx-auto p-4">
         <div className="flex justify-between">
           <h1 className="text-3xl">Gallery</h1>
 

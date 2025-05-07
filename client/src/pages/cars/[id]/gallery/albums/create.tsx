@@ -73,7 +73,7 @@ export default function Create() {
 
   return (
     <CarLayout>
-      <div className="p-4 flex flex-col gap-4 max-w-screen-xl mx-auto">
+      <div className="p-4 flex flex-col gap-4 container mx-auto">
         <h1 className="text-3xl">Create Album</h1>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
           <Input

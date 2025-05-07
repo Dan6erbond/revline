@@ -153,7 +153,7 @@ export default function Session() {
   };
 
   return (
-    <div className="flex flex-col gap-4 max-w-screen-xl mx-auto">
+    <div className="flex flex-col gap-4 container mx-auto">
       <h2 className="text-2xl">{data?.dragSession?.title}</h2>
       <form>
         <Textarea

@@ -180,7 +180,7 @@ export default function Subscription() {
   return (
     <>
       <RootNavbar pathname={router.pathname} path={router.asPath} />
-      <main className="p-4 flex flex-col gap-4 relative max-w-screen-xl mx-auto">
+      <main className="p-4 flex flex-col gap-4 relative container mx-auto">
         <h1 className="text-2xl text-center mb-4">Manage your Subscription</h1>
         <div className="flex flex-col md:flex-row flex-wrap justify-center gap-8 md:gap-4">
           <SubscriptionCard

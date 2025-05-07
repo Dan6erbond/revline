@@ -1,10 +1,4 @@
-import {
-  Button,
-  Card,
-  CardBody,
-  CardFooter,
-  CardHeader,
-} from "@heroui/react";
+import { Button, Card, CardBody, CardFooter, CardHeader } from "@heroui/react";
 import { FileText, Plus, Timer } from "lucide-react";
 
 import Create from "./create";
@@ -52,7 +46,7 @@ export default function DragSessions() {
   }
 
   return (
-    <div className="flex flex-col gap-4 max-w-screen-xl mx-auto">
+    <div className="flex flex-col gap-4 container mx-auto">
       <div className="flex justify-between">
         <h2 className="text-2xl">Drag sessions</h2>
         <Button

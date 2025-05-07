@@ -240,7 +240,7 @@ export default function ProfileForm() {
 
   return (
     <form
-      className="flex flex-col gap-4 p-4 md:p-8 max-w-screen-xl mx-auto"
+      className="flex flex-col gap-4 p-4 md:p-8 container mx-auto"
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="flex flex-col md:flex-row gap-4">

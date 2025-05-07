@@ -97,7 +97,7 @@ export default function AlbumView({ id }: { id: string }) {
   };
 
   return (
-    <div className="p-4 flex flex-col gap-4 max-w-screen-xl mx-auto">
+    <div className="p-4 flex flex-col gap-4 container mx-auto">
       <Input
         label="Title"
         variant="underlined"

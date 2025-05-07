@@ -52,7 +52,7 @@ export default function Create() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col gap-4 max-w-screen-xl mx-auto"
+      className="flex flex-col gap-4 container mx-auto"
     >
       <h2 className="text-2xl">Create a session</h2>
       <Input

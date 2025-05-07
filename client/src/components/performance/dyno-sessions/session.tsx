@@ -143,7 +143,7 @@ export default function Session() {
   };
 
   return (
-    <div className="flex flex-col gap-8 max-w-screen-xl mx-auto">
+    <div className="flex flex-col gap-8 container mx-auto">
       <div className="flex flex-col gap-4">
         <h2 className="text-2xl">{data?.dynoSession?.title}</h2>
         <form>

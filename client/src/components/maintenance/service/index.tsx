@@ -84,7 +84,7 @@ export default function Service() {
   });
 
   return (
-    <div className="max-w-screen-xl mx-auto">
+    <div className="container mx-auto">
       <div className="flex flex-col gap-2 mb-4">
         <h2 className="text-xl mb-2">Upcoming services</h2>
         {data?.car?.upcomingServices.map((us) => (
