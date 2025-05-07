@@ -83,6 +83,7 @@ export default function Gallery() {
     e.stopPropagation();
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleFileUpload = useCallback(
     withNotification({ title: "Uploading media..." }, async (file: File) => {
       const res = await mutate({
