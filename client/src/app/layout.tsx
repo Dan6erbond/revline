@@ -40,6 +40,18 @@ export default async function RootLayout({
           src="https://cloud.umami.is/script.js"
           data-website-id="64bc9887-3516-4a18-b0a9-bfff4281cb0b"
         />
+        <link
+          rel="icon"
+          type="image/png"
+          href={basePath + "/favicon-96x96.png"}
+          sizes="96x96"
+        />
+        <link
+          rel="icon"
+          type="image/svg+xml"
+          href={basePath + "/favicon.svg"}
+        />
+        <link rel="shortcut icon" href={basePath + "/favicon.ico"} />
         <meta name="apple-mobile-web-app-title" content="Revline 1" />
       </head>
       <body className={`antialiased ${inter.className} bg-background`}>
