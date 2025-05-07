@@ -17,9 +17,15 @@ import {
   UpdateTaskMutation,
 } from "@/gql/graphql";
 import { TaskCard, TaskFields } from "./task";
-import { Unmasked, useApolloClient, useMutation } from "@apollo/client";
+import {
+  Unmasked,
+  useApolloClient,
+  useMutation,
+  useQuery,
+} from "@apollo/client";
 
 import { DataProxy } from "@apollo/client/cache";
+import { Switch } from "@heroui/react";
 import { getQueryParam } from "@/utils/router";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -32,8 +38,24 @@ const updateTask = graphql(`
   }
 `);
 
-export default function Kanban({ showSubtasks }: { showSubtasks: boolean }) {
+const getCarShowSubtasks = graphql(`
+  query GetCarShowSubtasks($id: ID!) {
+    car(id: $id) {
+      id
+      showSubtasks @client
+    }
+  }
+`);
+
+export default function Kanban() {
   const router = useRouter();
+
+  const { data } = useQuery(getCarShowSubtasks, {
+    variables: {
+      id: getQueryParam(router.query.id) as string,
+    },
+  });
+  const showSubtasks = data?.car.showSubtasks ?? false;
 
   const client = useApolloClient();
 
@@ -80,10 +102,19 @@ export default function Kanban({ showSubtasks }: { showSubtasks: boolean }) {
         query: getTasksByRank,
         variables: {
           id: getQueryParam(router.query.id) as string,
-          where: { status, hasParent: showSubtasks ? undefined : false },
+          where: {
+            status,
+            hasParent: showSubtasks ? undefined : false,
+          },
         },
       };
       data = client.readQuery(queryOptions);
+
+      const newEdges = data?.car.tasks.edges?.filter((e) =>
+        e?.node?.id === active.id
+          ? e?.node?.rank !== active.data.current?.task.rank
+          : true
+      );
 
       const overTaskIdx =
         data?.car.tasks.edges?.findIndex((e) => e?.node?.id === over.id) ?? -1;
@@ -93,17 +124,11 @@ export default function Kanban({ showSubtasks }: { showSubtasks: boolean }) {
           data.car.tasks.edges[overTaskIdx - 1]?.node?.rank ?? prevRank;
       }
 
-      getEdges = (res, edges) =>
-        edges
-          ?.toSpliced(overTaskIdx, 0, {
-            node: res,
-            cursor: "",
-          })
-          .filter((e) =>
-            e?.node?.id === res.id
-              ? e?.node?.rank !== active.data.current?.task.rank
-              : true
-          );
+      getEdges = (res) =>
+        newEdges?.toSpliced(overTaskIdx, 0, {
+          node: res,
+          cursor: "",
+        });
     } else if (over.id !== active.data.current?.task.status) {
       status = over.id as TaskStatus;
 
@@ -190,6 +215,32 @@ export default function Kanban({ showSubtasks }: { showSubtasks: boolean }) {
         setActiveTask(null);
       }}
     >
+      <div className="flex justify-between">
+        <h1 className="text-2xl">Kanban</h1>
+
+        <Switch
+          size="sm"
+          isSelected={showSubtasks}
+          onValueChange={(val) => {
+            client.writeQuery({
+              query: getCarShowSubtasks,
+              variables: {
+                id: getQueryParam(router.query.id) as string,
+              },
+              data: {
+                ...data,
+                car: {
+                  ...data?.car,
+                  showSubtasks: val,
+                },
+              },
+            });
+          }}
+        >
+          Show subtasks
+        </Switch>
+      </div>
+
       <div className="w-full overflow-x-auto flex-1 flex items-stretch flex-nowrap pb-4">
         <div className="inline-flex gap-4 md:gap-8 min-w-full min-h-full justify-center shrink-0">
           {[

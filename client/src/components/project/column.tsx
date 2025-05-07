@@ -78,16 +78,11 @@ export default function Column({
   const { data } = useQuery(getTasksByRank, {
     variables,
     skip: !getQueryParam(router.query.id),
+    fetchPolicy: "cache-and-network",
   });
 
   const [mutate, { loading }] = useMutation(createTask, {
-    refetchQueries: [
-      {
-        query: getTasksByRank,
-        variables,
-      },
-      getTasks,
-    ],
+    refetchQueries: [getTasksByRank, getTasks],
     update: (cache, res) => {
       if (!data?.car.tasks.edges || !res.data?.createTask) return;
 

@@ -128,16 +128,18 @@ export const TaskCard = forwardRef<
           <Spinner />
         </div>
       )}
-      <CardHeader className="flex flex-col gap-1">
+      <CardHeader className="flex flex-col gap-1 pb-0">
         <p className="text-base font-medium">{t.title}</p>
+      </CardHeader>
 
+      <CardBody className="text-xs text-muted-foreground flex flex-col gap-1">
         {t.description && (
           <p className="text-xs text-muted-foreground line-clamp-2">
             {t.description}
           </p>
         )}
 
-        <div className="flex flex-wrap gap-2 mt-1">
+        <div className="flex flex-wrap gap-2 my-1">
           {t.category && (
             <EnumChip
               size="sm"
@@ -179,9 +181,7 @@ export const TaskCard = forwardRef<
             />
           )}
         </div>
-      </CardHeader>
 
-      <CardBody className="text-xs text-muted-foreground flex flex-col gap-1">
         {t.estimate && (
           <div>
             <span className="font-medium">Estimate:</span> {t.estimate}h

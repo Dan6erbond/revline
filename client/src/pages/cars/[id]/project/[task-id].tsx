@@ -1,17 +1,17 @@
-import { Drawer, Switch, addToast } from "@heroui/react";
-import { Suspense, useState } from "react";
+import { CircleAlert, KanbanIcon, Lightbulb } from "lucide-react";
+import { Drawer, Tab, Tabs, addToast } from "@heroui/react";
 
 import CarLayout from "@/components/layout/car-layout";
-import { CircleAlert } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import Kanban from "@/components/project/kanban";
 import SubscriptionOverlay from "@/components/subscription-overlay";
 import { SubscriptionTier } from "@/gql/graphql";
+import { Suspense } from "react";
 import TaskDrawerContent from "@/components/project/drawer-content";
 import { getQueryParam } from "@/utils/router";
 import { useRouter } from "next/router";
 
-export default function Project() {
+export default function Task() {
   const router = useRouter();
   const taskId = getQueryParam(router.query["task-id"]);
 
@@ -19,8 +19,6 @@ export default function Project() {
     router.push(`/cars/${router.query.id}/project`, undefined, {
       shallow: true,
     });
-
-  const [showSubtasks, setShowSubtasks] = useState(false);
 
   return (
     <CarLayout
@@ -32,19 +30,31 @@ export default function Project() {
     >
       <SubscriptionOverlay requiredTiers={[SubscriptionTier.Enthusiast]} />
 
-      <div className="flex justify-between">
-        <h1 className="text-2xl">Project</h1>
-
-        <Switch
-          size="sm"
-          isSelected={showSubtasks}
-          onValueChange={setShowSubtasks}
+      <Tabs variant="underlined" selectedKey="kanban">
+        <Tab
+          key="kanban"
+          title={
+            <div className="flex items-center space-x-2">
+              <KanbanIcon />
+              <span>Kanban</span>
+            </div>
+          }
+          href={`/cars/${router.query.id}/project`}
+          className="flex-1 flex flex-col gap-4"
         >
-          Show subtasks
-        </Switch>
-      </div>
-
-      <Kanban showSubtasks={showSubtasks} />
+          <Kanban />
+        </Tab>
+        <Tab
+          key="mods"
+          title={
+            <div className="flex items-center space-x-2">
+              <Lightbulb />
+              <span>Mods</span>
+            </div>
+          }
+          href={`/cars/${router.query.id}/project/mods`}
+        />
+      </Tabs>
 
       <Drawer isOpen={taskId != null} onClose={onClose}>
         <ErrorBoundary
