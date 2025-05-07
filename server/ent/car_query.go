@@ -20,6 +20,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/modidea"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/Dan6erbond/revline/ent/serviceitem"
@@ -51,6 +52,7 @@ type CarQuery struct {
 	withExpenses              *ExpenseQuery
 	withBannerImage           *MediaQuery
 	withTasks                 *TaskQuery
+	withModIdeas              *ModIdeaQuery
 	withFKs                   bool
 	modifiers                 []func(*sql.Selector)
 	loadTotal                 []func(context.Context, []*Car) error
@@ -66,6 +68,7 @@ type CarQuery struct {
 	withNamedDynoSessions     map[string]*DynoSessionQuery
 	withNamedExpenses         map[string]*ExpenseQuery
 	withNamedTasks            map[string]*TaskQuery
+	withNamedModIdeas         map[string]*ModIdeaQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -410,6 +413,28 @@ func (cq *CarQuery) QueryTasks() *TaskQuery {
 	return query
 }
 
+// QueryModIdeas chains the current query on the "mod_ideas" edge.
+func (cq *CarQuery) QueryModIdeas() *ModIdeaQuery {
+	query := (&ModIdeaClient{config: cq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, selector),
+			sqlgraph.To(modidea.Table, modidea.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.ModIdeasTable, car.ModIdeasColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Car entity from the query.
 // Returns a *NotFoundError when no Car was found.
 func (cq *CarQuery) First(ctx context.Context) (*Car, error) {
@@ -616,6 +641,7 @@ func (cq *CarQuery) Clone() *CarQuery {
 		withExpenses:         cq.withExpenses.Clone(),
 		withBannerImage:      cq.withBannerImage.Clone(),
 		withTasks:            cq.withTasks.Clone(),
+		withModIdeas:         cq.withModIdeas.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
@@ -776,6 +802,17 @@ func (cq *CarQuery) WithTasks(opts ...func(*TaskQuery)) *CarQuery {
 	return cq
 }
 
+// WithModIdeas tells the query-builder to eager-load the nodes that are connected to
+// the "mod_ideas" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CarQuery) WithModIdeas(opts ...func(*ModIdeaQuery)) *CarQuery {
+	query := (&ModIdeaClient{config: cq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withModIdeas = query
+	return cq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -855,7 +892,7 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 		nodes       = []*Car{}
 		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
-		loadedTypes = [14]bool{
+		loadedTypes = [15]bool{
 			cq.withOwner != nil,
 			cq.withDragSessions != nil,
 			cq.withFuelUps != nil,
@@ -870,6 +907,7 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 			cq.withExpenses != nil,
 			cq.withBannerImage != nil,
 			cq.withTasks != nil,
+			cq.withModIdeas != nil,
 		}
 	)
 	if cq.withOwner != nil || cq.withBannerImage != nil {
@@ -995,6 +1033,13 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 			return nil, err
 		}
 	}
+	if query := cq.withModIdeas; query != nil {
+		if err := cq.loadModIdeas(ctx, query, nodes,
+			func(n *Car) { n.Edges.ModIdeas = []*ModIdea{} },
+			func(n *Car, e *ModIdea) { n.Edges.ModIdeas = append(n.Edges.ModIdeas, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range cq.withNamedDragSessions {
 		if err := cq.loadDragSessions(ctx, query, nodes,
 			func(n *Car) { n.appendNamedDragSessions(name) },
@@ -1076,6 +1121,13 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 		if err := cq.loadTasks(ctx, query, nodes,
 			func(n *Car) { n.appendNamedTasks(name) },
 			func(n *Car, e *Task) { n.appendNamedTasks(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range cq.withNamedModIdeas {
+		if err := cq.loadModIdeas(ctx, query, nodes,
+			func(n *Car) { n.appendNamedModIdeas(name) },
+			func(n *Car, e *ModIdea) { n.appendNamedModIdeas(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1523,6 +1575,37 @@ func (cq *CarQuery) loadTasks(ctx context.Context, query *TaskQuery, nodes []*Ca
 	}
 	return nil
 }
+func (cq *CarQuery) loadModIdeas(ctx context.Context, query *ModIdeaQuery, nodes []*Car, init func(*Car), assign func(*Car, *ModIdea)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Car)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.ModIdea(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(car.ModIdeasColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.car_mod_ideas
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "car_mod_ideas" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "car_mod_ideas" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (cq *CarQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := cq.querySpec()
@@ -1773,6 +1856,20 @@ func (cq *CarQuery) WithNamedTasks(name string, opts ...func(*TaskQuery)) *CarQu
 		cq.withNamedTasks = make(map[string]*TaskQuery)
 	}
 	cq.withNamedTasks[name] = query
+	return cq
+}
+
+// WithNamedModIdeas tells the query-builder to eager-load the nodes that are connected to the "mod_ideas"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (cq *CarQuery) WithNamedModIdeas(name string, opts ...func(*ModIdeaQuery)) *CarQuery {
+	query := (&ModIdeaClient{config: cq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if cq.withNamedModIdeas == nil {
+		cq.withNamedModIdeas = make(map[string]*ModIdeaQuery)
+	}
+	cq.withNamedModIdeas[name] = query
 	return cq
 }
 

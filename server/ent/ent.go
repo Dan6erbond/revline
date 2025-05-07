@@ -23,6 +23,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/serviceitem"
@@ -91,25 +93,27 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			album.Table:           album.ValidColumn,
-			car.Table:             car.ValidColumn,
-			checkoutsession.Table: checkoutsession.ValidColumn,
-			document.Table:        document.ValidColumn,
-			dragresult.Table:      dragresult.ValidColumn,
-			dragsession.Table:     dragsession.ValidColumn,
-			dynoresult.Table:      dynoresult.ValidColumn,
-			dynosession.Table:     dynosession.ValidColumn,
-			expense.Table:         expense.ValidColumn,
-			fuelup.Table:          fuelup.ValidColumn,
-			media.Table:           media.ValidColumn,
-			odometerreading.Table: odometerreading.ValidColumn,
-			profile.Table:         profile.ValidColumn,
-			serviceitem.Table:     serviceitem.ValidColumn,
-			servicelog.Table:      servicelog.ValidColumn,
-			serviceschedule.Table: serviceschedule.ValidColumn,
-			subscription.Table:    subscription.ValidColumn,
-			task.Table:            task.ValidColumn,
-			user.Table:            user.ValidColumn,
+			album.Table:            album.ValidColumn,
+			car.Table:              car.ValidColumn,
+			checkoutsession.Table:  checkoutsession.ValidColumn,
+			document.Table:         document.ValidColumn,
+			dragresult.Table:       dragresult.ValidColumn,
+			dragsession.Table:      dragsession.ValidColumn,
+			dynoresult.Table:       dynoresult.ValidColumn,
+			dynosession.Table:      dynosession.ValidColumn,
+			expense.Table:          expense.ValidColumn,
+			fuelup.Table:           fuelup.ValidColumn,
+			media.Table:            media.ValidColumn,
+			modidea.Table:          modidea.ValidColumn,
+			modproductoption.Table: modproductoption.ValidColumn,
+			odometerreading.Table:  odometerreading.ValidColumn,
+			profile.Table:          profile.ValidColumn,
+			serviceitem.Table:      serviceitem.ValidColumn,
+			servicelog.Table:       servicelog.ValidColumn,
+			serviceschedule.Table:  serviceschedule.ValidColumn,
+			subscription.Table:     subscription.ValidColumn,
+			task.Table:             task.ValidColumn,
+			user.Table:             user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

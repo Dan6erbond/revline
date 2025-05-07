@@ -19,6 +19,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/modidea"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/Dan6erbond/revline/ent/serviceitem"
@@ -387,6 +388,21 @@ func (cu *CarUpdate) AddTasks(t ...*Task) *CarUpdate {
 	return cu.AddTaskIDs(ids...)
 }
 
+// AddModIdeaIDs adds the "mod_ideas" edge to the ModIdea entity by IDs.
+func (cu *CarUpdate) AddModIdeaIDs(ids ...uuid.UUID) *CarUpdate {
+	cu.mutation.AddModIdeaIDs(ids...)
+	return cu
+}
+
+// AddModIdeas adds the "mod_ideas" edges to the ModIdea entity.
+func (cu *CarUpdate) AddModIdeas(m ...*ModIdea) *CarUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return cu.AddModIdeaIDs(ids...)
+}
+
 // Mutation returns the CarMutation object of the builder.
 func (cu *CarUpdate) Mutation() *CarMutation {
 	return cu.mutation
@@ -654,6 +670,27 @@ func (cu *CarUpdate) RemoveTasks(t ...*Task) *CarUpdate {
 		ids[i] = t[i].ID
 	}
 	return cu.RemoveTaskIDs(ids...)
+}
+
+// ClearModIdeas clears all "mod_ideas" edges to the ModIdea entity.
+func (cu *CarUpdate) ClearModIdeas() *CarUpdate {
+	cu.mutation.ClearModIdeas()
+	return cu
+}
+
+// RemoveModIdeaIDs removes the "mod_ideas" edge to ModIdea entities by IDs.
+func (cu *CarUpdate) RemoveModIdeaIDs(ids ...uuid.UUID) *CarUpdate {
+	cu.mutation.RemoveModIdeaIDs(ids...)
+	return cu
+}
+
+// RemoveModIdeas removes "mod_ideas" edges to ModIdea entities.
+func (cu *CarUpdate) RemoveModIdeas(m ...*ModIdea) *CarUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return cu.RemoveModIdeaIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1338,6 +1375,51 @@ func (cu *CarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if cu.mutation.ModIdeasCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.ModIdeasTable,
+			Columns: []string{car.ModIdeasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedModIdeasIDs(); len(nodes) > 0 && !cu.mutation.ModIdeasCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.ModIdeasTable,
+			Columns: []string{car.ModIdeasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.ModIdeasIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.ModIdeasTable,
+			Columns: []string{car.ModIdeasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{car.Label}
@@ -1703,6 +1785,21 @@ func (cuo *CarUpdateOne) AddTasks(t ...*Task) *CarUpdateOne {
 	return cuo.AddTaskIDs(ids...)
 }
 
+// AddModIdeaIDs adds the "mod_ideas" edge to the ModIdea entity by IDs.
+func (cuo *CarUpdateOne) AddModIdeaIDs(ids ...uuid.UUID) *CarUpdateOne {
+	cuo.mutation.AddModIdeaIDs(ids...)
+	return cuo
+}
+
+// AddModIdeas adds the "mod_ideas" edges to the ModIdea entity.
+func (cuo *CarUpdateOne) AddModIdeas(m ...*ModIdea) *CarUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return cuo.AddModIdeaIDs(ids...)
+}
+
 // Mutation returns the CarMutation object of the builder.
 func (cuo *CarUpdateOne) Mutation() *CarMutation {
 	return cuo.mutation
@@ -1970,6 +2067,27 @@ func (cuo *CarUpdateOne) RemoveTasks(t ...*Task) *CarUpdateOne {
 		ids[i] = t[i].ID
 	}
 	return cuo.RemoveTaskIDs(ids...)
+}
+
+// ClearModIdeas clears all "mod_ideas" edges to the ModIdea entity.
+func (cuo *CarUpdateOne) ClearModIdeas() *CarUpdateOne {
+	cuo.mutation.ClearModIdeas()
+	return cuo
+}
+
+// RemoveModIdeaIDs removes the "mod_ideas" edge to ModIdea entities by IDs.
+func (cuo *CarUpdateOne) RemoveModIdeaIDs(ids ...uuid.UUID) *CarUpdateOne {
+	cuo.mutation.RemoveModIdeaIDs(ids...)
+	return cuo
+}
+
+// RemoveModIdeas removes "mod_ideas" edges to ModIdea entities.
+func (cuo *CarUpdateOne) RemoveModIdeas(m ...*ModIdea) *CarUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return cuo.RemoveModIdeaIDs(ids...)
 }
 
 // Where appends a list predicates to the CarUpdate builder.
@@ -2677,6 +2795,51 @@ func (cuo *CarUpdateOne) sqlSave(ctx context.Context) (_node *Car, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.ModIdeasCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.ModIdeasTable,
+			Columns: []string{car.ModIdeasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedModIdeasIDs(); len(nodes) > 0 && !cuo.mutation.ModIdeasCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.ModIdeasTable,
+			Columns: []string{car.ModIdeasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.ModIdeasIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.ModIdeasTable,
+			Columns: []string{car.ModIdeasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

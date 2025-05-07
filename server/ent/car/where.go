@@ -913,6 +913,29 @@ func HasTasksWith(preds ...predicate.Task) predicate.Car {
 	})
 }
 
+// HasModIdeas applies the HasEdge predicate on the "mod_ideas" edge.
+func HasModIdeas() predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ModIdeasTable, ModIdeasColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasModIdeasWith applies the HasEdge predicate on the "mod_ideas" edge with a given conditions (other predicates).
+func HasModIdeasWith(preds ...predicate.ModIdea) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := newModIdeasStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Car) predicate.Car {
 	return predicate.Car(sql.AndPredicates(predicates...))

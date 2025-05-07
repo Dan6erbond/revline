@@ -304,6 +304,60 @@ var (
 			},
 		},
 	}
+	// ModIdeasColumns holds the columns for the "mod_ideas" table.
+	ModIdeasColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "title", Type: field.TypeString},
+		{Name: "category", Type: field.TypeEnum, Enums: []string{"performance", "aesthetic", "utility"}},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "stage", Type: field.TypeString, Nullable: true},
+		{Name: "car_mod_ideas", Type: field.TypeUUID},
+	}
+	// ModIdeasTable holds the schema information for the "mod_ideas" table.
+	ModIdeasTable = &schema.Table{
+		Name:       "mod_ideas",
+		Columns:    ModIdeasColumns,
+		PrimaryKey: []*schema.Column{ModIdeasColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "mod_ideas_cars_mod_ideas",
+				Columns:    []*schema.Column{ModIdeasColumns[7]},
+				RefColumns: []*schema.Column{CarsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// ModProductOptionsColumns holds the columns for the "mod_product_options" table.
+	ModProductOptionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "vendor", Type: field.TypeString, Nullable: true},
+		{Name: "name", Type: field.TypeString, Nullable: true},
+		{Name: "link", Type: field.TypeString, Nullable: true},
+		{Name: "price", Type: field.TypeFloat64, Nullable: true},
+		{Name: "notes", Type: field.TypeString, Nullable: true},
+		{Name: "pros", Type: field.TypeJSON, Nullable: true},
+		{Name: "cons", Type: field.TypeJSON, Nullable: true},
+		{Name: "specs", Type: field.TypeJSON, Nullable: true},
+		{Name: "mod_idea_product_options", Type: field.TypeUUID},
+	}
+	// ModProductOptionsTable holds the schema information for the "mod_product_options" table.
+	ModProductOptionsTable = &schema.Table{
+		Name:       "mod_product_options",
+		Columns:    ModProductOptionsColumns,
+		PrimaryKey: []*schema.Column{ModProductOptionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "mod_product_options_mod_ideas_product_options",
+				Columns:    []*schema.Column{ModProductOptionsColumns[11]},
+				RefColumns: []*schema.Column{ModIdeasColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// OdometerReadingsColumns holds the columns for the "odometer_readings" table.
 	OdometerReadingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -615,6 +669,31 @@ var (
 			},
 		},
 	}
+	// TaskModIdeasColumns holds the columns for the "task_mod_ideas" table.
+	TaskModIdeasColumns = []*schema.Column{
+		{Name: "task_id", Type: field.TypeUUID},
+		{Name: "mod_idea_id", Type: field.TypeUUID},
+	}
+	// TaskModIdeasTable holds the schema information for the "task_mod_ideas" table.
+	TaskModIdeasTable = &schema.Table{
+		Name:       "task_mod_ideas",
+		Columns:    TaskModIdeasColumns,
+		PrimaryKey: []*schema.Column{TaskModIdeasColumns[0], TaskModIdeasColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "task_mod_ideas_task_id",
+				Columns:    []*schema.Column{TaskModIdeasColumns[0]},
+				RefColumns: []*schema.Column{TasksColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "task_mod_ideas_mod_idea_id",
+				Columns:    []*schema.Column{TaskModIdeasColumns[1]},
+				RefColumns: []*schema.Column{ModIdeasColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AlbumsTable,
@@ -628,6 +707,8 @@ var (
 		ExpensesTable,
 		FuelUpsTable,
 		MediaTable,
+		ModIdeasTable,
+		ModProductOptionsTable,
 		OdometerReadingsTable,
 		ProfilesTable,
 		ServiceItemsTable,
@@ -639,6 +720,7 @@ var (
 		AlbumMediaTable,
 		ServiceLogItemsTable,
 		ServiceScheduleItemsTable,
+		TaskModIdeasTable,
 	}
 )
 
@@ -658,6 +740,8 @@ func init() {
 	FuelUpsTable.ForeignKeys[0].RefTable = CarsTable
 	FuelUpsTable.ForeignKeys[1].RefTable = OdometerReadingsTable
 	MediaTable.ForeignKeys[0].RefTable = CarsTable
+	ModIdeasTable.ForeignKeys[0].RefTable = CarsTable
+	ModProductOptionsTable.ForeignKeys[0].RefTable = ModIdeasTable
 	OdometerReadingsTable.ForeignKeys[0].RefTable = CarsTable
 	ProfilesTable.ForeignKeys[0].RefTable = UsersTable
 	ServiceItemsTable.ForeignKeys[0].RefTable = CarsTable
@@ -675,4 +759,6 @@ func init() {
 	ServiceLogItemsTable.ForeignKeys[1].RefTable = ServiceItemsTable
 	ServiceScheduleItemsTable.ForeignKeys[0].RefTable = ServiceSchedulesTable
 	ServiceScheduleItemsTable.ForeignKeys[1].RefTable = ServiceItemsTable
+	TaskModIdeasTable.ForeignKeys[0].RefTable = TasksTable
+	TaskModIdeasTable.ForeignKeys[1].RefTable = ModIdeasTable
 }

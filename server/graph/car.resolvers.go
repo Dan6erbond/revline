@@ -547,6 +547,38 @@ func (r *mutationResolver) UpdateTask(ctx context.Context, id string, input ent.
 	return r.entClient.Task.UpdateOneID(uid).SetInput(input).Save(ctx)
 }
 
+// CreateModIdea is the resolver for the createModIdea field.
+func (r *mutationResolver) CreateModIdea(ctx context.Context, input ent.CreateModIdeaInput) (*ent.ModIdea, error) {
+	return r.entClient.ModIdea.Create().SetInput(input).Save(ctx)
+}
+
+// UpdateModIdea is the resolver for the updateModIdea field.
+func (r *mutationResolver) UpdateModIdea(ctx context.Context, id string, input ent.UpdateModIdeaInput) (*ent.ModIdea, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.ModIdea.UpdateOneID(uid).SetInput(input).Save(ctx)
+}
+
+// CreateModProductOption is the resolver for the createModProductOption field.
+func (r *mutationResolver) CreateModProductOption(ctx context.Context, input ent.CreateModProductOptionInput) (*ent.ModProductOption, error) {
+	return r.entClient.ModProductOption.Create().SetInput(input).Save(ctx)
+}
+
+// UpdateModProductOption is the resolver for the updateModProductOption field.
+func (r *mutationResolver) UpdateModProductOption(ctx context.Context, id string, input ent.UpdateModProductOptionInput) (*ent.ModProductOption, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.ModProductOption.UpdateOneID(uid).SetInput(input).Save(ctx)
+}
+
 // Car is the resolver for the car field.
 func (r *queryResolver) Car(ctx context.Context, id string) (*ent.Car, error) {
 	uid, err := uuid.Parse(id)
@@ -622,6 +654,17 @@ func (r *queryResolver) Task(ctx context.Context, id string) (*ent.Task, error) 
 	}
 
 	return r.entClient.Task.Get(ctx, uid)
+}
+
+// ModIdea is the resolver for the modIdea field.
+func (r *queryResolver) ModIdea(ctx context.Context, id string) (*ent.ModIdea, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.ModIdea.Get(ctx, uid)
 }
 
 // Cost is the resolver for the cost field.
@@ -717,3 +760,15 @@ func (r *createServiceLogInputResolver) OdometerKm(ctx context.Context, obj *ent
 
 	return nil
 }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *mutationResolver) CreateModGain(ctx context.Context, input ent.CreateModGainInput) (*ent.ModGain, error) {
+	return r.entClient.ModGain.Create().SetInput(input).Save(ctx)
+}
+*/

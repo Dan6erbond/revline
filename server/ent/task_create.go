@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/modidea"
 	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/google/uuid"
 )
@@ -247,6 +248,21 @@ func (tc *TaskCreate) AddSubtasks(t ...*Task) *TaskCreate {
 	return tc.AddSubtaskIDs(ids...)
 }
 
+// AddModIdeaIDs adds the "mod_ideas" edge to the ModIdea entity by IDs.
+func (tc *TaskCreate) AddModIdeaIDs(ids ...uuid.UUID) *TaskCreate {
+	tc.mutation.AddModIdeaIDs(ids...)
+	return tc
+}
+
+// AddModIdeas adds the "mod_ideas" edges to the ModIdea entity.
+func (tc *TaskCreate) AddModIdeas(m ...*ModIdea) *TaskCreate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return tc.AddModIdeaIDs(ids...)
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (tc *TaskCreate) Mutation() *TaskMutation {
 	return tc.mutation
@@ -480,6 +496,22 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := tc.mutation.ModIdeasIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.ModIdeasTable,
+			Columns: task.ModIdeasPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

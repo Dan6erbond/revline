@@ -141,6 +141,30 @@ func (f MediaFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MediaMutation", m)
 }
 
+// The ModIdeaFunc type is an adapter to allow the use of ordinary
+// function as ModIdea mutator.
+type ModIdeaFunc func(context.Context, *ent.ModIdeaMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ModIdeaFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ModIdeaMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ModIdeaMutation", m)
+}
+
+// The ModProductOptionFunc type is an adapter to allow the use of ordinary
+// function as ModProductOption mutator.
+type ModProductOptionFunc func(context.Context, *ent.ModProductOptionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ModProductOptionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ModProductOptionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ModProductOptionMutation", m)
+}
+
 // The OdometerReadingFunc type is an adapter to allow the use of ordinary
 // function as OdometerReading mutator.
 type OdometerReadingFunc func(context.Context, *ent.OdometerReadingMutation) (ent.Value, error)

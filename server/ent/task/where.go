@@ -740,6 +740,29 @@ func HasSubtasksWith(preds ...predicate.Task) predicate.Task {
 	})
 }
 
+// HasModIdeas applies the HasEdge predicate on the "mod_ideas" edge.
+func HasModIdeas() predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, ModIdeasTable, ModIdeasPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasModIdeasWith applies the HasEdge predicate on the "mod_ideas" edge with a given conditions (other predicates).
+func HasModIdeasWith(preds ...predicate.ModIdea) predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := newModIdeasStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Task) predicate.Task {
 	return predicate.Task(sql.AndPredicates(predicates...))

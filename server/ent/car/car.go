@@ -59,6 +59,8 @@ const (
 	EdgeBannerImage = "banner_image"
 	// EdgeTasks holds the string denoting the tasks edge name in mutations.
 	EdgeTasks = "tasks"
+	// EdgeModIdeas holds the string denoting the mod_ideas edge name in mutations.
+	EdgeModIdeas = "mod_ideas"
 	// Table holds the table name of the car in the database.
 	Table = "cars"
 	// OwnerTable is the table that holds the owner relation/edge.
@@ -159,6 +161,13 @@ const (
 	TasksInverseTable = "tasks"
 	// TasksColumn is the table column denoting the tasks relation/edge.
 	TasksColumn = "car_tasks"
+	// ModIdeasTable is the table that holds the mod_ideas relation/edge.
+	ModIdeasTable = "mod_ideas"
+	// ModIdeasInverseTable is the table name for the ModIdea entity.
+	// It exists in this package in order to avoid circular dependency with the "modidea" package.
+	ModIdeasInverseTable = "mod_ideas"
+	// ModIdeasColumn is the table column denoting the mod_ideas relation/edge.
+	ModIdeasColumn = "car_mod_ideas"
 )
 
 // Columns holds all SQL columns for car fields.
@@ -436,6 +445,20 @@ func ByTasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTasksStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByModIdeasCount orders the results by mod_ideas count.
+func ByModIdeasCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newModIdeasStep(), opts...)
+	}
+}
+
+// ByModIdeas orders the results by mod_ideas terms.
+func ByModIdeas(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newModIdeasStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newOwnerStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -532,5 +555,12 @@ func newTasksStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TasksInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, TasksTable, TasksColumn),
+	)
+}
+func newModIdeasStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ModIdeasInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ModIdeasTable, ModIdeasColumn),
 	)
 }

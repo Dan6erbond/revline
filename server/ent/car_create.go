@@ -18,6 +18,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/modidea"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/serviceitem"
 	"github.com/Dan6erbond/revline/ent/servicelog"
@@ -370,6 +371,21 @@ func (cc *CarCreate) AddTasks(t ...*Task) *CarCreate {
 	return cc.AddTaskIDs(ids...)
 }
 
+// AddModIdeaIDs adds the "mod_ideas" edge to the ModIdea entity by IDs.
+func (cc *CarCreate) AddModIdeaIDs(ids ...uuid.UUID) *CarCreate {
+	cc.mutation.AddModIdeaIDs(ids...)
+	return cc
+}
+
+// AddModIdeas adds the "mod_ideas" edges to the ModIdea entity.
+func (cc *CarCreate) AddModIdeas(m ...*ModIdea) *CarCreate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return cc.AddModIdeaIDs(ids...)
+}
+
 // Mutation returns the CarMutation object of the builder.
 func (cc *CarCreate) Mutation() *CarMutation {
 	return cc.mutation
@@ -716,6 +732,22 @@ func (cc *CarCreate) createSpec() (*Car, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.ModIdeasIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.ModIdeasTable,
+			Columns: []string{car.ModIdeasColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

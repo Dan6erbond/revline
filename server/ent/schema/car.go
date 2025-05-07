@@ -60,6 +60,7 @@ func (Car) Edges() []ent.Edge {
 			Unique(),
 		edge.To("tasks", Task.Type).
 			Annotations(entgql.RelayConnection()),
+		edge.To("mod_ideas", ModIdea.Type),
 	}
 }
 

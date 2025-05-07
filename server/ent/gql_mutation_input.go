@@ -8,6 +8,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
+	"github.com/Dan6erbond/revline/ent/modidea"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/google/uuid"
@@ -111,6 +112,7 @@ type CreateCarInput struct {
 	ExpenseIDs         []uuid.UUID
 	BannerImageID      *uuid.UUID
 	TaskIDs            []uuid.UUID
+	ModIdeaIDs         []uuid.UUID
 }
 
 // Mutate applies the CreateCarInput on the CarMutation builder.
@@ -179,6 +181,9 @@ func (i *CreateCarInput) Mutate(m *CarMutation) {
 	if v := i.TaskIDs; len(v) > 0 {
 		m.AddTaskIDs(v...)
 	}
+	if v := i.ModIdeaIDs; len(v) > 0 {
+		m.AddModIdeaIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateCarInput on the CarCreate builder.
@@ -241,6 +246,9 @@ type UpdateCarInput struct {
 	ClearTasks               bool
 	AddTaskIDs               []uuid.UUID
 	RemoveTaskIDs            []uuid.UUID
+	ClearModIdeas            bool
+	AddModIdeaIDs            []uuid.UUID
+	RemoveModIdeaIDs         []uuid.UUID
 }
 
 // Mutate applies the UpdateCarInput on the CarMutation builder.
@@ -400,6 +408,15 @@ func (i *UpdateCarInput) Mutate(m *CarMutation) {
 	}
 	if v := i.RemoveTaskIDs; len(v) > 0 {
 		m.RemoveTaskIDs(v...)
+	}
+	if i.ClearModIdeas {
+		m.ClearModIdeas()
+	}
+	if v := i.AddModIdeaIDs; len(v) > 0 {
+		m.AddModIdeaIDs(v...)
+	}
+	if v := i.RemoveModIdeaIDs; len(v) > 0 {
+		m.RemoveModIdeaIDs(v...)
 	}
 }
 
@@ -1135,6 +1152,282 @@ func (c *MediaUpdate) SetInput(i UpdateMediaInput) *MediaUpdate {
 
 // SetInput applies the change-set in the UpdateMediaInput on the MediaUpdateOne builder.
 func (c *MediaUpdateOne) SetInput(i UpdateMediaInput) *MediaUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateModIdeaInput represents a mutation input for creating modideas.
+type CreateModIdeaInput struct {
+	CreateTime       *time.Time
+	UpdateTime       *time.Time
+	Title            string
+	Category         modidea.Category
+	Description      *string
+	Stage            *string
+	CarID            uuid.UUID
+	TaskIDs          []uuid.UUID
+	ProductOptionIDs []uuid.UUID
+}
+
+// Mutate applies the CreateModIdeaInput on the ModIdeaMutation builder.
+func (i *CreateModIdeaInput) Mutate(m *ModIdeaMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	m.SetTitle(i.Title)
+	m.SetCategory(i.Category)
+	if v := i.Description; v != nil {
+		m.SetDescription(*v)
+	}
+	if v := i.Stage; v != nil {
+		m.SetStage(*v)
+	}
+	m.SetCarID(i.CarID)
+	if v := i.TaskIDs; len(v) > 0 {
+		m.AddTaskIDs(v...)
+	}
+	if v := i.ProductOptionIDs; len(v) > 0 {
+		m.AddProductOptionIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the CreateModIdeaInput on the ModIdeaCreate builder.
+func (c *ModIdeaCreate) SetInput(i CreateModIdeaInput) *ModIdeaCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateModIdeaInput represents a mutation input for updating modideas.
+type UpdateModIdeaInput struct {
+	UpdateTime             *time.Time
+	Title                  *string
+	Category               *modidea.Category
+	ClearDescription       bool
+	Description            *string
+	ClearStage             bool
+	Stage                  *string
+	CarID                  *uuid.UUID
+	ClearTasks             bool
+	AddTaskIDs             []uuid.UUID
+	RemoveTaskIDs          []uuid.UUID
+	ClearProductOptions    bool
+	AddProductOptionIDs    []uuid.UUID
+	RemoveProductOptionIDs []uuid.UUID
+}
+
+// Mutate applies the UpdateModIdeaInput on the ModIdeaMutation builder.
+func (i *UpdateModIdeaInput) Mutate(m *ModIdeaMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.Title; v != nil {
+		m.SetTitle(*v)
+	}
+	if v := i.Category; v != nil {
+		m.SetCategory(*v)
+	}
+	if i.ClearDescription {
+		m.ClearDescription()
+	}
+	if v := i.Description; v != nil {
+		m.SetDescription(*v)
+	}
+	if i.ClearStage {
+		m.ClearStage()
+	}
+	if v := i.Stage; v != nil {
+		m.SetStage(*v)
+	}
+	if v := i.CarID; v != nil {
+		m.SetCarID(*v)
+	}
+	if i.ClearTasks {
+		m.ClearTasks()
+	}
+	if v := i.AddTaskIDs; len(v) > 0 {
+		m.AddTaskIDs(v...)
+	}
+	if v := i.RemoveTaskIDs; len(v) > 0 {
+		m.RemoveTaskIDs(v...)
+	}
+	if i.ClearProductOptions {
+		m.ClearProductOptions()
+	}
+	if v := i.AddProductOptionIDs; len(v) > 0 {
+		m.AddProductOptionIDs(v...)
+	}
+	if v := i.RemoveProductOptionIDs; len(v) > 0 {
+		m.RemoveProductOptionIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the UpdateModIdeaInput on the ModIdeaUpdate builder.
+func (c *ModIdeaUpdate) SetInput(i UpdateModIdeaInput) *ModIdeaUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateModIdeaInput on the ModIdeaUpdateOne builder.
+func (c *ModIdeaUpdateOne) SetInput(i UpdateModIdeaInput) *ModIdeaUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateModProductOptionInput represents a mutation input for creating modproductoptions.
+type CreateModProductOptionInput struct {
+	CreateTime *time.Time
+	UpdateTime *time.Time
+	Vendor     *string
+	Name       *string
+	Link       *string
+	Price      *float64
+	Notes      *string
+	Pros       []string
+	Cons       []string
+	Specs      map[string]string
+	IdeaID     uuid.UUID
+}
+
+// Mutate applies the CreateModProductOptionInput on the ModProductOptionMutation builder.
+func (i *CreateModProductOptionInput) Mutate(m *ModProductOptionMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.Vendor; v != nil {
+		m.SetVendor(*v)
+	}
+	if v := i.Name; v != nil {
+		m.SetName(*v)
+	}
+	if v := i.Link; v != nil {
+		m.SetLink(*v)
+	}
+	if v := i.Price; v != nil {
+		m.SetPrice(*v)
+	}
+	if v := i.Notes; v != nil {
+		m.SetNotes(*v)
+	}
+	if v := i.Pros; v != nil {
+		m.SetPros(v)
+	}
+	if v := i.Cons; v != nil {
+		m.SetCons(v)
+	}
+	if v := i.Specs; v != nil {
+		m.SetSpecs(v)
+	}
+	m.SetIdeaID(i.IdeaID)
+}
+
+// SetInput applies the change-set in the CreateModProductOptionInput on the ModProductOptionCreate builder.
+func (c *ModProductOptionCreate) SetInput(i CreateModProductOptionInput) *ModProductOptionCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateModProductOptionInput represents a mutation input for updating modproductoptions.
+type UpdateModProductOptionInput struct {
+	UpdateTime  *time.Time
+	ClearVendor bool
+	Vendor      *string
+	ClearName   bool
+	Name        *string
+	ClearLink   bool
+	Link        *string
+	ClearPrice  bool
+	Price       *float64
+	ClearNotes  bool
+	Notes       *string
+	ClearPros   bool
+	Pros        []string
+	AppendPros  []string
+	ClearCons   bool
+	Cons        []string
+	AppendCons  []string
+	ClearSpecs  bool
+	Specs       map[string]string
+	IdeaID      *uuid.UUID
+}
+
+// Mutate applies the UpdateModProductOptionInput on the ModProductOptionMutation builder.
+func (i *UpdateModProductOptionInput) Mutate(m *ModProductOptionMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if i.ClearVendor {
+		m.ClearVendor()
+	}
+	if v := i.Vendor; v != nil {
+		m.SetVendor(*v)
+	}
+	if i.ClearName {
+		m.ClearName()
+	}
+	if v := i.Name; v != nil {
+		m.SetName(*v)
+	}
+	if i.ClearLink {
+		m.ClearLink()
+	}
+	if v := i.Link; v != nil {
+		m.SetLink(*v)
+	}
+	if i.ClearPrice {
+		m.ClearPrice()
+	}
+	if v := i.Price; v != nil {
+		m.SetPrice(*v)
+	}
+	if i.ClearNotes {
+		m.ClearNotes()
+	}
+	if v := i.Notes; v != nil {
+		m.SetNotes(*v)
+	}
+	if i.ClearPros {
+		m.ClearPros()
+	}
+	if v := i.Pros; v != nil {
+		m.SetPros(v)
+	}
+	if i.AppendPros != nil {
+		m.AppendPros(i.Pros)
+	}
+	if i.ClearCons {
+		m.ClearCons()
+	}
+	if v := i.Cons; v != nil {
+		m.SetCons(v)
+	}
+	if i.AppendCons != nil {
+		m.AppendCons(i.Cons)
+	}
+	if i.ClearSpecs {
+		m.ClearSpecs()
+	}
+	if v := i.Specs; v != nil {
+		m.SetSpecs(v)
+	}
+	if v := i.IdeaID; v != nil {
+		m.SetIdeaID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateModProductOptionInput on the ModProductOptionUpdate builder.
+func (c *ModProductOptionUpdate) SetInput(i UpdateModProductOptionInput) *ModProductOptionUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateModProductOptionInput on the ModProductOptionUpdateOne builder.
+func (c *ModProductOptionUpdateOne) SetInput(i UpdateModProductOptionInput) *ModProductOptionUpdateOne {
 	i.Mutate(c.Mutation())
 	return c
 }
@@ -1879,6 +2172,7 @@ type CreateTaskInput struct {
 	CarID       uuid.UUID
 	ParentID    *uuid.UUID
 	SubtaskIDs  []uuid.UUID
+	ModIdeaIDs  []uuid.UUID
 }
 
 // Mutate applies the CreateTaskInput on the TaskMutation builder.
@@ -1925,6 +2219,9 @@ func (i *CreateTaskInput) Mutate(m *TaskMutation) {
 	if v := i.SubtaskIDs; len(v) > 0 {
 		m.AddSubtaskIDs(v...)
 	}
+	if v := i.ModIdeaIDs; len(v) > 0 {
+		m.AddModIdeaIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateTaskInput on the TaskCreate builder.
@@ -1961,6 +2258,9 @@ type UpdateTaskInput struct {
 	ClearSubtasks    bool
 	AddSubtaskIDs    []uuid.UUID
 	RemoveSubtaskIDs []uuid.UUID
+	ClearModIdeas    bool
+	AddModIdeaIDs    []uuid.UUID
+	RemoveModIdeaIDs []uuid.UUID
 }
 
 // Mutate applies the UpdateTaskInput on the TaskMutation builder.
@@ -2042,6 +2342,15 @@ func (i *UpdateTaskInput) Mutate(m *TaskMutation) {
 	}
 	if v := i.RemoveSubtaskIDs; len(v) > 0 {
 		m.RemoveSubtaskIDs(v...)
+	}
+	if i.ClearModIdeas {
+		m.ClearModIdeas()
+	}
+	if v := i.AddModIdeaIDs; len(v) > 0 {
+		m.AddModIdeaIDs(v...)
+	}
+	if v := i.RemoveModIdeaIDs; len(v) > 0 {
+		m.RemoveModIdeaIDs(v...)
 	}
 }
 

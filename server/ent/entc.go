@@ -17,7 +17,7 @@ func main() {
 		entgql.WithSchemaPath("../graph/ent.graphqls"),
 		entgql.WithWhereInputs(true),
 		entgql.WithRelaySpec(true),
-		entgql.WithNodeDescriptor(false),
+		// entgql.WithNodeDescriptor(false),
 	)
 
 	if err != nil {

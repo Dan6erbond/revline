@@ -21,6 +21,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/serviceitem"
@@ -406,6 +408,19 @@ func (c *CarQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphq
 				query = pager.applyOrder(query)
 			}
 			c.WithNamedTasks(alias, func(wq *TaskQuery) {
+				*wq = *query
+			})
+
+		case "modIdeas":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ModIdeaClient{config: c.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, modideaImplementors)...); err != nil {
+				return err
+			}
+			c.WithNamedModIdeas(alias, func(wq *ModIdeaQuery) {
 				*wq = *query
 			})
 		case "createTime":
@@ -1481,6 +1496,258 @@ func newMediaPaginateArgs(rv map[string]any) *mediaPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (mi *ModIdeaQuery) CollectFields(ctx context.Context, satisfies ...string) (*ModIdeaQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return mi, nil
+	}
+	if err := mi.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return mi, nil
+}
+
+func (mi *ModIdeaQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(modidea.Columns))
+		selectedFields = []string{modidea.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+
+		case "car":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&CarClient{config: mi.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, carImplementors)...); err != nil {
+				return err
+			}
+			mi.withCar = query
+
+		case "tasks":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&TaskClient{config: mi.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, taskImplementors)...); err != nil {
+				return err
+			}
+			mi.WithNamedTasks(alias, func(wq *TaskQuery) {
+				*wq = *query
+			})
+
+		case "productOptions":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ModProductOptionClient{config: mi.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, modproductoptionImplementors)...); err != nil {
+				return err
+			}
+			mi.WithNamedProductOptions(alias, func(wq *ModProductOptionQuery) {
+				*wq = *query
+			})
+		case "createTime":
+			if _, ok := fieldSeen[modidea.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, modidea.FieldCreateTime)
+				fieldSeen[modidea.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[modidea.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, modidea.FieldUpdateTime)
+				fieldSeen[modidea.FieldUpdateTime] = struct{}{}
+			}
+		case "title":
+			if _, ok := fieldSeen[modidea.FieldTitle]; !ok {
+				selectedFields = append(selectedFields, modidea.FieldTitle)
+				fieldSeen[modidea.FieldTitle] = struct{}{}
+			}
+		case "category":
+			if _, ok := fieldSeen[modidea.FieldCategory]; !ok {
+				selectedFields = append(selectedFields, modidea.FieldCategory)
+				fieldSeen[modidea.FieldCategory] = struct{}{}
+			}
+		case "description":
+			if _, ok := fieldSeen[modidea.FieldDescription]; !ok {
+				selectedFields = append(selectedFields, modidea.FieldDescription)
+				fieldSeen[modidea.FieldDescription] = struct{}{}
+			}
+		case "stage":
+			if _, ok := fieldSeen[modidea.FieldStage]; !ok {
+				selectedFields = append(selectedFields, modidea.FieldStage)
+				fieldSeen[modidea.FieldStage] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		mi.Select(selectedFields...)
+	}
+	return nil
+}
+
+type modideaPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []ModIdeaPaginateOption
+}
+
+func newModIdeaPaginateArgs(rv map[string]any) *modideaPaginateArgs {
+	args := &modideaPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*ModIdeaWhereInput); ok {
+		args.opts = append(args.opts, WithModIdeaFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (mpo *ModProductOptionQuery) CollectFields(ctx context.Context, satisfies ...string) (*ModProductOptionQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return mpo, nil
+	}
+	if err := mpo.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return mpo, nil
+}
+
+func (mpo *ModProductOptionQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(modproductoption.Columns))
+		selectedFields = []string{modproductoption.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+
+		case "idea":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ModIdeaClient{config: mpo.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, modideaImplementors)...); err != nil {
+				return err
+			}
+			mpo.withIdea = query
+		case "createTime":
+			if _, ok := fieldSeen[modproductoption.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, modproductoption.FieldCreateTime)
+				fieldSeen[modproductoption.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[modproductoption.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, modproductoption.FieldUpdateTime)
+				fieldSeen[modproductoption.FieldUpdateTime] = struct{}{}
+			}
+		case "vendor":
+			if _, ok := fieldSeen[modproductoption.FieldVendor]; !ok {
+				selectedFields = append(selectedFields, modproductoption.FieldVendor)
+				fieldSeen[modproductoption.FieldVendor] = struct{}{}
+			}
+		case "name":
+			if _, ok := fieldSeen[modproductoption.FieldName]; !ok {
+				selectedFields = append(selectedFields, modproductoption.FieldName)
+				fieldSeen[modproductoption.FieldName] = struct{}{}
+			}
+		case "link":
+			if _, ok := fieldSeen[modproductoption.FieldLink]; !ok {
+				selectedFields = append(selectedFields, modproductoption.FieldLink)
+				fieldSeen[modproductoption.FieldLink] = struct{}{}
+			}
+		case "price":
+			if _, ok := fieldSeen[modproductoption.FieldPrice]; !ok {
+				selectedFields = append(selectedFields, modproductoption.FieldPrice)
+				fieldSeen[modproductoption.FieldPrice] = struct{}{}
+			}
+		case "notes":
+			if _, ok := fieldSeen[modproductoption.FieldNotes]; !ok {
+				selectedFields = append(selectedFields, modproductoption.FieldNotes)
+				fieldSeen[modproductoption.FieldNotes] = struct{}{}
+			}
+		case "pros":
+			if _, ok := fieldSeen[modproductoption.FieldPros]; !ok {
+				selectedFields = append(selectedFields, modproductoption.FieldPros)
+				fieldSeen[modproductoption.FieldPros] = struct{}{}
+			}
+		case "cons":
+			if _, ok := fieldSeen[modproductoption.FieldCons]; !ok {
+				selectedFields = append(selectedFields, modproductoption.FieldCons)
+				fieldSeen[modproductoption.FieldCons] = struct{}{}
+			}
+		case "specs":
+			if _, ok := fieldSeen[modproductoption.FieldSpecs]; !ok {
+				selectedFields = append(selectedFields, modproductoption.FieldSpecs)
+				fieldSeen[modproductoption.FieldSpecs] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		mpo.Select(selectedFields...)
+	}
+	return nil
+}
+
+type modproductoptionPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []ModProductOptionPaginateOption
+}
+
+func newModProductOptionPaginateArgs(rv map[string]any) *modproductoptionPaginateArgs {
+	args := &modproductoptionPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*ModProductOptionWhereInput); ok {
+		args.opts = append(args.opts, WithModProductOptionFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (or *OdometerReadingQuery) CollectFields(ctx context.Context, satisfies ...string) (*OdometerReadingQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
@@ -2338,6 +2605,19 @@ func (t *TaskQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 				return err
 			}
 			t.WithNamedSubtasks(alias, func(wq *TaskQuery) {
+				*wq = *query
+			})
+
+		case "modIdeas":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ModIdeaClient{config: t.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, modideaImplementors)...); err != nil {
+				return err
+			}
+			t.WithNamedModIdeas(alias, func(wq *ModIdeaQuery) {
 				*wq = *query
 			})
 		case "createTime":

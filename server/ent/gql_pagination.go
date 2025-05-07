@@ -25,6 +25,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/serviceitem"
@@ -2853,6 +2855,504 @@ func (m *Media) ToEdge(order *MediaOrder) *MediaEdge {
 	return &MediaEdge{
 		Node:   m,
 		Cursor: order.Field.toCursor(m),
+	}
+}
+
+// ModIdeaEdge is the edge representation of ModIdea.
+type ModIdeaEdge struct {
+	Node   *ModIdea `json:"node"`
+	Cursor Cursor   `json:"cursor"`
+}
+
+// ModIdeaConnection is the connection containing edges to ModIdea.
+type ModIdeaConnection struct {
+	Edges      []*ModIdeaEdge `json:"edges"`
+	PageInfo   PageInfo       `json:"pageInfo"`
+	TotalCount int            `json:"totalCount"`
+}
+
+func (c *ModIdeaConnection) build(nodes []*ModIdea, pager *modideaPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *ModIdea
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *ModIdea {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *ModIdea {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*ModIdeaEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &ModIdeaEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// ModIdeaPaginateOption enables pagination customization.
+type ModIdeaPaginateOption func(*modideaPager) error
+
+// WithModIdeaOrder configures pagination ordering.
+func WithModIdeaOrder(order *ModIdeaOrder) ModIdeaPaginateOption {
+	if order == nil {
+		order = DefaultModIdeaOrder
+	}
+	o := *order
+	return func(pager *modideaPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultModIdeaOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithModIdeaFilter configures pagination filter.
+func WithModIdeaFilter(filter func(*ModIdeaQuery) (*ModIdeaQuery, error)) ModIdeaPaginateOption {
+	return func(pager *modideaPager) error {
+		if filter == nil {
+			return errors.New("ModIdeaQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type modideaPager struct {
+	reverse bool
+	order   *ModIdeaOrder
+	filter  func(*ModIdeaQuery) (*ModIdeaQuery, error)
+}
+
+func newModIdeaPager(opts []ModIdeaPaginateOption, reverse bool) (*modideaPager, error) {
+	pager := &modideaPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultModIdeaOrder
+	}
+	return pager, nil
+}
+
+func (p *modideaPager) applyFilter(query *ModIdeaQuery) (*ModIdeaQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *modideaPager) toCursor(mi *ModIdea) Cursor {
+	return p.order.Field.toCursor(mi)
+}
+
+func (p *modideaPager) applyCursors(query *ModIdeaQuery, after, before *Cursor) (*ModIdeaQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultModIdeaOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *modideaPager) applyOrder(query *ModIdeaQuery) *ModIdeaQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultModIdeaOrder.Field {
+		query = query.Order(DefaultModIdeaOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *modideaPager) orderExpr(query *ModIdeaQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultModIdeaOrder.Field {
+			b.Comma().Ident(DefaultModIdeaOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to ModIdea.
+func (mi *ModIdeaQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...ModIdeaPaginateOption,
+) (*ModIdeaConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newModIdeaPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if mi, err = pager.applyFilter(mi); err != nil {
+		return nil, err
+	}
+	conn := &ModIdeaConnection{Edges: []*ModIdeaEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := mi.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if mi, err = pager.applyCursors(mi, after, before); err != nil {
+		return nil, err
+	}
+	limit := paginateLimit(first, last)
+	if limit != 0 {
+		mi.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := mi.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	mi = pager.applyOrder(mi)
+	nodes, err := mi.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// ModIdeaOrderField defines the ordering field of ModIdea.
+type ModIdeaOrderField struct {
+	// Value extracts the ordering value from the given ModIdea.
+	Value    func(*ModIdea) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) modidea.OrderOption
+	toCursor func(*ModIdea) Cursor
+}
+
+// ModIdeaOrder defines the ordering of ModIdea.
+type ModIdeaOrder struct {
+	Direction OrderDirection     `json:"direction"`
+	Field     *ModIdeaOrderField `json:"field"`
+}
+
+// DefaultModIdeaOrder is the default ordering of ModIdea.
+var DefaultModIdeaOrder = &ModIdeaOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &ModIdeaOrderField{
+		Value: func(mi *ModIdea) (ent.Value, error) {
+			return mi.ID, nil
+		},
+		column: modidea.FieldID,
+		toTerm: modidea.ByID,
+		toCursor: func(mi *ModIdea) Cursor {
+			return Cursor{ID: mi.ID}
+		},
+	},
+}
+
+// ToEdge converts ModIdea into ModIdeaEdge.
+func (mi *ModIdea) ToEdge(order *ModIdeaOrder) *ModIdeaEdge {
+	if order == nil {
+		order = DefaultModIdeaOrder
+	}
+	return &ModIdeaEdge{
+		Node:   mi,
+		Cursor: order.Field.toCursor(mi),
+	}
+}
+
+// ModProductOptionEdge is the edge representation of ModProductOption.
+type ModProductOptionEdge struct {
+	Node   *ModProductOption `json:"node"`
+	Cursor Cursor            `json:"cursor"`
+}
+
+// ModProductOptionConnection is the connection containing edges to ModProductOption.
+type ModProductOptionConnection struct {
+	Edges      []*ModProductOptionEdge `json:"edges"`
+	PageInfo   PageInfo                `json:"pageInfo"`
+	TotalCount int                     `json:"totalCount"`
+}
+
+func (c *ModProductOptionConnection) build(nodes []*ModProductOption, pager *modproductoptionPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *ModProductOption
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *ModProductOption {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *ModProductOption {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*ModProductOptionEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &ModProductOptionEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// ModProductOptionPaginateOption enables pagination customization.
+type ModProductOptionPaginateOption func(*modproductoptionPager) error
+
+// WithModProductOptionOrder configures pagination ordering.
+func WithModProductOptionOrder(order *ModProductOptionOrder) ModProductOptionPaginateOption {
+	if order == nil {
+		order = DefaultModProductOptionOrder
+	}
+	o := *order
+	return func(pager *modproductoptionPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultModProductOptionOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithModProductOptionFilter configures pagination filter.
+func WithModProductOptionFilter(filter func(*ModProductOptionQuery) (*ModProductOptionQuery, error)) ModProductOptionPaginateOption {
+	return func(pager *modproductoptionPager) error {
+		if filter == nil {
+			return errors.New("ModProductOptionQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type modproductoptionPager struct {
+	reverse bool
+	order   *ModProductOptionOrder
+	filter  func(*ModProductOptionQuery) (*ModProductOptionQuery, error)
+}
+
+func newModProductOptionPager(opts []ModProductOptionPaginateOption, reverse bool) (*modproductoptionPager, error) {
+	pager := &modproductoptionPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultModProductOptionOrder
+	}
+	return pager, nil
+}
+
+func (p *modproductoptionPager) applyFilter(query *ModProductOptionQuery) (*ModProductOptionQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *modproductoptionPager) toCursor(mpo *ModProductOption) Cursor {
+	return p.order.Field.toCursor(mpo)
+}
+
+func (p *modproductoptionPager) applyCursors(query *ModProductOptionQuery, after, before *Cursor) (*ModProductOptionQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultModProductOptionOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *modproductoptionPager) applyOrder(query *ModProductOptionQuery) *ModProductOptionQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultModProductOptionOrder.Field {
+		query = query.Order(DefaultModProductOptionOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *modproductoptionPager) orderExpr(query *ModProductOptionQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultModProductOptionOrder.Field {
+			b.Comma().Ident(DefaultModProductOptionOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to ModProductOption.
+func (mpo *ModProductOptionQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...ModProductOptionPaginateOption,
+) (*ModProductOptionConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newModProductOptionPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if mpo, err = pager.applyFilter(mpo); err != nil {
+		return nil, err
+	}
+	conn := &ModProductOptionConnection{Edges: []*ModProductOptionEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := mpo.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if mpo, err = pager.applyCursors(mpo, after, before); err != nil {
+		return nil, err
+	}
+	limit := paginateLimit(first, last)
+	if limit != 0 {
+		mpo.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := mpo.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	mpo = pager.applyOrder(mpo)
+	nodes, err := mpo.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// ModProductOptionOrderField defines the ordering field of ModProductOption.
+type ModProductOptionOrderField struct {
+	// Value extracts the ordering value from the given ModProductOption.
+	Value    func(*ModProductOption) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) modproductoption.OrderOption
+	toCursor func(*ModProductOption) Cursor
+}
+
+// ModProductOptionOrder defines the ordering of ModProductOption.
+type ModProductOptionOrder struct {
+	Direction OrderDirection              `json:"direction"`
+	Field     *ModProductOptionOrderField `json:"field"`
+}
+
+// DefaultModProductOptionOrder is the default ordering of ModProductOption.
+var DefaultModProductOptionOrder = &ModProductOptionOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &ModProductOptionOrderField{
+		Value: func(mpo *ModProductOption) (ent.Value, error) {
+			return mpo.ID, nil
+		},
+		column: modproductoption.FieldID,
+		toTerm: modproductoption.ByID,
+		toCursor: func(mpo *ModProductOption) Cursor {
+			return Cursor{ID: mpo.ID}
+		},
+	},
+}
+
+// ToEdge converts ModProductOption into ModProductOptionEdge.
+func (mpo *ModProductOption) ToEdge(order *ModProductOptionOrder) *ModProductOptionEdge {
+	if order == nil {
+		order = DefaultModProductOptionOrder
+	}
+	return &ModProductOptionEdge{
+		Node:   mpo,
+		Cursor: order.Field.toCursor(mpo),
 	}
 }
 

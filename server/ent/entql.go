@@ -14,6 +14,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/Dan6erbond/revline/ent/profile"
@@ -32,7 +34,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 19)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 21)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   album.Table,
@@ -237,6 +239,48 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[11] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   modidea.Table,
+			Columns: modidea.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: modidea.FieldID,
+			},
+		},
+		Type: "ModIdea",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			modidea.FieldCreateTime:  {Type: field.TypeTime, Column: modidea.FieldCreateTime},
+			modidea.FieldUpdateTime:  {Type: field.TypeTime, Column: modidea.FieldUpdateTime},
+			modidea.FieldTitle:       {Type: field.TypeString, Column: modidea.FieldTitle},
+			modidea.FieldCategory:    {Type: field.TypeEnum, Column: modidea.FieldCategory},
+			modidea.FieldDescription: {Type: field.TypeString, Column: modidea.FieldDescription},
+			modidea.FieldStage:       {Type: field.TypeString, Column: modidea.FieldStage},
+		},
+	}
+	graph.Nodes[12] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   modproductoption.Table,
+			Columns: modproductoption.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: modproductoption.FieldID,
+			},
+		},
+		Type: "ModProductOption",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			modproductoption.FieldCreateTime: {Type: field.TypeTime, Column: modproductoption.FieldCreateTime},
+			modproductoption.FieldUpdateTime: {Type: field.TypeTime, Column: modproductoption.FieldUpdateTime},
+			modproductoption.FieldVendor:     {Type: field.TypeString, Column: modproductoption.FieldVendor},
+			modproductoption.FieldName:       {Type: field.TypeString, Column: modproductoption.FieldName},
+			modproductoption.FieldLink:       {Type: field.TypeString, Column: modproductoption.FieldLink},
+			modproductoption.FieldPrice:      {Type: field.TypeFloat64, Column: modproductoption.FieldPrice},
+			modproductoption.FieldNotes:      {Type: field.TypeString, Column: modproductoption.FieldNotes},
+			modproductoption.FieldPros:       {Type: field.TypeJSON, Column: modproductoption.FieldPros},
+			modproductoption.FieldCons:       {Type: field.TypeJSON, Column: modproductoption.FieldCons},
+			modproductoption.FieldSpecs:      {Type: field.TypeJSON, Column: modproductoption.FieldSpecs},
+		},
+	}
+	graph.Nodes[13] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   odometerreading.Table,
 			Columns: odometerreading.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -253,7 +297,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			odometerreading.FieldNotes:       {Type: field.TypeString, Column: odometerreading.FieldNotes},
 		},
 	}
-	graph.Nodes[12] = &sqlgraph.Node{
+	graph.Nodes[14] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   profile.Table,
 			Columns: profile.Columns,
@@ -280,7 +324,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			profile.FieldVisibility:          {Type: field.TypeEnum, Column: profile.FieldVisibility},
 		},
 	}
-	graph.Nodes[13] = &sqlgraph.Node{
+	graph.Nodes[15] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   serviceitem.Table,
 			Columns: serviceitem.Columns,
@@ -301,7 +345,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			serviceitem.FieldTags:                  {Type: field.TypeJSON, Column: serviceitem.FieldTags},
 		},
 	}
-	graph.Nodes[14] = &sqlgraph.Node{
+	graph.Nodes[16] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   servicelog.Table,
 			Columns: servicelog.Columns,
@@ -319,7 +363,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			servicelog.FieldNotes:         {Type: field.TypeString, Column: servicelog.FieldNotes},
 		},
 	}
-	graph.Nodes[15] = &sqlgraph.Node{
+	graph.Nodes[17] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   serviceschedule.Table,
 			Columns: serviceschedule.Columns,
@@ -341,7 +385,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			serviceschedule.FieldArchived:          {Type: field.TypeBool, Column: serviceschedule.FieldArchived},
 		},
 	}
-	graph.Nodes[16] = &sqlgraph.Node{
+	graph.Nodes[18] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   subscription.Table,
 			Columns: subscription.Columns,
@@ -361,7 +405,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			subscription.FieldCancelAtPeriodEnd:    {Type: field.TypeBool, Column: subscription.FieldCancelAtPeriodEnd},
 		},
 	}
-	graph.Nodes[17] = &sqlgraph.Node{
+	graph.Nodes[19] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   task.Table,
 			Columns: task.Columns,
@@ -387,7 +431,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			task.FieldPartsNeeded: {Type: field.TypeString, Column: task.FieldPartsNeeded},
 		},
 	}
-	graph.Nodes[18] = &sqlgraph.Node{
+	graph.Nodes[20] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
@@ -597,6 +641,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Task",
 	)
 	graph.MustAddE(
+		"mod_ideas",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.ModIdeasTable,
+			Columns: []string{car.ModIdeasColumn},
+			Bidi:    false,
+		},
+		"Car",
+		"ModIdea",
+	)
+	graph.MustAddE(
 		"user",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -799,6 +855,54 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Media",
 		"Album",
+	)
+	graph.MustAddE(
+		"car",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   modidea.CarTable,
+			Columns: []string{modidea.CarColumn},
+			Bidi:    false,
+		},
+		"ModIdea",
+		"Car",
+	)
+	graph.MustAddE(
+		"tasks",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   modidea.TasksTable,
+			Columns: modidea.TasksPrimaryKey,
+			Bidi:    false,
+		},
+		"ModIdea",
+		"Task",
+	)
+	graph.MustAddE(
+		"product_options",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modidea.ProductOptionsTable,
+			Columns: []string{modidea.ProductOptionsColumn},
+			Bidi:    false,
+		},
+		"ModIdea",
+		"ModProductOption",
+	)
+	graph.MustAddE(
+		"idea",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   modproductoption.IdeaTable,
+			Columns: []string{modproductoption.IdeaColumn},
+			Bidi:    false,
+		},
+		"ModProductOption",
+		"ModIdea",
 	)
 	graph.MustAddE(
 		"car",
@@ -1039,6 +1143,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Task",
 		"Task",
+	)
+	graph.MustAddE(
+		"mod_ideas",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.ModIdeasTable,
+			Columns: task.ModIdeasPrimaryKey,
+			Bidi:    false,
+		},
+		"Task",
+		"ModIdea",
 	)
 	graph.MustAddE(
 		"cars",
@@ -1450,6 +1566,20 @@ func (f *CarFilter) WhereHasTasks() {
 // WhereHasTasksWith applies a predicate to check if query has an edge tasks with a given conditions (other predicates).
 func (f *CarFilter) WhereHasTasksWith(preds ...predicate.Task) {
 	f.Where(entql.HasEdgeWith("tasks", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasModIdeas applies a predicate to check if query has an edge mod_ideas.
+func (f *CarFilter) WhereHasModIdeas() {
+	f.Where(entql.HasEdge("mod_ideas"))
+}
+
+// WhereHasModIdeasWith applies a predicate to check if query has an edge mod_ideas with a given conditions (other predicates).
+func (f *CarFilter) WhereHasModIdeasWith(preds ...predicate.ModIdea) {
+	f.Where(entql.HasEdgeWith("mod_ideas", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -2295,6 +2425,222 @@ func (f *MediaFilter) WhereHasAlbumsWith(preds ...predicate.Album) {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (miq *ModIdeaQuery) addPredicate(pred func(s *sql.Selector)) {
+	miq.predicates = append(miq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the ModIdeaQuery builder.
+func (miq *ModIdeaQuery) Filter() *ModIdeaFilter {
+	return &ModIdeaFilter{config: miq.config, predicateAdder: miq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *ModIdeaMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the ModIdeaMutation builder.
+func (m *ModIdeaMutation) Filter() *ModIdeaFilter {
+	return &ModIdeaFilter{config: m.config, predicateAdder: m}
+}
+
+// ModIdeaFilter provides a generic filtering capability at runtime for ModIdeaQuery.
+type ModIdeaFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *ModIdeaFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[11].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *ModIdeaFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(modidea.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *ModIdeaFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(modidea.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *ModIdeaFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(modidea.FieldUpdateTime))
+}
+
+// WhereTitle applies the entql string predicate on the title field.
+func (f *ModIdeaFilter) WhereTitle(p entql.StringP) {
+	f.Where(p.Field(modidea.FieldTitle))
+}
+
+// WhereCategory applies the entql string predicate on the category field.
+func (f *ModIdeaFilter) WhereCategory(p entql.StringP) {
+	f.Where(p.Field(modidea.FieldCategory))
+}
+
+// WhereDescription applies the entql string predicate on the description field.
+func (f *ModIdeaFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(modidea.FieldDescription))
+}
+
+// WhereStage applies the entql string predicate on the stage field.
+func (f *ModIdeaFilter) WhereStage(p entql.StringP) {
+	f.Where(p.Field(modidea.FieldStage))
+}
+
+// WhereHasCar applies a predicate to check if query has an edge car.
+func (f *ModIdeaFilter) WhereHasCar() {
+	f.Where(entql.HasEdge("car"))
+}
+
+// WhereHasCarWith applies a predicate to check if query has an edge car with a given conditions (other predicates).
+func (f *ModIdeaFilter) WhereHasCarWith(preds ...predicate.Car) {
+	f.Where(entql.HasEdgeWith("car", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasTasks applies a predicate to check if query has an edge tasks.
+func (f *ModIdeaFilter) WhereHasTasks() {
+	f.Where(entql.HasEdge("tasks"))
+}
+
+// WhereHasTasksWith applies a predicate to check if query has an edge tasks with a given conditions (other predicates).
+func (f *ModIdeaFilter) WhereHasTasksWith(preds ...predicate.Task) {
+	f.Where(entql.HasEdgeWith("tasks", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasProductOptions applies a predicate to check if query has an edge product_options.
+func (f *ModIdeaFilter) WhereHasProductOptions() {
+	f.Where(entql.HasEdge("product_options"))
+}
+
+// WhereHasProductOptionsWith applies a predicate to check if query has an edge product_options with a given conditions (other predicates).
+func (f *ModIdeaFilter) WhereHasProductOptionsWith(preds ...predicate.ModProductOption) {
+	f.Where(entql.HasEdgeWith("product_options", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (mpoq *ModProductOptionQuery) addPredicate(pred func(s *sql.Selector)) {
+	mpoq.predicates = append(mpoq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the ModProductOptionQuery builder.
+func (mpoq *ModProductOptionQuery) Filter() *ModProductOptionFilter {
+	return &ModProductOptionFilter{config: mpoq.config, predicateAdder: mpoq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *ModProductOptionMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the ModProductOptionMutation builder.
+func (m *ModProductOptionMutation) Filter() *ModProductOptionFilter {
+	return &ModProductOptionFilter{config: m.config, predicateAdder: m}
+}
+
+// ModProductOptionFilter provides a generic filtering capability at runtime for ModProductOptionQuery.
+type ModProductOptionFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *ModProductOptionFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[12].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *ModProductOptionFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(modproductoption.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *ModProductOptionFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(modproductoption.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *ModProductOptionFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(modproductoption.FieldUpdateTime))
+}
+
+// WhereVendor applies the entql string predicate on the vendor field.
+func (f *ModProductOptionFilter) WhereVendor(p entql.StringP) {
+	f.Where(p.Field(modproductoption.FieldVendor))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *ModProductOptionFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(modproductoption.FieldName))
+}
+
+// WhereLink applies the entql string predicate on the link field.
+func (f *ModProductOptionFilter) WhereLink(p entql.StringP) {
+	f.Where(p.Field(modproductoption.FieldLink))
+}
+
+// WherePrice applies the entql float64 predicate on the price field.
+func (f *ModProductOptionFilter) WherePrice(p entql.Float64P) {
+	f.Where(p.Field(modproductoption.FieldPrice))
+}
+
+// WhereNotes applies the entql string predicate on the notes field.
+func (f *ModProductOptionFilter) WhereNotes(p entql.StringP) {
+	f.Where(p.Field(modproductoption.FieldNotes))
+}
+
+// WherePros applies the entql json.RawMessage predicate on the pros field.
+func (f *ModProductOptionFilter) WherePros(p entql.BytesP) {
+	f.Where(p.Field(modproductoption.FieldPros))
+}
+
+// WhereCons applies the entql json.RawMessage predicate on the cons field.
+func (f *ModProductOptionFilter) WhereCons(p entql.BytesP) {
+	f.Where(p.Field(modproductoption.FieldCons))
+}
+
+// WhereSpecs applies the entql json.RawMessage predicate on the specs field.
+func (f *ModProductOptionFilter) WhereSpecs(p entql.BytesP) {
+	f.Where(p.Field(modproductoption.FieldSpecs))
+}
+
+// WhereHasIdea applies a predicate to check if query has an edge idea.
+func (f *ModProductOptionFilter) WhereHasIdea() {
+	f.Where(entql.HasEdge("idea"))
+}
+
+// WhereHasIdeaWith applies a predicate to check if query has an edge idea with a given conditions (other predicates).
+func (f *ModProductOptionFilter) WhereHasIdeaWith(preds ...predicate.ModIdea) {
+	f.Where(entql.HasEdgeWith("idea", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (orq *OdometerReadingQuery) addPredicate(pred func(s *sql.Selector)) {
 	orq.predicates = append(orq.predicates, pred)
 }
@@ -2323,7 +2669,7 @@ type OdometerReadingFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OdometerReadingFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[11].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[13].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2430,7 +2776,7 @@ type ProfileFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ProfileFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[12].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[14].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2554,7 +2900,7 @@ type ServiceItemFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ServiceItemFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[13].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[15].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2676,7 +3022,7 @@ type ServiceLogFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ServiceLogFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[14].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[16].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2811,7 +3157,7 @@ type ServiceScheduleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ServiceScheduleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[15].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[17].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -2938,7 +3284,7 @@ type SubscriptionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SubscriptionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[16].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[18].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3041,7 +3387,7 @@ type TaskFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TaskFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[17].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[19].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3159,6 +3505,20 @@ func (f *TaskFilter) WhereHasSubtasksWith(preds ...predicate.Task) {
 	})))
 }
 
+// WhereHasModIdeas applies a predicate to check if query has an edge mod_ideas.
+func (f *TaskFilter) WhereHasModIdeas() {
+	f.Where(entql.HasEdge("mod_ideas"))
+}
+
+// WhereHasModIdeasWith applies a predicate to check if query has an edge mod_ideas with a given conditions (other predicates).
+func (f *TaskFilter) WhereHasModIdeasWith(preds ...predicate.ModIdea) {
+	f.Where(entql.HasEdgeWith("mod_ideas", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (uq *UserQuery) addPredicate(pred func(s *sql.Selector)) {
 	uq.predicates = append(uq.predicates, pred)
@@ -3188,7 +3548,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[18].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[20].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

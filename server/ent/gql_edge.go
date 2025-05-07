@@ -197,6 +197,18 @@ func (c *Car) Tasks(
 	return c.QueryTasks().Paginate(ctx, after, first, before, last, opts...)
 }
 
+func (c *Car) ModIdeas(ctx context.Context) (result []*ModIdea, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = c.NamedModIdeas(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = c.Edges.ModIdeasOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = c.QueryModIdeas().All(ctx)
+	}
+	return result, err
+}
+
 func (cs *CheckoutSession) User(ctx context.Context) (*User, error) {
 	result, err := cs.Edges.UserOrErr()
 	if IsNotLoaded(err) {
@@ -341,6 +353,46 @@ func (m *Media) Albums(ctx context.Context) (result []*Album, err error) {
 	}
 	if IsNotLoaded(err) {
 		result, err = m.QueryAlbums().All(ctx)
+	}
+	return result, err
+}
+
+func (mi *ModIdea) Car(ctx context.Context) (*Car, error) {
+	result, err := mi.Edges.CarOrErr()
+	if IsNotLoaded(err) {
+		result, err = mi.QueryCar().Only(ctx)
+	}
+	return result, err
+}
+
+func (mi *ModIdea) Tasks(ctx context.Context) (result []*Task, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = mi.NamedTasks(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = mi.Edges.TasksOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = mi.QueryTasks().All(ctx)
+	}
+	return result, err
+}
+
+func (mi *ModIdea) ProductOptions(ctx context.Context) (result []*ModProductOption, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = mi.NamedProductOptions(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = mi.Edges.ProductOptionsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = mi.QueryProductOptions().All(ctx)
+	}
+	return result, err
+}
+
+func (mpo *ModProductOption) Idea(ctx context.Context) (*ModIdea, error) {
+	result, err := mpo.Edges.IdeaOrErr()
+	if IsNotLoaded(err) {
+		result, err = mpo.QueryIdea().Only(ctx)
 	}
 	return result, err
 }
@@ -525,6 +577,18 @@ func (t *Task) Subtasks(ctx context.Context) (result []*Task, err error) {
 	}
 	if IsNotLoaded(err) {
 		result, err = t.QuerySubtasks().All(ctx)
+	}
+	return result, err
+}
+
+func (t *Task) ModIdeas(ctx context.Context) (result []*ModIdea, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = t.NamedModIdeas(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = t.Edges.ModIdeasOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = t.QueryModIdeas().All(ctx)
 	}
 	return result, err
 }

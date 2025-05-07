@@ -37,6 +37,7 @@ extend type Query {
   media(id: ID!): Media!
   album(id: ID!): Album!
   task(id: ID!): Task!
+  modIdea(id: ID!): ModIdea!
 }
 
 type UploadMediaResult {
@@ -81,4 +82,13 @@ extend type Mutation {
   updateAlbum(id: ID!, input: UpdateAlbumInput!): Album! @loggedIn
   createTask(input: CreateTaskInput!): Task! @loggedIn
   updateTask(id: ID!, input: UpdateTaskInput!): Task! @loggedIn
+  createModIdea(input: CreateModIdeaInput!): ModIdea! @loggedIn
+  updateModIdea(id: ID!, input: UpdateModIdeaInput!): ModIdea! @loggedIn
+  createModProductOption(
+    input: CreateModProductOptionInput!
+  ): ModProductOption! @loggedIn
+  updateModProductOption(
+    id: ID!
+    input: UpdateModProductOptionInput!
+  ): ModProductOption! @loggedIn
 }
