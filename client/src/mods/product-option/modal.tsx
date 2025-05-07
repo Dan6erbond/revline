@@ -9,7 +9,8 @@ import {
   ModalProps,
   Textarea,
 } from "@heroui/react";
-import { FragmentType, graphql, useFragment } from "../../gql";
+import { FragmentType, graphql, useFragment } from "@/gql";
+import { MinusCircle, PlusCircle } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 
 import { getModIdea } from "..";
@@ -208,13 +209,20 @@ export default function ProductOptionModal({
                         {...register(`pros.${idx}.value`)}
                         className="flex-1"
                       />
-                      <Button onPress={() => removePro(idx)}>Remove</Button>
+                      <Button
+                        onPress={() => removePro(idx)}
+                        startContent={<MinusCircle />}
+                        isIconOnly
+                        color="danger"
+                        variant="light"
+                      />
                     </div>
                   ))}
                   <Button
                     variant="light"
                     onPress={() => appendPro({ value: "" })}
                     className="self-start"
+                    startContent={<PlusCircle />}
                   >
                     Add Pro
                   </Button>
@@ -228,13 +236,20 @@ export default function ProductOptionModal({
                         {...register(`cons.${idx}.value`)}
                         className="flex-1"
                       />
-                      <Button onPress={() => removeCon(idx)}>Remove</Button>
+                      <Button
+                        onPress={() => removeCon(idx)}
+                        startContent={<MinusCircle />}
+                        isIconOnly
+                        color="danger"
+                        variant="light"
+                      />
                     </div>
                   ))}
                   <Button
                     variant="light"
                     onPress={() => appendCon({ value: "" })}
                     className="self-start"
+                    startContent={<PlusCircle />}
                   >
                     Add Con
                   </Button>
@@ -254,13 +269,20 @@ export default function ProductOptionModal({
                         {...register(`specs.${idx}.value`)}
                         className="w-1/2"
                       />
-                      <Button onPress={() => removeSpec(idx)}>Remove</Button>
+                      <Button
+                        onPress={() => removeSpec(idx)}
+                        startContent={<MinusCircle />}
+                        isIconOnly
+                        color="danger"
+                        variant="light"
+                      />
                     </div>
                   ))}
                   <Button
                     variant="light"
                     onPress={() => appendSpec({ key: "", value: "" })}
                     className="self-start"
+                    startContent={<PlusCircle />}
                   >
                     Add Spec
                   </Button>
