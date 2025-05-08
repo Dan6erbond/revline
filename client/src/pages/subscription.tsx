@@ -98,10 +98,11 @@ function SubscriptionCard({
           <CardFooter className="justify-center">
             <Button
               color="primary"
-              className="bg-gradient-to-r from-teal-500 to-teal-700"
+              className="bg-gradient-to-r from-teal-500 to-teal-700 flex flex-col gap-1 h-12 w-32"
               onPress={onSubscribe}
             >
-              Subscribe
+              <span>Try Free</span>
+              <span className="text-xs">For 7 days</span>
             </Button>
           </CardFooter>
         </>
