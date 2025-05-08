@@ -9,6 +9,8 @@ import {
 import { Document, Page } from "react-pdf";
 import { FragmentType, graphql, useFragment } from "@/gql";
 
+import { ExpenseChip } from "../expenses/chip";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import { useSuspenseQuery } from "@apollo/client";
 
@@ -62,6 +64,13 @@ function Preview({ docRef }: { docRef: FragmentType<typeof PreviewFields> }) {
 
 const getDocument = graphql(`
   query GetDocument($id: ID!) {
+    me {
+      id
+      profile {
+        id
+        currencyCode
+      }
+    }
     document(id: $id) {
       id
       name
@@ -72,6 +81,11 @@ const getDocument = graphql(`
         size
       }
       ...PreviewFields
+      expense {
+        id
+        type
+        amount
+      }
     }
   }
 `);
@@ -83,6 +97,8 @@ export default function Details({
   onClose(): void;
   id: string;
 }) {
+  const router = useRouter();
+
   const { data } = useSuspenseQuery(getDocument, { variables: { id } });
 
   return (
@@ -92,6 +108,16 @@ export default function Details({
       </DrawerHeader>
       <DrawerBody>
         <Preview docRef={data.document} />
+        {data.document.expense && (
+          <div className="flex flex-col gap-1">
+            <p>Expense</p>
+            <ExpenseChip
+              expense={data.document.expense}
+              currencyCode={data.me.profile?.currencyCode}
+              href={`/cars/${router.query.id}`}
+            />
+          </div>
+        )}
       </DrawerBody>
       <DrawerFooter>
         <Button color="danger" variant="light" onPress={onClose}>

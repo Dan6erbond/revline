@@ -1,5 +1,6 @@
 import {
   Button,
+  Chip,
   DatePicker,
   Modal,
   ModalBody,
@@ -7,6 +8,7 @@ import {
   ModalFooter,
   ModalHeader,
   NumberInput,
+  Progress,
   Select,
   SelectItem,
   Tab,
@@ -28,16 +30,22 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { Coins, Fuel, Plus } from "lucide-react";
+import { Coins, FileUp, Fuel, Plus } from "lucide-react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { Expense, ExpenseType } from "@/gql/graphql";
 import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
-import { useMutation, useQuery } from "@apollo/client";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
 import CarLayout from "@/components/layout/car-layout";
-import { ExpenseType } from "@/gql/graphql";
+import Dropzone from "@/components/dropzone";
+import FileIcon from "@/components/file-icon";
+import Link from "next/link";
+import { formatBytes } from "@/utils/upload-file";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
+import { useDocumentsUpload } from "@/hooks/use-documents-upload";
 import { useRouter } from "next/router";
+import { withNotification } from "@/utils/with-notification";
 
 const getExpenses = graphql(`
   query GetExpenses($id: ID!) {
@@ -56,6 +64,14 @@ const getExpenses = graphql(`
         type
         amount
         notes
+        documents {
+          id
+          name
+          tags
+          metadata {
+            contentType
+          }
+        }
       }
     }
   }
@@ -66,6 +82,7 @@ type Inputs = {
   type: ExpenseType;
   amount: number;
   notes: string;
+  files: File[];
 };
 
 const createExpense = graphql(`
@@ -85,6 +102,7 @@ const columns = [
   { key: "type", label: "Type" },
   { key: "amount", label: "Amount" },
   { key: "notes", label: "Notes" },
+  { key: "documents", label: "Documents" },
 ];
 
 const COLORS: Record<string, string> = {
@@ -95,6 +113,8 @@ const COLORS: Record<string, string> = {
 
 export default function Car() {
   const router = useRouter();
+
+  const client = useApolloClient();
 
   const { data } = useQuery(getExpenses, {
     variables: { id: getQueryParam(router.query.id) as string },
@@ -117,13 +137,16 @@ export default function Car() {
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
-  const { register, handleSubmit, control } = useForm<Inputs>({
+  const { register, handleSubmit, control, reset } = useForm<Inputs>({
     defaultValues: {
       occurredAt: now(getLocalTimeZone()),
+      files: [],
     },
   });
 
-  const [mutate] = useMutation(createExpense, {
+  const [handleFileUpload, { uploadProgress }] = useDocumentsUpload();
+
+  const [mutate, { loading }] = useMutation(createExpense, {
     update: (cache, res) => {
       if (!res.data?.createExpense || !data?.car) return;
 
@@ -141,28 +164,51 @@ export default function Car() {
     },
   });
 
-  const onSubmit: SubmitHandler<Inputs> = ({
-    occurredAt,
-    type,
-    amount,
-    notes,
-  }) => {
-    mutate({
-      variables: {
-        input: {
-          carID: getQueryParam(router.query.id)!,
-          occurredAt: occurredAt.toDate().toISOString(),
-          type,
-          amount,
-          notes,
+  const onSubmit: SubmitHandler<Inputs> = withNotification(
+    {},
+    ({ occurredAt, type, amount, notes, files }: Inputs) =>
+      mutate({
+        variables: {
+          input: {
+            carID: getQueryParam(router.query.id)!,
+            occurredAt: occurredAt.toDate().toISOString(),
+            type,
+            amount,
+            notes,
+          },
         },
-      },
-    }).then(({ data }) => {
-      if (!data) return;
+      })
+        .then(({ data }) => {
+          if (!data) return;
 
-      onClose();
-    });
-  };
+          reset();
+
+          const expense = data.createExpense;
+
+          return Promise.all(
+            files.map((f) =>
+              handleFileUpload(f, { expenseID: expense.id }).then(
+                ({ data }) => {
+                  if (!data?.uploadDocument) return;
+
+                  client.cache.modify<Expense>({
+                    id: client.cache.identify(expense),
+                    fields: {
+                      documents(existingDocRefs, { toReference }) {
+                        return [
+                          ...(existingDocRefs ?? []),
+                          toReference(data!.uploadDocument.document),
+                        ];
+                      },
+                    },
+                  });
+                }
+              )
+            )
+          );
+        })
+        .then(onClose)
+  );
 
   return (
     <CarLayout>
@@ -255,6 +301,25 @@ export default function Car() {
                       })}
                     </TableCell>
                     <TableCell>{ex.notes}</TableCell>
+                    <TableCell className="flex gap-2 flex-wrap">
+                      {ex.documents?.map((doc) => (
+                        <Chip
+                          as={Link}
+                          href={`/cars/${router.query.id}/documents/${doc.id}`}
+                          startContent={
+                            <FileIcon
+                              name={doc.name}
+                              contentType={doc.metadata?.contentType}
+                              className="size-4 ml-2"
+                            />
+                          }
+                        >
+                          <span className="max-w-32 overflow-hidden text-ellipsis block">
+                            {doc.name}
+                          </span>
+                        </Chip>
+                      ))}
+                    </TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -317,13 +382,59 @@ export default function Car() {
                           {...register("notes")}
                           variant="bordered"
                         />
+                        <Controller
+                          control={control}
+                          name="files"
+                          render={({ field: { value, onChange } }) => (
+                            <Dropzone
+                              value={value}
+                              onChange={onChange}
+                              multiple
+                              label="Drag & drop files or click to browse"
+                              icon={<FileUp className="size-4 opacity-60" />}
+                            />
+                          )}
+                        />
+
+                        {uploadProgress.length > 0 && (
+                          <div className="space-y-2">
+                            {uploadProgress.map(({ file, id, progress }) => (
+                              <div
+                                key={id}
+                                className="bg-background flex flex-col gap-2"
+                              >
+                                <Progress value={progress} size="sm" />
+                                <div className="flex items-center justify-between gap-2 rounded-lg border p-2 pe-3">
+                                  <div className="flex items-center gap-3 overflow-hidden">
+                                    <div className="flex aspect-square size-10 shrink-0 items-center justify-center rounded border">
+                                      <FileIcon file={file} />
+                                    </div>
+                                    <div className="flex min-w-0 flex-col gap-0.5">
+                                      <p className="truncate text-[13px] font-medium">
+                                        {file.name}
+                                      </p>
+                                      <p className="text-muted-foreground text-xs">
+                                        {formatBytes(file.size)}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </form>
                     </ModalBody>
                     <ModalFooter>
                       <Button color="danger" variant="light" onPress={onClose}>
                         Close
                       </Button>
-                      <Button color="primary" type="submit" form="expense">
+                      <Button
+                        color="primary"
+                        type="submit"
+                        form="expense"
+                        isLoading={loading || uploadProgress.length > 0}
+                      >
                         Save
                       </Button>
                     </ModalFooter>

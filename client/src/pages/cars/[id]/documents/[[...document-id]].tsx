@@ -1,12 +1,3 @@
-import { Car, SubscriptionTier } from "@/gql/graphql";
-import {
-  ChangeEvent,
-  DragEvent,
-  Suspense,
-  useCallback,
-  useRef,
-  useState,
-} from "react";
 import {
   Drawer,
   DrawerContent,
@@ -19,16 +10,20 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/react";
-import { Eye, ImageUp } from "lucide-react";
-import { formatBytes, uploadFile } from "@/utils/upload-file";
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { Eye, FileUp } from "lucide-react";
 
 import CarLayout from "@/components/layout/car-layout";
 import Details from "@/components/documents/details";
+import Dropzone from "@/components/dropzone";
 import FileIcon from "@/components/file-icon";
-import SubscriptionOverlay from "../../../../components/subscription-overlay";
+import SubscriptionOverlay from "@/components/subscription-overlay";
+import { SubscriptionTier } from "@/gql/graphql";
+import { Suspense } from "react";
+import { formatBytes } from "@/utils/upload-file";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
+import { useDocumentsUpload } from "@/hooks/use-documents-upload";
+import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
 
 const getDocuments = graphql(`
@@ -49,20 +44,6 @@ const getDocuments = graphql(`
   }
 `);
 
-const uploadDocument = graphql(`
-  mutation UploadDocument($input: CreateDocumentInput!) {
-    uploadDocument(input: $input) {
-      document {
-        id
-        name
-        tags
-        url
-      }
-      uploadUrl
-    }
-  }
-`);
-
 const columns = [
   { key: "type", label: "" },
   { key: "name", label: "Name" },
@@ -73,142 +54,12 @@ const columns = [
 export default function Documents() {
   const router = useRouter();
 
-  const client = useApolloClient();
-
   const { data } = useQuery(getDocuments, {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
   });
 
-  const [mutate] = useMutation(uploadDocument);
-
-  const [isDragging, setIsDragging] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<
-    {
-      id: string;
-      file: File;
-      progress: number;
-      completed: boolean;
-      error?: string;
-    }[]
-  >([]);
-
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleDragEnter = useCallback((e: DragEvent<HTMLElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: DragEvent<HTMLElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (e.currentTarget.contains(e.relatedTarget as Node)) {
-      return;
-    }
-
-    setIsDragging(false);
-  }, []);
-
-  const handleDragOver = useCallback((e: DragEvent<HTMLElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
-
-  const handleFileUpload = useCallback(
-    async (file: File) => {
-      const res = await mutate({
-        variables: {
-          input: {
-            carID: getQueryParam(router.query.id) as string,
-            name: file.name,
-          },
-        },
-      });
-
-      if (!res.data?.uploadDocument) return;
-
-      setUploadProgress((prev) => [
-        ...prev,
-        {
-          id: res.data!.uploadDocument.document.id,
-          file,
-          completed: false,
-          progress: 0,
-        },
-      ]);
-
-      await uploadFile(
-        file,
-        res.data.uploadDocument.uploadUrl,
-        "PUT",
-        (progress) => {
-          setUploadProgress((prev) =>
-            prev.map((p) =>
-              p.id === res.data!.uploadDocument.document.id
-                ? { ...p, progress }
-                : p
-            )
-          );
-        }
-      );
-
-      setUploadProgress((prev) =>
-        prev.filter((p) => p.id !== res.data!.uploadDocument.document.id)
-      );
-
-      client.cache.modify<Car>({
-        id: client.cache.identify({
-          __typename: "Car",
-          id: getQueryParam(router.query.id),
-        }),
-        fields: {
-          documents(existingDocRefs, { toReference }) {
-            return [
-              ...(existingDocRefs ?? []),
-              toReference(res.data!.uploadDocument.document),
-            ];
-          },
-        },
-      });
-    },
-    [mutate, router.query.id, client]
-  );
-
-  const handleDrop = useCallback(
-    (e: DragEvent<HTMLElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-
-      // Don't process files if the input is disabled
-      if (inputRef.current?.disabled) {
-        return;
-      }
-
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        [...e.dataTransfer.files].forEach(handleFileUpload);
-      }
-    },
-    [handleFileUpload]
-  );
-
-  const openFileDialog = useCallback(() => {
-    if (inputRef.current) {
-      inputRef.current.click();
-    }
-  }, []);
-
-  const handleFileChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files && e.target.files.length > 0) {
-        [...e.target.files].forEach(handleFileUpload);
-      }
-    },
-    [handleFileUpload]
-  );
+  const [handleFileUpload, { uploadProgress }] = useDocumentsUpload();
 
   return (
     <CarLayout
@@ -239,6 +90,7 @@ export default function Documents() {
                   <FileIcon
                     contentType={doc.metadata?.contentType}
                     name={doc.name}
+                    className="size-4 opacity-60"
                   />
                 </TableCell>
                 <TableCell>{doc.name}</TableCell>
@@ -252,52 +104,16 @@ export default function Documents() {
             )}
           </TableBody>
         </Table>
+
         <div className="flex flex-col gap-2">
-          <div className="relative">
-            {/* Drop area */}
-            <div
-              role="button"
-              onClick={openFileDialog}
-              onDragEnter={handleDragEnter}
-              onDragLeave={handleDragLeave}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              data-dragging={isDragging || undefined}
-              className="cursor-pointer border-input hover:bg-secondary/20 data-[dragging=true]:bg-secondary/20 has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 relative flex min-h-52 flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed p-4 transition-colors has-disabled:pointer-events-none has-disabled:opacity-50 has-[img]:border-none has-[input:focus]:ring-[3px]"
-            >
-              <input
-                type="file"
-                onChange={handleFileChange}
-                multiple
-                className="sr-only"
-                aria-label="Upload file"
-                ref={inputRef}
-              />
-              <div className="flex flex-col items-center justify-center px-4 py-3 text-center">
-                <div
-                  className="bg-background mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border"
-                  aria-hidden="true"
-                >
-                  <ImageUp className="size-4 opacity-60" />
-                </div>
-                <p className="mb-1.5 text-sm font-medium">
-                  Drop & drop or click to browse
-                </p>
-              </div>
-            </div>
-          </div>
+          <Dropzone
+            multiple
+            value={[]}
+            onChange={(files) => files.forEach((f) => handleFileUpload(f))}
+            label="Drag & drop or click to browse"
+            icon={<FileUp className="size-4 opacity-60" />}
+          />
 
-          {/* {errors.length > 0 && (
-            <div
-              className="text-destructive flex items-center gap-1 text-xs"
-              role="alert"
-            >
-              <AlertCircle className="size-3 shrink-0" />
-              <span>{errors[0]}</span>
-            </div>
-          )} */}
-
-          {/* File list */}
           {uploadProgress.length > 0 && (
             <div className="space-y-2">
               {uploadProgress.map(({ file, id, progress }) => (
