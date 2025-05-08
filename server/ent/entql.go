@@ -403,6 +403,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			subscription.FieldStatus:               {Type: field.TypeEnum, Column: subscription.FieldStatus},
 			subscription.FieldCanceledAt:           {Type: field.TypeTime, Column: subscription.FieldCanceledAt},
 			subscription.FieldCancelAtPeriodEnd:    {Type: field.TypeBool, Column: subscription.FieldCancelAtPeriodEnd},
+			subscription.FieldTrialEnd:             {Type: field.TypeTime, Column: subscription.FieldTrialEnd},
 		},
 	}
 	graph.Nodes[19] = &sqlgraph.Node{
@@ -701,6 +702,30 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Expense",
 	)
 	graph.MustAddE(
+		"fuel_up",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.FuelUpTable,
+			Columns: []string{document.FuelUpColumn},
+			Bidi:    false,
+		},
+		"Document",
+		"FuelUp",
+	)
+	graph.MustAddE(
+		"service_log",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.ServiceLogTable,
+			Columns: []string{document.ServiceLogColumn},
+			Bidi:    false,
+		},
+		"Document",
+		"ServiceLog",
+	)
+	graph.MustAddE(
 		"session",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -855,6 +880,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"FuelUp",
 		"Expense",
+	)
+	graph.MustAddE(
+		"documents",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   fuelup.DocumentsTable,
+			Columns: []string{fuelup.DocumentsColumn},
+			Bidi:    false,
+		},
+		"FuelUp",
+		"Document",
 	)
 	graph.MustAddE(
 		"car",
@@ -1071,6 +1108,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"ServiceLog",
 		"Expense",
+	)
+	graph.MustAddE(
+		"documents",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   servicelog.DocumentsTable,
+			Columns: []string{servicelog.DocumentsColumn},
+			Bidi:    false,
+		},
+		"ServiceLog",
+		"Document",
 	)
 	graph.MustAddE(
 		"car",
@@ -1801,6 +1850,34 @@ func (f *DocumentFilter) WhereHasExpenseWith(preds ...predicate.Expense) {
 	})))
 }
 
+// WhereHasFuelUp applies a predicate to check if query has an edge fuel_up.
+func (f *DocumentFilter) WhereHasFuelUp() {
+	f.Where(entql.HasEdge("fuel_up"))
+}
+
+// WhereHasFuelUpWith applies a predicate to check if query has an edge fuel_up with a given conditions (other predicates).
+func (f *DocumentFilter) WhereHasFuelUpWith(preds ...predicate.FuelUp) {
+	f.Where(entql.HasEdgeWith("fuel_up", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasServiceLog applies a predicate to check if query has an edge service_log.
+func (f *DocumentFilter) WhereHasServiceLog() {
+	f.Where(entql.HasEdge("service_log"))
+}
+
+// WhereHasServiceLogWith applies a predicate to check if query has an edge service_log with a given conditions (other predicates).
+func (f *DocumentFilter) WhereHasServiceLogWith(preds ...predicate.ServiceLog) {
+	f.Where(entql.HasEdgeWith("service_log", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (drq *DragResultQuery) addPredicate(pred func(s *sql.Selector)) {
 	drq.predicates = append(drq.predicates, pred)
@@ -2382,6 +2459,20 @@ func (f *FuelUpFilter) WhereHasExpense() {
 // WhereHasExpenseWith applies a predicate to check if query has an edge expense with a given conditions (other predicates).
 func (f *FuelUpFilter) WhereHasExpenseWith(preds ...predicate.Expense) {
 	f.Where(entql.HasEdgeWith("expense", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasDocuments applies a predicate to check if query has an edge documents.
+func (f *FuelUpFilter) WhereHasDocuments() {
+	f.Where(entql.HasEdge("documents"))
+}
+
+// WhereHasDocumentsWith applies a predicate to check if query has an edge documents with a given conditions (other predicates).
+func (f *FuelUpFilter) WhereHasDocumentsWith(preds ...predicate.Document) {
+	f.Where(entql.HasEdgeWith("documents", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -3180,6 +3271,20 @@ func (f *ServiceLogFilter) WhereHasExpenseWith(preds ...predicate.Expense) {
 	})))
 }
 
+// WhereHasDocuments applies a predicate to check if query has an edge documents.
+func (f *ServiceLogFilter) WhereHasDocuments() {
+	f.Where(entql.HasEdge("documents"))
+}
+
+// WhereHasDocumentsWith applies a predicate to check if query has an edge documents with a given conditions (other predicates).
+func (f *ServiceLogFilter) WhereHasDocumentsWith(preds ...predicate.Document) {
+	f.Where(entql.HasEdgeWith("documents", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (ssq *ServiceScheduleQuery) addPredicate(pred func(s *sql.Selector)) {
 	ssq.predicates = append(ssq.predicates, pred)
@@ -3380,6 +3485,11 @@ func (f *SubscriptionFilter) WhereCanceledAt(p entql.TimeP) {
 // WhereCancelAtPeriodEnd applies the entql bool predicate on the cancel_at_period_end field.
 func (f *SubscriptionFilter) WhereCancelAtPeriodEnd(p entql.BoolP) {
 	f.Where(p.Field(subscription.FieldCancelAtPeriodEnd))
+}
+
+// WhereTrialEnd applies the entql time.Time predicate on the trial_end field.
+func (f *SubscriptionFilter) WhereTrialEnd(p entql.TimeP) {
+	f.Where(p.Field(subscription.FieldTrialEnd))
 }
 
 // WhereHasUser applies a predicate to check if query has an edge user.

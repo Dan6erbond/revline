@@ -262,6 +262,52 @@ func HasExpenseWith(preds ...predicate.Expense) predicate.Document {
 	})
 }
 
+// HasFuelUp applies the HasEdge predicate on the "fuel_up" edge.
+func HasFuelUp() predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, FuelUpTable, FuelUpColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasFuelUpWith applies the HasEdge predicate on the "fuel_up" edge with a given conditions (other predicates).
+func HasFuelUpWith(preds ...predicate.FuelUp) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		step := newFuelUpStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasServiceLog applies the HasEdge predicate on the "service_log" edge.
+func HasServiceLog() predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ServiceLogTable, ServiceLogColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasServiceLogWith applies the HasEdge predicate on the "service_log" edge with a given conditions (other predicates).
+func HasServiceLogWith(preds ...predicate.ServiceLog) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		step := newServiceLogStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Document) predicate.Document {
 	return predicate.Document(sql.AndPredicates(predicates...))

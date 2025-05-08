@@ -113,6 +113,20 @@ func (sc *SubscriptionCreate) SetNillableCancelAtPeriodEnd(b *bool) *Subscriptio
 	return sc
 }
 
+// SetTrialEnd sets the "trial_end" field.
+func (sc *SubscriptionCreate) SetTrialEnd(t time.Time) *SubscriptionCreate {
+	sc.mutation.SetTrialEnd(t)
+	return sc
+}
+
+// SetNillableTrialEnd sets the "trial_end" field if the given value is not nil.
+func (sc *SubscriptionCreate) SetNillableTrialEnd(t *time.Time) *SubscriptionCreate {
+	if t != nil {
+		sc.SetTrialEnd(*t)
+	}
+	return sc
+}
+
 // SetID sets the "id" field.
 func (sc *SubscriptionCreate) SetID(u uuid.UUID) *SubscriptionCreate {
 	sc.mutation.SetID(u)
@@ -306,6 +320,10 @@ func (sc *SubscriptionCreate) createSpec() (*Subscription, *sqlgraph.CreateSpec)
 	if value, ok := sc.mutation.CancelAtPeriodEnd(); ok {
 		_spec.SetField(subscription.FieldCancelAtPeriodEnd, field.TypeBool, value)
 		_node.CancelAtPeriodEnd = value
+	}
+	if value, ok := sc.mutation.TrialEnd(); ok {
+		_spec.SetField(subscription.FieldTrialEnd, field.TypeTime, value)
+		_node.TrialEnd = &value
 	}
 	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

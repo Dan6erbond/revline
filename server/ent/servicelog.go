@@ -53,13 +53,16 @@ type ServiceLogEdges struct {
 	OdometerReading *OdometerReading `json:"odometer_reading,omitempty"`
 	// Expense holds the value of the expense edge.
 	Expense *Expense `json:"expense,omitempty"`
+	// Documents holds the value of the documents edge.
+	Documents []*Document `json:"documents,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 	// totalCount holds the count of the edges above.
-	totalCount [5]map[string]int
+	totalCount [6]map[string]int
 
-	namedItems map[string][]*ServiceItem
+	namedItems     map[string][]*ServiceItem
+	namedDocuments map[string][]*Document
 }
 
 // CarOrErr returns the Car value or an error if the edge
@@ -113,6 +116,15 @@ func (e ServiceLogEdges) ExpenseOrErr() (*Expense, error) {
 		return nil, &NotFoundError{label: expense.Label}
 	}
 	return nil, &NotLoadedError{edge: "expense"}
+}
+
+// DocumentsOrErr returns the Documents value or an error if the edge
+// was not loaded in eager-loading.
+func (e ServiceLogEdges) DocumentsOrErr() ([]*Document, error) {
+	if e.loadedTypes[5] {
+		return e.Documents, nil
+	}
+	return nil, &NotLoadedError{edge: "documents"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -244,6 +256,11 @@ func (sl *ServiceLog) QueryExpense() *ExpenseQuery {
 	return NewServiceLogClient(sl.config).QueryExpense(sl)
 }
 
+// QueryDocuments queries the "documents" edge of the ServiceLog entity.
+func (sl *ServiceLog) QueryDocuments() *DocumentQuery {
+	return NewServiceLogClient(sl.config).QueryDocuments(sl)
+}
+
 // Update returns a builder for updating this ServiceLog.
 // Note that you need to call ServiceLog.Unwrap() before calling this method if this ServiceLog
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -310,6 +327,30 @@ func (sl *ServiceLog) appendNamedItems(name string, edges ...*ServiceItem) {
 		sl.Edges.namedItems[name] = []*ServiceItem{}
 	} else {
 		sl.Edges.namedItems[name] = append(sl.Edges.namedItems[name], edges...)
+	}
+}
+
+// NamedDocuments returns the Documents named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (sl *ServiceLog) NamedDocuments(name string) ([]*Document, error) {
+	if sl.Edges.namedDocuments == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := sl.Edges.namedDocuments[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (sl *ServiceLog) appendNamedDocuments(name string, edges ...*Document) {
+	if sl.Edges.namedDocuments == nil {
+		sl.Edges.namedDocuments = make(map[string][]*Document)
+	}
+	if len(edges) == 0 {
+		sl.Edges.namedDocuments[name] = []*Document{}
+	} else {
+		sl.Edges.namedDocuments[name] = append(sl.Edges.namedDocuments[name], edges...)
 	}
 }
 

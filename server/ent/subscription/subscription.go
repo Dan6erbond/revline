@@ -32,6 +32,8 @@ const (
 	FieldCanceledAt = "canceled_at"
 	// FieldCancelAtPeriodEnd holds the string denoting the cancel_at_period_end field in the database.
 	FieldCancelAtPeriodEnd = "cancel_at_period_end"
+	// FieldTrialEnd holds the string denoting the trial_end field in the database.
+	FieldTrialEnd = "trial_end"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// EdgeCheckoutSession holds the string denoting the checkout_session edge name in mutations.
@@ -64,6 +66,7 @@ var Columns = []string{
 	FieldStatus,
 	FieldCanceledAt,
 	FieldCancelAtPeriodEnd,
+	FieldTrialEnd,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "subscriptions"
@@ -196,6 +199,11 @@ func ByCanceledAt(opts ...sql.OrderTermOption) OrderOption {
 // ByCancelAtPeriodEnd orders the results by the cancel_at_period_end field.
 func ByCancelAtPeriodEnd(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCancelAtPeriodEnd, opts...).ToFunc()
+}
+
+// ByTrialEnd orders the results by the trial_end field.
+func ByTrialEnd(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTrialEnd, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

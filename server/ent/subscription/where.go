@@ -81,6 +81,11 @@ func CancelAtPeriodEnd(v bool) predicate.Subscription {
 	return predicate.Subscription(sql.FieldEQ(FieldCancelAtPeriodEnd, v))
 }
 
+// TrialEnd applies equality check predicate on the "trial_end" field. It's identical to TrialEndEQ.
+func TrialEnd(v time.Time) predicate.Subscription {
+	return predicate.Subscription(sql.FieldEQ(FieldTrialEnd, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.Subscription {
 	return predicate.Subscription(sql.FieldEQ(FieldCreateTime, v))
@@ -334,6 +339,56 @@ func CancelAtPeriodEndEQ(v bool) predicate.Subscription {
 // CancelAtPeriodEndNEQ applies the NEQ predicate on the "cancel_at_period_end" field.
 func CancelAtPeriodEndNEQ(v bool) predicate.Subscription {
 	return predicate.Subscription(sql.FieldNEQ(FieldCancelAtPeriodEnd, v))
+}
+
+// TrialEndEQ applies the EQ predicate on the "trial_end" field.
+func TrialEndEQ(v time.Time) predicate.Subscription {
+	return predicate.Subscription(sql.FieldEQ(FieldTrialEnd, v))
+}
+
+// TrialEndNEQ applies the NEQ predicate on the "trial_end" field.
+func TrialEndNEQ(v time.Time) predicate.Subscription {
+	return predicate.Subscription(sql.FieldNEQ(FieldTrialEnd, v))
+}
+
+// TrialEndIn applies the In predicate on the "trial_end" field.
+func TrialEndIn(vs ...time.Time) predicate.Subscription {
+	return predicate.Subscription(sql.FieldIn(FieldTrialEnd, vs...))
+}
+
+// TrialEndNotIn applies the NotIn predicate on the "trial_end" field.
+func TrialEndNotIn(vs ...time.Time) predicate.Subscription {
+	return predicate.Subscription(sql.FieldNotIn(FieldTrialEnd, vs...))
+}
+
+// TrialEndGT applies the GT predicate on the "trial_end" field.
+func TrialEndGT(v time.Time) predicate.Subscription {
+	return predicate.Subscription(sql.FieldGT(FieldTrialEnd, v))
+}
+
+// TrialEndGTE applies the GTE predicate on the "trial_end" field.
+func TrialEndGTE(v time.Time) predicate.Subscription {
+	return predicate.Subscription(sql.FieldGTE(FieldTrialEnd, v))
+}
+
+// TrialEndLT applies the LT predicate on the "trial_end" field.
+func TrialEndLT(v time.Time) predicate.Subscription {
+	return predicate.Subscription(sql.FieldLT(FieldTrialEnd, v))
+}
+
+// TrialEndLTE applies the LTE predicate on the "trial_end" field.
+func TrialEndLTE(v time.Time) predicate.Subscription {
+	return predicate.Subscription(sql.FieldLTE(FieldTrialEnd, v))
+}
+
+// TrialEndIsNil applies the IsNil predicate on the "trial_end" field.
+func TrialEndIsNil() predicate.Subscription {
+	return predicate.Subscription(sql.FieldIsNull(FieldTrialEnd))
+}
+
+// TrialEndNotNil applies the NotNil predicate on the "trial_end" field.
+func TrialEndNotNil() predicate.Subscription {
+	return predicate.Subscription(sql.FieldNotNull(FieldTrialEnd))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

@@ -30,6 +30,7 @@ func (Subscription) Fields() []ent.Field {
 			Annotations(entgql.Type("SubscriptionStatus")),
 		field.Time("canceled_at").Optional().Nillable(),
 		field.Bool("cancel_at_period_end").Default(false),
+		field.Time("trial_end").Optional().Nillable(),
 	}
 }
 

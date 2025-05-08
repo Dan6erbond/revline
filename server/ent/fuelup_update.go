@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -204,6 +205,21 @@ func (fuu *FuelUpUpdate) SetExpense(e *Expense) *FuelUpUpdate {
 	return fuu.SetExpenseID(e.ID)
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
+func (fuu *FuelUpUpdate) AddDocumentIDs(ids ...uuid.UUID) *FuelUpUpdate {
+	fuu.mutation.AddDocumentIDs(ids...)
+	return fuu
+}
+
+// AddDocuments adds the "documents" edges to the Document entity.
+func (fuu *FuelUpUpdate) AddDocuments(d ...*Document) *FuelUpUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return fuu.AddDocumentIDs(ids...)
+}
+
 // Mutation returns the FuelUpMutation object of the builder.
 func (fuu *FuelUpUpdate) Mutation() *FuelUpMutation {
 	return fuu.mutation
@@ -225,6 +241,27 @@ func (fuu *FuelUpUpdate) ClearOdometerReading() *FuelUpUpdate {
 func (fuu *FuelUpUpdate) ClearExpense() *FuelUpUpdate {
 	fuu.mutation.ClearExpense()
 	return fuu
+}
+
+// ClearDocuments clears all "documents" edges to the Document entity.
+func (fuu *FuelUpUpdate) ClearDocuments() *FuelUpUpdate {
+	fuu.mutation.ClearDocuments()
+	return fuu
+}
+
+// RemoveDocumentIDs removes the "documents" edge to Document entities by IDs.
+func (fuu *FuelUpUpdate) RemoveDocumentIDs(ids ...uuid.UUID) *FuelUpUpdate {
+	fuu.mutation.RemoveDocumentIDs(ids...)
+	return fuu
+}
+
+// RemoveDocuments removes "documents" edges to Document entities.
+func (fuu *FuelUpUpdate) RemoveDocuments(d ...*Document) *FuelUpUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return fuu.RemoveDocumentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -406,6 +443,51 @@ func (fuu *FuelUpUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if fuu.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   fuelup.DocumentsTable,
+			Columns: []string{fuelup.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fuu.mutation.RemovedDocumentsIDs(); len(nodes) > 0 && !fuu.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   fuelup.DocumentsTable,
+			Columns: []string{fuelup.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fuu.mutation.DocumentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   fuelup.DocumentsTable,
+			Columns: []string{fuelup.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -605,6 +687,21 @@ func (fuuo *FuelUpUpdateOne) SetExpense(e *Expense) *FuelUpUpdateOne {
 	return fuuo.SetExpenseID(e.ID)
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
+func (fuuo *FuelUpUpdateOne) AddDocumentIDs(ids ...uuid.UUID) *FuelUpUpdateOne {
+	fuuo.mutation.AddDocumentIDs(ids...)
+	return fuuo
+}
+
+// AddDocuments adds the "documents" edges to the Document entity.
+func (fuuo *FuelUpUpdateOne) AddDocuments(d ...*Document) *FuelUpUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return fuuo.AddDocumentIDs(ids...)
+}
+
 // Mutation returns the FuelUpMutation object of the builder.
 func (fuuo *FuelUpUpdateOne) Mutation() *FuelUpMutation {
 	return fuuo.mutation
@@ -626,6 +723,27 @@ func (fuuo *FuelUpUpdateOne) ClearOdometerReading() *FuelUpUpdateOne {
 func (fuuo *FuelUpUpdateOne) ClearExpense() *FuelUpUpdateOne {
 	fuuo.mutation.ClearExpense()
 	return fuuo
+}
+
+// ClearDocuments clears all "documents" edges to the Document entity.
+func (fuuo *FuelUpUpdateOne) ClearDocuments() *FuelUpUpdateOne {
+	fuuo.mutation.ClearDocuments()
+	return fuuo
+}
+
+// RemoveDocumentIDs removes the "documents" edge to Document entities by IDs.
+func (fuuo *FuelUpUpdateOne) RemoveDocumentIDs(ids ...uuid.UUID) *FuelUpUpdateOne {
+	fuuo.mutation.RemoveDocumentIDs(ids...)
+	return fuuo
+}
+
+// RemoveDocuments removes "documents" edges to Document entities.
+func (fuuo *FuelUpUpdateOne) RemoveDocuments(d ...*Document) *FuelUpUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return fuuo.RemoveDocumentIDs(ids...)
 }
 
 // Where appends a list predicates to the FuelUpUpdate builder.
@@ -837,6 +955,51 @@ func (fuuo *FuelUpUpdateOne) sqlSave(ctx context.Context) (_node *FuelUp, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if fuuo.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   fuelup.DocumentsTable,
+			Columns: []string{fuelup.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fuuo.mutation.RemovedDocumentsIDs(); len(nodes) > 0 && !fuuo.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   fuelup.DocumentsTable,
+			Columns: []string{fuelup.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fuuo.mutation.DocumentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   fuelup.DocumentsTable,
+			Columns: []string{fuelup.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

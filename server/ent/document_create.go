@@ -13,6 +13,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/expense"
+	"github.com/Dan6erbond/revline/ent/fuelup"
+	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/google/uuid"
 )
 
@@ -113,6 +115,44 @@ func (dc *DocumentCreate) SetNillableExpenseID(id *uuid.UUID) *DocumentCreate {
 // SetExpense sets the "expense" edge to the Expense entity.
 func (dc *DocumentCreate) SetExpense(e *Expense) *DocumentCreate {
 	return dc.SetExpenseID(e.ID)
+}
+
+// SetFuelUpID sets the "fuel_up" edge to the FuelUp entity by ID.
+func (dc *DocumentCreate) SetFuelUpID(id uuid.UUID) *DocumentCreate {
+	dc.mutation.SetFuelUpID(id)
+	return dc
+}
+
+// SetNillableFuelUpID sets the "fuel_up" edge to the FuelUp entity by ID if the given value is not nil.
+func (dc *DocumentCreate) SetNillableFuelUpID(id *uuid.UUID) *DocumentCreate {
+	if id != nil {
+		dc = dc.SetFuelUpID(*id)
+	}
+	return dc
+}
+
+// SetFuelUp sets the "fuel_up" edge to the FuelUp entity.
+func (dc *DocumentCreate) SetFuelUp(f *FuelUp) *DocumentCreate {
+	return dc.SetFuelUpID(f.ID)
+}
+
+// SetServiceLogID sets the "service_log" edge to the ServiceLog entity by ID.
+func (dc *DocumentCreate) SetServiceLogID(id uuid.UUID) *DocumentCreate {
+	dc.mutation.SetServiceLogID(id)
+	return dc
+}
+
+// SetNillableServiceLogID sets the "service_log" edge to the ServiceLog entity by ID if the given value is not nil.
+func (dc *DocumentCreate) SetNillableServiceLogID(id *uuid.UUID) *DocumentCreate {
+	if id != nil {
+		dc = dc.SetServiceLogID(*id)
+	}
+	return dc
+}
+
+// SetServiceLog sets the "service_log" edge to the ServiceLog entity.
+func (dc *DocumentCreate) SetServiceLog(s *ServiceLog) *DocumentCreate {
+	return dc.SetServiceLogID(s.ID)
 }
 
 // Mutation returns the DocumentMutation object of the builder.
@@ -265,6 +305,40 @@ func (dc *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.expense_documents = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.FuelUpIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.FuelUpTable,
+			Columns: []string{document.FuelUpColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(fuelup.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.fuel_up_documents = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.ServiceLogIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.ServiceLogTable,
+			Columns: []string{document.ServiceLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(servicelog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.service_log_documents = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

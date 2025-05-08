@@ -241,6 +241,22 @@ func (d *Document) Expense(ctx context.Context) (*Expense, error) {
 	return result, MaskNotFound(err)
 }
 
+func (d *Document) FuelUp(ctx context.Context) (*FuelUp, error) {
+	result, err := d.Edges.FuelUpOrErr()
+	if IsNotLoaded(err) {
+		result, err = d.QueryFuelUp().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (d *Document) ServiceLog(ctx context.Context) (*ServiceLog, error) {
+	result, err := d.Edges.ServiceLogOrErr()
+	if IsNotLoaded(err) {
+		result, err = d.QueryServiceLog().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (dr *DragResult) Session(ctx context.Context) (*DragSession, error) {
 	result, err := dr.Edges.SessionOrErr()
 	if IsNotLoaded(err) {
@@ -355,6 +371,18 @@ func (fu *FuelUp) Expense(ctx context.Context) (*Expense, error) {
 		result, err = fu.QueryExpense().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (fu *FuelUp) Documents(ctx context.Context) (result []*Document, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = fu.NamedDocuments(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = fu.Edges.DocumentsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = fu.QueryDocuments().All(ctx)
+	}
+	return result, err
 }
 
 func (m *Media) Car(ctx context.Context) (*Car, error) {
@@ -523,6 +551,18 @@ func (sl *ServiceLog) Expense(ctx context.Context) (*Expense, error) {
 		result, err = sl.QueryExpense().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (sl *ServiceLog) Documents(ctx context.Context) (result []*Document, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = sl.NamedDocuments(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = sl.Edges.DocumentsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = sl.QueryDocuments().All(ctx)
+	}
+	return result, err
 }
 
 func (ss *ServiceSchedule) Car(ctx context.Context) (*Car, error) {

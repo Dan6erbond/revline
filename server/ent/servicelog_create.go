@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/serviceitem"
@@ -183,6 +184,21 @@ func (slc *ServiceLogCreate) SetNillableExpenseID(id *uuid.UUID) *ServiceLogCrea
 // SetExpense sets the "expense" edge to the Expense entity.
 func (slc *ServiceLogCreate) SetExpense(e *Expense) *ServiceLogCreate {
 	return slc.SetExpenseID(e.ID)
+}
+
+// AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
+func (slc *ServiceLogCreate) AddDocumentIDs(ids ...uuid.UUID) *ServiceLogCreate {
+	slc.mutation.AddDocumentIDs(ids...)
+	return slc
+}
+
+// AddDocuments adds the "documents" edges to the Document entity.
+func (slc *ServiceLogCreate) AddDocuments(d ...*Document) *ServiceLogCreate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return slc.AddDocumentIDs(ids...)
 }
 
 // Mutation returns the ServiceLogMutation object of the builder.
@@ -379,6 +395,22 @@ func (slc *ServiceLogCreate) createSpec() (*ServiceLog, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := slc.mutation.DocumentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   servicelog.DocumentsTable,
+			Columns: []string{servicelog.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -14,22 +14,26 @@ import (
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/expense"
+	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/predicate"
+	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/google/uuid"
 )
 
 // DocumentQuery is the builder for querying Document entities.
 type DocumentQuery struct {
 	config
-	ctx         *QueryContext
-	order       []document.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.Document
-	withCar     *CarQuery
-	withExpense *ExpenseQuery
-	withFKs     bool
-	modifiers   []func(*sql.Selector)
-	loadTotal   []func(context.Context, []*Document) error
+	ctx            *QueryContext
+	order          []document.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.Document
+	withCar        *CarQuery
+	withExpense    *ExpenseQuery
+	withFuelUp     *FuelUpQuery
+	withServiceLog *ServiceLogQuery
+	withFKs        bool
+	modifiers      []func(*sql.Selector)
+	loadTotal      []func(context.Context, []*Document) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -103,6 +107,50 @@ func (dq *DocumentQuery) QueryExpense() *ExpenseQuery {
 			sqlgraph.From(document.Table, document.FieldID, selector),
 			sqlgraph.To(expense.Table, expense.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, document.ExpenseTable, document.ExpenseColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryFuelUp chains the current query on the "fuel_up" edge.
+func (dq *DocumentQuery) QueryFuelUp() *FuelUpQuery {
+	query := (&FuelUpClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(document.Table, document.FieldID, selector),
+			sqlgraph.To(fuelup.Table, fuelup.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, document.FuelUpTable, document.FuelUpColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryServiceLog chains the current query on the "service_log" edge.
+func (dq *DocumentQuery) QueryServiceLog() *ServiceLogQuery {
+	query := (&ServiceLogClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(document.Table, document.FieldID, selector),
+			sqlgraph.To(servicelog.Table, servicelog.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, document.ServiceLogTable, document.ServiceLogColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -297,13 +345,15 @@ func (dq *DocumentQuery) Clone() *DocumentQuery {
 		return nil
 	}
 	return &DocumentQuery{
-		config:      dq.config,
-		ctx:         dq.ctx.Clone(),
-		order:       append([]document.OrderOption{}, dq.order...),
-		inters:      append([]Interceptor{}, dq.inters...),
-		predicates:  append([]predicate.Document{}, dq.predicates...),
-		withCar:     dq.withCar.Clone(),
-		withExpense: dq.withExpense.Clone(),
+		config:         dq.config,
+		ctx:            dq.ctx.Clone(),
+		order:          append([]document.OrderOption{}, dq.order...),
+		inters:         append([]Interceptor{}, dq.inters...),
+		predicates:     append([]predicate.Document{}, dq.predicates...),
+		withCar:        dq.withCar.Clone(),
+		withExpense:    dq.withExpense.Clone(),
+		withFuelUp:     dq.withFuelUp.Clone(),
+		withServiceLog: dq.withServiceLog.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
@@ -329,6 +379,28 @@ func (dq *DocumentQuery) WithExpense(opts ...func(*ExpenseQuery)) *DocumentQuery
 		opt(query)
 	}
 	dq.withExpense = query
+	return dq
+}
+
+// WithFuelUp tells the query-builder to eager-load the nodes that are connected to
+// the "fuel_up" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DocumentQuery) WithFuelUp(opts ...func(*FuelUpQuery)) *DocumentQuery {
+	query := (&FuelUpClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withFuelUp = query
+	return dq
+}
+
+// WithServiceLog tells the query-builder to eager-load the nodes that are connected to
+// the "service_log" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DocumentQuery) WithServiceLog(opts ...func(*ServiceLogQuery)) *DocumentQuery {
+	query := (&ServiceLogClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withServiceLog = query
 	return dq
 }
 
@@ -411,12 +483,14 @@ func (dq *DocumentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Doc
 		nodes       = []*Document{}
 		withFKs     = dq.withFKs
 		_spec       = dq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [4]bool{
 			dq.withCar != nil,
 			dq.withExpense != nil,
+			dq.withFuelUp != nil,
+			dq.withServiceLog != nil,
 		}
 	)
-	if dq.withCar != nil || dq.withExpense != nil {
+	if dq.withCar != nil || dq.withExpense != nil || dq.withFuelUp != nil || dq.withServiceLog != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -452,6 +526,18 @@ func (dq *DocumentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Doc
 	if query := dq.withExpense; query != nil {
 		if err := dq.loadExpense(ctx, query, nodes, nil,
 			func(n *Document, e *Expense) { n.Edges.Expense = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := dq.withFuelUp; query != nil {
+		if err := dq.loadFuelUp(ctx, query, nodes, nil,
+			func(n *Document, e *FuelUp) { n.Edges.FuelUp = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := dq.withServiceLog; query != nil {
+		if err := dq.loadServiceLog(ctx, query, nodes, nil,
+			func(n *Document, e *ServiceLog) { n.Edges.ServiceLog = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -520,6 +606,70 @@ func (dq *DocumentQuery) loadExpense(ctx context.Context, query *ExpenseQuery, n
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "expense_documents" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (dq *DocumentQuery) loadFuelUp(ctx context.Context, query *FuelUpQuery, nodes []*Document, init func(*Document), assign func(*Document, *FuelUp)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Document)
+	for i := range nodes {
+		if nodes[i].fuel_up_documents == nil {
+			continue
+		}
+		fk := *nodes[i].fuel_up_documents
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(fuelup.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "fuel_up_documents" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (dq *DocumentQuery) loadServiceLog(ctx context.Context, query *ServiceLogQuery, nodes []*Document, init func(*Document), assign func(*Document, *ServiceLog)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Document)
+	for i := range nodes {
+		if nodes[i].service_log_documents == nil {
+			continue
+		}
+		fk := *nodes[i].service_log_documents
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(servicelog.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "service_log_documents" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

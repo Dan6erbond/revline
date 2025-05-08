@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -34,10 +35,12 @@ type ServiceLogQuery struct {
 	withSchedule        *ServiceScheduleQuery
 	withOdometerReading *OdometerReadingQuery
 	withExpense         *ExpenseQuery
+	withDocuments       *DocumentQuery
 	withFKs             bool
 	modifiers           []func(*sql.Selector)
 	loadTotal           []func(context.Context, []*ServiceLog) error
 	withNamedItems      map[string]*ServiceItemQuery
+	withNamedDocuments  map[string]*DocumentQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -177,6 +180,28 @@ func (slq *ServiceLogQuery) QueryExpense() *ExpenseQuery {
 			sqlgraph.From(servicelog.Table, servicelog.FieldID, selector),
 			sqlgraph.To(expense.Table, expense.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, servicelog.ExpenseTable, servicelog.ExpenseColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(slq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDocuments chains the current query on the "documents" edge.
+func (slq *ServiceLogQuery) QueryDocuments() *DocumentQuery {
+	query := (&DocumentClient{config: slq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := slq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := slq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servicelog.Table, servicelog.FieldID, selector),
+			sqlgraph.To(document.Table, document.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, servicelog.DocumentsTable, servicelog.DocumentsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(slq.driver.Dialect(), step)
 		return fromU, nil
@@ -381,6 +406,7 @@ func (slq *ServiceLogQuery) Clone() *ServiceLogQuery {
 		withSchedule:        slq.withSchedule.Clone(),
 		withOdometerReading: slq.withOdometerReading.Clone(),
 		withExpense:         slq.withExpense.Clone(),
+		withDocuments:       slq.withDocuments.Clone(),
 		// clone intermediate query.
 		sql:  slq.sql.Clone(),
 		path: slq.path,
@@ -439,6 +465,17 @@ func (slq *ServiceLogQuery) WithExpense(opts ...func(*ExpenseQuery)) *ServiceLog
 		opt(query)
 	}
 	slq.withExpense = query
+	return slq
+}
+
+// WithDocuments tells the query-builder to eager-load the nodes that are connected to
+// the "documents" edge. The optional arguments are used to configure the query builder of the edge.
+func (slq *ServiceLogQuery) WithDocuments(opts ...func(*DocumentQuery)) *ServiceLogQuery {
+	query := (&DocumentClient{config: slq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	slq.withDocuments = query
 	return slq
 }
 
@@ -521,12 +558,13 @@ func (slq *ServiceLogQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		nodes       = []*ServiceLog{}
 		withFKs     = slq.withFKs
 		_spec       = slq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			slq.withCar != nil,
 			slq.withItems != nil,
 			slq.withSchedule != nil,
 			slq.withOdometerReading != nil,
 			slq.withExpense != nil,
+			slq.withDocuments != nil,
 		}
 	)
 	if slq.withCar != nil || slq.withSchedule != nil || slq.withOdometerReading != nil {
@@ -587,10 +625,24 @@ func (slq *ServiceLogQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 			return nil, err
 		}
 	}
+	if query := slq.withDocuments; query != nil {
+		if err := slq.loadDocuments(ctx, query, nodes,
+			func(n *ServiceLog) { n.Edges.Documents = []*Document{} },
+			func(n *ServiceLog, e *Document) { n.Edges.Documents = append(n.Edges.Documents, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range slq.withNamedItems {
 		if err := slq.loadItems(ctx, query, nodes,
 			func(n *ServiceLog) { n.appendNamedItems(name) },
 			func(n *ServiceLog, e *ServiceItem) { n.appendNamedItems(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range slq.withNamedDocuments {
+		if err := slq.loadDocuments(ctx, query, nodes,
+			func(n *ServiceLog) { n.appendNamedDocuments(name) },
+			func(n *ServiceLog, e *Document) { n.appendNamedDocuments(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -787,6 +839,37 @@ func (slq *ServiceLogQuery) loadExpense(ctx context.Context, query *ExpenseQuery
 	}
 	return nil
 }
+func (slq *ServiceLogQuery) loadDocuments(ctx context.Context, query *DocumentQuery, nodes []*ServiceLog, init func(*ServiceLog), assign func(*ServiceLog, *Document)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*ServiceLog)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(servicelog.DocumentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.service_log_documents
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "service_log_documents" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "service_log_documents" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (slq *ServiceLogQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := slq.querySpec()
@@ -883,6 +966,20 @@ func (slq *ServiceLogQuery) WithNamedItems(name string, opts ...func(*ServiceIte
 		slq.withNamedItems = make(map[string]*ServiceItemQuery)
 	}
 	slq.withNamedItems[name] = query
+	return slq
+}
+
+// WithNamedDocuments tells the query-builder to eager-load the nodes that are connected to the "documents"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (slq *ServiceLogQuery) WithNamedDocuments(name string, opts ...func(*DocumentQuery)) *ServiceLogQuery {
+	query := (&DocumentClient{config: slq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if slq.withNamedDocuments == nil {
+		slq.withNamedDocuments = make(map[string]*DocumentQuery)
+	}
+	slq.withNamedDocuments[name] = query
 	return slq
 }
 

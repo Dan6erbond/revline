@@ -13,6 +13,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/expense"
+	"github.com/Dan6erbond/revline/ent/fuelup"
+	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/google/uuid"
 )
 
@@ -31,10 +33,12 @@ type Document struct {
 	Tags []string `json:"tags,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DocumentQuery when eager-loading is set.
-	Edges             DocumentEdges `json:"edges"`
-	car_documents     *uuid.UUID
-	expense_documents *uuid.UUID
-	selectValues      sql.SelectValues
+	Edges                 DocumentEdges `json:"edges"`
+	car_documents         *uuid.UUID
+	expense_documents     *uuid.UUID
+	fuel_up_documents     *uuid.UUID
+	service_log_documents *uuid.UUID
+	selectValues          sql.SelectValues
 }
 
 // DocumentEdges holds the relations/edges for other nodes in the graph.
@@ -43,11 +47,15 @@ type DocumentEdges struct {
 	Car *Car `json:"car,omitempty"`
 	// Expense holds the value of the expense edge.
 	Expense *Expense `json:"expense,omitempty"`
+	// FuelUp holds the value of the fuel_up edge.
+	FuelUp *FuelUp `json:"fuel_up,omitempty"`
+	// ServiceLog holds the value of the service_log edge.
+	ServiceLog *ServiceLog `json:"service_log,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [4]bool
 	// totalCount holds the count of the edges above.
-	totalCount [2]map[string]int
+	totalCount [4]map[string]int
 }
 
 // CarOrErr returns the Car value or an error if the edge
@@ -72,6 +80,28 @@ func (e DocumentEdges) ExpenseOrErr() (*Expense, error) {
 	return nil, &NotLoadedError{edge: "expense"}
 }
 
+// FuelUpOrErr returns the FuelUp value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DocumentEdges) FuelUpOrErr() (*FuelUp, error) {
+	if e.FuelUp != nil {
+		return e.FuelUp, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: fuelup.Label}
+	}
+	return nil, &NotLoadedError{edge: "fuel_up"}
+}
+
+// ServiceLogOrErr returns the ServiceLog value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DocumentEdges) ServiceLogOrErr() (*ServiceLog, error) {
+	if e.ServiceLog != nil {
+		return e.ServiceLog, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: servicelog.Label}
+	}
+	return nil, &NotLoadedError{edge: "service_log"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Document) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -88,6 +118,10 @@ func (*Document) scanValues(columns []string) ([]any, error) {
 		case document.ForeignKeys[0]: // car_documents
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case document.ForeignKeys[1]: // expense_documents
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case document.ForeignKeys[2]: // fuel_up_documents
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case document.ForeignKeys[3]: // service_log_documents
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -150,6 +184,20 @@ func (d *Document) assignValues(columns []string, values []any) error {
 				d.expense_documents = new(uuid.UUID)
 				*d.expense_documents = *value.S.(*uuid.UUID)
 			}
+		case document.ForeignKeys[2]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field fuel_up_documents", values[i])
+			} else if value.Valid {
+				d.fuel_up_documents = new(uuid.UUID)
+				*d.fuel_up_documents = *value.S.(*uuid.UUID)
+			}
+		case document.ForeignKeys[3]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field service_log_documents", values[i])
+			} else if value.Valid {
+				d.service_log_documents = new(uuid.UUID)
+				*d.service_log_documents = *value.S.(*uuid.UUID)
+			}
 		default:
 			d.selectValues.Set(columns[i], values[i])
 		}
@@ -171,6 +219,16 @@ func (d *Document) QueryCar() *CarQuery {
 // QueryExpense queries the "expense" edge of the Document entity.
 func (d *Document) QueryExpense() *ExpenseQuery {
 	return NewDocumentClient(d.config).QueryExpense(d)
+}
+
+// QueryFuelUp queries the "fuel_up" edge of the Document entity.
+func (d *Document) QueryFuelUp() *FuelUpQuery {
+	return NewDocumentClient(d.config).QueryFuelUp(d)
+}
+
+// QueryServiceLog queries the "service_log" edge of the Document entity.
+func (d *Document) QueryServiceLog() *ServiceLogQuery {
+	return NewDocumentClient(d.config).QueryServiceLog(d)
 }
 
 // Update returns a builder for updating this Document.

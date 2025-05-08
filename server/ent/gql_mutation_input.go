@@ -434,12 +434,14 @@ func (c *CarUpdateOne) SetInput(i UpdateCarInput) *CarUpdateOne {
 
 // CreateDocumentInput represents a mutation input for creating documents.
 type CreateDocumentInput struct {
-	CreateTime *time.Time
-	UpdateTime *time.Time
-	Name       string
-	Tags       []string
-	CarID      *uuid.UUID
-	ExpenseID  *uuid.UUID
+	CreateTime   *time.Time
+	UpdateTime   *time.Time
+	Name         string
+	Tags         []string
+	CarID        *uuid.UUID
+	ExpenseID    *uuid.UUID
+	FuelUpID     *uuid.UUID
+	ServiceLogID *uuid.UUID
 }
 
 // Mutate applies the CreateDocumentInput on the DocumentMutation builder.
@@ -460,6 +462,12 @@ func (i *CreateDocumentInput) Mutate(m *DocumentMutation) {
 	if v := i.ExpenseID; v != nil {
 		m.SetExpenseID(*v)
 	}
+	if v := i.FuelUpID; v != nil {
+		m.SetFuelUpID(*v)
+	}
+	if v := i.ServiceLogID; v != nil {
+		m.SetServiceLogID(*v)
+	}
 }
 
 // SetInput applies the change-set in the CreateDocumentInput on the DocumentCreate builder.
@@ -470,14 +478,18 @@ func (c *DocumentCreate) SetInput(i CreateDocumentInput) *DocumentCreate {
 
 // UpdateDocumentInput represents a mutation input for updating documents.
 type UpdateDocumentInput struct {
-	UpdateTime   *time.Time
-	Name         *string
-	Tags         []string
-	AppendTags   []string
-	ClearCar     bool
-	CarID        *uuid.UUID
-	ClearExpense bool
-	ExpenseID    *uuid.UUID
+	UpdateTime      *time.Time
+	Name            *string
+	Tags            []string
+	AppendTags      []string
+	ClearCar        bool
+	CarID           *uuid.UUID
+	ClearExpense    bool
+	ExpenseID       *uuid.UUID
+	ClearFuelUp     bool
+	FuelUpID        *uuid.UUID
+	ClearServiceLog bool
+	ServiceLogID    *uuid.UUID
 }
 
 // Mutate applies the UpdateDocumentInput on the DocumentMutation builder.
@@ -505,6 +517,18 @@ func (i *UpdateDocumentInput) Mutate(m *DocumentMutation) {
 	}
 	if v := i.ExpenseID; v != nil {
 		m.SetExpenseID(*v)
+	}
+	if i.ClearFuelUp {
+		m.ClearFuelUp()
+	}
+	if v := i.FuelUpID; v != nil {
+		m.SetFuelUpID(*v)
+	}
+	if i.ClearServiceLog {
+		m.ClearServiceLog()
+	}
+	if v := i.ServiceLogID; v != nil {
+		m.SetServiceLogID(*v)
 	}
 }
 
@@ -968,6 +992,7 @@ type CreateFuelUpInput struct {
 	CarID             uuid.UUID
 	OdometerReadingID *uuid.UUID
 	ExpenseID         *uuid.UUID
+	DocumentIDs       []uuid.UUID
 }
 
 // Mutate applies the CreateFuelUpInput on the FuelUpMutation builder.
@@ -998,6 +1023,9 @@ func (i *CreateFuelUpInput) Mutate(m *FuelUpMutation) {
 	if v := i.ExpenseID; v != nil {
 		m.SetExpenseID(*v)
 	}
+	if v := i.DocumentIDs; len(v) > 0 {
+		m.AddDocumentIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateFuelUpInput on the FuelUpCreate builder.
@@ -1023,6 +1051,9 @@ type UpdateFuelUpInput struct {
 	OdometerReadingID    *uuid.UUID
 	ClearExpense         bool
 	ExpenseID            *uuid.UUID
+	ClearDocuments       bool
+	AddDocumentIDs       []uuid.UUID
+	RemoveDocumentIDs    []uuid.UUID
 }
 
 // Mutate applies the UpdateFuelUpInput on the FuelUpMutation builder.
@@ -1071,6 +1102,15 @@ func (i *UpdateFuelUpInput) Mutate(m *FuelUpMutation) {
 	}
 	if v := i.ExpenseID; v != nil {
 		m.SetExpenseID(*v)
+	}
+	if i.ClearDocuments {
+		m.ClearDocuments()
+	}
+	if v := i.AddDocumentIDs; len(v) > 0 {
+		m.AddDocumentIDs(v...)
+	}
+	if v := i.RemoveDocumentIDs; len(v) > 0 {
+		m.RemoveDocumentIDs(v...)
 	}
 }
 
@@ -1902,6 +1942,7 @@ type CreateServiceLogInput struct {
 	ScheduleID        *uuid.UUID
 	OdometerReadingID *uuid.UUID
 	ExpenseID         *uuid.UUID
+	DocumentIDs       []uuid.UUID
 }
 
 // Mutate applies the CreateServiceLogInput on the ServiceLogMutation builder.
@@ -1932,6 +1973,9 @@ func (i *CreateServiceLogInput) Mutate(m *ServiceLogMutation) {
 	if v := i.ExpenseID; v != nil {
 		m.SetExpenseID(*v)
 	}
+	if v := i.DocumentIDs; len(v) > 0 {
+		m.AddDocumentIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateServiceLogInput on the ServiceLogCreate builder.
@@ -1958,6 +2002,9 @@ type UpdateServiceLogInput struct {
 	OdometerReadingID    *uuid.UUID
 	ClearExpense         bool
 	ExpenseID            *uuid.UUID
+	ClearDocuments       bool
+	AddDocumentIDs       []uuid.UUID
+	RemoveDocumentIDs    []uuid.UUID
 }
 
 // Mutate applies the UpdateServiceLogInput on the ServiceLogMutation builder.
@@ -2009,6 +2056,15 @@ func (i *UpdateServiceLogInput) Mutate(m *ServiceLogMutation) {
 	}
 	if v := i.ExpenseID; v != nil {
 		m.SetExpenseID(*v)
+	}
+	if i.ClearDocuments {
+		m.ClearDocuments()
+	}
+	if v := i.AddDocumentIDs; len(v) > 0 {
+		m.AddDocumentIDs(v...)
+	}
+	if v := i.RemoveDocumentIDs; len(v) > 0 {
+		m.RemoveDocumentIDs(v...)
 	}
 }
 

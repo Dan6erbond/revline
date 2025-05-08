@@ -536,6 +536,8 @@ input CreateDocumentInput {
   tags: [String!]
   carID: ID
   expenseID: ID
+  fuelUpID: ID
+  serviceLogID: ID
 }
 """
 CreateDragResultInput is used for create DragResult object.
@@ -618,6 +620,7 @@ input CreateFuelUpInput {
   carID: ID!
   odometerReadingID: ID
   expenseID: ID
+  documentIDs: [ID!]
 }
 """
 CreateMediaInput is used for create Media object.
@@ -729,6 +732,7 @@ input CreateServiceLogInput {
   scheduleID: ID
   odometerReadingID: ID
   expenseID: ID
+  documentIDs: [ID!]
 }
 """
 CreateServiceScheduleInput is used for create ServiceSchedule object.
@@ -805,6 +809,8 @@ type Document implements Node {
   tags: [String!]!
   car: Car
   expense: Expense
+  fuelUp: FuelUp
+  serviceLog: ServiceLog
 }
 """
 DocumentWhereInput is used for filtering Document objects.
@@ -873,6 +879,16 @@ input DocumentWhereInput {
   """
   hasExpense: Boolean
   hasExpenseWith: [ExpenseWhereInput!]
+  """
+  fuel_up edge predicates
+  """
+  hasFuelUp: Boolean
+  hasFuelUpWith: [FuelUpWhereInput!]
+  """
+  service_log edge predicates
+  """
+  hasServiceLog: Boolean
+  hasServiceLogWith: [ServiceLogWhereInput!]
 }
 type DragResult implements Node {
   id: ID!
@@ -1420,6 +1436,7 @@ type FuelUp implements Node {
   car: Car!
   odometerReading: OdometerReading
   expense: Expense
+  documents: [Document!]
 }
 """
 FuelUpWhereInput is used for filtering FuelUp objects.
@@ -1554,6 +1571,11 @@ input FuelUpWhereInput {
   """
   hasExpense: Boolean
   hasExpenseWith: [ExpenseWhereInput!]
+  """
+  documents edge predicates
+  """
+  hasDocuments: Boolean
+  hasDocumentsWith: [DocumentWhereInput!]
 }
 """
 FuelVolumeUnit is enum for the field fuel_volume_unit
@@ -2500,6 +2522,7 @@ type ServiceLog implements Node {
   schedule: ServiceSchedule
   odometerReading: OdometerReading
   expense: Expense
+  documents: [Document!]
 }
 """
 ServiceLogWhereInput is used for filtering ServiceLog objects.
@@ -2614,6 +2637,11 @@ input ServiceLogWhereInput {
   """
   hasExpense: Boolean
   hasExpenseWith: [ExpenseWhereInput!]
+  """
+  documents edge predicates
+  """
+  hasDocuments: Boolean
+  hasDocumentsWith: [DocumentWhereInput!]
 }
 type ServiceSchedule implements Node {
   id: ID!
@@ -2787,6 +2815,7 @@ type SubscriptionPlan implements Node @goModel(model: "github.com/Dan6erbond/rev
   status: SubscriptionStatus!
   canceledAt: Time
   cancelAtPeriodEnd: Boolean!
+  trialEnd: Time
   user: User!
   checkoutSession: CheckoutSession
 }
@@ -2881,6 +2910,19 @@ input SubscriptionPlanWhereInput {
   """
   cancelAtPeriodEnd: Boolean
   cancelAtPeriodEndNEQ: Boolean
+  """
+  trial_end field predicates
+  """
+  trialEnd: Time
+  trialEndNEQ: Time
+  trialEndIn: [Time!]
+  trialEndNotIn: [Time!]
+  trialEndGT: Time
+  trialEndGTE: Time
+  trialEndLT: Time
+  trialEndLTE: Time
+  trialEndIsNil: Boolean
+  trialEndNotNil: Boolean
   """
   user edge predicates
   """
@@ -3346,6 +3388,10 @@ input UpdateDocumentInput {
   clearCar: Boolean
   expenseID: ID
   clearExpense: Boolean
+  fuelUpID: ID
+  clearFuelUp: Boolean
+  serviceLogID: ID
+  clearServiceLog: Boolean
 }
 """
 UpdateDragResultInput is used for update DragResult object.
@@ -3437,6 +3483,9 @@ input UpdateFuelUpInput {
   clearOdometerReading: Boolean
   expenseID: ID
   clearExpense: Boolean
+  addDocumentIDs: [ID!]
+  removeDocumentIDs: [ID!]
+  clearDocuments: Boolean
 }
 """
 UpdateMediaInput is used for update Media object.
@@ -3591,6 +3640,9 @@ input UpdateServiceLogInput {
   clearOdometerReading: Boolean
   expenseID: ID
   clearExpense: Boolean
+  addDocumentIDs: [ID!]
+  removeDocumentIDs: [ID!]
+  clearDocuments: Boolean
 }
 """
 UpdateServiceScheduleInput is used for update ServiceSchedule object.

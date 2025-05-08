@@ -1669,6 +1669,14 @@ type DocumentWhereInput struct {
 	// "expense" edge predicates.
 	HasExpense     *bool                `json:"hasExpense,omitempty"`
 	HasExpenseWith []*ExpenseWhereInput `json:"hasExpenseWith,omitempty"`
+
+	// "fuel_up" edge predicates.
+	HasFuelUp     *bool               `json:"hasFuelUp,omitempty"`
+	HasFuelUpWith []*FuelUpWhereInput `json:"hasFuelUpWith,omitempty"`
+
+	// "service_log" edge predicates.
+	HasServiceLog     *bool                   `json:"hasServiceLog,omitempty"`
+	HasServiceLogWith []*ServiceLogWhereInput `json:"hasServiceLogWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1889,6 +1897,42 @@ func (i *DocumentWhereInput) P() (predicate.Document, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, document.HasExpenseWith(with...))
+	}
+	if i.HasFuelUp != nil {
+		p := document.HasFuelUp()
+		if !*i.HasFuelUp {
+			p = document.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasFuelUpWith) > 0 {
+		with := make([]predicate.FuelUp, 0, len(i.HasFuelUpWith))
+		for _, w := range i.HasFuelUpWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasFuelUpWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, document.HasFuelUpWith(with...))
+	}
+	if i.HasServiceLog != nil {
+		p := document.HasServiceLog()
+		if !*i.HasServiceLog {
+			p = document.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasServiceLogWith) > 0 {
+		with := make([]predicate.ServiceLog, 0, len(i.HasServiceLogWith))
+		for _, w := range i.HasServiceLogWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasServiceLogWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, document.HasServiceLogWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -3766,6 +3810,10 @@ type FuelUpWhereInput struct {
 	// "expense" edge predicates.
 	HasExpense     *bool                `json:"hasExpense,omitempty"`
 	HasExpenseWith []*ExpenseWhereInput `json:"hasExpenseWith,omitempty"`
+
+	// "documents" edge predicates.
+	HasDocuments     *bool                 `json:"hasDocuments,omitempty"`
+	HasDocumentsWith []*DocumentWhereInput `json:"hasDocumentsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -4133,6 +4181,24 @@ func (i *FuelUpWhereInput) P() (predicate.FuelUp, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, fuelup.HasExpenseWith(with...))
+	}
+	if i.HasDocuments != nil {
+		p := fuelup.HasDocuments()
+		if !*i.HasDocuments {
+			p = fuelup.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasDocumentsWith) > 0 {
+		with := make([]predicate.Document, 0, len(i.HasDocumentsWith))
+		for _, w := range i.HasDocumentsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasDocumentsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, fuelup.HasDocumentsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -7086,6 +7152,10 @@ type ServiceLogWhereInput struct {
 	// "expense" edge predicates.
 	HasExpense     *bool                `json:"hasExpense,omitempty"`
 	HasExpenseWith []*ExpenseWhereInput `json:"hasExpenseWith,omitempty"`
+
+	// "documents" edge predicates.
+	HasDocuments     *bool                 `json:"hasDocuments,omitempty"`
+	HasDocumentsWith []*DocumentWhereInput `json:"hasDocumentsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -7435,6 +7505,24 @@ func (i *ServiceLogWhereInput) P() (predicate.ServiceLog, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, servicelog.HasExpenseWith(with...))
+	}
+	if i.HasDocuments != nil {
+		p := servicelog.HasDocuments()
+		if !*i.HasDocuments {
+			p = servicelog.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasDocumentsWith) > 0 {
+		with := make([]predicate.Document, 0, len(i.HasDocumentsWith))
+		for _, w := range i.HasDocumentsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasDocumentsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, servicelog.HasDocumentsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -8080,6 +8168,18 @@ type SubscriptionPlanWhereInput struct {
 	CancelAtPeriodEnd    *bool `json:"cancelAtPeriodEnd,omitempty"`
 	CancelAtPeriodEndNEQ *bool `json:"cancelAtPeriodEndNEQ,omitempty"`
 
+	// "trial_end" field predicates.
+	TrialEnd       *time.Time  `json:"trialEnd,omitempty"`
+	TrialEndNEQ    *time.Time  `json:"trialEndNEQ,omitempty"`
+	TrialEndIn     []time.Time `json:"trialEndIn,omitempty"`
+	TrialEndNotIn  []time.Time `json:"trialEndNotIn,omitempty"`
+	TrialEndGT     *time.Time  `json:"trialEndGT,omitempty"`
+	TrialEndGTE    *time.Time  `json:"trialEndGTE,omitempty"`
+	TrialEndLT     *time.Time  `json:"trialEndLT,omitempty"`
+	TrialEndLTE    *time.Time  `json:"trialEndLTE,omitempty"`
+	TrialEndIsNil  bool        `json:"trialEndIsNil,omitempty"`
+	TrialEndNotNil bool        `json:"trialEndNotNil,omitempty"`
+
 	// "user" edge predicates.
 	HasUser     *bool             `json:"hasUser,omitempty"`
 	HasUserWith []*UserWhereInput `json:"hasUserWith,omitempty"`
@@ -8336,6 +8436,36 @@ func (i *SubscriptionPlanWhereInput) P() (predicate.Subscription, error) {
 	}
 	if i.CancelAtPeriodEndNEQ != nil {
 		predicates = append(predicates, subscription.CancelAtPeriodEndNEQ(*i.CancelAtPeriodEndNEQ))
+	}
+	if i.TrialEnd != nil {
+		predicates = append(predicates, subscription.TrialEndEQ(*i.TrialEnd))
+	}
+	if i.TrialEndNEQ != nil {
+		predicates = append(predicates, subscription.TrialEndNEQ(*i.TrialEndNEQ))
+	}
+	if len(i.TrialEndIn) > 0 {
+		predicates = append(predicates, subscription.TrialEndIn(i.TrialEndIn...))
+	}
+	if len(i.TrialEndNotIn) > 0 {
+		predicates = append(predicates, subscription.TrialEndNotIn(i.TrialEndNotIn...))
+	}
+	if i.TrialEndGT != nil {
+		predicates = append(predicates, subscription.TrialEndGT(*i.TrialEndGT))
+	}
+	if i.TrialEndGTE != nil {
+		predicates = append(predicates, subscription.TrialEndGTE(*i.TrialEndGTE))
+	}
+	if i.TrialEndLT != nil {
+		predicates = append(predicates, subscription.TrialEndLT(*i.TrialEndLT))
+	}
+	if i.TrialEndLTE != nil {
+		predicates = append(predicates, subscription.TrialEndLTE(*i.TrialEndLTE))
+	}
+	if i.TrialEndIsNil {
+		predicates = append(predicates, subscription.TrialEndIsNil())
+	}
+	if i.TrialEndNotNil {
+		predicates = append(predicates, subscription.TrialEndNotNil())
 	}
 
 	if i.HasUser != nil {

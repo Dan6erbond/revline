@@ -15,7 +15,9 @@ import (
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/expense"
+	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/predicate"
+	"github.com/Dan6erbond/revline/ent/servicelog"
 	"github.com/google/uuid"
 )
 
@@ -102,6 +104,44 @@ func (du *DocumentUpdate) SetExpense(e *Expense) *DocumentUpdate {
 	return du.SetExpenseID(e.ID)
 }
 
+// SetFuelUpID sets the "fuel_up" edge to the FuelUp entity by ID.
+func (du *DocumentUpdate) SetFuelUpID(id uuid.UUID) *DocumentUpdate {
+	du.mutation.SetFuelUpID(id)
+	return du
+}
+
+// SetNillableFuelUpID sets the "fuel_up" edge to the FuelUp entity by ID if the given value is not nil.
+func (du *DocumentUpdate) SetNillableFuelUpID(id *uuid.UUID) *DocumentUpdate {
+	if id != nil {
+		du = du.SetFuelUpID(*id)
+	}
+	return du
+}
+
+// SetFuelUp sets the "fuel_up" edge to the FuelUp entity.
+func (du *DocumentUpdate) SetFuelUp(f *FuelUp) *DocumentUpdate {
+	return du.SetFuelUpID(f.ID)
+}
+
+// SetServiceLogID sets the "service_log" edge to the ServiceLog entity by ID.
+func (du *DocumentUpdate) SetServiceLogID(id uuid.UUID) *DocumentUpdate {
+	du.mutation.SetServiceLogID(id)
+	return du
+}
+
+// SetNillableServiceLogID sets the "service_log" edge to the ServiceLog entity by ID if the given value is not nil.
+func (du *DocumentUpdate) SetNillableServiceLogID(id *uuid.UUID) *DocumentUpdate {
+	if id != nil {
+		du = du.SetServiceLogID(*id)
+	}
+	return du
+}
+
+// SetServiceLog sets the "service_log" edge to the ServiceLog entity.
+func (du *DocumentUpdate) SetServiceLog(s *ServiceLog) *DocumentUpdate {
+	return du.SetServiceLogID(s.ID)
+}
+
 // Mutation returns the DocumentMutation object of the builder.
 func (du *DocumentUpdate) Mutation() *DocumentMutation {
 	return du.mutation
@@ -116,6 +156,18 @@ func (du *DocumentUpdate) ClearCar() *DocumentUpdate {
 // ClearExpense clears the "expense" edge to the Expense entity.
 func (du *DocumentUpdate) ClearExpense() *DocumentUpdate {
 	du.mutation.ClearExpense()
+	return du
+}
+
+// ClearFuelUp clears the "fuel_up" edge to the FuelUp entity.
+func (du *DocumentUpdate) ClearFuelUp() *DocumentUpdate {
+	du.mutation.ClearFuelUp()
+	return du
+}
+
+// ClearServiceLog clears the "service_log" edge to the ServiceLog entity.
+func (du *DocumentUpdate) ClearServiceLog() *DocumentUpdate {
+	du.mutation.ClearServiceLog()
 	return du
 }
 
@@ -236,6 +288,64 @@ func (du *DocumentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if du.mutation.FuelUpCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.FuelUpTable,
+			Columns: []string{document.FuelUpColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(fuelup.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.FuelUpIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.FuelUpTable,
+			Columns: []string{document.FuelUpColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(fuelup.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if du.mutation.ServiceLogCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.ServiceLogTable,
+			Columns: []string{document.ServiceLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(servicelog.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.ServiceLogIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.ServiceLogTable,
+			Columns: []string{document.ServiceLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(servicelog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{document.Label}
@@ -326,6 +436,44 @@ func (duo *DocumentUpdateOne) SetExpense(e *Expense) *DocumentUpdateOne {
 	return duo.SetExpenseID(e.ID)
 }
 
+// SetFuelUpID sets the "fuel_up" edge to the FuelUp entity by ID.
+func (duo *DocumentUpdateOne) SetFuelUpID(id uuid.UUID) *DocumentUpdateOne {
+	duo.mutation.SetFuelUpID(id)
+	return duo
+}
+
+// SetNillableFuelUpID sets the "fuel_up" edge to the FuelUp entity by ID if the given value is not nil.
+func (duo *DocumentUpdateOne) SetNillableFuelUpID(id *uuid.UUID) *DocumentUpdateOne {
+	if id != nil {
+		duo = duo.SetFuelUpID(*id)
+	}
+	return duo
+}
+
+// SetFuelUp sets the "fuel_up" edge to the FuelUp entity.
+func (duo *DocumentUpdateOne) SetFuelUp(f *FuelUp) *DocumentUpdateOne {
+	return duo.SetFuelUpID(f.ID)
+}
+
+// SetServiceLogID sets the "service_log" edge to the ServiceLog entity by ID.
+func (duo *DocumentUpdateOne) SetServiceLogID(id uuid.UUID) *DocumentUpdateOne {
+	duo.mutation.SetServiceLogID(id)
+	return duo
+}
+
+// SetNillableServiceLogID sets the "service_log" edge to the ServiceLog entity by ID if the given value is not nil.
+func (duo *DocumentUpdateOne) SetNillableServiceLogID(id *uuid.UUID) *DocumentUpdateOne {
+	if id != nil {
+		duo = duo.SetServiceLogID(*id)
+	}
+	return duo
+}
+
+// SetServiceLog sets the "service_log" edge to the ServiceLog entity.
+func (duo *DocumentUpdateOne) SetServiceLog(s *ServiceLog) *DocumentUpdateOne {
+	return duo.SetServiceLogID(s.ID)
+}
+
 // Mutation returns the DocumentMutation object of the builder.
 func (duo *DocumentUpdateOne) Mutation() *DocumentMutation {
 	return duo.mutation
@@ -340,6 +488,18 @@ func (duo *DocumentUpdateOne) ClearCar() *DocumentUpdateOne {
 // ClearExpense clears the "expense" edge to the Expense entity.
 func (duo *DocumentUpdateOne) ClearExpense() *DocumentUpdateOne {
 	duo.mutation.ClearExpense()
+	return duo
+}
+
+// ClearFuelUp clears the "fuel_up" edge to the FuelUp entity.
+func (duo *DocumentUpdateOne) ClearFuelUp() *DocumentUpdateOne {
+	duo.mutation.ClearFuelUp()
+	return duo
+}
+
+// ClearServiceLog clears the "service_log" edge to the ServiceLog entity.
+func (duo *DocumentUpdateOne) ClearServiceLog() *DocumentUpdateOne {
+	duo.mutation.ClearServiceLog()
 	return duo
 }
 
@@ -483,6 +643,64 @@ func (duo *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.FuelUpCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.FuelUpTable,
+			Columns: []string{document.FuelUpColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(fuelup.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.FuelUpIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.FuelUpTable,
+			Columns: []string{document.FuelUpColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(fuelup.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.ServiceLogCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.ServiceLogTable,
+			Columns: []string{document.ServiceLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(servicelog.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.ServiceLogIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.ServiceLogTable,
+			Columns: []string{document.ServiceLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(servicelog.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -466,6 +466,29 @@ func HasExpenseWith(preds ...predicate.Expense) predicate.ServiceLog {
 	})
 }
 
+// HasDocuments applies the HasEdge predicate on the "documents" edge.
+func HasDocuments() predicate.ServiceLog {
+	return predicate.ServiceLog(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DocumentsTable, DocumentsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDocumentsWith applies the HasEdge predicate on the "documents" edge with a given conditions (other predicates).
+func HasDocumentsWith(preds ...predicate.Document) predicate.ServiceLog {
+	return predicate.ServiceLog(func(s *sql.Selector) {
+		step := newDocumentsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.ServiceLog) predicate.ServiceLog {
 	return predicate.ServiceLog(sql.AndPredicates(predicates...))

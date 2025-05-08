@@ -61,6 +61,7 @@ func (FuelUp) Edges() []ent.Edge {
 			Ref("fuel_up").
 			Unique(),
 		edge.To("expense", Expense.Type).Unique(),
+		edge.To("documents", Document.Type),
 	}
 }
 

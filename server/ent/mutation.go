@@ -3538,22 +3538,26 @@ func (m *CheckoutSessionMutation) ResetEdge(name string) error {
 // DocumentMutation represents an operation that mutates the Document nodes in the graph.
 type DocumentMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *uuid.UUID
-	create_time    *time.Time
-	update_time    *time.Time
-	name           *string
-	tags           *[]string
-	appendtags     []string
-	clearedFields  map[string]struct{}
-	car            *uuid.UUID
-	clearedcar     bool
-	expense        *uuid.UUID
-	clearedexpense bool
-	done           bool
-	oldValue       func(context.Context) (*Document, error)
-	predicates     []predicate.Document
+	op                 Op
+	typ                string
+	id                 *uuid.UUID
+	create_time        *time.Time
+	update_time        *time.Time
+	name               *string
+	tags               *[]string
+	appendtags         []string
+	clearedFields      map[string]struct{}
+	car                *uuid.UUID
+	clearedcar         bool
+	expense            *uuid.UUID
+	clearedexpense     bool
+	fuel_up            *uuid.UUID
+	clearedfuel_up     bool
+	service_log        *uuid.UUID
+	clearedservice_log bool
+	done               bool
+	oldValue           func(context.Context) (*Document, error)
+	predicates         []predicate.Document
 }
 
 var _ ent.Mutation = (*DocumentMutation)(nil)
@@ -3897,6 +3901,84 @@ func (m *DocumentMutation) ResetExpense() {
 	m.clearedexpense = false
 }
 
+// SetFuelUpID sets the "fuel_up" edge to the FuelUp entity by id.
+func (m *DocumentMutation) SetFuelUpID(id uuid.UUID) {
+	m.fuel_up = &id
+}
+
+// ClearFuelUp clears the "fuel_up" edge to the FuelUp entity.
+func (m *DocumentMutation) ClearFuelUp() {
+	m.clearedfuel_up = true
+}
+
+// FuelUpCleared reports if the "fuel_up" edge to the FuelUp entity was cleared.
+func (m *DocumentMutation) FuelUpCleared() bool {
+	return m.clearedfuel_up
+}
+
+// FuelUpID returns the "fuel_up" edge ID in the mutation.
+func (m *DocumentMutation) FuelUpID() (id uuid.UUID, exists bool) {
+	if m.fuel_up != nil {
+		return *m.fuel_up, true
+	}
+	return
+}
+
+// FuelUpIDs returns the "fuel_up" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// FuelUpID instead. It exists only for internal usage by the builders.
+func (m *DocumentMutation) FuelUpIDs() (ids []uuid.UUID) {
+	if id := m.fuel_up; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetFuelUp resets all changes to the "fuel_up" edge.
+func (m *DocumentMutation) ResetFuelUp() {
+	m.fuel_up = nil
+	m.clearedfuel_up = false
+}
+
+// SetServiceLogID sets the "service_log" edge to the ServiceLog entity by id.
+func (m *DocumentMutation) SetServiceLogID(id uuid.UUID) {
+	m.service_log = &id
+}
+
+// ClearServiceLog clears the "service_log" edge to the ServiceLog entity.
+func (m *DocumentMutation) ClearServiceLog() {
+	m.clearedservice_log = true
+}
+
+// ServiceLogCleared reports if the "service_log" edge to the ServiceLog entity was cleared.
+func (m *DocumentMutation) ServiceLogCleared() bool {
+	return m.clearedservice_log
+}
+
+// ServiceLogID returns the "service_log" edge ID in the mutation.
+func (m *DocumentMutation) ServiceLogID() (id uuid.UUID, exists bool) {
+	if m.service_log != nil {
+		return *m.service_log, true
+	}
+	return
+}
+
+// ServiceLogIDs returns the "service_log" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ServiceLogID instead. It exists only for internal usage by the builders.
+func (m *DocumentMutation) ServiceLogIDs() (ids []uuid.UUID) {
+	if id := m.service_log; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetServiceLog resets all changes to the "service_log" edge.
+func (m *DocumentMutation) ResetServiceLog() {
+	m.service_log = nil
+	m.clearedservice_log = false
+}
+
 // Where appends a list predicates to the DocumentMutation builder.
 func (m *DocumentMutation) Where(ps ...predicate.Document) {
 	m.predicates = append(m.predicates, ps...)
@@ -4081,12 +4163,18 @@ func (m *DocumentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DocumentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 4)
 	if m.car != nil {
 		edges = append(edges, document.EdgeCar)
 	}
 	if m.expense != nil {
 		edges = append(edges, document.EdgeExpense)
+	}
+	if m.fuel_up != nil {
+		edges = append(edges, document.EdgeFuelUp)
+	}
+	if m.service_log != nil {
+		edges = append(edges, document.EdgeServiceLog)
 	}
 	return edges
 }
@@ -4103,13 +4191,21 @@ func (m *DocumentMutation) AddedIDs(name string) []ent.Value {
 		if id := m.expense; id != nil {
 			return []ent.Value{*id}
 		}
+	case document.EdgeFuelUp:
+		if id := m.fuel_up; id != nil {
+			return []ent.Value{*id}
+		}
+	case document.EdgeServiceLog:
+		if id := m.service_log; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DocumentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 4)
 	return edges
 }
 
@@ -4121,12 +4217,18 @@ func (m *DocumentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DocumentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 4)
 	if m.clearedcar {
 		edges = append(edges, document.EdgeCar)
 	}
 	if m.clearedexpense {
 		edges = append(edges, document.EdgeExpense)
+	}
+	if m.clearedfuel_up {
+		edges = append(edges, document.EdgeFuelUp)
+	}
+	if m.clearedservice_log {
+		edges = append(edges, document.EdgeServiceLog)
 	}
 	return edges
 }
@@ -4139,6 +4241,10 @@ func (m *DocumentMutation) EdgeCleared(name string) bool {
 		return m.clearedcar
 	case document.EdgeExpense:
 		return m.clearedexpense
+	case document.EdgeFuelUp:
+		return m.clearedfuel_up
+	case document.EdgeServiceLog:
+		return m.clearedservice_log
 	}
 	return false
 }
@@ -4153,6 +4259,12 @@ func (m *DocumentMutation) ClearEdge(name string) error {
 	case document.EdgeExpense:
 		m.ClearExpense()
 		return nil
+	case document.EdgeFuelUp:
+		m.ClearFuelUp()
+		return nil
+	case document.EdgeServiceLog:
+		m.ClearServiceLog()
+		return nil
 	}
 	return fmt.Errorf("unknown Document unique edge %s", name)
 }
@@ -4166,6 +4278,12 @@ func (m *DocumentMutation) ResetEdge(name string) error {
 		return nil
 	case document.EdgeExpense:
 		m.ResetExpense()
+		return nil
+	case document.EdgeFuelUp:
+		m.ResetFuelUp()
+		return nil
+	case document.EdgeServiceLog:
+		m.ResetServiceLog()
 		return nil
 	}
 	return fmt.Errorf("unknown Document edge %s", name)
@@ -7861,6 +7979,9 @@ type FuelUpMutation struct {
 	clearedodometer_reading bool
 	expense                 *uuid.UUID
 	clearedexpense          bool
+	documents               map[uuid.UUID]struct{}
+	removeddocuments        map[uuid.UUID]struct{}
+	cleareddocuments        bool
 	done                    bool
 	oldValue                func(context.Context) (*FuelUp, error)
 	predicates              []predicate.FuelUp
@@ -8457,6 +8578,60 @@ func (m *FuelUpMutation) ResetExpense() {
 	m.clearedexpense = false
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by ids.
+func (m *FuelUpMutation) AddDocumentIDs(ids ...uuid.UUID) {
+	if m.documents == nil {
+		m.documents = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.documents[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDocuments clears the "documents" edge to the Document entity.
+func (m *FuelUpMutation) ClearDocuments() {
+	m.cleareddocuments = true
+}
+
+// DocumentsCleared reports if the "documents" edge to the Document entity was cleared.
+func (m *FuelUpMutation) DocumentsCleared() bool {
+	return m.cleareddocuments
+}
+
+// RemoveDocumentIDs removes the "documents" edge to the Document entity by IDs.
+func (m *FuelUpMutation) RemoveDocumentIDs(ids ...uuid.UUID) {
+	if m.removeddocuments == nil {
+		m.removeddocuments = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.documents, ids[i])
+		m.removeddocuments[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDocuments returns the removed IDs of the "documents" edge to the Document entity.
+func (m *FuelUpMutation) RemovedDocumentsIDs() (ids []uuid.UUID) {
+	for id := range m.removeddocuments {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DocumentsIDs returns the "documents" edge IDs in the mutation.
+func (m *FuelUpMutation) DocumentsIDs() (ids []uuid.UUID) {
+	for id := range m.documents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDocuments resets all changes to the "documents" edge.
+func (m *FuelUpMutation) ResetDocuments() {
+	m.documents = nil
+	m.cleareddocuments = false
+	m.removeddocuments = nil
+}
+
 // Where appends a list predicates to the FuelUpMutation builder.
 func (m *FuelUpMutation) Where(ps ...predicate.FuelUp) {
 	m.predicates = append(m.predicates, ps...)
@@ -8756,7 +8931,7 @@ func (m *FuelUpMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *FuelUpMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.car != nil {
 		edges = append(edges, fuelup.EdgeCar)
 	}
@@ -8765,6 +8940,9 @@ func (m *FuelUpMutation) AddedEdges() []string {
 	}
 	if m.expense != nil {
 		edges = append(edges, fuelup.EdgeExpense)
+	}
+	if m.documents != nil {
+		edges = append(edges, fuelup.EdgeDocuments)
 	}
 	return edges
 }
@@ -8785,25 +8963,42 @@ func (m *FuelUpMutation) AddedIDs(name string) []ent.Value {
 		if id := m.expense; id != nil {
 			return []ent.Value{*id}
 		}
+	case fuelup.EdgeDocuments:
+		ids := make([]ent.Value, 0, len(m.documents))
+		for id := range m.documents {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *FuelUpMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
+	if m.removeddocuments != nil {
+		edges = append(edges, fuelup.EdgeDocuments)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *FuelUpMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case fuelup.EdgeDocuments:
+		ids := make([]ent.Value, 0, len(m.removeddocuments))
+		for id := range m.removeddocuments {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *FuelUpMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedcar {
 		edges = append(edges, fuelup.EdgeCar)
 	}
@@ -8812,6 +9007,9 @@ func (m *FuelUpMutation) ClearedEdges() []string {
 	}
 	if m.clearedexpense {
 		edges = append(edges, fuelup.EdgeExpense)
+	}
+	if m.cleareddocuments {
+		edges = append(edges, fuelup.EdgeDocuments)
 	}
 	return edges
 }
@@ -8826,6 +9024,8 @@ func (m *FuelUpMutation) EdgeCleared(name string) bool {
 		return m.clearedodometer_reading
 	case fuelup.EdgeExpense:
 		return m.clearedexpense
+	case fuelup.EdgeDocuments:
+		return m.cleareddocuments
 	}
 	return false
 }
@@ -8859,6 +9059,9 @@ func (m *FuelUpMutation) ResetEdge(name string) error {
 		return nil
 	case fuelup.EdgeExpense:
 		m.ResetExpense()
+		return nil
+	case fuelup.EdgeDocuments:
+		m.ResetDocuments()
 		return nil
 	}
 	return fmt.Errorf("unknown FuelUp edge %s", name)
@@ -14812,6 +15015,9 @@ type ServiceLogMutation struct {
 	clearedodometer_reading bool
 	expense                 *uuid.UUID
 	clearedexpense          bool
+	documents               map[uuid.UUID]struct{}
+	removeddocuments        map[uuid.UUID]struct{}
+	cleareddocuments        bool
 	done                    bool
 	oldValue                func(context.Context) (*ServiceLog, error)
 	predicates              []predicate.ServiceLog
@@ -15337,6 +15543,60 @@ func (m *ServiceLogMutation) ResetExpense() {
 	m.clearedexpense = false
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by ids.
+func (m *ServiceLogMutation) AddDocumentIDs(ids ...uuid.UUID) {
+	if m.documents == nil {
+		m.documents = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.documents[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDocuments clears the "documents" edge to the Document entity.
+func (m *ServiceLogMutation) ClearDocuments() {
+	m.cleareddocuments = true
+}
+
+// DocumentsCleared reports if the "documents" edge to the Document entity was cleared.
+func (m *ServiceLogMutation) DocumentsCleared() bool {
+	return m.cleareddocuments
+}
+
+// RemoveDocumentIDs removes the "documents" edge to the Document entity by IDs.
+func (m *ServiceLogMutation) RemoveDocumentIDs(ids ...uuid.UUID) {
+	if m.removeddocuments == nil {
+		m.removeddocuments = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.documents, ids[i])
+		m.removeddocuments[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDocuments returns the removed IDs of the "documents" edge to the Document entity.
+func (m *ServiceLogMutation) RemovedDocumentsIDs() (ids []uuid.UUID) {
+	for id := range m.removeddocuments {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DocumentsIDs returns the "documents" edge IDs in the mutation.
+func (m *ServiceLogMutation) DocumentsIDs() (ids []uuid.UUID) {
+	for id := range m.documents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDocuments resets all changes to the "documents" edge.
+func (m *ServiceLogMutation) ResetDocuments() {
+	m.documents = nil
+	m.cleareddocuments = false
+	m.removeddocuments = nil
+}
+
 // Where appends a list predicates to the ServiceLogMutation builder.
 func (m *ServiceLogMutation) Where(ps ...predicate.ServiceLog) {
 	m.predicates = append(m.predicates, ps...)
@@ -15553,7 +15813,7 @@ func (m *ServiceLogMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ServiceLogMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.car != nil {
 		edges = append(edges, servicelog.EdgeCar)
 	}
@@ -15568,6 +15828,9 @@ func (m *ServiceLogMutation) AddedEdges() []string {
 	}
 	if m.expense != nil {
 		edges = append(edges, servicelog.EdgeExpense)
+	}
+	if m.documents != nil {
+		edges = append(edges, servicelog.EdgeDocuments)
 	}
 	return edges
 }
@@ -15598,15 +15861,24 @@ func (m *ServiceLogMutation) AddedIDs(name string) []ent.Value {
 		if id := m.expense; id != nil {
 			return []ent.Value{*id}
 		}
+	case servicelog.EdgeDocuments:
+		ids := make([]ent.Value, 0, len(m.documents))
+		for id := range m.documents {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ServiceLogMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removeditems != nil {
 		edges = append(edges, servicelog.EdgeItems)
+	}
+	if m.removeddocuments != nil {
+		edges = append(edges, servicelog.EdgeDocuments)
 	}
 	return edges
 }
@@ -15621,13 +15893,19 @@ func (m *ServiceLogMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case servicelog.EdgeDocuments:
+		ids := make([]ent.Value, 0, len(m.removeddocuments))
+		for id := range m.removeddocuments {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ServiceLogMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedcar {
 		edges = append(edges, servicelog.EdgeCar)
 	}
@@ -15642,6 +15920,9 @@ func (m *ServiceLogMutation) ClearedEdges() []string {
 	}
 	if m.clearedexpense {
 		edges = append(edges, servicelog.EdgeExpense)
+	}
+	if m.cleareddocuments {
+		edges = append(edges, servicelog.EdgeDocuments)
 	}
 	return edges
 }
@@ -15660,6 +15941,8 @@ func (m *ServiceLogMutation) EdgeCleared(name string) bool {
 		return m.clearedodometer_reading
 	case servicelog.EdgeExpense:
 		return m.clearedexpense
+	case servicelog.EdgeDocuments:
+		return m.cleareddocuments
 	}
 	return false
 }
@@ -15702,6 +15985,9 @@ func (m *ServiceLogMutation) ResetEdge(name string) error {
 		return nil
 	case servicelog.EdgeExpense:
 		m.ResetExpense()
+		return nil
+	case servicelog.EdgeDocuments:
+		m.ResetDocuments()
 		return nil
 	}
 	return fmt.Errorf("unknown ServiceLog edge %s", name)
@@ -16956,6 +17242,7 @@ type SubscriptionMutation struct {
 	status                  *subscription.Status
 	canceled_at             *time.Time
 	cancel_at_period_end    *bool
+	trial_end               *time.Time
 	clearedFields           map[string]struct{}
 	user                    *uuid.UUID
 	cleareduser             bool
@@ -17348,6 +17635,55 @@ func (m *SubscriptionMutation) ResetCancelAtPeriodEnd() {
 	m.cancel_at_period_end = nil
 }
 
+// SetTrialEnd sets the "trial_end" field.
+func (m *SubscriptionMutation) SetTrialEnd(t time.Time) {
+	m.trial_end = &t
+}
+
+// TrialEnd returns the value of the "trial_end" field in the mutation.
+func (m *SubscriptionMutation) TrialEnd() (r time.Time, exists bool) {
+	v := m.trial_end
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTrialEnd returns the old "trial_end" field's value of the Subscription entity.
+// If the Subscription object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SubscriptionMutation) OldTrialEnd(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTrialEnd is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTrialEnd requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTrialEnd: %w", err)
+	}
+	return oldValue.TrialEnd, nil
+}
+
+// ClearTrialEnd clears the value of the "trial_end" field.
+func (m *SubscriptionMutation) ClearTrialEnd() {
+	m.trial_end = nil
+	m.clearedFields[subscription.FieldTrialEnd] = struct{}{}
+}
+
+// TrialEndCleared returns if the "trial_end" field was cleared in this mutation.
+func (m *SubscriptionMutation) TrialEndCleared() bool {
+	_, ok := m.clearedFields[subscription.FieldTrialEnd]
+	return ok
+}
+
+// ResetTrialEnd resets all changes to the "trial_end" field.
+func (m *SubscriptionMutation) ResetTrialEnd() {
+	m.trial_end = nil
+	delete(m.clearedFields, subscription.FieldTrialEnd)
+}
+
 // SetUserID sets the "user" edge to the User entity by id.
 func (m *SubscriptionMutation) SetUserID(id uuid.UUID) {
 	m.user = &id
@@ -17460,7 +17796,7 @@ func (m *SubscriptionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SubscriptionMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.create_time != nil {
 		fields = append(fields, subscription.FieldCreateTime)
 	}
@@ -17481,6 +17817,9 @@ func (m *SubscriptionMutation) Fields() []string {
 	}
 	if m.cancel_at_period_end != nil {
 		fields = append(fields, subscription.FieldCancelAtPeriodEnd)
+	}
+	if m.trial_end != nil {
+		fields = append(fields, subscription.FieldTrialEnd)
 	}
 	return fields
 }
@@ -17504,6 +17843,8 @@ func (m *SubscriptionMutation) Field(name string) (ent.Value, bool) {
 		return m.CanceledAt()
 	case subscription.FieldCancelAtPeriodEnd:
 		return m.CancelAtPeriodEnd()
+	case subscription.FieldTrialEnd:
+		return m.TrialEnd()
 	}
 	return nil, false
 }
@@ -17527,6 +17868,8 @@ func (m *SubscriptionMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldCanceledAt(ctx)
 	case subscription.FieldCancelAtPeriodEnd:
 		return m.OldCancelAtPeriodEnd(ctx)
+	case subscription.FieldTrialEnd:
+		return m.OldTrialEnd(ctx)
 	}
 	return nil, fmt.Errorf("unknown Subscription field %s", name)
 }
@@ -17585,6 +17928,13 @@ func (m *SubscriptionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCancelAtPeriodEnd(v)
 		return nil
+	case subscription.FieldTrialEnd:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTrialEnd(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Subscription field %s", name)
 }
@@ -17621,6 +17971,9 @@ func (m *SubscriptionMutation) ClearedFields() []string {
 	if m.FieldCleared(subscription.FieldCanceledAt) {
 		fields = append(fields, subscription.FieldCanceledAt)
 	}
+	if m.FieldCleared(subscription.FieldTrialEnd) {
+		fields = append(fields, subscription.FieldTrialEnd)
+	}
 	return fields
 }
 
@@ -17640,6 +17993,9 @@ func (m *SubscriptionMutation) ClearField(name string) error {
 		return nil
 	case subscription.FieldCanceledAt:
 		m.ClearCanceledAt()
+		return nil
+	case subscription.FieldTrialEnd:
+		m.ClearTrialEnd()
 		return nil
 	}
 	return fmt.Errorf("unknown Subscription nullable field %s", name)
@@ -17669,6 +18025,9 @@ func (m *SubscriptionMutation) ResetField(name string) error {
 		return nil
 	case subscription.FieldCancelAtPeriodEnd:
 		m.ResetCancelAtPeriodEnd()
+		return nil
+	case subscription.FieldTrialEnd:
+		m.ResetTrialEnd()
 		return nil
 	}
 	return fmt.Errorf("unknown Subscription field %s", name)

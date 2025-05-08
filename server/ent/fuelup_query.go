@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -30,9 +31,11 @@ type FuelUpQuery struct {
 	withCar             *CarQuery
 	withOdometerReading *OdometerReadingQuery
 	withExpense         *ExpenseQuery
+	withDocuments       *DocumentQuery
 	withFKs             bool
 	modifiers           []func(*sql.Selector)
 	loadTotal           []func(context.Context, []*FuelUp) error
+	withNamedDocuments  map[string]*DocumentQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -128,6 +131,28 @@ func (fuq *FuelUpQuery) QueryExpense() *ExpenseQuery {
 			sqlgraph.From(fuelup.Table, fuelup.FieldID, selector),
 			sqlgraph.To(expense.Table, expense.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, fuelup.ExpenseTable, fuelup.ExpenseColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(fuq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDocuments chains the current query on the "documents" edge.
+func (fuq *FuelUpQuery) QueryDocuments() *DocumentQuery {
+	query := (&DocumentClient{config: fuq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := fuq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := fuq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(fuelup.Table, fuelup.FieldID, selector),
+			sqlgraph.To(document.Table, document.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, fuelup.DocumentsTable, fuelup.DocumentsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fuq.driver.Dialect(), step)
 		return fromU, nil
@@ -330,6 +355,7 @@ func (fuq *FuelUpQuery) Clone() *FuelUpQuery {
 		withCar:             fuq.withCar.Clone(),
 		withOdometerReading: fuq.withOdometerReading.Clone(),
 		withExpense:         fuq.withExpense.Clone(),
+		withDocuments:       fuq.withDocuments.Clone(),
 		// clone intermediate query.
 		sql:  fuq.sql.Clone(),
 		path: fuq.path,
@@ -366,6 +392,17 @@ func (fuq *FuelUpQuery) WithExpense(opts ...func(*ExpenseQuery)) *FuelUpQuery {
 		opt(query)
 	}
 	fuq.withExpense = query
+	return fuq
+}
+
+// WithDocuments tells the query-builder to eager-load the nodes that are connected to
+// the "documents" edge. The optional arguments are used to configure the query builder of the edge.
+func (fuq *FuelUpQuery) WithDocuments(opts ...func(*DocumentQuery)) *FuelUpQuery {
+	query := (&DocumentClient{config: fuq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	fuq.withDocuments = query
 	return fuq
 }
 
@@ -448,10 +485,11 @@ func (fuq *FuelUpQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Fuel
 		nodes       = []*FuelUp{}
 		withFKs     = fuq.withFKs
 		_spec       = fuq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			fuq.withCar != nil,
 			fuq.withOdometerReading != nil,
 			fuq.withExpense != nil,
+			fuq.withDocuments != nil,
 		}
 	)
 	if fuq.withCar != nil || fuq.withOdometerReading != nil {
@@ -496,6 +534,20 @@ func (fuq *FuelUpQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Fuel
 	if query := fuq.withExpense; query != nil {
 		if err := fuq.loadExpense(ctx, query, nodes, nil,
 			func(n *FuelUp, e *Expense) { n.Edges.Expense = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := fuq.withDocuments; query != nil {
+		if err := fuq.loadDocuments(ctx, query, nodes,
+			func(n *FuelUp) { n.Edges.Documents = []*Document{} },
+			func(n *FuelUp, e *Document) { n.Edges.Documents = append(n.Edges.Documents, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range fuq.withNamedDocuments {
+		if err := fuq.loadDocuments(ctx, query, nodes,
+			func(n *FuelUp) { n.appendNamedDocuments(name) },
+			func(n *FuelUp, e *Document) { n.appendNamedDocuments(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -599,6 +651,37 @@ func (fuq *FuelUpQuery) loadExpense(ctx context.Context, query *ExpenseQuery, no
 	}
 	return nil
 }
+func (fuq *FuelUpQuery) loadDocuments(ctx context.Context, query *DocumentQuery, nodes []*FuelUp, init func(*FuelUp), assign func(*FuelUp, *Document)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*FuelUp)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(fuelup.DocumentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.fuel_up_documents
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "fuel_up_documents" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "fuel_up_documents" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (fuq *FuelUpQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := fuq.querySpec()
@@ -682,6 +765,20 @@ func (fuq *FuelUpQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedDocuments tells the query-builder to eager-load the nodes that are connected to the "documents"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (fuq *FuelUpQuery) WithNamedDocuments(name string, opts ...func(*DocumentQuery)) *FuelUpQuery {
+	query := (&DocumentClient{config: fuq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if fuq.withNamedDocuments == nil {
+		fuq.withNamedDocuments = make(map[string]*DocumentQuery)
+	}
+	fuq.withNamedDocuments[name] = query
+	return fuq
 }
 
 // FuelUpGroupBy is the group-by builder for FuelUp entities.

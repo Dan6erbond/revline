@@ -45,6 +45,7 @@ func (ServiceLog) Edges() []ent.Edge {
 			Ref("service_log").
 			Unique(),
 		edge.To("expense", Expense.Type).Unique(),
+		edge.To("documents", Document.Type),
 	}
 }
 

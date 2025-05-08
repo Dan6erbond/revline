@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -177,6 +178,21 @@ func (slu *ServiceLogUpdate) SetExpense(e *Expense) *ServiceLogUpdate {
 	return slu.SetExpenseID(e.ID)
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
+func (slu *ServiceLogUpdate) AddDocumentIDs(ids ...uuid.UUID) *ServiceLogUpdate {
+	slu.mutation.AddDocumentIDs(ids...)
+	return slu
+}
+
+// AddDocuments adds the "documents" edges to the Document entity.
+func (slu *ServiceLogUpdate) AddDocuments(d ...*Document) *ServiceLogUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return slu.AddDocumentIDs(ids...)
+}
+
 // Mutation returns the ServiceLogMutation object of the builder.
 func (slu *ServiceLogUpdate) Mutation() *ServiceLogMutation {
 	return slu.mutation
@@ -225,6 +241,27 @@ func (slu *ServiceLogUpdate) ClearOdometerReading() *ServiceLogUpdate {
 func (slu *ServiceLogUpdate) ClearExpense() *ServiceLogUpdate {
 	slu.mutation.ClearExpense()
 	return slu
+}
+
+// ClearDocuments clears all "documents" edges to the Document entity.
+func (slu *ServiceLogUpdate) ClearDocuments() *ServiceLogUpdate {
+	slu.mutation.ClearDocuments()
+	return slu
+}
+
+// RemoveDocumentIDs removes the "documents" edge to Document entities by IDs.
+func (slu *ServiceLogUpdate) RemoveDocumentIDs(ids ...uuid.UUID) *ServiceLogUpdate {
+	slu.mutation.RemoveDocumentIDs(ids...)
+	return slu
+}
+
+// RemoveDocuments removes "documents" edges to Document entities.
+func (slu *ServiceLogUpdate) RemoveDocuments(d ...*Document) *ServiceLogUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return slu.RemoveDocumentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -462,6 +499,51 @@ func (slu *ServiceLogUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if slu.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   servicelog.DocumentsTable,
+			Columns: []string{servicelog.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := slu.mutation.RemovedDocumentsIDs(); len(nodes) > 0 && !slu.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   servicelog.DocumentsTable,
+			Columns: []string{servicelog.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := slu.mutation.DocumentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   servicelog.DocumentsTable,
+			Columns: []string{servicelog.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, slu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{servicelog.Label}
@@ -625,6 +707,21 @@ func (sluo *ServiceLogUpdateOne) SetExpense(e *Expense) *ServiceLogUpdateOne {
 	return sluo.SetExpenseID(e.ID)
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
+func (sluo *ServiceLogUpdateOne) AddDocumentIDs(ids ...uuid.UUID) *ServiceLogUpdateOne {
+	sluo.mutation.AddDocumentIDs(ids...)
+	return sluo
+}
+
+// AddDocuments adds the "documents" edges to the Document entity.
+func (sluo *ServiceLogUpdateOne) AddDocuments(d ...*Document) *ServiceLogUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return sluo.AddDocumentIDs(ids...)
+}
+
 // Mutation returns the ServiceLogMutation object of the builder.
 func (sluo *ServiceLogUpdateOne) Mutation() *ServiceLogMutation {
 	return sluo.mutation
@@ -673,6 +770,27 @@ func (sluo *ServiceLogUpdateOne) ClearOdometerReading() *ServiceLogUpdateOne {
 func (sluo *ServiceLogUpdateOne) ClearExpense() *ServiceLogUpdateOne {
 	sluo.mutation.ClearExpense()
 	return sluo
+}
+
+// ClearDocuments clears all "documents" edges to the Document entity.
+func (sluo *ServiceLogUpdateOne) ClearDocuments() *ServiceLogUpdateOne {
+	sluo.mutation.ClearDocuments()
+	return sluo
+}
+
+// RemoveDocumentIDs removes the "documents" edge to Document entities by IDs.
+func (sluo *ServiceLogUpdateOne) RemoveDocumentIDs(ids ...uuid.UUID) *ServiceLogUpdateOne {
+	sluo.mutation.RemoveDocumentIDs(ids...)
+	return sluo
+}
+
+// RemoveDocuments removes "documents" edges to Document entities.
+func (sluo *ServiceLogUpdateOne) RemoveDocuments(d ...*Document) *ServiceLogUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return sluo.RemoveDocumentIDs(ids...)
 }
 
 // Where appends a list predicates to the ServiceLogUpdate builder.
@@ -933,6 +1051,51 @@ func (sluo *ServiceLogUpdateOne) sqlSave(ctx context.Context) (_node *ServiceLog
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if sluo.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   servicelog.DocumentsTable,
+			Columns: []string{servicelog.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := sluo.mutation.RemovedDocumentsIDs(); len(nodes) > 0 && !sluo.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   servicelog.DocumentsTable,
+			Columns: []string{servicelog.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := sluo.mutation.DocumentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   servicelog.DocumentsTable,
+			Columns: []string{servicelog.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

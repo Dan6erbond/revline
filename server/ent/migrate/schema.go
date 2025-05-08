@@ -99,6 +99,8 @@ var (
 		{Name: "tags", Type: field.TypeJSON},
 		{Name: "car_documents", Type: field.TypeUUID, Nullable: true},
 		{Name: "expense_documents", Type: field.TypeUUID, Nullable: true},
+		{Name: "fuel_up_documents", Type: field.TypeUUID, Nullable: true},
+		{Name: "service_log_documents", Type: field.TypeUUID, Nullable: true},
 	}
 	// DocumentsTable holds the schema information for the "documents" table.
 	DocumentsTable = &schema.Table{
@@ -116,6 +118,18 @@ var (
 				Symbol:     "documents_expenses_documents",
 				Columns:    []*schema.Column{DocumentsColumns[6]},
 				RefColumns: []*schema.Column{ExpensesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "documents_fuel_ups_documents",
+				Columns:    []*schema.Column{DocumentsColumns[7]},
+				RefColumns: []*schema.Column{FuelUpsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "documents_service_logs_documents",
+				Columns:    []*schema.Column{DocumentsColumns[8]},
+				RefColumns: []*schema.Column{ServiceLogsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -525,6 +539,7 @@ var (
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "trialing", "canceled", "incomplete", "incomplete_expired", "past_due", "unpaid"}, Default: "incomplete"},
 		{Name: "canceled_at", Type: field.TypeTime, Nullable: true},
 		{Name: "cancel_at_period_end", Type: field.TypeBool, Default: false},
+		{Name: "trial_end", Type: field.TypeTime, Nullable: true},
 		{Name: "checkout_session_subscription", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "user_subscriptions", Type: field.TypeUUID},
 	}
@@ -536,13 +551,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "subscriptions_checkout_sessions_subscription",
-				Columns:    []*schema.Column{SubscriptionsColumns[8]},
+				Columns:    []*schema.Column{SubscriptionsColumns[9]},
 				RefColumns: []*schema.Column{CheckoutSessionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "subscriptions_users_subscriptions",
-				Columns:    []*schema.Column{SubscriptionsColumns[9]},
+				Columns:    []*schema.Column{SubscriptionsColumns[10]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -738,6 +753,8 @@ func init() {
 	CheckoutSessionsTable.ForeignKeys[0].RefTable = UsersTable
 	DocumentsTable.ForeignKeys[0].RefTable = CarsTable
 	DocumentsTable.ForeignKeys[1].RefTable = ExpensesTable
+	DocumentsTable.ForeignKeys[2].RefTable = FuelUpsTable
+	DocumentsTable.ForeignKeys[3].RefTable = ServiceLogsTable
 	DragResultsTable.ForeignKeys[0].RefTable = DragSessionsTable
 	DragSessionsTable.ForeignKeys[0].RefTable = CarsTable
 	DynoResultsTable.ForeignKeys[0].RefTable = DynoSessionsTable

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -179,6 +180,21 @@ func (fuc *FuelUpCreate) SetNillableExpenseID(id *uuid.UUID) *FuelUpCreate {
 // SetExpense sets the "expense" edge to the Expense entity.
 func (fuc *FuelUpCreate) SetExpense(e *Expense) *FuelUpCreate {
 	return fuc.SetExpenseID(e.ID)
+}
+
+// AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
+func (fuc *FuelUpCreate) AddDocumentIDs(ids ...uuid.UUID) *FuelUpCreate {
+	fuc.mutation.AddDocumentIDs(ids...)
+	return fuc
+}
+
+// AddDocuments adds the "documents" edges to the Document entity.
+func (fuc *FuelUpCreate) AddDocuments(d ...*Document) *FuelUpCreate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return fuc.AddDocumentIDs(ids...)
 }
 
 // Mutation returns the FuelUpMutation object of the builder.
@@ -384,6 +400,22 @@ func (fuc *FuelUpCreate) createSpec() (*FuelUp, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := fuc.mutation.DocumentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   fuelup.DocumentsTable,
+			Columns: []string{fuelup.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

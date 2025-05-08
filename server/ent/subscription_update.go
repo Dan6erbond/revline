@@ -119,6 +119,26 @@ func (su *SubscriptionUpdate) SetNillableCancelAtPeriodEnd(b *bool) *Subscriptio
 	return su
 }
 
+// SetTrialEnd sets the "trial_end" field.
+func (su *SubscriptionUpdate) SetTrialEnd(t time.Time) *SubscriptionUpdate {
+	su.mutation.SetTrialEnd(t)
+	return su
+}
+
+// SetNillableTrialEnd sets the "trial_end" field if the given value is not nil.
+func (su *SubscriptionUpdate) SetNillableTrialEnd(t *time.Time) *SubscriptionUpdate {
+	if t != nil {
+		su.SetTrialEnd(*t)
+	}
+	return su
+}
+
+// ClearTrialEnd clears the value of the "trial_end" field.
+func (su *SubscriptionUpdate) ClearTrialEnd() *SubscriptionUpdate {
+	su.mutation.ClearTrialEnd()
+	return su
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (su *SubscriptionUpdate) SetUserID(id uuid.UUID) *SubscriptionUpdate {
 	su.mutation.SetUserID(id)
@@ -255,6 +275,12 @@ func (su *SubscriptionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := su.mutation.CancelAtPeriodEnd(); ok {
 		_spec.SetField(subscription.FieldCancelAtPeriodEnd, field.TypeBool, value)
+	}
+	if value, ok := su.mutation.TrialEnd(); ok {
+		_spec.SetField(subscription.FieldTrialEnd, field.TypeTime, value)
+	}
+	if su.mutation.TrialEndCleared() {
+		_spec.ClearField(subscription.FieldTrialEnd, field.TypeTime)
 	}
 	if su.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -419,6 +445,26 @@ func (suo *SubscriptionUpdateOne) SetNillableCancelAtPeriodEnd(b *bool) *Subscri
 	if b != nil {
 		suo.SetCancelAtPeriodEnd(*b)
 	}
+	return suo
+}
+
+// SetTrialEnd sets the "trial_end" field.
+func (suo *SubscriptionUpdateOne) SetTrialEnd(t time.Time) *SubscriptionUpdateOne {
+	suo.mutation.SetTrialEnd(t)
+	return suo
+}
+
+// SetNillableTrialEnd sets the "trial_end" field if the given value is not nil.
+func (suo *SubscriptionUpdateOne) SetNillableTrialEnd(t *time.Time) *SubscriptionUpdateOne {
+	if t != nil {
+		suo.SetTrialEnd(*t)
+	}
+	return suo
+}
+
+// ClearTrialEnd clears the value of the "trial_end" field.
+func (suo *SubscriptionUpdateOne) ClearTrialEnd() *SubscriptionUpdateOne {
+	suo.mutation.ClearTrialEnd()
 	return suo
 }
 
@@ -588,6 +634,12 @@ func (suo *SubscriptionUpdateOne) sqlSave(ctx context.Context) (_node *Subscript
 	}
 	if value, ok := suo.mutation.CancelAtPeriodEnd(); ok {
 		_spec.SetField(subscription.FieldCancelAtPeriodEnd, field.TypeBool, value)
+	}
+	if value, ok := suo.mutation.TrialEnd(); ok {
+		_spec.SetField(subscription.FieldTrialEnd, field.TypeTime, value)
+	}
+	if suo.mutation.TrialEndCleared() {
+		_spec.ClearField(subscription.FieldTrialEnd, field.TypeTime)
 	}
 	if suo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -27,6 +27,10 @@ const (
 	EdgeCar = "car"
 	// EdgeExpense holds the string denoting the expense edge name in mutations.
 	EdgeExpense = "expense"
+	// EdgeFuelUp holds the string denoting the fuel_up edge name in mutations.
+	EdgeFuelUp = "fuel_up"
+	// EdgeServiceLog holds the string denoting the service_log edge name in mutations.
+	EdgeServiceLog = "service_log"
 	// Table holds the table name of the document in the database.
 	Table = "documents"
 	// CarTable is the table that holds the car relation/edge.
@@ -43,6 +47,20 @@ const (
 	ExpenseInverseTable = "expenses"
 	// ExpenseColumn is the table column denoting the expense relation/edge.
 	ExpenseColumn = "expense_documents"
+	// FuelUpTable is the table that holds the fuel_up relation/edge.
+	FuelUpTable = "documents"
+	// FuelUpInverseTable is the table name for the FuelUp entity.
+	// It exists in this package in order to avoid circular dependency with the "fuelup" package.
+	FuelUpInverseTable = "fuel_ups"
+	// FuelUpColumn is the table column denoting the fuel_up relation/edge.
+	FuelUpColumn = "fuel_up_documents"
+	// ServiceLogTable is the table that holds the service_log relation/edge.
+	ServiceLogTable = "documents"
+	// ServiceLogInverseTable is the table name for the ServiceLog entity.
+	// It exists in this package in order to avoid circular dependency with the "servicelog" package.
+	ServiceLogInverseTable = "service_logs"
+	// ServiceLogColumn is the table column denoting the service_log relation/edge.
+	ServiceLogColumn = "service_log_documents"
 )
 
 // Columns holds all SQL columns for document fields.
@@ -59,6 +77,8 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"car_documents",
 	"expense_documents",
+	"fuel_up_documents",
+	"service_log_documents",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -125,6 +145,20 @@ func ByExpenseField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newExpenseStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByFuelUpField orders the results by fuel_up field.
+func ByFuelUpField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newFuelUpStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByServiceLogField orders the results by service_log field.
+func ByServiceLogField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newServiceLogStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newCarStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -137,5 +171,19 @@ func newExpenseStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ExpenseInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, ExpenseTable, ExpenseColumn),
+	)
+}
+func newFuelUpStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(FuelUpInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, FuelUpTable, FuelUpColumn),
+	)
+}
+func newServiceLogStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ServiceLogInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ServiceLogTable, ServiceLogColumn),
 	)
 }

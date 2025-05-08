@@ -35,6 +35,12 @@ func (Document) Edges() []ent.Edge {
 		edge.From("expense", Expense.Type).
 			Ref("documents").
 			Unique(),
+		edge.From("fuel_up", FuelUp.Type).
+			Ref("documents").
+			Unique(),
+		edge.From("service_log", ServiceLog.Type).
+			Ref("documents").
+			Unique(),
 	}
 }
 

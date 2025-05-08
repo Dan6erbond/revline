@@ -34,6 +34,8 @@ type Subscription struct {
 	CanceledAt *time.Time `json:"canceled_at,omitempty"`
 	// CancelAtPeriodEnd holds the value of the "cancel_at_period_end" field.
 	CancelAtPeriodEnd bool `json:"cancel_at_period_end,omitempty"`
+	// TrialEnd holds the value of the "trial_end" field.
+	TrialEnd *time.Time `json:"trial_end,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SubscriptionQuery when eager-loading is set.
 	Edges                         SubscriptionEdges `json:"edges"`
@@ -86,7 +88,7 @@ func (*Subscription) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case subscription.FieldStripeSubscriptionID, subscription.FieldTier, subscription.FieldStatus:
 			values[i] = new(sql.NullString)
-		case subscription.FieldCreateTime, subscription.FieldUpdateTime, subscription.FieldCanceledAt:
+		case subscription.FieldCreateTime, subscription.FieldUpdateTime, subscription.FieldCanceledAt, subscription.FieldTrialEnd:
 			values[i] = new(sql.NullTime)
 		case subscription.FieldID:
 			values[i] = new(uuid.UUID)
@@ -158,6 +160,13 @@ func (s *Subscription) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field cancel_at_period_end", values[i])
 			} else if value.Valid {
 				s.CancelAtPeriodEnd = value.Bool
+			}
+		case subscription.FieldTrialEnd:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field trial_end", values[i])
+			} else if value.Valid {
+				s.TrialEnd = new(time.Time)
+				*s.TrialEnd = value.Time
 			}
 		case subscription.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -243,6 +252,11 @@ func (s *Subscription) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("cancel_at_period_end=")
 	builder.WriteString(fmt.Sprintf("%v", s.CancelAtPeriodEnd))
+	builder.WriteString(", ")
+	if v := s.TrialEnd; v != nil {
+		builder.WriteString("trial_end=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

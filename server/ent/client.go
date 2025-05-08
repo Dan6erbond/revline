@@ -1215,6 +1215,38 @@ func (c *DocumentClient) QueryExpense(d *Document) *ExpenseQuery {
 	return query
 }
 
+// QueryFuelUp queries the fuel_up edge of a Document.
+func (c *DocumentClient) QueryFuelUp(d *Document) *FuelUpQuery {
+	query := (&FuelUpClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(document.Table, document.FieldID, id),
+			sqlgraph.To(fuelup.Table, fuelup.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, document.FuelUpTable, document.FuelUpColumn),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryServiceLog queries the service_log edge of a Document.
+func (c *DocumentClient) QueryServiceLog(d *Document) *ServiceLogQuery {
+	query := (&ServiceLogClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(document.Table, document.FieldID, id),
+			sqlgraph.To(servicelog.Table, servicelog.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, document.ServiceLogTable, document.ServiceLogColumn),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *DocumentClient) Hooks() []Hook {
 	return c.hooks.Document
@@ -2214,6 +2246,22 @@ func (c *FuelUpClient) QueryExpense(fu *FuelUp) *ExpenseQuery {
 			sqlgraph.From(fuelup.Table, fuelup.FieldID, id),
 			sqlgraph.To(expense.Table, expense.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, fuelup.ExpenseTable, fuelup.ExpenseColumn),
+		)
+		fromV = sqlgraph.Neighbors(fu.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDocuments queries the documents edge of a FuelUp.
+func (c *FuelUpClient) QueryDocuments(fu *FuelUp) *DocumentQuery {
+	query := (&DocumentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := fu.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(fuelup.Table, fuelup.FieldID, id),
+			sqlgraph.To(document.Table, document.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, fuelup.DocumentsTable, fuelup.DocumentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(fu.driver.Dialect(), step)
 		return fromV, nil
@@ -3433,6 +3481,22 @@ func (c *ServiceLogClient) QueryExpense(sl *ServiceLog) *ExpenseQuery {
 			sqlgraph.From(servicelog.Table, servicelog.FieldID, id),
 			sqlgraph.To(expense.Table, expense.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, servicelog.ExpenseTable, servicelog.ExpenseColumn),
+		)
+		fromV = sqlgraph.Neighbors(sl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDocuments queries the documents edge of a ServiceLog.
+func (c *ServiceLogClient) QueryDocuments(sl *ServiceLog) *DocumentQuery {
+	query := (&DocumentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servicelog.Table, servicelog.FieldID, id),
+			sqlgraph.To(document.Table, document.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, servicelog.DocumentsTable, servicelog.DocumentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(sl.driver.Dialect(), step)
 		return fromV, nil

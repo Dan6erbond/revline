@@ -666,6 +666,28 @@ func (d *DocumentQuery) collectField(ctx context.Context, oneNode bool, opCtx *g
 				return err
 			}
 			d.withExpense = query
+
+		case "fuelUp":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&FuelUpClient{config: d.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, fuelupImplementors)...); err != nil {
+				return err
+			}
+			d.withFuelUp = query
+
+		case "serviceLog":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ServiceLogClient{config: d.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, servicelogImplementors)...); err != nil {
+				return err
+			}
+			d.withServiceLog = query
 		case "createTime":
 			if _, ok := fieldSeen[document.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, document.FieldCreateTime)
@@ -1327,6 +1349,19 @@ func (fu *FuelUpQuery) collectField(ctx context.Context, oneNode bool, opCtx *gr
 				return err
 			}
 			fu.withExpense = query
+
+		case "documents":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&DocumentClient{config: fu.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, documentImplementors)...); err != nil {
+				return err
+			}
+			fu.WithNamedDocuments(alias, func(wq *DocumentQuery) {
+				*wq = *query
+			})
 		case "createTime":
 			if _, ok := fieldSeen[fuelup.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, fuelup.FieldCreateTime)
@@ -2246,6 +2281,19 @@ func (sl *ServiceLogQuery) collectField(ctx context.Context, oneNode bool, opCtx
 				return err
 			}
 			sl.withExpense = query
+
+		case "documents":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&DocumentClient{config: sl.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, documentImplementors)...); err != nil {
+				return err
+			}
+			sl.WithNamedDocuments(alias, func(wq *DocumentQuery) {
+				*wq = *query
+			})
 		case "createTime":
 			if _, ok := fieldSeen[servicelog.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, servicelog.FieldCreateTime)
@@ -2533,6 +2581,11 @@ func (s *SubscriptionQuery) collectField(ctx context.Context, oneNode bool, opCt
 			if _, ok := fieldSeen[subscription.FieldCancelAtPeriodEnd]; !ok {
 				selectedFields = append(selectedFields, subscription.FieldCancelAtPeriodEnd)
 				fieldSeen[subscription.FieldCancelAtPeriodEnd] = struct{}{}
+			}
+		case "trialEnd":
+			if _, ok := fieldSeen[subscription.FieldTrialEnd]; !ok {
+				selectedFields = append(selectedFields, subscription.FieldTrialEnd)
+				fieldSeen[subscription.FieldTrialEnd] = struct{}{}
 			}
 		case "id":
 		case "__typename":

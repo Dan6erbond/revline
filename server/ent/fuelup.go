@@ -55,11 +55,15 @@ type FuelUpEdges struct {
 	OdometerReading *OdometerReading `json:"odometer_reading,omitempty"`
 	// Expense holds the value of the expense edge.
 	Expense *Expense `json:"expense,omitempty"`
+	// Documents holds the value of the documents edge.
+	Documents []*Document `json:"documents,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 	// totalCount holds the count of the edges above.
-	totalCount [3]map[string]int
+	totalCount [4]map[string]int
+
+	namedDocuments map[string][]*Document
 }
 
 // CarOrErr returns the Car value or an error if the edge
@@ -93,6 +97,15 @@ func (e FuelUpEdges) ExpenseOrErr() (*Expense, error) {
 		return nil, &NotFoundError{label: expense.Label}
 	}
 	return nil, &NotLoadedError{edge: "expense"}
+}
+
+// DocumentsOrErr returns the Documents value or an error if the edge
+// was not loaded in eager-loading.
+func (e FuelUpEdges) DocumentsOrErr() ([]*Document, error) {
+	if e.loadedTypes[3] {
+		return e.Documents, nil
+	}
+	return nil, &NotLoadedError{edge: "documents"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -233,6 +246,11 @@ func (fu *FuelUp) QueryExpense() *ExpenseQuery {
 	return NewFuelUpClient(fu.config).QueryExpense(fu)
 }
 
+// QueryDocuments queries the "documents" edge of the FuelUp entity.
+func (fu *FuelUp) QueryDocuments() *DocumentQuery {
+	return NewFuelUpClient(fu.config).QueryDocuments(fu)
+}
+
 // Update returns a builder for updating this FuelUp.
 // Note that you need to call FuelUp.Unwrap() before calling this method if this FuelUp
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -288,6 +306,30 @@ func (fu *FuelUp) String() string {
 	}
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedDocuments returns the Documents named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (fu *FuelUp) NamedDocuments(name string) ([]*Document, error) {
+	if fu.Edges.namedDocuments == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := fu.Edges.namedDocuments[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (fu *FuelUp) appendNamedDocuments(name string, edges ...*Document) {
+	if fu.Edges.namedDocuments == nil {
+		fu.Edges.namedDocuments = make(map[string][]*Document)
+	}
+	if len(edges) == 0 {
+		fu.Edges.namedDocuments[name] = []*Document{}
+	} else {
+		fu.Edges.namedDocuments[name] = append(fu.Edges.namedDocuments[name], edges...)
+	}
 }
 
 // FuelUps is a parsable slice of FuelUp.
