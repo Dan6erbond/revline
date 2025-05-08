@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/google/uuid"
 )
 
@@ -30,20 +31,23 @@ type Document struct {
 	Tags []string `json:"tags,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DocumentQuery when eager-loading is set.
-	Edges         DocumentEdges `json:"edges"`
-	car_documents *uuid.UUID
-	selectValues  sql.SelectValues
+	Edges             DocumentEdges `json:"edges"`
+	car_documents     *uuid.UUID
+	expense_documents *uuid.UUID
+	selectValues      sql.SelectValues
 }
 
 // DocumentEdges holds the relations/edges for other nodes in the graph.
 type DocumentEdges struct {
 	// Car holds the value of the car edge.
 	Car *Car `json:"car,omitempty"`
+	// Expense holds the value of the expense edge.
+	Expense *Expense `json:"expense,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
+	totalCount [2]map[string]int
 }
 
 // CarOrErr returns the Car value or an error if the edge
@@ -55,6 +59,17 @@ func (e DocumentEdges) CarOrErr() (*Car, error) {
 		return nil, &NotFoundError{label: car.Label}
 	}
 	return nil, &NotLoadedError{edge: "car"}
+}
+
+// ExpenseOrErr returns the Expense value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DocumentEdges) ExpenseOrErr() (*Expense, error) {
+	if e.Expense != nil {
+		return e.Expense, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: expense.Label}
+	}
+	return nil, &NotLoadedError{edge: "expense"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -71,6 +86,8 @@ func (*Document) scanValues(columns []string) ([]any, error) {
 		case document.FieldID:
 			values[i] = new(uuid.UUID)
 		case document.ForeignKeys[0]: // car_documents
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case document.ForeignKeys[1]: // expense_documents
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -126,6 +143,13 @@ func (d *Document) assignValues(columns []string, values []any) error {
 				d.car_documents = new(uuid.UUID)
 				*d.car_documents = *value.S.(*uuid.UUID)
 			}
+		case document.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field expense_documents", values[i])
+			} else if value.Valid {
+				d.expense_documents = new(uuid.UUID)
+				*d.expense_documents = *value.S.(*uuid.UUID)
+			}
 		default:
 			d.selectValues.Set(columns[i], values[i])
 		}
@@ -142,6 +166,11 @@ func (d *Document) Value(name string) (ent.Value, error) {
 // QueryCar queries the "car" edge of the Document entity.
 func (d *Document) QueryCar() *CarQuery {
 	return NewDocumentClient(d.config).QueryCar(d)
+}
+
+// QueryExpense queries the "expense" edge of the Document entity.
+func (d *Document) QueryExpense() *ExpenseQuery {
+	return NewDocumentClient(d.config).QueryExpense(d)
 }
 
 // Update returns a builder for updating this Document.

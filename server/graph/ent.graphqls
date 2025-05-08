@@ -535,6 +535,7 @@ input CreateDocumentInput {
   name: String!
   tags: [String!]
   carID: ID
+  expenseID: ID
 }
 """
 CreateDragResultInput is used for create DragResult object.
@@ -598,6 +599,7 @@ input CreateExpenseInput {
   carID: ID!
   fuelUpID: ID
   serviceLogID: ID
+  documentIDs: [ID!]
 }
 """
 CreateFuelUpInput is used for create FuelUp object.
@@ -802,6 +804,7 @@ type Document implements Node {
   name: String!
   tags: [String!]!
   car: Car
+  expense: Expense
 }
 """
 DocumentWhereInput is used for filtering Document objects.
@@ -865,6 +868,11 @@ input DocumentWhereInput {
   """
   hasCar: Boolean
   hasCarWith: [CarWhereInput!]
+  """
+  expense edge predicates
+  """
+  hasExpense: Boolean
+  hasExpenseWith: [ExpenseWhereInput!]
 }
 type DragResult implements Node {
   id: ID!
@@ -1248,6 +1256,7 @@ type Expense implements Node {
   car: Car!
   fuelUp: FuelUp
   serviceLog: ServiceLog
+  documents: [Document!]
 }
 """
 ExpenseType is enum for the field type
@@ -1372,6 +1381,11 @@ input ExpenseWhereInput {
   """
   hasServiceLog: Boolean
   hasServiceLogWith: [ServiceLogWhereInput!]
+  """
+  documents edge predicates
+  """
+  hasDocuments: Boolean
+  hasDocumentsWith: [DocumentWhereInput!]
 }
 """
 FuelCategory is enum for the field fuel_category
@@ -3330,6 +3344,8 @@ input UpdateDocumentInput {
   appendTags: [String!]
   carID: ID
   clearCar: Boolean
+  expenseID: ID
+  clearExpense: Boolean
 }
 """
 UpdateDragResultInput is used for update DragResult object.
@@ -3397,6 +3413,9 @@ input UpdateExpenseInput {
   clearFuelUp: Boolean
   serviceLogID: ID
   clearServiceLog: Boolean
+  addDocumentIDs: [ID!]
+  removeDocumentIDs: [ID!]
+  clearDocuments: Boolean
 }
 """
 UpdateFuelUpInput is used for update FuelUp object.

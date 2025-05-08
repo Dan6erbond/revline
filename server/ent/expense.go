@@ -50,11 +50,15 @@ type ExpenseEdges struct {
 	FuelUp *FuelUp `json:"fuel_up,omitempty"`
 	// ServiceLog holds the value of the service_log edge.
 	ServiceLog *ServiceLog `json:"service_log,omitempty"`
+	// Documents holds the value of the documents edge.
+	Documents []*Document `json:"documents,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 	// totalCount holds the count of the edges above.
-	totalCount [3]map[string]int
+	totalCount [4]map[string]int
+
+	namedDocuments map[string][]*Document
 }
 
 // CarOrErr returns the Car value or an error if the edge
@@ -88,6 +92,15 @@ func (e ExpenseEdges) ServiceLogOrErr() (*ServiceLog, error) {
 		return nil, &NotFoundError{label: servicelog.Label}
 	}
 	return nil, &NotLoadedError{edge: "service_log"}
+}
+
+// DocumentsOrErr returns the Documents value or an error if the edge
+// was not loaded in eager-loading.
+func (e ExpenseEdges) DocumentsOrErr() ([]*Document, error) {
+	if e.loadedTypes[3] {
+		return e.Documents, nil
+	}
+	return nil, &NotLoadedError{edge: "documents"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -216,6 +229,11 @@ func (e *Expense) QueryServiceLog() *ServiceLogQuery {
 	return NewExpenseClient(e.config).QueryServiceLog(e)
 }
 
+// QueryDocuments queries the "documents" edge of the Expense entity.
+func (e *Expense) QueryDocuments() *DocumentQuery {
+	return NewExpenseClient(e.config).QueryDocuments(e)
+}
+
 // Update returns a builder for updating this Expense.
 // Note that you need to call Expense.Unwrap() before calling this method if this Expense
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -260,6 +278,30 @@ func (e *Expense) String() string {
 	}
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedDocuments returns the Documents named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (e *Expense) NamedDocuments(name string) ([]*Document, error) {
+	if e.Edges.namedDocuments == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := e.Edges.namedDocuments[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (e *Expense) appendNamedDocuments(name string, edges ...*Document) {
+	if e.Edges.namedDocuments == nil {
+		e.Edges.namedDocuments = make(map[string][]*Document)
+	}
+	if len(edges) == 0 {
+		e.Edges.namedDocuments[name] = []*Document{}
+	} else {
+		e.Edges.namedDocuments[name] = append(e.Edges.namedDocuments[name], edges...)
+	}
 }
 
 // Expenses is a parsable slice of Expense.

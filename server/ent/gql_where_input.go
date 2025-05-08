@@ -1665,6 +1665,10 @@ type DocumentWhereInput struct {
 	// "car" edge predicates.
 	HasCar     *bool            `json:"hasCar,omitempty"`
 	HasCarWith []*CarWhereInput `json:"hasCarWith,omitempty"`
+
+	// "expense" edge predicates.
+	HasExpense     *bool                `json:"hasExpense,omitempty"`
+	HasExpenseWith []*ExpenseWhereInput `json:"hasExpenseWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1867,6 +1871,24 @@ func (i *DocumentWhereInput) P() (predicate.Document, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, document.HasCarWith(with...))
+	}
+	if i.HasExpense != nil {
+		p := document.HasExpense()
+		if !*i.HasExpense {
+			p = document.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasExpenseWith) > 0 {
+		with := make([]predicate.Expense, 0, len(i.HasExpenseWith))
+		for _, w := range i.HasExpenseWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasExpenseWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, document.HasExpenseWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -3289,6 +3311,10 @@ type ExpenseWhereInput struct {
 	// "service_log" edge predicates.
 	HasServiceLog     *bool                   `json:"hasServiceLog,omitempty"`
 	HasServiceLogWith []*ServiceLogWhereInput `json:"hasServiceLogWith,omitempty"`
+
+	// "documents" edge predicates.
+	HasDocuments     *bool                 `json:"hasDocuments,omitempty"`
+	HasDocumentsWith []*DocumentWhereInput `json:"hasDocumentsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -3593,6 +3619,24 @@ func (i *ExpenseWhereInput) P() (predicate.Expense, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, expense.HasServiceLogWith(with...))
+	}
+	if i.HasDocuments != nil {
+		p := expense.HasDocuments()
+		if !*i.HasDocuments {
+			p = expense.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasDocumentsWith) > 0 {
+		with := make([]predicate.Document, 0, len(i.HasDocumentsWith))
+		for _, w := range i.HasDocumentsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasDocumentsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, expense.HasDocumentsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

@@ -3538,20 +3538,22 @@ func (m *CheckoutSessionMutation) ResetEdge(name string) error {
 // DocumentMutation represents an operation that mutates the Document nodes in the graph.
 type DocumentMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	create_time   *time.Time
-	update_time   *time.Time
-	name          *string
-	tags          *[]string
-	appendtags    []string
-	clearedFields map[string]struct{}
-	car           *uuid.UUID
-	clearedcar    bool
-	done          bool
-	oldValue      func(context.Context) (*Document, error)
-	predicates    []predicate.Document
+	op             Op
+	typ            string
+	id             *uuid.UUID
+	create_time    *time.Time
+	update_time    *time.Time
+	name           *string
+	tags           *[]string
+	appendtags     []string
+	clearedFields  map[string]struct{}
+	car            *uuid.UUID
+	clearedcar     bool
+	expense        *uuid.UUID
+	clearedexpense bool
+	done           bool
+	oldValue       func(context.Context) (*Document, error)
+	predicates     []predicate.Document
 }
 
 var _ ent.Mutation = (*DocumentMutation)(nil)
@@ -3856,6 +3858,45 @@ func (m *DocumentMutation) ResetCar() {
 	m.clearedcar = false
 }
 
+// SetExpenseID sets the "expense" edge to the Expense entity by id.
+func (m *DocumentMutation) SetExpenseID(id uuid.UUID) {
+	m.expense = &id
+}
+
+// ClearExpense clears the "expense" edge to the Expense entity.
+func (m *DocumentMutation) ClearExpense() {
+	m.clearedexpense = true
+}
+
+// ExpenseCleared reports if the "expense" edge to the Expense entity was cleared.
+func (m *DocumentMutation) ExpenseCleared() bool {
+	return m.clearedexpense
+}
+
+// ExpenseID returns the "expense" edge ID in the mutation.
+func (m *DocumentMutation) ExpenseID() (id uuid.UUID, exists bool) {
+	if m.expense != nil {
+		return *m.expense, true
+	}
+	return
+}
+
+// ExpenseIDs returns the "expense" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ExpenseID instead. It exists only for internal usage by the builders.
+func (m *DocumentMutation) ExpenseIDs() (ids []uuid.UUID) {
+	if id := m.expense; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetExpense resets all changes to the "expense" edge.
+func (m *DocumentMutation) ResetExpense() {
+	m.expense = nil
+	m.clearedexpense = false
+}
+
 // Where appends a list predicates to the DocumentMutation builder.
 func (m *DocumentMutation) Where(ps ...predicate.Document) {
 	m.predicates = append(m.predicates, ps...)
@@ -4040,9 +4081,12 @@ func (m *DocumentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DocumentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.car != nil {
 		edges = append(edges, document.EdgeCar)
+	}
+	if m.expense != nil {
+		edges = append(edges, document.EdgeExpense)
 	}
 	return edges
 }
@@ -4055,13 +4099,17 @@ func (m *DocumentMutation) AddedIDs(name string) []ent.Value {
 		if id := m.car; id != nil {
 			return []ent.Value{*id}
 		}
+	case document.EdgeExpense:
+		if id := m.expense; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DocumentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	return edges
 }
 
@@ -4073,9 +4121,12 @@ func (m *DocumentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DocumentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedcar {
 		edges = append(edges, document.EdgeCar)
+	}
+	if m.clearedexpense {
+		edges = append(edges, document.EdgeExpense)
 	}
 	return edges
 }
@@ -4086,6 +4137,8 @@ func (m *DocumentMutation) EdgeCleared(name string) bool {
 	switch name {
 	case document.EdgeCar:
 		return m.clearedcar
+	case document.EdgeExpense:
+		return m.clearedexpense
 	}
 	return false
 }
@@ -4097,6 +4150,9 @@ func (m *DocumentMutation) ClearEdge(name string) error {
 	case document.EdgeCar:
 		m.ClearCar()
 		return nil
+	case document.EdgeExpense:
+		m.ClearExpense()
+		return nil
 	}
 	return fmt.Errorf("unknown Document unique edge %s", name)
 }
@@ -4107,6 +4163,9 @@ func (m *DocumentMutation) ResetEdge(name string) error {
 	switch name {
 	case document.EdgeCar:
 		m.ResetCar()
+		return nil
+	case document.EdgeExpense:
+		m.ResetExpense()
 		return nil
 	}
 	return fmt.Errorf("unknown Document edge %s", name)
@@ -6869,6 +6928,9 @@ type ExpenseMutation struct {
 	clearedfuel_up     bool
 	service_log        *uuid.UUID
 	clearedservice_log bool
+	documents          map[uuid.UUID]struct{}
+	removeddocuments   map[uuid.UUID]struct{}
+	cleareddocuments   bool
 	done               bool
 	oldValue           func(context.Context) (*Expense, error)
 	predicates         []predicate.Expense
@@ -7344,6 +7406,60 @@ func (m *ExpenseMutation) ResetServiceLog() {
 	m.clearedservice_log = false
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by ids.
+func (m *ExpenseMutation) AddDocumentIDs(ids ...uuid.UUID) {
+	if m.documents == nil {
+		m.documents = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.documents[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDocuments clears the "documents" edge to the Document entity.
+func (m *ExpenseMutation) ClearDocuments() {
+	m.cleareddocuments = true
+}
+
+// DocumentsCleared reports if the "documents" edge to the Document entity was cleared.
+func (m *ExpenseMutation) DocumentsCleared() bool {
+	return m.cleareddocuments
+}
+
+// RemoveDocumentIDs removes the "documents" edge to the Document entity by IDs.
+func (m *ExpenseMutation) RemoveDocumentIDs(ids ...uuid.UUID) {
+	if m.removeddocuments == nil {
+		m.removeddocuments = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.documents, ids[i])
+		m.removeddocuments[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDocuments returns the removed IDs of the "documents" edge to the Document entity.
+func (m *ExpenseMutation) RemovedDocumentsIDs() (ids []uuid.UUID) {
+	for id := range m.removeddocuments {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DocumentsIDs returns the "documents" edge IDs in the mutation.
+func (m *ExpenseMutation) DocumentsIDs() (ids []uuid.UUID) {
+	for id := range m.documents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDocuments resets all changes to the "documents" edge.
+func (m *ExpenseMutation) ResetDocuments() {
+	m.documents = nil
+	m.cleareddocuments = false
+	m.removeddocuments = nil
+}
+
 // Where appends a list predicates to the ExpenseMutation builder.
 func (m *ExpenseMutation) Where(ps ...predicate.Expense) {
 	m.predicates = append(m.predicates, ps...)
@@ -7586,7 +7702,7 @@ func (m *ExpenseMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ExpenseMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.car != nil {
 		edges = append(edges, expense.EdgeCar)
 	}
@@ -7595,6 +7711,9 @@ func (m *ExpenseMutation) AddedEdges() []string {
 	}
 	if m.service_log != nil {
 		edges = append(edges, expense.EdgeServiceLog)
+	}
+	if m.documents != nil {
+		edges = append(edges, expense.EdgeDocuments)
 	}
 	return edges
 }
@@ -7615,25 +7734,42 @@ func (m *ExpenseMutation) AddedIDs(name string) []ent.Value {
 		if id := m.service_log; id != nil {
 			return []ent.Value{*id}
 		}
+	case expense.EdgeDocuments:
+		ids := make([]ent.Value, 0, len(m.documents))
+		for id := range m.documents {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ExpenseMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
+	if m.removeddocuments != nil {
+		edges = append(edges, expense.EdgeDocuments)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *ExpenseMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case expense.EdgeDocuments:
+		ids := make([]ent.Value, 0, len(m.removeddocuments))
+		for id := range m.removeddocuments {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ExpenseMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedcar {
 		edges = append(edges, expense.EdgeCar)
 	}
@@ -7642,6 +7778,9 @@ func (m *ExpenseMutation) ClearedEdges() []string {
 	}
 	if m.clearedservice_log {
 		edges = append(edges, expense.EdgeServiceLog)
+	}
+	if m.cleareddocuments {
+		edges = append(edges, expense.EdgeDocuments)
 	}
 	return edges
 }
@@ -7656,6 +7795,8 @@ func (m *ExpenseMutation) EdgeCleared(name string) bool {
 		return m.clearedfuel_up
 	case expense.EdgeServiceLog:
 		return m.clearedservice_log
+	case expense.EdgeDocuments:
+		return m.cleareddocuments
 	}
 	return false
 }
@@ -7689,6 +7830,9 @@ func (m *ExpenseMutation) ResetEdge(name string) error {
 		return nil
 	case expense.EdgeServiceLog:
 		m.ResetServiceLog()
+		return nil
+	case expense.EdgeDocuments:
+		m.ResetDocuments()
 		return nil
 	}
 	return fmt.Errorf("unknown Expense edge %s", name)

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -156,6 +157,21 @@ func (eu *ExpenseUpdate) SetServiceLog(s *ServiceLog) *ExpenseUpdate {
 	return eu.SetServiceLogID(s.ID)
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
+func (eu *ExpenseUpdate) AddDocumentIDs(ids ...uuid.UUID) *ExpenseUpdate {
+	eu.mutation.AddDocumentIDs(ids...)
+	return eu
+}
+
+// AddDocuments adds the "documents" edges to the Document entity.
+func (eu *ExpenseUpdate) AddDocuments(d ...*Document) *ExpenseUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return eu.AddDocumentIDs(ids...)
+}
+
 // Mutation returns the ExpenseMutation object of the builder.
 func (eu *ExpenseUpdate) Mutation() *ExpenseMutation {
 	return eu.mutation
@@ -177,6 +193,27 @@ func (eu *ExpenseUpdate) ClearFuelUp() *ExpenseUpdate {
 func (eu *ExpenseUpdate) ClearServiceLog() *ExpenseUpdate {
 	eu.mutation.ClearServiceLog()
 	return eu
+}
+
+// ClearDocuments clears all "documents" edges to the Document entity.
+func (eu *ExpenseUpdate) ClearDocuments() *ExpenseUpdate {
+	eu.mutation.ClearDocuments()
+	return eu
+}
+
+// RemoveDocumentIDs removes the "documents" edge to Document entities by IDs.
+func (eu *ExpenseUpdate) RemoveDocumentIDs(ids ...uuid.UUID) *ExpenseUpdate {
+	eu.mutation.RemoveDocumentIDs(ids...)
+	return eu
+}
+
+// RemoveDocuments removes "documents" edges to Document entities.
+func (eu *ExpenseUpdate) RemoveDocuments(d ...*Document) *ExpenseUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return eu.RemoveDocumentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -353,6 +390,51 @@ func (eu *ExpenseUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if eu.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   expense.DocumentsTable,
+			Columns: []string{expense.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedDocumentsIDs(); len(nodes) > 0 && !eu.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   expense.DocumentsTable,
+			Columns: []string{expense.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.DocumentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   expense.DocumentsTable,
+			Columns: []string{expense.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, eu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{expense.Label}
@@ -497,6 +579,21 @@ func (euo *ExpenseUpdateOne) SetServiceLog(s *ServiceLog) *ExpenseUpdateOne {
 	return euo.SetServiceLogID(s.ID)
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
+func (euo *ExpenseUpdateOne) AddDocumentIDs(ids ...uuid.UUID) *ExpenseUpdateOne {
+	euo.mutation.AddDocumentIDs(ids...)
+	return euo
+}
+
+// AddDocuments adds the "documents" edges to the Document entity.
+func (euo *ExpenseUpdateOne) AddDocuments(d ...*Document) *ExpenseUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return euo.AddDocumentIDs(ids...)
+}
+
 // Mutation returns the ExpenseMutation object of the builder.
 func (euo *ExpenseUpdateOne) Mutation() *ExpenseMutation {
 	return euo.mutation
@@ -518,6 +615,27 @@ func (euo *ExpenseUpdateOne) ClearFuelUp() *ExpenseUpdateOne {
 func (euo *ExpenseUpdateOne) ClearServiceLog() *ExpenseUpdateOne {
 	euo.mutation.ClearServiceLog()
 	return euo
+}
+
+// ClearDocuments clears all "documents" edges to the Document entity.
+func (euo *ExpenseUpdateOne) ClearDocuments() *ExpenseUpdateOne {
+	euo.mutation.ClearDocuments()
+	return euo
+}
+
+// RemoveDocumentIDs removes the "documents" edge to Document entities by IDs.
+func (euo *ExpenseUpdateOne) RemoveDocumentIDs(ids ...uuid.UUID) *ExpenseUpdateOne {
+	euo.mutation.RemoveDocumentIDs(ids...)
+	return euo
+}
+
+// RemoveDocuments removes "documents" edges to Document entities.
+func (euo *ExpenseUpdateOne) RemoveDocuments(d ...*Document) *ExpenseUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return euo.RemoveDocumentIDs(ids...)
 }
 
 // Where appends a list predicates to the ExpenseUpdate builder.
@@ -717,6 +835,51 @@ func (euo *ExpenseUpdateOne) sqlSave(ctx context.Context) (_node *Expense, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(servicelog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   expense.DocumentsTable,
+			Columns: []string{expense.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedDocumentsIDs(); len(nodes) > 0 && !euo.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   expense.DocumentsTable,
+			Columns: []string{expense.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.DocumentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   expense.DocumentsTable,
+			Columns: []string{expense.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

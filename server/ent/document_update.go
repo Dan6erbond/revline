@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/google/uuid"
 )
@@ -82,6 +83,25 @@ func (du *DocumentUpdate) SetCar(c *Car) *DocumentUpdate {
 	return du.SetCarID(c.ID)
 }
 
+// SetExpenseID sets the "expense" edge to the Expense entity by ID.
+func (du *DocumentUpdate) SetExpenseID(id uuid.UUID) *DocumentUpdate {
+	du.mutation.SetExpenseID(id)
+	return du
+}
+
+// SetNillableExpenseID sets the "expense" edge to the Expense entity by ID if the given value is not nil.
+func (du *DocumentUpdate) SetNillableExpenseID(id *uuid.UUID) *DocumentUpdate {
+	if id != nil {
+		du = du.SetExpenseID(*id)
+	}
+	return du
+}
+
+// SetExpense sets the "expense" edge to the Expense entity.
+func (du *DocumentUpdate) SetExpense(e *Expense) *DocumentUpdate {
+	return du.SetExpenseID(e.ID)
+}
+
 // Mutation returns the DocumentMutation object of the builder.
 func (du *DocumentUpdate) Mutation() *DocumentMutation {
 	return du.mutation
@@ -90,6 +110,12 @@ func (du *DocumentUpdate) Mutation() *DocumentMutation {
 // ClearCar clears the "car" edge to the Car entity.
 func (du *DocumentUpdate) ClearCar() *DocumentUpdate {
 	du.mutation.ClearCar()
+	return du
+}
+
+// ClearExpense clears the "expense" edge to the Expense entity.
+func (du *DocumentUpdate) ClearExpense() *DocumentUpdate {
+	du.mutation.ClearExpense()
 	return du
 }
 
@@ -181,6 +207,35 @@ func (du *DocumentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if du.mutation.ExpenseCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.ExpenseTable,
+			Columns: []string{document.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.ExpenseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.ExpenseTable,
+			Columns: []string{document.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{document.Label}
@@ -252,6 +307,25 @@ func (duo *DocumentUpdateOne) SetCar(c *Car) *DocumentUpdateOne {
 	return duo.SetCarID(c.ID)
 }
 
+// SetExpenseID sets the "expense" edge to the Expense entity by ID.
+func (duo *DocumentUpdateOne) SetExpenseID(id uuid.UUID) *DocumentUpdateOne {
+	duo.mutation.SetExpenseID(id)
+	return duo
+}
+
+// SetNillableExpenseID sets the "expense" edge to the Expense entity by ID if the given value is not nil.
+func (duo *DocumentUpdateOne) SetNillableExpenseID(id *uuid.UUID) *DocumentUpdateOne {
+	if id != nil {
+		duo = duo.SetExpenseID(*id)
+	}
+	return duo
+}
+
+// SetExpense sets the "expense" edge to the Expense entity.
+func (duo *DocumentUpdateOne) SetExpense(e *Expense) *DocumentUpdateOne {
+	return duo.SetExpenseID(e.ID)
+}
+
 // Mutation returns the DocumentMutation object of the builder.
 func (duo *DocumentUpdateOne) Mutation() *DocumentMutation {
 	return duo.mutation
@@ -260,6 +334,12 @@ func (duo *DocumentUpdateOne) Mutation() *DocumentMutation {
 // ClearCar clears the "car" edge to the Car entity.
 func (duo *DocumentUpdateOne) ClearCar() *DocumentUpdateOne {
 	duo.mutation.ClearCar()
+	return duo
+}
+
+// ClearExpense clears the "expense" edge to the Expense entity.
+func (duo *DocumentUpdateOne) ClearExpense() *DocumentUpdateOne {
+	duo.mutation.ClearExpense()
 	return duo
 }
 
@@ -374,6 +454,35 @@ func (duo *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.ExpenseCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.ExpenseTable,
+			Columns: []string{document.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.ExpenseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.ExpenseTable,
+			Columns: []string{document.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

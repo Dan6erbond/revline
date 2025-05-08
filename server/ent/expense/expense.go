@@ -36,6 +36,8 @@ const (
 	EdgeFuelUp = "fuel_up"
 	// EdgeServiceLog holds the string denoting the service_log edge name in mutations.
 	EdgeServiceLog = "service_log"
+	// EdgeDocuments holds the string denoting the documents edge name in mutations.
+	EdgeDocuments = "documents"
 	// Table holds the table name of the expense in the database.
 	Table = "expenses"
 	// CarTable is the table that holds the car relation/edge.
@@ -59,6 +61,13 @@ const (
 	ServiceLogInverseTable = "service_logs"
 	// ServiceLogColumn is the table column denoting the service_log relation/edge.
 	ServiceLogColumn = "service_log_expense"
+	// DocumentsTable is the table that holds the documents relation/edge.
+	DocumentsTable = "documents"
+	// DocumentsInverseTable is the table name for the Document entity.
+	// It exists in this package in order to avoid circular dependency with the "document" package.
+	DocumentsInverseTable = "documents"
+	// DocumentsColumn is the table column denoting the documents relation/edge.
+	DocumentsColumn = "expense_documents"
 )
 
 // Columns holds all SQL columns for expense fields.
@@ -202,6 +211,20 @@ func ByServiceLogField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newServiceLogStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByDocumentsCount orders the results by documents count.
+func ByDocumentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDocumentsStep(), opts...)
+	}
+}
+
+// ByDocuments orders the results by documents terms.
+func ByDocuments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDocumentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newCarStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -221,6 +244,13 @@ func newServiceLogStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ServiceLogInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, true, ServiceLogTable, ServiceLogColumn),
+	)
+}
+func newDocumentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DocumentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, DocumentsTable, DocumentsColumn),
 	)
 }
 

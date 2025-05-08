@@ -439,6 +439,7 @@ type CreateDocumentInput struct {
 	Name       string
 	Tags       []string
 	CarID      *uuid.UUID
+	ExpenseID  *uuid.UUID
 }
 
 // Mutate applies the CreateDocumentInput on the DocumentMutation builder.
@@ -456,6 +457,9 @@ func (i *CreateDocumentInput) Mutate(m *DocumentMutation) {
 	if v := i.CarID; v != nil {
 		m.SetCarID(*v)
 	}
+	if v := i.ExpenseID; v != nil {
+		m.SetExpenseID(*v)
+	}
 }
 
 // SetInput applies the change-set in the CreateDocumentInput on the DocumentCreate builder.
@@ -466,12 +470,14 @@ func (c *DocumentCreate) SetInput(i CreateDocumentInput) *DocumentCreate {
 
 // UpdateDocumentInput represents a mutation input for updating documents.
 type UpdateDocumentInput struct {
-	UpdateTime *time.Time
-	Name       *string
-	Tags       []string
-	AppendTags []string
-	ClearCar   bool
-	CarID      *uuid.UUID
+	UpdateTime   *time.Time
+	Name         *string
+	Tags         []string
+	AppendTags   []string
+	ClearCar     bool
+	CarID        *uuid.UUID
+	ClearExpense bool
+	ExpenseID    *uuid.UUID
 }
 
 // Mutate applies the UpdateDocumentInput on the DocumentMutation builder.
@@ -493,6 +499,12 @@ func (i *UpdateDocumentInput) Mutate(m *DocumentMutation) {
 	}
 	if v := i.CarID; v != nil {
 		m.SetCarID(*v)
+	}
+	if i.ClearExpense {
+		m.ClearExpense()
+	}
+	if v := i.ExpenseID; v != nil {
+		m.SetExpenseID(*v)
 	}
 }
 
@@ -831,6 +843,7 @@ type CreateExpenseInput struct {
 	CarID        uuid.UUID
 	FuelUpID     *uuid.UUID
 	ServiceLogID *uuid.UUID
+	DocumentIDs  []uuid.UUID
 }
 
 // Mutate applies the CreateExpenseInput on the ExpenseMutation builder.
@@ -854,6 +867,9 @@ func (i *CreateExpenseInput) Mutate(m *ExpenseMutation) {
 	if v := i.ServiceLogID; v != nil {
 		m.SetServiceLogID(*v)
 	}
+	if v := i.DocumentIDs; len(v) > 0 {
+		m.AddDocumentIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateExpenseInput on the ExpenseCreate builder.
@@ -864,17 +880,20 @@ func (c *ExpenseCreate) SetInput(i CreateExpenseInput) *ExpenseCreate {
 
 // UpdateExpenseInput represents a mutation input for updating expenses.
 type UpdateExpenseInput struct {
-	UpdateTime      *time.Time
-	OccurredAt      *time.Time
-	Type            *expense.Type
-	Amount          *float64
-	ClearNotes      bool
-	Notes           *string
-	CarID           *uuid.UUID
-	ClearFuelUp     bool
-	FuelUpID        *uuid.UUID
-	ClearServiceLog bool
-	ServiceLogID    *uuid.UUID
+	UpdateTime        *time.Time
+	OccurredAt        *time.Time
+	Type              *expense.Type
+	Amount            *float64
+	ClearNotes        bool
+	Notes             *string
+	CarID             *uuid.UUID
+	ClearFuelUp       bool
+	FuelUpID          *uuid.UUID
+	ClearServiceLog   bool
+	ServiceLogID      *uuid.UUID
+	ClearDocuments    bool
+	AddDocumentIDs    []uuid.UUID
+	RemoveDocumentIDs []uuid.UUID
 }
 
 // Mutate applies the UpdateExpenseInput on the ExpenseMutation builder.
@@ -911,6 +930,15 @@ func (i *UpdateExpenseInput) Mutate(m *ExpenseMutation) {
 	}
 	if v := i.ServiceLogID; v != nil {
 		m.SetServiceLogID(*v)
+	}
+	if i.ClearDocuments {
+		m.ClearDocuments()
+	}
+	if v := i.AddDocumentIDs; len(v) > 0 {
+		m.AddDocumentIDs(v...)
+	}
+	if v := i.RemoveDocumentIDs; len(v) > 0 {
+		m.RemoveDocumentIDs(v...)
 	}
 }
 

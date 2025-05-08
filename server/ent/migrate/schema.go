@@ -98,6 +98,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
 		{Name: "car_documents", Type: field.TypeUUID, Nullable: true},
+		{Name: "expense_documents", Type: field.TypeUUID, Nullable: true},
 	}
 	// DocumentsTable holds the schema information for the "documents" table.
 	DocumentsTable = &schema.Table{
@@ -109,6 +110,12 @@ var (
 				Symbol:     "documents_cars_documents",
 				Columns:    []*schema.Column{DocumentsColumns[5]},
 				RefColumns: []*schema.Column{CarsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "documents_expenses_documents",
+				Columns:    []*schema.Column{DocumentsColumns[6]},
+				RefColumns: []*schema.Column{ExpensesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -730,6 +737,7 @@ func init() {
 	CarsTable.ForeignKeys[1].RefTable = UsersTable
 	CheckoutSessionsTable.ForeignKeys[0].RefTable = UsersTable
 	DocumentsTable.ForeignKeys[0].RefTable = CarsTable
+	DocumentsTable.ForeignKeys[1].RefTable = ExpensesTable
 	DragResultsTable.ForeignKeys[0].RefTable = DragSessionsTable
 	DragSessionsTable.ForeignKeys[0].RefTable = CarsTable
 	DynoResultsTable.ForeignKeys[0].RefTable = DynoSessionsTable

@@ -239,6 +239,29 @@ func HasCarWith(preds ...predicate.Car) predicate.Document {
 	})
 }
 
+// HasExpense applies the HasEdge predicate on the "expense" edge.
+func HasExpense() predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ExpenseTable, ExpenseColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasExpenseWith applies the HasEdge predicate on the "expense" edge with a given conditions (other predicates).
+func HasExpenseWith(preds ...predicate.Expense) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		step := newExpenseStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Document) predicate.Document {
 	return predicate.Document(sql.AndPredicates(predicates...))

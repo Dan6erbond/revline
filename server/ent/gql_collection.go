@@ -655,6 +655,17 @@ func (d *DocumentQuery) collectField(ctx context.Context, oneNode bool, opCtx *g
 				return err
 			}
 			d.withCar = query
+
+		case "expense":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ExpenseClient{config: d.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, expenseImplementors)...); err != nil {
+				return err
+			}
+			d.withExpense = query
 		case "createTime":
 			if _, ok := fieldSeen[document.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, document.FieldCreateTime)
@@ -1178,6 +1189,19 @@ func (e *ExpenseQuery) collectField(ctx context.Context, oneNode bool, opCtx *gr
 				return err
 			}
 			e.withServiceLog = query
+
+		case "documents":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&DocumentClient{config: e.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, documentImplementors)...); err != nil {
+				return err
+			}
+			e.WithNamedDocuments(alias, func(wq *DocumentQuery) {
+				*wq = *query
+			})
 		case "createTime":
 			if _, ok := fieldSeen[expense.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, expense.FieldCreateTime)

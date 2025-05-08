@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/google/uuid"
 )
@@ -20,14 +21,15 @@ import (
 // DocumentQuery is the builder for querying Document entities.
 type DocumentQuery struct {
 	config
-	ctx        *QueryContext
-	order      []document.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Document
-	withCar    *CarQuery
-	withFKs    bool
-	modifiers  []func(*sql.Selector)
-	loadTotal  []func(context.Context, []*Document) error
+	ctx         *QueryContext
+	order       []document.OrderOption
+	inters      []Interceptor
+	predicates  []predicate.Document
+	withCar     *CarQuery
+	withExpense *ExpenseQuery
+	withFKs     bool
+	modifiers   []func(*sql.Selector)
+	loadTotal   []func(context.Context, []*Document) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -79,6 +81,28 @@ func (dq *DocumentQuery) QueryCar() *CarQuery {
 			sqlgraph.From(document.Table, document.FieldID, selector),
 			sqlgraph.To(car.Table, car.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, document.CarTable, document.CarColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryExpense chains the current query on the "expense" edge.
+func (dq *DocumentQuery) QueryExpense() *ExpenseQuery {
+	query := (&ExpenseClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(document.Table, document.FieldID, selector),
+			sqlgraph.To(expense.Table, expense.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, document.ExpenseTable, document.ExpenseColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -273,12 +297,13 @@ func (dq *DocumentQuery) Clone() *DocumentQuery {
 		return nil
 	}
 	return &DocumentQuery{
-		config:     dq.config,
-		ctx:        dq.ctx.Clone(),
-		order:      append([]document.OrderOption{}, dq.order...),
-		inters:     append([]Interceptor{}, dq.inters...),
-		predicates: append([]predicate.Document{}, dq.predicates...),
-		withCar:    dq.withCar.Clone(),
+		config:      dq.config,
+		ctx:         dq.ctx.Clone(),
+		order:       append([]document.OrderOption{}, dq.order...),
+		inters:      append([]Interceptor{}, dq.inters...),
+		predicates:  append([]predicate.Document{}, dq.predicates...),
+		withCar:     dq.withCar.Clone(),
+		withExpense: dq.withExpense.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
@@ -293,6 +318,17 @@ func (dq *DocumentQuery) WithCar(opts ...func(*CarQuery)) *DocumentQuery {
 		opt(query)
 	}
 	dq.withCar = query
+	return dq
+}
+
+// WithExpense tells the query-builder to eager-load the nodes that are connected to
+// the "expense" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DocumentQuery) WithExpense(opts ...func(*ExpenseQuery)) *DocumentQuery {
+	query := (&ExpenseClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withExpense = query
 	return dq
 }
 
@@ -375,11 +411,12 @@ func (dq *DocumentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Doc
 		nodes       = []*Document{}
 		withFKs     = dq.withFKs
 		_spec       = dq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			dq.withCar != nil,
+			dq.withExpense != nil,
 		}
 	)
-	if dq.withCar != nil {
+	if dq.withCar != nil || dq.withExpense != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -409,6 +446,12 @@ func (dq *DocumentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Doc
 	if query := dq.withCar; query != nil {
 		if err := dq.loadCar(ctx, query, nodes, nil,
 			func(n *Document, e *Car) { n.Edges.Car = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := dq.withExpense; query != nil {
+		if err := dq.loadExpense(ctx, query, nodes, nil,
+			func(n *Document, e *Expense) { n.Edges.Expense = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -445,6 +488,38 @@ func (dq *DocumentQuery) loadCar(ctx context.Context, query *CarQuery, nodes []*
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "car_documents" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (dq *DocumentQuery) loadExpense(ctx context.Context, query *ExpenseQuery, nodes []*Document, init func(*Document), assign func(*Document, *Expense)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Document)
+	for i := range nodes {
+		if nodes[i].expense_documents == nil {
+			continue
+		}
+		fk := *nodes[i].expense_documents
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(expense.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "expense_documents" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

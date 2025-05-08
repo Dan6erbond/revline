@@ -127,6 +127,7 @@ type ComplexityRoot struct {
 	Document struct {
 		Car        func(childComplexity int) int
 		CreateTime func(childComplexity int) int
+		Expense    func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Metadata   func(childComplexity int) int
 		Name       func(childComplexity int) int
@@ -179,6 +180,7 @@ type ComplexityRoot struct {
 		Amount     func(childComplexity int) int
 		Car        func(childComplexity int) int
 		CreateTime func(childComplexity int) int
+		Documents  func(childComplexity int) int
 		FuelUp     func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Notes      func(childComplexity int) int
@@ -891,6 +893,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Document.CreateTime(childComplexity), true
 
+	case "Document.expense":
+		if e.complexity.Document.Expense == nil {
+			break
+		}
+
+		return e.complexity.Document.Expense(childComplexity), true
+
 	case "Document.id":
 		if e.complexity.Document.ID == nil {
 			break
@@ -1149,6 +1158,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Expense.CreateTime(childComplexity), true
+
+	case "Expense.documents":
+		if e.complexity.Expense.Documents == nil {
+			break
+		}
+
+		return e.complexity.Expense.Documents(childComplexity), true
 
 	case "Expense.fuelUp":
 		if e.complexity.Expense.FuelUp == nil {
@@ -5471,6 +5487,8 @@ func (ec *executionContext) fieldContext_Car_documents(_ context.Context, field 
 				return ec.fieldContext_Document_tags(ctx, field)
 			case "car":
 				return ec.fieldContext_Document_car(ctx, field)
+			case "expense":
+				return ec.fieldContext_Document_expense(ctx, field)
 			case "url":
 				return ec.fieldContext_Document_url(ctx, field)
 			case "metadata":
@@ -5595,6 +5613,8 @@ func (ec *executionContext) fieldContext_Car_expenses(_ context.Context, field g
 				return ec.fieldContext_Expense_fuelUp(ctx, field)
 			case "serviceLog":
 				return ec.fieldContext_Expense_serviceLog(ctx, field)
+			case "documents":
+				return ec.fieldContext_Expense_documents(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Expense", field.Name)
 		},
@@ -6759,6 +6779,71 @@ func (ec *executionContext) fieldContext_Document_car(_ context.Context, field g
 				return ec.fieldContext_Car_odometerKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Document_expense(ctx context.Context, field graphql.CollectedField, obj *ent.Document) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Document_expense(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Expense(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Expense)
+	fc.Result = res
+	return ec.marshalOExpense2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpense(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Document_expense(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Document",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Expense_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Expense_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Expense_updateTime(ctx, field)
+			case "occurredAt":
+				return ec.fieldContext_Expense_occurredAt(ctx, field)
+			case "type":
+				return ec.fieldContext_Expense_type(ctx, field)
+			case "amount":
+				return ec.fieldContext_Expense_amount(ctx, field)
+			case "notes":
+				return ec.fieldContext_Expense_notes(ctx, field)
+			case "car":
+				return ec.fieldContext_Expense_car(ctx, field)
+			case "fuelUp":
+				return ec.fieldContext_Expense_fuelUp(ctx, field)
+			case "serviceLog":
+				return ec.fieldContext_Expense_serviceLog(ctx, field)
+			case "documents":
+				return ec.fieldContext_Expense_documents(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Expense", field.Name)
 		},
 	}
 	return fc, nil
@@ -8802,6 +8887,67 @@ func (ec *executionContext) fieldContext_Expense_serviceLog(_ context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Expense_documents(ctx context.Context, field graphql.CollectedField, obj *ent.Expense) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Expense_documents(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Documents(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Document)
+	fc.Result = res
+	return ec.marshalODocument2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDocumentᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Expense_documents(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Expense",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Document_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Document_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Document_updateTime(ctx, field)
+			case "name":
+				return ec.fieldContext_Document_name(ctx, field)
+			case "tags":
+				return ec.fieldContext_Document_tags(ctx, field)
+			case "car":
+				return ec.fieldContext_Document_car(ctx, field)
+			case "expense":
+				return ec.fieldContext_Document_expense(ctx, field)
+			case "url":
+				return ec.fieldContext_Document_url(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Document_metadata(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Document", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _FileMetadata_etag(ctx context.Context, field graphql.CollectedField, obj *minio.ObjectInfo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_FileMetadata_etag(ctx, field)
 	if err != nil {
@@ -9672,6 +9818,8 @@ func (ec *executionContext) fieldContext_FuelUp_expense(_ context.Context, field
 				return ec.fieldContext_Expense_fuelUp(ctx, field)
 			case "serviceLog":
 				return ec.fieldContext_Expense_serviceLog(ctx, field)
+			case "documents":
+				return ec.fieldContext_Expense_documents(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Expense", field.Name)
 		},
@@ -12004,6 +12152,8 @@ func (ec *executionContext) fieldContext_Mutation_createExpense(ctx context.Cont
 				return ec.fieldContext_Expense_fuelUp(ctx, field)
 			case "serviceLog":
 				return ec.fieldContext_Expense_serviceLog(ctx, field)
+			case "documents":
+				return ec.fieldContext_Expense_documents(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Expense", field.Name)
 		},
@@ -15637,6 +15787,8 @@ func (ec *executionContext) fieldContext_Query_document(ctx context.Context, fie
 				return ec.fieldContext_Document_tags(ctx, field)
 			case "car":
 				return ec.fieldContext_Document_car(ctx, field)
+			case "expense":
+				return ec.fieldContext_Document_expense(ctx, field)
 			case "url":
 				return ec.fieldContext_Document_url(ctx, field)
 			case "metadata":
@@ -17425,6 +17577,8 @@ func (ec *executionContext) fieldContext_ServiceLog_expense(_ context.Context, f
 				return ec.fieldContext_Expense_fuelUp(ctx, field)
 			case "serviceLog":
 				return ec.fieldContext_Expense_serviceLog(ctx, field)
+			case "documents":
+				return ec.fieldContext_Expense_documents(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Expense", field.Name)
 		},
@@ -19954,6 +20108,8 @@ func (ec *executionContext) fieldContext_UploadDocumentResult_document(_ context
 				return ec.fieldContext_Document_tags(ctx, field)
 			case "car":
 				return ec.fieldContext_Document_car(ctx, field)
+			case "expense":
+				return ec.fieldContext_Document_expense(ctx, field)
 			case "url":
 				return ec.fieldContext_Document_url(ctx, field)
 			case "metadata":
@@ -24791,7 +24947,7 @@ func (ec *executionContext) unmarshalInputCreateDocumentInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "tags", "carID"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "tags", "carID", "expenseID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -24833,6 +24989,13 @@ func (ec *executionContext) unmarshalInputCreateDocumentInput(ctx context.Contex
 				return it, err
 			}
 			it.CarID = data
+		case "expenseID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expenseID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ExpenseID = data
 		}
 	}
 
@@ -25094,7 +25257,7 @@ func (ec *executionContext) unmarshalInputCreateExpenseInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "occurredAt", "type", "amount", "notes", "carID", "fuelUpID", "serviceLogID"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "occurredAt", "type", "amount", "notes", "carID", "fuelUpID", "serviceLogID", "documentIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -25164,6 +25327,13 @@ func (ec *executionContext) unmarshalInputCreateExpenseInput(ctx context.Context
 				return it, err
 			}
 			it.ServiceLogID = data
+		case "documentIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("documentIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DocumentIDs = data
 		}
 	}
 
@@ -26265,7 +26435,7 @@ func (ec *executionContext) unmarshalInputDocumentWhereInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "hasCar", "hasCarWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "hasCar", "hasCarWith", "hasExpense", "hasExpenseWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -26566,6 +26736,20 @@ func (ec *executionContext) unmarshalInputDocumentWhereInput(ctx context.Context
 				return it, err
 			}
 			it.HasCarWith = data
+		case "hasExpense":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasExpense"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasExpense = data
+		case "hasExpenseWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasExpenseWith"))
+			data, err := ec.unmarshalOExpenseWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐExpenseWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasExpenseWith = data
 		}
 	}
 
@@ -28199,7 +28383,7 @@ func (ec *executionContext) unmarshalInputExpenseWhereInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "occurredAt", "occurredAtNEQ", "occurredAtIn", "occurredAtNotIn", "occurredAtGT", "occurredAtGTE", "occurredAtLT", "occurredAtLTE", "type", "typeNEQ", "typeIn", "typeNotIn", "amount", "amountNEQ", "amountIn", "amountNotIn", "amountGT", "amountGTE", "amountLT", "amountLTE", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasFuelUp", "hasFuelUpWith", "hasServiceLog", "hasServiceLogWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "occurredAt", "occurredAtNEQ", "occurredAtIn", "occurredAtNotIn", "occurredAtGT", "occurredAtGTE", "occurredAtLT", "occurredAtLTE", "type", "typeNEQ", "typeIn", "typeNotIn", "amount", "amountNEQ", "amountIn", "amountNotIn", "amountGT", "amountGTE", "amountLT", "amountLTE", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasFuelUp", "hasFuelUpWith", "hasServiceLog", "hasServiceLogWith", "hasDocuments", "hasDocumentsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -28682,6 +28866,20 @@ func (ec *executionContext) unmarshalInputExpenseWhereInput(ctx context.Context,
 				return it, err
 			}
 			it.HasServiceLogWith = data
+		case "hasDocuments":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDocuments"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasDocuments = data
+		case "hasDocumentsWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDocumentsWith"))
+			data, err := ec.unmarshalODocumentWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDocumentWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasDocumentsWith = data
 		}
 	}
 
@@ -36357,7 +36555,7 @@ func (ec *executionContext) unmarshalInputUpdateDocumentInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "name", "tags", "appendTags", "carID", "clearCar"}
+	fieldsInOrder := [...]string{"updateTime", "name", "tags", "appendTags", "carID", "clearCar", "expenseID", "clearExpense"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -36406,6 +36604,20 @@ func (ec *executionContext) unmarshalInputUpdateDocumentInput(ctx context.Contex
 				return it, err
 			}
 			it.ClearCar = data
+		case "expenseID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expenseID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ExpenseID = data
+		case "clearExpense":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearExpense"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearExpense = data
 		}
 	}
 
@@ -36681,7 +36893,7 @@ func (ec *executionContext) unmarshalInputUpdateExpenseInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "occurredAt", "type", "amount", "notes", "clearNotes", "carID", "fuelUpID", "clearFuelUp", "serviceLogID", "clearServiceLog"}
+	fieldsInOrder := [...]string{"updateTime", "occurredAt", "type", "amount", "notes", "clearNotes", "carID", "fuelUpID", "clearFuelUp", "serviceLogID", "clearServiceLog", "addDocumentIDs", "removeDocumentIDs", "clearDocuments"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -36765,6 +36977,27 @@ func (ec *executionContext) unmarshalInputUpdateExpenseInput(ctx context.Context
 				return it, err
 			}
 			it.ClearServiceLog = data
+		case "addDocumentIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addDocumentIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddDocumentIDs = data
+		case "removeDocumentIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeDocumentIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveDocumentIDs = data
+		case "clearDocuments":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearDocuments"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearDocuments = data
 		}
 	}
 
@@ -39980,6 +40213,39 @@ func (ec *executionContext) _Document(ctx context.Context, sel ast.SelectionSet,
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "expense":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Document_expense(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "url":
 			field := field
 
@@ -40644,6 +40910,39 @@ func (ec *executionContext) _Expense(ctx context.Context, sel ast.SelectionSet, 
 					}
 				}()
 				res = ec._Expense_serviceLog(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "documents":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Expense_documents(ctx, field, obj)
 				return res
 			}
 

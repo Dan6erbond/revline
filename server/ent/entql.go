@@ -689,6 +689,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Car",
 	)
 	graph.MustAddE(
+		"expense",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.ExpenseTable,
+			Columns: []string{document.ExpenseColumn},
+			Bidi:    false,
+		},
+		"Document",
+		"Expense",
+	)
+	graph.MustAddE(
 		"session",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -795,6 +807,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Expense",
 		"ServiceLog",
+	)
+	graph.MustAddE(
+		"documents",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   expense.DocumentsTable,
+			Columns: []string{expense.DocumentsColumn},
+			Bidi:    false,
+		},
+		"Expense",
+		"Document",
 	)
 	graph.MustAddE(
 		"car",
@@ -1763,6 +1787,20 @@ func (f *DocumentFilter) WhereHasCarWith(preds ...predicate.Car) {
 	})))
 }
 
+// WhereHasExpense applies a predicate to check if query has an edge expense.
+func (f *DocumentFilter) WhereHasExpense() {
+	f.Where(entql.HasEdge("expense"))
+}
+
+// WhereHasExpenseWith applies a predicate to check if query has an edge expense with a given conditions (other predicates).
+func (f *DocumentFilter) WhereHasExpenseWith(preds ...predicate.Expense) {
+	f.Where(entql.HasEdgeWith("expense", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (drq *DragResultQuery) addPredicate(pred func(s *sql.Selector)) {
 	drq.predicates = append(drq.predicates, pred)
@@ -2203,6 +2241,20 @@ func (f *ExpenseFilter) WhereHasServiceLog() {
 // WhereHasServiceLogWith applies a predicate to check if query has an edge service_log with a given conditions (other predicates).
 func (f *ExpenseFilter) WhereHasServiceLogWith(preds ...predicate.ServiceLog) {
 	f.Where(entql.HasEdgeWith("service_log", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasDocuments applies a predicate to check if query has an edge documents.
+func (f *ExpenseFilter) WhereHasDocuments() {
+	f.Where(entql.HasEdge("documents"))
+}
+
+// WhereHasDocumentsWith applies a predicate to check if query has an edge documents with a given conditions (other predicates).
+func (f *ExpenseFilter) WhereHasDocumentsWith(preds ...predicate.Document) {
+	f.Where(entql.HasEdgeWith("documents", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

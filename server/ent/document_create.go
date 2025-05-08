@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
+	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/google/uuid"
 )
 
@@ -93,6 +94,25 @@ func (dc *DocumentCreate) SetNillableCarID(id *uuid.UUID) *DocumentCreate {
 // SetCar sets the "car" edge to the Car entity.
 func (dc *DocumentCreate) SetCar(c *Car) *DocumentCreate {
 	return dc.SetCarID(c.ID)
+}
+
+// SetExpenseID sets the "expense" edge to the Expense entity by ID.
+func (dc *DocumentCreate) SetExpenseID(id uuid.UUID) *DocumentCreate {
+	dc.mutation.SetExpenseID(id)
+	return dc
+}
+
+// SetNillableExpenseID sets the "expense" edge to the Expense entity by ID if the given value is not nil.
+func (dc *DocumentCreate) SetNillableExpenseID(id *uuid.UUID) *DocumentCreate {
+	if id != nil {
+		dc = dc.SetExpenseID(*id)
+	}
+	return dc
+}
+
+// SetExpense sets the "expense" edge to the Expense entity.
+func (dc *DocumentCreate) SetExpense(e *Expense) *DocumentCreate {
+	return dc.SetExpenseID(e.ID)
 }
 
 // Mutation returns the DocumentMutation object of the builder.
@@ -228,6 +248,23 @@ func (dc *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.car_documents = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.ExpenseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.ExpenseTable,
+			Columns: []string{document.ExpenseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.expense_documents = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

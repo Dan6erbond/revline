@@ -233,6 +233,14 @@ func (d *Document) Car(ctx context.Context) (*Car, error) {
 	return result, MaskNotFound(err)
 }
 
+func (d *Document) Expense(ctx context.Context) (*Expense, error) {
+	result, err := d.Edges.ExpenseOrErr()
+	if IsNotLoaded(err) {
+		result, err = d.QueryExpense().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (dr *DragResult) Session(ctx context.Context) (*DragSession, error) {
 	result, err := dr.Edges.SessionOrErr()
 	if IsNotLoaded(err) {
@@ -311,6 +319,18 @@ func (e *Expense) ServiceLog(ctx context.Context) (*ServiceLog, error) {
 		result, err = e.QueryServiceLog().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (e *Expense) Documents(ctx context.Context) (result []*Document, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = e.NamedDocuments(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = e.Edges.DocumentsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = e.QueryDocuments().All(ctx)
+	}
+	return result, err
 }
 
 func (fu *FuelUp) Car(ctx context.Context) (*Car, error) {

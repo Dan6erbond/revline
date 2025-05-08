@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -12,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -22,16 +24,18 @@ import (
 // ExpenseQuery is the builder for querying Expense entities.
 type ExpenseQuery struct {
 	config
-	ctx            *QueryContext
-	order          []expense.OrderOption
-	inters         []Interceptor
-	predicates     []predicate.Expense
-	withCar        *CarQuery
-	withFuelUp     *FuelUpQuery
-	withServiceLog *ServiceLogQuery
-	withFKs        bool
-	modifiers      []func(*sql.Selector)
-	loadTotal      []func(context.Context, []*Expense) error
+	ctx                *QueryContext
+	order              []expense.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.Expense
+	withCar            *CarQuery
+	withFuelUp         *FuelUpQuery
+	withServiceLog     *ServiceLogQuery
+	withDocuments      *DocumentQuery
+	withFKs            bool
+	modifiers          []func(*sql.Selector)
+	loadTotal          []func(context.Context, []*Expense) error
+	withNamedDocuments map[string]*DocumentQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -127,6 +131,28 @@ func (eq *ExpenseQuery) QueryServiceLog() *ServiceLogQuery {
 			sqlgraph.From(expense.Table, expense.FieldID, selector),
 			sqlgraph.To(servicelog.Table, servicelog.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, expense.ServiceLogTable, expense.ServiceLogColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDocuments chains the current query on the "documents" edge.
+func (eq *ExpenseQuery) QueryDocuments() *DocumentQuery {
+	query := (&DocumentClient{config: eq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := eq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := eq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(expense.Table, expense.FieldID, selector),
+			sqlgraph.To(document.Table, document.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, expense.DocumentsTable, expense.DocumentsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -329,6 +355,7 @@ func (eq *ExpenseQuery) Clone() *ExpenseQuery {
 		withCar:        eq.withCar.Clone(),
 		withFuelUp:     eq.withFuelUp.Clone(),
 		withServiceLog: eq.withServiceLog.Clone(),
+		withDocuments:  eq.withDocuments.Clone(),
 		// clone intermediate query.
 		sql:  eq.sql.Clone(),
 		path: eq.path,
@@ -365,6 +392,17 @@ func (eq *ExpenseQuery) WithServiceLog(opts ...func(*ServiceLogQuery)) *ExpenseQ
 		opt(query)
 	}
 	eq.withServiceLog = query
+	return eq
+}
+
+// WithDocuments tells the query-builder to eager-load the nodes that are connected to
+// the "documents" edge. The optional arguments are used to configure the query builder of the edge.
+func (eq *ExpenseQuery) WithDocuments(opts ...func(*DocumentQuery)) *ExpenseQuery {
+	query := (&DocumentClient{config: eq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	eq.withDocuments = query
 	return eq
 }
 
@@ -447,10 +485,11 @@ func (eq *ExpenseQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Expe
 		nodes       = []*Expense{}
 		withFKs     = eq.withFKs
 		_spec       = eq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			eq.withCar != nil,
 			eq.withFuelUp != nil,
 			eq.withServiceLog != nil,
+			eq.withDocuments != nil,
 		}
 	)
 	if eq.withCar != nil || eq.withFuelUp != nil || eq.withServiceLog != nil {
@@ -495,6 +534,20 @@ func (eq *ExpenseQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Expe
 	if query := eq.withServiceLog; query != nil {
 		if err := eq.loadServiceLog(ctx, query, nodes, nil,
 			func(n *Expense, e *ServiceLog) { n.Edges.ServiceLog = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := eq.withDocuments; query != nil {
+		if err := eq.loadDocuments(ctx, query, nodes,
+			func(n *Expense) { n.Edges.Documents = []*Document{} },
+			func(n *Expense, e *Document) { n.Edges.Documents = append(n.Edges.Documents, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range eq.withNamedDocuments {
+		if err := eq.loadDocuments(ctx, query, nodes,
+			func(n *Expense) { n.appendNamedDocuments(name) },
+			func(n *Expense, e *Document) { n.appendNamedDocuments(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -602,6 +655,37 @@ func (eq *ExpenseQuery) loadServiceLog(ctx context.Context, query *ServiceLogQue
 	}
 	return nil
 }
+func (eq *ExpenseQuery) loadDocuments(ctx context.Context, query *DocumentQuery, nodes []*Expense, init func(*Expense), assign func(*Expense, *Document)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Expense)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(expense.DocumentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.expense_documents
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "expense_documents" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "expense_documents" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (eq *ExpenseQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := eq.querySpec()
@@ -685,6 +769,20 @@ func (eq *ExpenseQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedDocuments tells the query-builder to eager-load the nodes that are connected to the "documents"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (eq *ExpenseQuery) WithNamedDocuments(name string, opts ...func(*DocumentQuery)) *ExpenseQuery {
+	query := (&DocumentClient{config: eq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if eq.withNamedDocuments == nil {
+		eq.withNamedDocuments = make(map[string]*DocumentQuery)
+	}
+	eq.withNamedDocuments[name] = query
+	return eq
 }
 
 // ExpenseGroupBy is the group-by builder for Expense entities.
