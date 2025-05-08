@@ -1,10 +1,11 @@
 import { Album, ImageUp, Images } from "lucide-react";
 import { Car, SubscriptionTier } from "@/gql/graphql";
-import { ChangeEvent, DragEvent, useCallback, useRef, useState } from "react";
 import { Progress, Skeleton, Tab, Tabs } from "@heroui/react";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { useCallback, useState } from "react";
 
 import CarLayout from "@/components/layout/car-layout";
+import Dropzone from "@/components/dropzone";
 import MediaItem from "@/components/media/item";
 import SubscriptionOverlay from "@/components/subscription-overlay";
 import { getQueryParam } from "@/utils/router";
@@ -49,7 +50,6 @@ export default function Gallery() {
 
   const [mutate] = useMutation(uploadMedia);
 
-  const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<
     {
       id: string;
@@ -58,30 +58,6 @@ export default function Gallery() {
       error?: string;
     }[]
   >([]);
-
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleDragEnter = useCallback((e: DragEvent<HTMLElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: DragEvent<HTMLElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (e.currentTarget.contains(e.relatedTarget as Node)) {
-      return;
-    }
-
-    setIsDragging(false);
-  }, []);
-
-  const handleDragOver = useCallback((e: DragEvent<HTMLElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleFileUpload = useCallback(
@@ -136,39 +112,6 @@ export default function Gallery() {
     [mutate, router.query.id, client]
   );
 
-  const handleDrop = useCallback(
-    (e: DragEvent<HTMLElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-
-      // Don't process files if the input is disabled
-      if (inputRef.current?.disabled) {
-        return;
-      }
-
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        [...e.dataTransfer.files].forEach(handleFileUpload);
-      }
-    },
-    [handleFileUpload]
-  );
-
-  const openFileDialog = useCallback(() => {
-    if (inputRef.current) {
-      inputRef.current.click();
-    }
-  }, []);
-
-  const handleFileChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files && e.target.files.length > 0) {
-        [...e.target.files].forEach(handleFileUpload);
-      }
-    },
-    [handleFileUpload]
-  );
-
   return (
     <CarLayout
       className="relative"
@@ -220,52 +163,16 @@ export default function Gallery() {
           />
         </Tabs>
 
-        <div className="flex flex-col gap-2">
-          <div className="relative">
-            {/* Drop area */}
-            <div
-              role="button"
-              onClick={openFileDialog}
-              onDragEnter={handleDragEnter}
-              onDragLeave={handleDragLeave}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              data-dragging={isDragging || undefined}
-              className="cursor-pointer border-input hover:bg-secondary/20 data-[dragging=true]:bg-secondary/20 has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 relative flex min-h-52 flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed p-4 transition-colors has-disabled:pointer-events-none has-disabled:opacity-50 has-[img]:border-none has-[input:focus]:ring-[3px]"
-            >
-              <input
-                type="file"
-                accept="image/*,video/*"
-                onChange={handleFileChange}
-                multiple
-                className="sr-only"
-                aria-label="Upload file"
-                ref={inputRef}
-              />
-              <div className="flex flex-col items-center justify-center px-4 py-3 text-center">
-                <div
-                  className="bg-background mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border"
-                  aria-hidden="true"
-                >
-                  <ImageUp className="size-4 opacity-60" />
-                </div>
-                <p className="mb-1.5 text-sm font-medium">
-                  Drop your image here or click to browse
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* {errors.length > 0 && (
-            <div
-              className="text-destructive flex items-center gap-1 text-xs"
-              role="alert"
-            >
-              <AlertCircle className="size-3 shrink-0" />
-              <span>{errors[0]}</span>
-            </div>
-          )} */}
-        </div>
+        <Dropzone
+          multiple
+          accept="image/*,video/*"
+          icon={<ImageUp className="size-4 opacity-60" />}
+          label="Drop your image here or click to browse"
+          value={[]}
+          onChange={(files) => {
+            files.forEach(handleFileUpload);
+          }}
+        />
       </div>
     </CarLayout>
   );

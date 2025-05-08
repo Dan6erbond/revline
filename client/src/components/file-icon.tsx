@@ -1,17 +1,20 @@
 import {
-  FileArchiveIcon,
-  FileSpreadsheetIcon,
-  FileTextIcon,
-  HeadphonesIcon,
-  ImageIcon,
-  FileIcon as LucideFileIcon,
-  VideoIcon,
+  File,
+  FileArchive,
+  FileSpreadsheet,
+  FileText,
+  Headphones,
+  Image,
+  LucideProps,
+  Video,
 } from "lucide-react";
 
 function FileIcon(
-  props:
-    | { file: File; type?: never; name?: never }
-    | { file?: never; contentType?: string; name?: string }
+  props: LucideProps &
+    (
+      | { file: File; type?: never; name?: never }
+      | { file?: never; contentType?: string; name?: string }
+    )
 ) {
   const fileType = props.file ? props.file.type : props.contentType;
   const fileName = props.file ? props.file.name : props.name;
@@ -23,29 +26,29 @@ function FileIcon(
     fileName?.endsWith(".doc") ||
     fileName?.endsWith(".docx")
   ) {
-    return <FileTextIcon className="size-4 opacity-60" />;
+    return <FileText {...props} />;
   } else if (
     fileType?.includes("zip") ||
     fileType?.includes("archive") ||
     fileName?.endsWith(".zip") ||
     fileName?.endsWith(".rar")
   ) {
-    return <FileArchiveIcon className="size-4 opacity-60" />;
+    return <FileArchive {...props} />;
   } else if (
     fileType?.includes("excel") ||
     fileName?.endsWith(".xls") ||
     fileName?.endsWith(".xlsx")
   ) {
-    return <FileSpreadsheetIcon className="size-4 opacity-60" />;
+    return <FileSpreadsheet {...props} />;
   } else if (fileType?.includes("video/")) {
-    return <VideoIcon className="size-4 opacity-60" />;
+    return <Video {...props} />;
   } else if (fileType?.includes("audio/")) {
-    return <HeadphonesIcon className="size-4 opacity-60" />;
+    return <Headphones {...props} />;
   } else if (fileType?.startsWith("image/")) {
-    return <ImageIcon className="size-4 opacity-60" />;
+    return <Image {...props} />;
   }
 
-  return <LucideFileIcon className="size-4 opacity-60" />;
+  return <File {...props} />;
 }
 
 export default FileIcon;
