@@ -202,7 +202,7 @@ export default function Items() {
               <ModalHeader>Create service item</ModalHeader>
               <ModalBody>
                 <form
-                  id="fuel-up"
+                  id="item"
                   className="flex flex-col gap-4"
                   onSubmit={handleSubmit(onSubmit)}
                 >
@@ -261,8 +261,8 @@ export default function Items() {
                 <Button color="danger" variant="light" onPress={onClose}>
                   Close
                 </Button>
-                <Button color="primary" type="submit" form="fuel-up">
-                  Action
+                <Button color="primary" type="submit" form="item">
+                  Save
                 </Button>
               </ModalFooter>
             </>

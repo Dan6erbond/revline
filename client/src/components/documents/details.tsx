@@ -10,6 +10,8 @@ import { Document, Page } from "react-pdf";
 import { FragmentType, graphql, useFragment } from "@/gql";
 
 import { ExpenseChip } from "../expenses/chip";
+import { FuelUpChip } from "../fuelups/chip";
+import { ServiceLogChip } from "../maintenance/service/logs/chip";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useSuspenseQuery } from "@apollo/client";
@@ -69,6 +71,8 @@ const getDocument = graphql(`
       profile {
         id
         currencyCode
+        fuelVolumeUnit
+        distanceUnit
       }
     }
     document(id: $id) {
@@ -85,6 +89,34 @@ const getDocument = graphql(`
         id
         type
         amount
+      }
+      serviceLog {
+        id
+        datePerformed
+        odometerReading {
+          id
+          readingKm
+        }
+        performedBy
+        notes
+      }
+      fuelUp {
+        id
+        occurredAt
+        station
+        amountLiters
+        expense {
+          id
+          amount
+        }
+        fuelCategory
+        octaneRating
+        odometerReading {
+          id
+          readingKm
+        }
+        notes
+        isFullTank
       }
     }
   }
@@ -115,6 +147,27 @@ export default function Details({
               expense={data.document.expense}
               currencyCode={data.me.profile?.currencyCode}
               href={`/cars/${router.query.id}`}
+            />
+          </div>
+        )}
+        {data.document.fuelUp && (
+          <div className="flex flex-col gap-1">
+            <p>Fuel-up</p>
+            <FuelUpChip
+              fuelUp={data.document.fuelUp}
+              href={`/cars/${router.query.id}`}
+              fuelVolumeUnit={data.me.profile?.fuelVolumeUnit}
+              distanceUnit={data.me.profile?.distanceUnit}
+            />
+          </div>
+        )}
+        {data.document.serviceLog && (
+          <div className="flex flex-col gap-1">
+            <p>Service log</p>
+            <ServiceLogChip
+              log={data.document.serviceLog}
+              href={`/cars/${router.query.id}`}
+              distanceUnit={data.me.profile?.distanceUnit}
             />
           </div>
         )}

@@ -2,7 +2,7 @@ import { Coins, Fuel } from "lucide-react";
 import { Tab, Tabs } from "@heroui/react";
 
 import CarLayout from "@/components/layout/car-layout";
-import FuelUps from "@/components/maintenance/fuelups";
+import FuelUps from "@/components/fuelups";
 import React from "react";
 import { useRouter } from "next/router";
 

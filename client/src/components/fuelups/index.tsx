@@ -13,6 +13,7 @@ import {
   ModalFooter,
   ModalHeader,
   NumberInput,
+  Progress,
   Select,
   SelectItem,
   Table,
@@ -39,10 +40,11 @@ import {
   DistanceUnit,
   FuelCategory,
   FuelConsumptionUnit,
+  FuelUp,
   FuelVolumeUnit,
   OctaneRating,
 } from "@/gql/graphql";
-import { Fuel, MapPin, Percent, Plus } from "lucide-react";
+import { FileUp, Fuel, MapPin, Percent, Plus } from "lucide-react";
 import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
 import {
   distanceUnits,
@@ -51,13 +53,19 @@ import {
 } from "@/literals";
 import { getDistance, getKilometers } from "@/utils/distance";
 import { getFuelVolume, getLiters } from "@/utils/fuel-volume";
-import { useMutation, useQuery } from "@apollo/client";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
+import DocumentChip from "../documents/chip";
+import Dropzone from "../dropzone";
+import FileIcon from "../file-icon";
+import { formatBytes } from "@/utils/upload-file";
 import { getCurrencySymbol } from "@/utils/currency";
 import { getFuelConsumption } from "@/utils/fuel-consumption";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
+import { useDocumentsUpload } from "@/hooks/use-documents-upload";
 import { useRouter } from "next/router";
+import { withNotification } from "@/utils/with-notification";
 
 const getFuelUps = graphql(`
   query GetFuelUps($id: ID!) {
@@ -90,6 +98,14 @@ const getFuelUps = graphql(`
         }
         notes
         isFullTank
+        documents {
+          id
+          name
+          tags
+          metadata {
+            contentType
+          }
+        }
       }
       averageConsumptionLitersPerKm
     }
@@ -107,6 +123,7 @@ type Inputs = {
   odometerKm: number;
   notes: string;
   isFullTank: boolean;
+  files: File[];
 };
 
 const createFuelUp = graphql(`
@@ -128,6 +145,9 @@ const createFuelUp = graphql(`
       }
       notes
       isFullTank
+      expense {
+        id
+      }
     }
   }
 `);
@@ -141,10 +161,13 @@ const columns = [
   { key: "odometer", label: "Odometer" },
   { key: "notes", label: "Notes" },
   { key: "fullTank", label: "Full Tank" },
+  { key: "documents", label: "Documents" },
 ];
 
 export default function FuelUps() {
   const router = useRouter();
+
+  const client = useApolloClient();
 
   const { data } = useQuery(getFuelUps, {
     variables: { id: getQueryParam(router.query.id) as string },
@@ -160,11 +183,12 @@ export default function FuelUps() {
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
-  const { register, handleSubmit, control, setValue, watch, formState } =
+  const { register, handleSubmit, control, setValue, watch, formState, reset } =
     useForm<Inputs>({
       defaultValues: {
         occurredAt: now(getLocalTimeZone()),
         isFullTank: true,
+        files: [],
       },
     });
 
@@ -175,7 +199,9 @@ export default function FuelUps() {
     "fuelCategory",
   ]);
 
-  const [mutate] = useMutation(createFuelUp, {
+  const [handleFileUpload, { uploadProgress }] = useDocumentsUpload();
+
+  const [mutate, { loading }] = useMutation(createFuelUp, {
     update: (cache, res) => {
       if (!res.data?.createFuelUp || !data?.car) return;
 
@@ -193,38 +219,73 @@ export default function FuelUps() {
     },
   });
 
-  const onSubmit: SubmitHandler<Inputs> = ({
-    occurredAt,
-    station,
-    amount,
-    cost,
-    fuelCategory,
-    octaneRating,
-    odometerKm,
-    notes,
-    isFullTank,
-  }) => {
-    mutate({
-      variables: {
-        input: {
-          carID: getQueryParam(router.query.id)!,
-          occurredAt: occurredAt.toDate().toISOString(),
-          station,
-          amountLiters: getLiters(amount, fuelVolumeUnit),
-          cost,
-          fuelCategory,
-          octaneRating,
-          odometerKm: getKilometers(odometerKm, distanceUnit),
-          notes,
-          isFullTank,
+  const onSubmit: SubmitHandler<Inputs> = withNotification(
+    {},
+    ({
+      occurredAt,
+      station,
+      amount,
+      cost,
+      fuelCategory,
+      octaneRating,
+      odometerKm,
+      notes,
+      isFullTank,
+      files,
+    }) =>
+      mutate({
+        variables: {
+          input: {
+            carID: getQueryParam(router.query.id)!,
+            occurredAt: occurredAt.toDate().toISOString(),
+            station,
+            amountLiters: getLiters(amount, fuelVolumeUnit),
+            cost,
+            fuelCategory,
+            octaneRating: octaneRating || null,
+            odometerKm: getKilometers(odometerKm, distanceUnit),
+            notes,
+            isFullTank,
+          },
         },
-      },
-    }).then(({ data }) => {
-      if (!data) return;
+      })
+        .then(({ data }) => {
+          if (!data) return;
 
-      onClose();
-    });
-  };
+          reset();
+
+          const fuelUp = data.createFuelUp;
+          const { expense } = fuelUp;
+
+          return Promise.all(
+            files.map((f) =>
+              handleFileUpload(f, {
+                fuelUpID: fuelUp.id,
+                expenseID: expense?.id,
+              }).then(({ data }) => {
+                if (!data?.uploadDocument) return;
+
+                client.cache.modify<FuelUp>({
+                  id: client.cache.identify(fuelUp),
+                  fields: {
+                    documents(existingDocRefs, { toReference, readField }) {
+                      return [
+                        ...(existingDocRefs ?? []).filter(
+                          (doc) =>
+                            readField({ from: doc, fieldName: "id" }) !==
+                            data!.uploadDocument.document.id
+                        ),
+                        toReference(data!.uploadDocument.document),
+                      ];
+                    },
+                  },
+                });
+              })
+            )
+          );
+        })
+        .then(onClose)
+  );
 
   return (
     <>
@@ -371,6 +432,11 @@ export default function FuelUps() {
                 <TableCell>{fu.notes}</TableCell>
                 <TableCell>
                   <Checkbox isSelected={fu.isFullTank} isReadOnly />
+                </TableCell>
+                <TableCell className="flex gap-2 flex-wrap">
+                  {fu.documents?.map((doc) => (
+                    <DocumentChip document={doc} key={doc.id} />
+                  ))}
                 </TableCell>
               </TableRow>
             )}
@@ -529,14 +595,59 @@ export default function FuelUps() {
                     variant="bordered"
                   />
                   <Checkbox {...register("isFullTank")}>Tank full</Checkbox>
+                  <Controller
+                    control={control}
+                    name="files"
+                    render={({ field: { value, onChange } }) => (
+                      <Dropzone
+                        value={value}
+                        onChange={onChange}
+                        multiple
+                        label="Drag & drop files or click to browse"
+                        icon={<FileUp className="size-4 opacity-60" />}
+                      />
+                    )}
+                  />
+                  {uploadProgress.length > 0 && (
+                    <div className="space-y-2">
+                      {uploadProgress.map(({ file, id, progress }) => (
+                        <div
+                          key={id}
+                          className="bg-background flex flex-col gap-2"
+                        >
+                          <Progress value={progress} size="sm" />
+                          <div className="flex items-center justify-between gap-2 rounded-lg border p-2 pe-3">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              <div className="flex aspect-square size-10 shrink-0 items-center justify-center rounded border">
+                                <FileIcon file={file} />
+                              </div>
+                              <div className="flex min-w-0 flex-col gap-0.5">
+                                <p className="truncate text-[13px] font-medium">
+                                  {file.name}
+                                </p>
+                                <p className="text-muted-foreground text-xs">
+                                  {formatBytes(file.size)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </form>
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>
                   Close
                 </Button>
-                <Button color="primary" type="submit" form="fuel-up">
-                  Action
+                <Button
+                  color="primary"
+                  type="submit"
+                  form="fuel-up"
+                  isLoading={loading || uploadProgress.length > 0}
+                >
+                  Save
                 </Button>
               </ModalFooter>
             </>

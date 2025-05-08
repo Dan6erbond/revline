@@ -69,32 +69,15 @@ export function ExpenseChip({
   const Icon = typeToIcon[expense.type] ?? DollarSign;
   const label = typeToLabel[expense.type] ?? expense.type;
 
-  const content = (
-    <>
-      {label}: {expense.amount.toLocaleString()}
-      {currencyCode}
-    </>
-  );
-
-  if (href) {
-    return (
-      <Chip
-        as={Link}
-        href={href}
-        className="capitalize"
-        startContent={<Icon className="size-4 ml-1 text-muted-foreground" />}
-      >
-        {content}
-      </Chip>
-    );
-  }
-
   return (
     <Chip
+      as={href ? Link : undefined}
+      href={href}
       className="capitalize"
       startContent={<Icon className="size-4 ml-1 text-muted-foreground" />}
     >
-      {content}
+      {label}: {expense.amount.toLocaleString()}
+      {currencyCode}
     </Chip>
   );
 }

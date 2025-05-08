@@ -1,6 +1,5 @@
 import {
   Button,
-  Chip,
   DatePicker,
   Modal,
   ModalBody,
@@ -37,9 +36,9 @@ import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
 import CarLayout from "@/components/layout/car-layout";
+import DocumentChip from "@/components/documents/chip";
 import Dropzone from "@/components/dropzone";
 import FileIcon from "@/components/file-icon";
-import Link from "next/link";
 import { formatBytes } from "@/utils/upload-file";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
@@ -166,7 +165,7 @@ export default function Car() {
 
   const onSubmit: SubmitHandler<Inputs> = withNotification(
     {},
-    ({ occurredAt, type, amount, notes, files }: Inputs) =>
+    ({ occurredAt, type, amount, notes, files }) =>
       mutate({
         variables: {
           input: {
@@ -194,9 +193,13 @@ export default function Car() {
                   client.cache.modify<Expense>({
                     id: client.cache.identify(expense),
                     fields: {
-                      documents(existingDocRefs, { toReference }) {
+                      documents(existingDocRefs, { toReference, readField }) {
                         return [
-                          ...(existingDocRefs ?? []),
+                          ...(existingDocRefs ?? []).filter(
+                            (doc) =>
+                              readField({ from: doc, fieldName: "id" }) !==
+                              data!.uploadDocument.document.id
+                          ),
                           toReference(data!.uploadDocument.document),
                         ];
                       },
@@ -303,21 +306,7 @@ export default function Car() {
                     <TableCell>{ex.notes}</TableCell>
                     <TableCell className="flex gap-2 flex-wrap">
                       {ex.documents?.map((doc) => (
-                        <Chip
-                          as={Link}
-                          href={`/cars/${router.query.id}/documents/${doc.id}`}
-                          startContent={
-                            <FileIcon
-                              name={doc.name}
-                              contentType={doc.metadata?.contentType}
-                              className="size-4 ml-2"
-                            />
-                          }
-                        >
-                          <span className="max-w-32 overflow-hidden text-ellipsis block">
-                            {doc.name}
-                          </span>
-                        </Chip>
+                        <DocumentChip document={doc} key={doc.id} />
                       ))}
                     </TableCell>
                   </TableRow>
@@ -395,7 +384,6 @@ export default function Car() {
                             />
                           )}
                         />
-
                         {uploadProgress.length > 0 && (
                           <div className="space-y-2">
                             {uploadProgress.map(({ file, id, progress }) => (

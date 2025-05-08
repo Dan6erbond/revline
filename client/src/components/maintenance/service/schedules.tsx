@@ -282,7 +282,7 @@ export default function Schedules() {
               <ModalHeader>Create service schedule</ModalHeader>
               <ModalBody>
                 <form
-                  id="fuel-up"
+                  id="schedule"
                   className="flex flex-col gap-4"
                   onSubmit={handleSubmit(onSubmit)}
                 >
@@ -424,8 +424,8 @@ export default function Schedules() {
                 <Button color="danger" variant="light" onPress={onClose}>
                   Close
                 </Button>
-                <Button color="primary" type="submit" form="fuel-up">
-                  Action
+                <Button color="primary" type="submit" form="schedule">
+                  Save
                 </Button>
               </ModalFooter>
             </>

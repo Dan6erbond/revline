@@ -263,7 +263,7 @@ export default function Odometer() {
               <ModalHeader>Enter Odometer reading</ModalHeader>
               <ModalBody>
                 <form
-                  id="fuel-up"
+                  id="odometer"
                   className="flex flex-col gap-4"
                   onSubmit={handleSubmit(onSubmit)}
                 >
@@ -285,8 +285,8 @@ export default function Odometer() {
                 <Button color="danger" variant="light" onPress={onClose}>
                   Close
                 </Button>
-                <Button color="primary" type="submit" form="fuel-up">
-                  Action
+                <Button color="primary" type="submit" form="odometer">
+                  Save
                 </Button>
               </ModalFooter>
             </>

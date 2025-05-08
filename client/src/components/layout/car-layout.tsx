@@ -143,7 +143,7 @@ export default function CarLayout(props: ComponentProps<"main">) {
                 {getFuelConsumption(
                   data.car.averageConsumptionLitersPerKm,
                   fuelConsumptionUnit
-                )}{" "}
+                ).toLocaleString()}{" "}
                 {fuelConsumptionUnitsShort[fuelConsumptionUnit]}
               </span>
             </div>

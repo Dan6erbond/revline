@@ -1,9 +1,8 @@
 import { ComponentType, ReactNode } from "react";
-import { Fuel, Gauge, NotebookPen } from "lucide-react";
+import { Gauge, NotebookPen } from "lucide-react";
 import { Tab, Tabs } from "@heroui/react";
 
 import CarLayout from "@/components/layout/car-layout";
-import FuelUps from "@/components/maintenance/fuelups";
 import Odometer from "@/components/maintenance/odometer";
 import Service from "@/components/maintenance/service";
 import { getQueryParam } from "@/utils/router";

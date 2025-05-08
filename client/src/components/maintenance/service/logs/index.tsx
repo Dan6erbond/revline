@@ -12,6 +12,7 @@ import {
   ModalFooter,
   ModalHeader,
   NumberInput,
+  Progress,
   Select,
   SelectItem,
   Table,
@@ -24,17 +25,23 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { Plus, Trash } from "lucide-react";
+import { DistanceUnit, ServiceLog } from "@/gql/graphql";
+import { FileUp, Plus, Trash } from "lucide-react";
 import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
 import { getDistance, getKilometers } from "@/utils/distance";
-import { useMutation, useQuery } from "@apollo/client";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
-import { DistanceUnit } from "@/gql/graphql";
+import DocumentChip from "../../../documents/chip";
+import Dropzone from "../../../dropzone";
+import FileIcon from "../../../file-icon";
 import { distanceUnits } from "@/literals";
+import { formatBytes } from "@/utils/upload-file";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
+import { useDocumentsUpload } from "@/hooks/use-documents-upload";
 import { useMemo } from "react";
 import { useRouter } from "next/router";
+import { withNotification } from "@/utils/with-notification";
 
 const getServiceLogs = graphql(`
   query GetServiceLogs($id: ID!) {
@@ -76,6 +83,14 @@ const getServiceLogs = graphql(`
           archived
         }
         performedBy
+        documents {
+          id
+          name
+          tags
+          metadata {
+            contentType
+          }
+        }
       }
     }
   }
@@ -146,6 +161,7 @@ type Inputs = {
   performedBy?: string | null;
   scheduleId?: string | null;
   serviceItemIds: string[];
+  files: File[];
 };
 
 const createServiceLog = graphql(`
@@ -179,6 +195,9 @@ const createServiceLog = graphql(`
         archived
       }
       performedBy
+      expense {
+        id
+      }
     }
   }
 `);
@@ -190,10 +209,13 @@ const columns = [
   { key: "schedule", label: "Schedule" },
   { key: "notes", label: "Notes" },
   { key: "performedBy", label: "Performed by" },
+  { key: "documents", label: "Documents" },
 ];
 
 export default function Logs() {
   const router = useRouter();
+
+  const client = useApolloClient();
 
   const { data } = useQuery(getServiceLogs, {
     variables: { id: getQueryParam(router.query.id) as string },
@@ -214,12 +236,14 @@ export default function Logs() {
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
-  const { register, handleSubmit, control, watch, setValue } = useForm<Inputs>({
-    defaultValues: {
-      datePerformed: now(getLocalTimeZone()),
-      serviceItemIds: [],
-    },
-  });
+  const { register, handleSubmit, control, watch, setValue, reset } =
+    useForm<Inputs>({
+      defaultValues: {
+        datePerformed: now(getLocalTimeZone()),
+        serviceItemIds: [],
+        files: [],
+      },
+    });
 
   const [serviceItemIds, scheduleId] = watch(["serviceItemIds", "scheduleId"]);
 
@@ -229,7 +253,9 @@ export default function Logs() {
     [serviceSchedules, scheduleId]
   );
 
-  const [mutate] = useMutation(createServiceLog, {
+  const [handleFileUpload, { uploadProgress }] = useDocumentsUpload();
+
+  const [mutate, { loading }] = useMutation(createServiceLog, {
     update: (cache, res) => {
       if (!res.data?.createServiceLog || !data?.car) return;
 
@@ -250,32 +276,67 @@ export default function Logs() {
     },
   });
 
-  const onSubmit: SubmitHandler<Inputs> = ({
-    datePerformed,
-    odometerKm,
-    performedBy,
-    notes,
-    serviceItemIds,
-    scheduleId,
-  }) => {
-    mutate({
-      variables: {
-        input: {
-          carID: getQueryParam(router.query.id)!,
-          datePerformed: datePerformed.toDate().toISOString(),
-          odometerKm: getKilometers(odometerKm, distanceUnit),
-          performedBy,
-          notes,
-          itemIDs: serviceItemIds,
-          scheduleID: scheduleId || null,
+  const onSubmit: SubmitHandler<Inputs> = withNotification(
+    {},
+    ({
+      datePerformed,
+      odometerKm,
+      performedBy,
+      notes,
+      serviceItemIds,
+      scheduleId,
+      files,
+    }) =>
+      mutate({
+        variables: {
+          input: {
+            carID: getQueryParam(router.query.id)!,
+            datePerformed: datePerformed.toDate().toISOString(),
+            odometerKm: getKilometers(odometerKm, distanceUnit),
+            performedBy,
+            notes,
+            itemIDs: serviceItemIds,
+            scheduleID: scheduleId || null,
+          },
         },
-      },
-    }).then(({ data }) => {
-      if (!data) return;
+      })
+        .then(({ data }) => {
+          if (!data) return;
 
-      onClose();
-    });
-  };
+          reset();
+
+          const log = data.createServiceLog;
+          const { expense } = log;
+
+          return Promise.all(
+            files.map((f) =>
+              handleFileUpload(f, {
+                expenseID: expense?.id,
+                serviceLogID: log.id,
+              }).then(({ data }) => {
+                if (!data?.uploadDocument) return;
+
+                client.cache.modify<ServiceLog>({
+                  id: client.cache.identify(log),
+                  fields: {
+                    documents(existingDocRefs, { toReference, readField }) {
+                      return [
+                        ...(existingDocRefs ?? []).filter(
+                          (doc) =>
+                            readField({ from: doc, fieldName: "id" }) !==
+                            data!.uploadDocument.document.id
+                        ),
+                        toReference(data!.uploadDocument.document),
+                      ];
+                    },
+                  },
+                });
+              })
+            )
+          );
+        })
+        .then(onClose)
+  );
 
   return (
     <>
@@ -320,6 +381,11 @@ export default function Logs() {
                 <TableCell>{sl.schedule?.title}</TableCell>
                 <TableCell>{sl.notes}</TableCell>
                 <TableCell>{sl.performedBy}</TableCell>
+                <TableCell className="flex gap-2 flex-wrap">
+                  {sl.documents?.map((doc) => (
+                    <DocumentChip document={doc} key={doc.id} />
+                  ))}
+                </TableCell>
               </TableRow>
             )}
           </TableBody>
@@ -336,7 +402,7 @@ export default function Logs() {
               <ModalHeader>Create service log</ModalHeader>
               <ModalBody>
                 <form
-                  id="fuel-up"
+                  id="log"
                   className="flex flex-col gap-4"
                   onSubmit={handleSubmit(onSubmit)}
                 >
@@ -492,14 +558,59 @@ export default function Logs() {
                     variant="bordered"
                     description="Leave empty if done by yourself"
                   />
+                  <Controller
+                    control={control}
+                    name="files"
+                    render={({ field: { value, onChange } }) => (
+                      <Dropzone
+                        value={value}
+                        onChange={onChange}
+                        multiple
+                        label="Drag & drop files or click to browse"
+                        icon={<FileUp className="size-4 opacity-60" />}
+                      />
+                    )}
+                  />
+                  {uploadProgress.length > 0 && (
+                    <div className="space-y-2">
+                      {uploadProgress.map(({ file, id, progress }) => (
+                        <div
+                          key={id}
+                          className="bg-background flex flex-col gap-2"
+                        >
+                          <Progress value={progress} size="sm" />
+                          <div className="flex items-center justify-between gap-2 rounded-lg border p-2 pe-3">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              <div className="flex aspect-square size-10 shrink-0 items-center justify-center rounded border">
+                                <FileIcon file={file} />
+                              </div>
+                              <div className="flex min-w-0 flex-col gap-0.5">
+                                <p className="truncate text-[13px] font-medium">
+                                  {file.name}
+                                </p>
+                                <p className="text-muted-foreground text-xs">
+                                  {formatBytes(file.size)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </form>
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>
                   Close
                 </Button>
-                <Button color="primary" type="submit" form="fuel-up">
-                  Action
+                <Button
+                  color="primary"
+                  type="submit"
+                  form="log"
+                  isLoading={loading || uploadProgress.length > 0}
+                >
+                  Save
                 </Button>
               </ModalFooter>
             </>
