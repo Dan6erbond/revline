@@ -60,6 +60,14 @@ func (r *mutationResolver) CreateCheckoutSession(ctx context.Context, input mode
 			Price:    price,
 			Quantity: stripe.Int64(1),
 		}},
+		SubscriptionData: &stripe.CheckoutSessionSubscriptionDataParams{
+			TrialSettings: &stripe.CheckoutSessionSubscriptionDataTrialSettingsParams{
+				EndBehavior: &stripe.CheckoutSessionSubscriptionDataTrialSettingsEndBehaviorParams{
+					MissingPaymentMethod: stripe.String("cancel"),
+				},
+			},
+			TrialPeriodDays: stripe.Int64(7),
+		},
 		ClientReferenceID: stripe.String(checkoutSession.ID.String()),
 	}
 
