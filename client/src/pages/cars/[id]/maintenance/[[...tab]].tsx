@@ -16,12 +16,6 @@ const tabs: {
   component?: ComponentType;
 }[] = [
   {
-    id: "fuelups",
-    label: "Fuel-ups",
-    icon: <Fuel />,
-    component: FuelUps,
-  },
-  {
     id: "service",
     label: "Service",
     icon: <NotebookPen />,
