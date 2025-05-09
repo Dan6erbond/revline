@@ -142,6 +142,7 @@ export default function Car() {
   const chartData = Object.entries(expenseData).map(([type, amount]) => ({
     name: type.charAt(0).toUpperCase() + type.slice(1),
     value: amount,
+    type: type as ExpenseType,
   }));
 
   const currencyCode = data?.me?.profile?.currencyCode ?? "USD";
@@ -269,7 +270,7 @@ export default function Car() {
                     {chartData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={COLORS[entry.name.toLowerCase()] || COLORS.other}
+                        fill={COLORS[entry.type] || COLORS.other}
                       />
                     ))}
                   </Pie>
