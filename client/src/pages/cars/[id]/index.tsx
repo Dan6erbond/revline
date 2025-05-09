@@ -104,10 +104,22 @@ const columns = [
   { key: "documents", label: "Documents" },
 ];
 
-const COLORS: Record<string, string> = {
-  fuel: "hsl(var(--heroui-primary))",
-  service: "hsl(var(--heroui-secondary))",
-  other: "hsl(var(--heroui-muted))",
+const COLORS: Record<ExpenseType, string> = {
+  [ExpenseType.Accessories]: "#F31260",
+  [ExpenseType.Cleaning]: "#06B7DB",
+  [ExpenseType.Fuel]: "#12A150",
+  [ExpenseType.Inspection]: "#FBDBA7",
+  [ExpenseType.Insurance]: "#C4841D",
+  [ExpenseType.Loan]: "#f5a524",
+  [ExpenseType.Maintenance]: "#f5a524",
+  [ExpenseType.Other]: "#52525b",
+  [ExpenseType.Parking]: "#52525B",
+  [ExpenseType.Registration]: "#06B7DB",
+  [ExpenseType.Repair]: "#CC3EA4",
+  [ExpenseType.Service]: "#6020a0",
+  [ExpenseType.Tax]: "#C4841D",
+  [ExpenseType.Toll]: "#52525B",
+  [ExpenseType.Upgrade]: "#6020a0",
 };
 
 export default function Car() {
