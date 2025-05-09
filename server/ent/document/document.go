@@ -31,6 +31,10 @@ const (
 	EdgeFuelUp = "fuel_up"
 	// EdgeServiceLog holds the string denoting the service_log edge name in mutations.
 	EdgeServiceLog = "service_log"
+	// EdgeDragSession holds the string denoting the drag_session edge name in mutations.
+	EdgeDragSession = "drag_session"
+	// EdgeDynoSession holds the string denoting the dyno_session edge name in mutations.
+	EdgeDynoSession = "dyno_session"
 	// Table holds the table name of the document in the database.
 	Table = "documents"
 	// CarTable is the table that holds the car relation/edge.
@@ -61,6 +65,20 @@ const (
 	ServiceLogInverseTable = "service_logs"
 	// ServiceLogColumn is the table column denoting the service_log relation/edge.
 	ServiceLogColumn = "service_log_documents"
+	// DragSessionTable is the table that holds the drag_session relation/edge.
+	DragSessionTable = "documents"
+	// DragSessionInverseTable is the table name for the DragSession entity.
+	// It exists in this package in order to avoid circular dependency with the "dragsession" package.
+	DragSessionInverseTable = "drag_sessions"
+	// DragSessionColumn is the table column denoting the drag_session relation/edge.
+	DragSessionColumn = "drag_session_documents"
+	// DynoSessionTable is the table that holds the dyno_session relation/edge.
+	DynoSessionTable = "documents"
+	// DynoSessionInverseTable is the table name for the DynoSession entity.
+	// It exists in this package in order to avoid circular dependency with the "dynosession" package.
+	DynoSessionInverseTable = "dyno_sessions"
+	// DynoSessionColumn is the table column denoting the dyno_session relation/edge.
+	DynoSessionColumn = "dyno_session_documents"
 )
 
 // Columns holds all SQL columns for document fields.
@@ -76,6 +94,8 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"car_documents",
+	"drag_session_documents",
+	"dyno_session_documents",
 	"expense_documents",
 	"fuel_up_documents",
 	"service_log_documents",
@@ -159,6 +179,20 @@ func ByServiceLogField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newServiceLogStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByDragSessionField orders the results by drag_session field.
+func ByDragSessionField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDragSessionStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByDynoSessionField orders the results by dyno_session field.
+func ByDynoSessionField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDynoSessionStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newCarStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -185,5 +219,19 @@ func newServiceLogStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ServiceLogInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, ServiceLogTable, ServiceLogColumn),
+	)
+}
+func newDragSessionStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DragSessionInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, DragSessionTable, DragSessionColumn),
+	)
+}
+func newDynoSessionStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DynoSessionInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, DynoSessionTable, DynoSessionColumn),
 	)
 }

@@ -98,6 +98,8 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "tags", Type: field.TypeJSON},
 		{Name: "car_documents", Type: field.TypeUUID, Nullable: true},
+		{Name: "drag_session_documents", Type: field.TypeUUID, Nullable: true},
+		{Name: "dyno_session_documents", Type: field.TypeUUID, Nullable: true},
 		{Name: "expense_documents", Type: field.TypeUUID, Nullable: true},
 		{Name: "fuel_up_documents", Type: field.TypeUUID, Nullable: true},
 		{Name: "service_log_documents", Type: field.TypeUUID, Nullable: true},
@@ -115,20 +117,32 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "documents_expenses_documents",
+				Symbol:     "documents_drag_sessions_documents",
 				Columns:    []*schema.Column{DocumentsColumns[6]},
+				RefColumns: []*schema.Column{DragSessionsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "documents_dyno_sessions_documents",
+				Columns:    []*schema.Column{DocumentsColumns[7]},
+				RefColumns: []*schema.Column{DynoSessionsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "documents_expenses_documents",
+				Columns:    []*schema.Column{DocumentsColumns[8]},
 				RefColumns: []*schema.Column{ExpensesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "documents_fuel_ups_documents",
-				Columns:    []*schema.Column{DocumentsColumns[7]},
+				Columns:    []*schema.Column{DocumentsColumns[9]},
 				RefColumns: []*schema.Column{FuelUpsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "documents_service_logs_documents",
-				Columns:    []*schema.Column{DocumentsColumns[8]},
+				Columns:    []*schema.Column{DocumentsColumns[10]},
 				RefColumns: []*schema.Column{ServiceLogsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -752,9 +766,11 @@ func init() {
 	CarsTable.ForeignKeys[1].RefTable = UsersTable
 	CheckoutSessionsTable.ForeignKeys[0].RefTable = UsersTable
 	DocumentsTable.ForeignKeys[0].RefTable = CarsTable
-	DocumentsTable.ForeignKeys[1].RefTable = ExpensesTable
-	DocumentsTable.ForeignKeys[2].RefTable = FuelUpsTable
-	DocumentsTable.ForeignKeys[3].RefTable = ServiceLogsTable
+	DocumentsTable.ForeignKeys[1].RefTable = DragSessionsTable
+	DocumentsTable.ForeignKeys[2].RefTable = DynoSessionsTable
+	DocumentsTable.ForeignKeys[3].RefTable = ExpensesTable
+	DocumentsTable.ForeignKeys[4].RefTable = FuelUpsTable
+	DocumentsTable.ForeignKeys[5].RefTable = ServiceLogsTable
 	DragResultsTable.ForeignKeys[0].RefTable = DragSessionsTable
 	DragSessionsTable.ForeignKeys[0].RefTable = CarsTable
 	DynoResultsTable.ForeignKeys[0].RefTable = DynoSessionsTable

@@ -726,6 +726,30 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"ServiceLog",
 	)
 	graph.MustAddE(
+		"drag_session",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.DragSessionTable,
+			Columns: []string{document.DragSessionColumn},
+			Bidi:    false,
+		},
+		"Document",
+		"DragSession",
+	)
+	graph.MustAddE(
+		"dyno_session",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.DynoSessionTable,
+			Columns: []string{document.DynoSessionColumn},
+			Bidi:    false,
+		},
+		"Document",
+		"DynoSession",
+	)
+	graph.MustAddE(
 		"session",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -762,6 +786,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"DragResult",
 	)
 	graph.MustAddE(
+		"documents",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dragsession.DocumentsTable,
+			Columns: []string{dragsession.DocumentsColumn},
+			Bidi:    false,
+		},
+		"DragSession",
+		"Document",
+	)
+	graph.MustAddE(
 		"session",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -796,6 +832,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"DynoSession",
 		"DynoResult",
+	)
+	graph.MustAddE(
+		"documents",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dynosession.DocumentsTable,
+			Columns: []string{dynosession.DocumentsColumn},
+			Bidi:    false,
+		},
+		"DynoSession",
+		"Document",
 	)
 	graph.MustAddE(
 		"car",
@@ -1878,6 +1926,34 @@ func (f *DocumentFilter) WhereHasServiceLogWith(preds ...predicate.ServiceLog) {
 	})))
 }
 
+// WhereHasDragSession applies a predicate to check if query has an edge drag_session.
+func (f *DocumentFilter) WhereHasDragSession() {
+	f.Where(entql.HasEdge("drag_session"))
+}
+
+// WhereHasDragSessionWith applies a predicate to check if query has an edge drag_session with a given conditions (other predicates).
+func (f *DocumentFilter) WhereHasDragSessionWith(preds ...predicate.DragSession) {
+	f.Where(entql.HasEdgeWith("drag_session", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasDynoSession applies a predicate to check if query has an edge dyno_session.
+func (f *DocumentFilter) WhereHasDynoSession() {
+	f.Where(entql.HasEdge("dyno_session"))
+}
+
+// WhereHasDynoSessionWith applies a predicate to check if query has an edge dyno_session with a given conditions (other predicates).
+func (f *DocumentFilter) WhereHasDynoSessionWith(preds ...predicate.DynoSession) {
+	f.Where(entql.HasEdgeWith("dyno_session", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (drq *DragResultQuery) addPredicate(pred func(s *sql.Selector)) {
 	drq.predicates = append(drq.predicates, pred)
@@ -2045,6 +2121,20 @@ func (f *DragSessionFilter) WhereHasResultsWith(preds ...predicate.DragResult) {
 	})))
 }
 
+// WhereHasDocuments applies a predicate to check if query has an edge documents.
+func (f *DragSessionFilter) WhereHasDocuments() {
+	f.Where(entql.HasEdge("documents"))
+}
+
+// WhereHasDocumentsWith applies a predicate to check if query has an edge documents with a given conditions (other predicates).
+func (f *DragSessionFilter) WhereHasDocumentsWith(preds ...predicate.Document) {
+	f.Where(entql.HasEdgeWith("documents", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (drq *DynoResultQuery) addPredicate(pred func(s *sql.Selector)) {
 	drq.predicates = append(drq.predicates, pred)
@@ -2206,6 +2296,20 @@ func (f *DynoSessionFilter) WhereHasResults() {
 // WhereHasResultsWith applies a predicate to check if query has an edge results with a given conditions (other predicates).
 func (f *DynoSessionFilter) WhereHasResultsWith(preds ...predicate.DynoResult) {
 	f.Where(entql.HasEdgeWith("results", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasDocuments applies a predicate to check if query has an edge documents.
+func (f *DynoSessionFilter) WhereHasDocuments() {
+	f.Where(entql.HasEdge("documents"))
+}
+
+// WhereHasDocumentsWith applies a predicate to check if query has an edge documents with a given conditions (other predicates).
+func (f *DynoSessionFilter) WhereHasDocumentsWith(preds ...predicate.Document) {
+	f.Where(entql.HasEdgeWith("documents", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

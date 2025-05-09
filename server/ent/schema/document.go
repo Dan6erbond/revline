@@ -41,12 +41,12 @@ func (Document) Edges() []ent.Edge {
 		edge.From("service_log", ServiceLog.Type).
 			Ref("documents").
 			Unique(),
-		/* edge.From("drag_session", DragSession.Type).
+		edge.From("drag_session", DragSession.Type).
 			Ref("documents").
 			Unique(),
 		edge.From("dyno_session", DynoSession.Type).
 			Ref("documents").
-			Unique(), */
+			Unique(),
 	}
 }
 

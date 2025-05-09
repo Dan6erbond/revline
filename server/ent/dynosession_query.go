@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -22,16 +23,18 @@ import (
 // DynoSessionQuery is the builder for querying DynoSession entities.
 type DynoSessionQuery struct {
 	config
-	ctx              *QueryContext
-	order            []dynosession.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.DynoSession
-	withCar          *CarQuery
-	withResults      *DynoResultQuery
-	withFKs          bool
-	modifiers        []func(*sql.Selector)
-	loadTotal        []func(context.Context, []*DynoSession) error
-	withNamedResults map[string]*DynoResultQuery
+	ctx                *QueryContext
+	order              []dynosession.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.DynoSession
+	withCar            *CarQuery
+	withResults        *DynoResultQuery
+	withDocuments      *DocumentQuery
+	withFKs            bool
+	modifiers          []func(*sql.Selector)
+	loadTotal          []func(context.Context, []*DynoSession) error
+	withNamedResults   map[string]*DynoResultQuery
+	withNamedDocuments map[string]*DocumentQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -105,6 +108,28 @@ func (dsq *DynoSessionQuery) QueryResults() *DynoResultQuery {
 			sqlgraph.From(dynosession.Table, dynosession.FieldID, selector),
 			sqlgraph.To(dynoresult.Table, dynoresult.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, dynosession.ResultsTable, dynosession.ResultsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dsq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDocuments chains the current query on the "documents" edge.
+func (dsq *DynoSessionQuery) QueryDocuments() *DocumentQuery {
+	query := (&DocumentClient{config: dsq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dsq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dsq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dynosession.Table, dynosession.FieldID, selector),
+			sqlgraph.To(document.Table, document.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dynosession.DocumentsTable, dynosession.DocumentsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dsq.driver.Dialect(), step)
 		return fromU, nil
@@ -299,13 +324,14 @@ func (dsq *DynoSessionQuery) Clone() *DynoSessionQuery {
 		return nil
 	}
 	return &DynoSessionQuery{
-		config:      dsq.config,
-		ctx:         dsq.ctx.Clone(),
-		order:       append([]dynosession.OrderOption{}, dsq.order...),
-		inters:      append([]Interceptor{}, dsq.inters...),
-		predicates:  append([]predicate.DynoSession{}, dsq.predicates...),
-		withCar:     dsq.withCar.Clone(),
-		withResults: dsq.withResults.Clone(),
+		config:        dsq.config,
+		ctx:           dsq.ctx.Clone(),
+		order:         append([]dynosession.OrderOption{}, dsq.order...),
+		inters:        append([]Interceptor{}, dsq.inters...),
+		predicates:    append([]predicate.DynoSession{}, dsq.predicates...),
+		withCar:       dsq.withCar.Clone(),
+		withResults:   dsq.withResults.Clone(),
+		withDocuments: dsq.withDocuments.Clone(),
 		// clone intermediate query.
 		sql:  dsq.sql.Clone(),
 		path: dsq.path,
@@ -331,6 +357,17 @@ func (dsq *DynoSessionQuery) WithResults(opts ...func(*DynoResultQuery)) *DynoSe
 		opt(query)
 	}
 	dsq.withResults = query
+	return dsq
+}
+
+// WithDocuments tells the query-builder to eager-load the nodes that are connected to
+// the "documents" edge. The optional arguments are used to configure the query builder of the edge.
+func (dsq *DynoSessionQuery) WithDocuments(opts ...func(*DocumentQuery)) *DynoSessionQuery {
+	query := (&DocumentClient{config: dsq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dsq.withDocuments = query
 	return dsq
 }
 
@@ -413,9 +450,10 @@ func (dsq *DynoSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		nodes       = []*DynoSession{}
 		withFKs     = dsq.withFKs
 		_spec       = dsq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			dsq.withCar != nil,
 			dsq.withResults != nil,
+			dsq.withDocuments != nil,
 		}
 	)
 	if dsq.withCar != nil {
@@ -458,10 +496,24 @@ func (dsq *DynoSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 			return nil, err
 		}
 	}
+	if query := dsq.withDocuments; query != nil {
+		if err := dsq.loadDocuments(ctx, query, nodes,
+			func(n *DynoSession) { n.Edges.Documents = []*Document{} },
+			func(n *DynoSession, e *Document) { n.Edges.Documents = append(n.Edges.Documents, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range dsq.withNamedResults {
 		if err := dsq.loadResults(ctx, query, nodes,
 			func(n *DynoSession) { n.appendNamedResults(name) },
 			func(n *DynoSession, e *DynoResult) { n.appendNamedResults(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range dsq.withNamedDocuments {
+		if err := dsq.loadDocuments(ctx, query, nodes,
+			func(n *DynoSession) { n.appendNamedDocuments(name) },
+			func(n *DynoSession, e *Document) { n.appendNamedDocuments(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -531,6 +583,37 @@ func (dsq *DynoSessionQuery) loadResults(ctx context.Context, query *DynoResultQ
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "dyno_session_results" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (dsq *DynoSessionQuery) loadDocuments(ctx context.Context, query *DocumentQuery, nodes []*DynoSession, init func(*DynoSession), assign func(*DynoSession, *Document)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*DynoSession)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(dynosession.DocumentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.dyno_session_documents
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "dyno_session_documents" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "dyno_session_documents" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -632,6 +715,20 @@ func (dsq *DynoSessionQuery) WithNamedResults(name string, opts ...func(*DynoRes
 		dsq.withNamedResults = make(map[string]*DynoResultQuery)
 	}
 	dsq.withNamedResults[name] = query
+	return dsq
+}
+
+// WithNamedDocuments tells the query-builder to eager-load the nodes that are connected to the "documents"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (dsq *DynoSessionQuery) WithNamedDocuments(name string, opts ...func(*DocumentQuery)) *DynoSessionQuery {
+	query := (&DocumentClient{config: dsq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if dsq.withNamedDocuments == nil {
+		dsq.withNamedDocuments = make(map[string]*DocumentQuery)
+	}
+	dsq.withNamedDocuments[name] = query
 	return dsq
 }
 

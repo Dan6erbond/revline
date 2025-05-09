@@ -3538,26 +3538,30 @@ func (m *CheckoutSessionMutation) ResetEdge(name string) error {
 // DocumentMutation represents an operation that mutates the Document nodes in the graph.
 type DocumentMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	create_time        *time.Time
-	update_time        *time.Time
-	name               *string
-	tags               *[]string
-	appendtags         []string
-	clearedFields      map[string]struct{}
-	car                *uuid.UUID
-	clearedcar         bool
-	expense            *uuid.UUID
-	clearedexpense     bool
-	fuel_up            *uuid.UUID
-	clearedfuel_up     bool
-	service_log        *uuid.UUID
-	clearedservice_log bool
-	done               bool
-	oldValue           func(context.Context) (*Document, error)
-	predicates         []predicate.Document
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	create_time         *time.Time
+	update_time         *time.Time
+	name                *string
+	tags                *[]string
+	appendtags          []string
+	clearedFields       map[string]struct{}
+	car                 *uuid.UUID
+	clearedcar          bool
+	expense             *uuid.UUID
+	clearedexpense      bool
+	fuel_up             *uuid.UUID
+	clearedfuel_up      bool
+	service_log         *uuid.UUID
+	clearedservice_log  bool
+	drag_session        *uuid.UUID
+	cleareddrag_session bool
+	dyno_session        *uuid.UUID
+	cleareddyno_session bool
+	done                bool
+	oldValue            func(context.Context) (*Document, error)
+	predicates          []predicate.Document
 }
 
 var _ ent.Mutation = (*DocumentMutation)(nil)
@@ -3979,6 +3983,84 @@ func (m *DocumentMutation) ResetServiceLog() {
 	m.clearedservice_log = false
 }
 
+// SetDragSessionID sets the "drag_session" edge to the DragSession entity by id.
+func (m *DocumentMutation) SetDragSessionID(id uuid.UUID) {
+	m.drag_session = &id
+}
+
+// ClearDragSession clears the "drag_session" edge to the DragSession entity.
+func (m *DocumentMutation) ClearDragSession() {
+	m.cleareddrag_session = true
+}
+
+// DragSessionCleared reports if the "drag_session" edge to the DragSession entity was cleared.
+func (m *DocumentMutation) DragSessionCleared() bool {
+	return m.cleareddrag_session
+}
+
+// DragSessionID returns the "drag_session" edge ID in the mutation.
+func (m *DocumentMutation) DragSessionID() (id uuid.UUID, exists bool) {
+	if m.drag_session != nil {
+		return *m.drag_session, true
+	}
+	return
+}
+
+// DragSessionIDs returns the "drag_session" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DragSessionID instead. It exists only for internal usage by the builders.
+func (m *DocumentMutation) DragSessionIDs() (ids []uuid.UUID) {
+	if id := m.drag_session; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDragSession resets all changes to the "drag_session" edge.
+func (m *DocumentMutation) ResetDragSession() {
+	m.drag_session = nil
+	m.cleareddrag_session = false
+}
+
+// SetDynoSessionID sets the "dyno_session" edge to the DynoSession entity by id.
+func (m *DocumentMutation) SetDynoSessionID(id uuid.UUID) {
+	m.dyno_session = &id
+}
+
+// ClearDynoSession clears the "dyno_session" edge to the DynoSession entity.
+func (m *DocumentMutation) ClearDynoSession() {
+	m.cleareddyno_session = true
+}
+
+// DynoSessionCleared reports if the "dyno_session" edge to the DynoSession entity was cleared.
+func (m *DocumentMutation) DynoSessionCleared() bool {
+	return m.cleareddyno_session
+}
+
+// DynoSessionID returns the "dyno_session" edge ID in the mutation.
+func (m *DocumentMutation) DynoSessionID() (id uuid.UUID, exists bool) {
+	if m.dyno_session != nil {
+		return *m.dyno_session, true
+	}
+	return
+}
+
+// DynoSessionIDs returns the "dyno_session" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DynoSessionID instead. It exists only for internal usage by the builders.
+func (m *DocumentMutation) DynoSessionIDs() (ids []uuid.UUID) {
+	if id := m.dyno_session; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDynoSession resets all changes to the "dyno_session" edge.
+func (m *DocumentMutation) ResetDynoSession() {
+	m.dyno_session = nil
+	m.cleareddyno_session = false
+}
+
 // Where appends a list predicates to the DocumentMutation builder.
 func (m *DocumentMutation) Where(ps ...predicate.Document) {
 	m.predicates = append(m.predicates, ps...)
@@ -4163,7 +4245,7 @@ func (m *DocumentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DocumentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.car != nil {
 		edges = append(edges, document.EdgeCar)
 	}
@@ -4175,6 +4257,12 @@ func (m *DocumentMutation) AddedEdges() []string {
 	}
 	if m.service_log != nil {
 		edges = append(edges, document.EdgeServiceLog)
+	}
+	if m.drag_session != nil {
+		edges = append(edges, document.EdgeDragSession)
+	}
+	if m.dyno_session != nil {
+		edges = append(edges, document.EdgeDynoSession)
 	}
 	return edges
 }
@@ -4199,13 +4287,21 @@ func (m *DocumentMutation) AddedIDs(name string) []ent.Value {
 		if id := m.service_log; id != nil {
 			return []ent.Value{*id}
 		}
+	case document.EdgeDragSession:
+		if id := m.drag_session; id != nil {
+			return []ent.Value{*id}
+		}
+	case document.EdgeDynoSession:
+		if id := m.dyno_session; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DocumentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	return edges
 }
 
@@ -4217,7 +4313,7 @@ func (m *DocumentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DocumentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.clearedcar {
 		edges = append(edges, document.EdgeCar)
 	}
@@ -4229,6 +4325,12 @@ func (m *DocumentMutation) ClearedEdges() []string {
 	}
 	if m.clearedservice_log {
 		edges = append(edges, document.EdgeServiceLog)
+	}
+	if m.cleareddrag_session {
+		edges = append(edges, document.EdgeDragSession)
+	}
+	if m.cleareddyno_session {
+		edges = append(edges, document.EdgeDynoSession)
 	}
 	return edges
 }
@@ -4245,6 +4347,10 @@ func (m *DocumentMutation) EdgeCleared(name string) bool {
 		return m.clearedfuel_up
 	case document.EdgeServiceLog:
 		return m.clearedservice_log
+	case document.EdgeDragSession:
+		return m.cleareddrag_session
+	case document.EdgeDynoSession:
+		return m.cleareddyno_session
 	}
 	return false
 }
@@ -4265,6 +4371,12 @@ func (m *DocumentMutation) ClearEdge(name string) error {
 	case document.EdgeServiceLog:
 		m.ClearServiceLog()
 		return nil
+	case document.EdgeDragSession:
+		m.ClearDragSession()
+		return nil
+	case document.EdgeDynoSession:
+		m.ClearDynoSession()
+		return nil
 	}
 	return fmt.Errorf("unknown Document unique edge %s", name)
 }
@@ -4284,6 +4396,12 @@ func (m *DocumentMutation) ResetEdge(name string) error {
 		return nil
 	case document.EdgeServiceLog:
 		m.ResetServiceLog()
+		return nil
+	case document.EdgeDragSession:
+		m.ResetDragSession()
+		return nil
+	case document.EdgeDynoSession:
+		m.ResetDynoSession()
 		return nil
 	}
 	return fmt.Errorf("unknown Document edge %s", name)
@@ -4976,22 +5094,25 @@ func (m *DragResultMutation) ResetEdge(name string) error {
 // DragSessionMutation represents an operation that mutates the DragSession nodes in the graph.
 type DragSessionMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *uuid.UUID
-	create_time    *time.Time
-	update_time    *time.Time
-	title          *string
-	notes          *string
-	clearedFields  map[string]struct{}
-	car            *uuid.UUID
-	clearedcar     bool
-	results        map[uuid.UUID]struct{}
-	removedresults map[uuid.UUID]struct{}
-	clearedresults bool
-	done           bool
-	oldValue       func(context.Context) (*DragSession, error)
-	predicates     []predicate.DragSession
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	create_time      *time.Time
+	update_time      *time.Time
+	title            *string
+	notes            *string
+	clearedFields    map[string]struct{}
+	car              *uuid.UUID
+	clearedcar       bool
+	results          map[uuid.UUID]struct{}
+	removedresults   map[uuid.UUID]struct{}
+	clearedresults   bool
+	documents        map[uuid.UUID]struct{}
+	removeddocuments map[uuid.UUID]struct{}
+	cleareddocuments bool
+	done             bool
+	oldValue         func(context.Context) (*DragSession, error)
+	predicates       []predicate.DragSession
 }
 
 var _ ent.Mutation = (*DragSessionMutation)(nil)
@@ -5348,6 +5469,60 @@ func (m *DragSessionMutation) ResetResults() {
 	m.removedresults = nil
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by ids.
+func (m *DragSessionMutation) AddDocumentIDs(ids ...uuid.UUID) {
+	if m.documents == nil {
+		m.documents = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.documents[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDocuments clears the "documents" edge to the Document entity.
+func (m *DragSessionMutation) ClearDocuments() {
+	m.cleareddocuments = true
+}
+
+// DocumentsCleared reports if the "documents" edge to the Document entity was cleared.
+func (m *DragSessionMutation) DocumentsCleared() bool {
+	return m.cleareddocuments
+}
+
+// RemoveDocumentIDs removes the "documents" edge to the Document entity by IDs.
+func (m *DragSessionMutation) RemoveDocumentIDs(ids ...uuid.UUID) {
+	if m.removeddocuments == nil {
+		m.removeddocuments = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.documents, ids[i])
+		m.removeddocuments[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDocuments returns the removed IDs of the "documents" edge to the Document entity.
+func (m *DragSessionMutation) RemovedDocumentsIDs() (ids []uuid.UUID) {
+	for id := range m.removeddocuments {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DocumentsIDs returns the "documents" edge IDs in the mutation.
+func (m *DragSessionMutation) DocumentsIDs() (ids []uuid.UUID) {
+	for id := range m.documents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDocuments resets all changes to the "documents" edge.
+func (m *DragSessionMutation) ResetDocuments() {
+	m.documents = nil
+	m.cleareddocuments = false
+	m.removeddocuments = nil
+}
+
 // Where appends a list predicates to the DragSessionMutation builder.
 func (m *DragSessionMutation) Where(ps ...predicate.DragSession) {
 	m.predicates = append(m.predicates, ps...)
@@ -5541,12 +5716,15 @@ func (m *DragSessionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DragSessionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.car != nil {
 		edges = append(edges, dragsession.EdgeCar)
 	}
 	if m.results != nil {
 		edges = append(edges, dragsession.EdgeResults)
+	}
+	if m.documents != nil {
+		edges = append(edges, dragsession.EdgeDocuments)
 	}
 	return edges
 }
@@ -5565,15 +5743,24 @@ func (m *DragSessionMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case dragsession.EdgeDocuments:
+		ids := make([]ent.Value, 0, len(m.documents))
+		for id := range m.documents {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DragSessionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedresults != nil {
 		edges = append(edges, dragsession.EdgeResults)
+	}
+	if m.removeddocuments != nil {
+		edges = append(edges, dragsession.EdgeDocuments)
 	}
 	return edges
 }
@@ -5588,18 +5775,27 @@ func (m *DragSessionMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case dragsession.EdgeDocuments:
+		ids := make([]ent.Value, 0, len(m.removeddocuments))
+		for id := range m.removeddocuments {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DragSessionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedcar {
 		edges = append(edges, dragsession.EdgeCar)
 	}
 	if m.clearedresults {
 		edges = append(edges, dragsession.EdgeResults)
+	}
+	if m.cleareddocuments {
+		edges = append(edges, dragsession.EdgeDocuments)
 	}
 	return edges
 }
@@ -5612,6 +5808,8 @@ func (m *DragSessionMutation) EdgeCleared(name string) bool {
 		return m.clearedcar
 	case dragsession.EdgeResults:
 		return m.clearedresults
+	case dragsession.EdgeDocuments:
+		return m.cleareddocuments
 	}
 	return false
 }
@@ -5636,6 +5834,9 @@ func (m *DragSessionMutation) ResetEdge(name string) error {
 		return nil
 	case dragsession.EdgeResults:
 		m.ResetResults()
+		return nil
+	case dragsession.EdgeDocuments:
+		m.ResetDocuments()
 		return nil
 	}
 	return fmt.Errorf("unknown DragSession edge %s", name)
@@ -6404,22 +6605,25 @@ func (m *DynoResultMutation) ResetEdge(name string) error {
 // DynoSessionMutation represents an operation that mutates the DynoSession nodes in the graph.
 type DynoSessionMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *uuid.UUID
-	create_time    *time.Time
-	update_time    *time.Time
-	title          *string
-	notes          *string
-	clearedFields  map[string]struct{}
-	car            *uuid.UUID
-	clearedcar     bool
-	results        map[uuid.UUID]struct{}
-	removedresults map[uuid.UUID]struct{}
-	clearedresults bool
-	done           bool
-	oldValue       func(context.Context) (*DynoSession, error)
-	predicates     []predicate.DynoSession
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	create_time      *time.Time
+	update_time      *time.Time
+	title            *string
+	notes            *string
+	clearedFields    map[string]struct{}
+	car              *uuid.UUID
+	clearedcar       bool
+	results          map[uuid.UUID]struct{}
+	removedresults   map[uuid.UUID]struct{}
+	clearedresults   bool
+	documents        map[uuid.UUID]struct{}
+	removeddocuments map[uuid.UUID]struct{}
+	cleareddocuments bool
+	done             bool
+	oldValue         func(context.Context) (*DynoSession, error)
+	predicates       []predicate.DynoSession
 }
 
 var _ ent.Mutation = (*DynoSessionMutation)(nil)
@@ -6776,6 +6980,60 @@ func (m *DynoSessionMutation) ResetResults() {
 	m.removedresults = nil
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by ids.
+func (m *DynoSessionMutation) AddDocumentIDs(ids ...uuid.UUID) {
+	if m.documents == nil {
+		m.documents = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.documents[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDocuments clears the "documents" edge to the Document entity.
+func (m *DynoSessionMutation) ClearDocuments() {
+	m.cleareddocuments = true
+}
+
+// DocumentsCleared reports if the "documents" edge to the Document entity was cleared.
+func (m *DynoSessionMutation) DocumentsCleared() bool {
+	return m.cleareddocuments
+}
+
+// RemoveDocumentIDs removes the "documents" edge to the Document entity by IDs.
+func (m *DynoSessionMutation) RemoveDocumentIDs(ids ...uuid.UUID) {
+	if m.removeddocuments == nil {
+		m.removeddocuments = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.documents, ids[i])
+		m.removeddocuments[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDocuments returns the removed IDs of the "documents" edge to the Document entity.
+func (m *DynoSessionMutation) RemovedDocumentsIDs() (ids []uuid.UUID) {
+	for id := range m.removeddocuments {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DocumentsIDs returns the "documents" edge IDs in the mutation.
+func (m *DynoSessionMutation) DocumentsIDs() (ids []uuid.UUID) {
+	for id := range m.documents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDocuments resets all changes to the "documents" edge.
+func (m *DynoSessionMutation) ResetDocuments() {
+	m.documents = nil
+	m.cleareddocuments = false
+	m.removeddocuments = nil
+}
+
 // Where appends a list predicates to the DynoSessionMutation builder.
 func (m *DynoSessionMutation) Where(ps ...predicate.DynoSession) {
 	m.predicates = append(m.predicates, ps...)
@@ -6969,12 +7227,15 @@ func (m *DynoSessionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DynoSessionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.car != nil {
 		edges = append(edges, dynosession.EdgeCar)
 	}
 	if m.results != nil {
 		edges = append(edges, dynosession.EdgeResults)
+	}
+	if m.documents != nil {
+		edges = append(edges, dynosession.EdgeDocuments)
 	}
 	return edges
 }
@@ -6993,15 +7254,24 @@ func (m *DynoSessionMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case dynosession.EdgeDocuments:
+		ids := make([]ent.Value, 0, len(m.documents))
+		for id := range m.documents {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DynoSessionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedresults != nil {
 		edges = append(edges, dynosession.EdgeResults)
+	}
+	if m.removeddocuments != nil {
+		edges = append(edges, dynosession.EdgeDocuments)
 	}
 	return edges
 }
@@ -7016,18 +7286,27 @@ func (m *DynoSessionMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case dynosession.EdgeDocuments:
+		ids := make([]ent.Value, 0, len(m.removeddocuments))
+		for id := range m.removeddocuments {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DynoSessionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedcar {
 		edges = append(edges, dynosession.EdgeCar)
 	}
 	if m.clearedresults {
 		edges = append(edges, dynosession.EdgeResults)
+	}
+	if m.cleareddocuments {
+		edges = append(edges, dynosession.EdgeDocuments)
 	}
 	return edges
 }
@@ -7040,6 +7319,8 @@ func (m *DynoSessionMutation) EdgeCleared(name string) bool {
 		return m.clearedcar
 	case dynosession.EdgeResults:
 		return m.clearedresults
+	case dynosession.EdgeDocuments:
+		return m.cleareddocuments
 	}
 	return false
 }
@@ -7064,6 +7345,9 @@ func (m *DynoSessionMutation) ResetEdge(name string) error {
 		return nil
 	case dynosession.EdgeResults:
 		m.ResetResults()
+		return nil
+	case dynosession.EdgeDocuments:
+		m.ResetDocuments()
 		return nil
 	}
 	return fmt.Errorf("unknown DynoSession edge %s", name)

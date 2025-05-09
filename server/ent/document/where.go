@@ -308,6 +308,52 @@ func HasServiceLogWith(preds ...predicate.ServiceLog) predicate.Document {
 	})
 }
 
+// HasDragSession applies the HasEdge predicate on the "drag_session" edge.
+func HasDragSession() predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, DragSessionTable, DragSessionColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDragSessionWith applies the HasEdge predicate on the "drag_session" edge with a given conditions (other predicates).
+func HasDragSessionWith(preds ...predicate.DragSession) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		step := newDragSessionStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDynoSession applies the HasEdge predicate on the "dyno_session" edge.
+func HasDynoSession() predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, DynoSessionTable, DynoSessionColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDynoSessionWith applies the HasEdge predicate on the "dyno_session" edge with a given conditions (other predicates).
+func HasDynoSessionWith(preds ...predicate.DynoSession) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		step := newDynoSessionStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Document) predicate.Document {
 	return predicate.Document(sql.AndPredicates(predicates...))

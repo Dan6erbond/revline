@@ -12,6 +12,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
+	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/servicelog"
@@ -153,6 +155,44 @@ func (dc *DocumentCreate) SetNillableServiceLogID(id *uuid.UUID) *DocumentCreate
 // SetServiceLog sets the "service_log" edge to the ServiceLog entity.
 func (dc *DocumentCreate) SetServiceLog(s *ServiceLog) *DocumentCreate {
 	return dc.SetServiceLogID(s.ID)
+}
+
+// SetDragSessionID sets the "drag_session" edge to the DragSession entity by ID.
+func (dc *DocumentCreate) SetDragSessionID(id uuid.UUID) *DocumentCreate {
+	dc.mutation.SetDragSessionID(id)
+	return dc
+}
+
+// SetNillableDragSessionID sets the "drag_session" edge to the DragSession entity by ID if the given value is not nil.
+func (dc *DocumentCreate) SetNillableDragSessionID(id *uuid.UUID) *DocumentCreate {
+	if id != nil {
+		dc = dc.SetDragSessionID(*id)
+	}
+	return dc
+}
+
+// SetDragSession sets the "drag_session" edge to the DragSession entity.
+func (dc *DocumentCreate) SetDragSession(d *DragSession) *DocumentCreate {
+	return dc.SetDragSessionID(d.ID)
+}
+
+// SetDynoSessionID sets the "dyno_session" edge to the DynoSession entity by ID.
+func (dc *DocumentCreate) SetDynoSessionID(id uuid.UUID) *DocumentCreate {
+	dc.mutation.SetDynoSessionID(id)
+	return dc
+}
+
+// SetNillableDynoSessionID sets the "dyno_session" edge to the DynoSession entity by ID if the given value is not nil.
+func (dc *DocumentCreate) SetNillableDynoSessionID(id *uuid.UUID) *DocumentCreate {
+	if id != nil {
+		dc = dc.SetDynoSessionID(*id)
+	}
+	return dc
+}
+
+// SetDynoSession sets the "dyno_session" edge to the DynoSession entity.
+func (dc *DocumentCreate) SetDynoSession(d *DynoSession) *DocumentCreate {
+	return dc.SetDynoSessionID(d.ID)
 }
 
 // Mutation returns the DocumentMutation object of the builder.
@@ -339,6 +379,40 @@ func (dc *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.service_log_documents = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.DragSessionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.DragSessionTable,
+			Columns: []string{document.DragSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dragsession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.drag_session_documents = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.DynoSessionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.DynoSessionTable,
+			Columns: []string{document.DynoSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.dyno_session_documents = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

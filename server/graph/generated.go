@@ -125,17 +125,19 @@ type ComplexityRoot struct {
 	}
 
 	Document struct {
-		Car        func(childComplexity int) int
-		CreateTime func(childComplexity int) int
-		Expense    func(childComplexity int) int
-		FuelUp     func(childComplexity int) int
-		ID         func(childComplexity int) int
-		Metadata   func(childComplexity int) int
-		Name       func(childComplexity int) int
-		ServiceLog func(childComplexity int) int
-		Tags       func(childComplexity int) int
-		URL        func(childComplexity int) int
-		UpdateTime func(childComplexity int) int
+		Car         func(childComplexity int) int
+		CreateTime  func(childComplexity int) int
+		DragSession func(childComplexity int) int
+		DynoSession func(childComplexity int) int
+		Expense     func(childComplexity int) int
+		FuelUp      func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Metadata    func(childComplexity int) int
+		Name        func(childComplexity int) int
+		ServiceLog  func(childComplexity int) int
+		Tags        func(childComplexity int) int
+		URL         func(childComplexity int) int
+		UpdateTime  func(childComplexity int) int
 	}
 
 	DragResult struct {
@@ -151,6 +153,7 @@ type ComplexityRoot struct {
 	DragSession struct {
 		Car        func(childComplexity int) int
 		CreateTime func(childComplexity int) int
+		Documents  func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Notes      func(childComplexity int) int
 		Results    func(childComplexity int) int
@@ -171,6 +174,7 @@ type ComplexityRoot struct {
 	DynoSession struct {
 		Car        func(childComplexity int) int
 		CreateTime func(childComplexity int) int
+		Documents  func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Notes      func(childComplexity int) int
 		Results    func(childComplexity int) int
@@ -278,6 +282,8 @@ type ComplexityRoot struct {
 		DeleteDynoResult           func(childComplexity int, id string) int
 		DeleteDynoResults          func(childComplexity int, ids []string) int
 		UpdateAlbum                func(childComplexity int, id string, input ent.UpdateAlbumInput) int
+		UpdateDragSession          func(childComplexity int, id string, input ent.UpdateDragSessionInput) int
+		UpdateDynoSession          func(childComplexity int, id string, input ent.UpdateDynoSessionInput) int
 		UpdateMedia                func(childComplexity int, id string, input ent.UpdateMediaInput) int
 		UpdateModIdea              func(childComplexity int, id string, input ent.UpdateModIdeaInput) int
 		UpdateModProductOption     func(childComplexity int, id string, input ent.UpdateModProductOptionInput) int
@@ -497,8 +503,10 @@ type MutationResolver interface {
 	CreateServiceSchedule(ctx context.Context, input ent.CreateServiceScheduleInput) (*ent.ServiceSchedule, error)
 	CreateServiceLog(ctx context.Context, input ent.CreateServiceLogInput) (*ent.ServiceLog, error)
 	CreateDragSession(ctx context.Context, input ent.CreateDragSessionInput) (*ent.DragSession, error)
+	UpdateDragSession(ctx context.Context, id string, input ent.UpdateDragSessionInput) (*ent.DragSession, error)
 	CreateDragResult(ctx context.Context, input ent.CreateDragResultInput) (*ent.DragResult, error)
 	CreateDynoSession(ctx context.Context, input ent.CreateDynoSessionInput) (*ent.DynoSession, error)
+	UpdateDynoSession(ctx context.Context, id string, input ent.UpdateDynoSessionInput) (*ent.DynoSession, error)
 	CreateDynoResult(ctx context.Context, input ent.CreateDynoResultInput) (*ent.DynoResult, error)
 	DeleteDynoResult(ctx context.Context, id string) (bool, error)
 	DeleteDynoResults(ctx context.Context, ids []string) (bool, error)
@@ -902,6 +910,20 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Document.CreateTime(childComplexity), true
 
+	case "Document.dragSession":
+		if e.complexity.Document.DragSession == nil {
+			break
+		}
+
+		return e.complexity.Document.DragSession(childComplexity), true
+
+	case "Document.dynoSession":
+		if e.complexity.Document.DynoSession == nil {
+			break
+		}
+
+		return e.complexity.Document.DynoSession(childComplexity), true
+
 	case "Document.expense":
 		if e.complexity.Document.Expense == nil {
 			break
@@ -1028,6 +1050,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.DragSession.CreateTime(childComplexity), true
 
+	case "DragSession.documents":
+		if e.complexity.DragSession.Documents == nil {
+			break
+		}
+
+		return e.complexity.DragSession.Documents(childComplexity), true
+
 	case "DragSession.id":
 		if e.complexity.DragSession.ID == nil {
 			break
@@ -1125,6 +1154,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.DynoSession.CreateTime(childComplexity), true
+
+	case "DynoSession.documents":
+		if e.complexity.DynoSession.Documents == nil {
+			break
+		}
+
+		return e.complexity.DynoSession.Documents(childComplexity), true
 
 	case "DynoSession.id":
 		if e.complexity.DynoSession.ID == nil {
@@ -1822,6 +1858,30 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.UpdateAlbum(childComplexity, args["id"].(string), args["input"].(ent.UpdateAlbumInput)), true
+
+	case "Mutation.updateDragSession":
+		if e.complexity.Mutation.UpdateDragSession == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateDragSession_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateDragSession(childComplexity, args["id"].(string), args["input"].(ent.UpdateDragSessionInput)), true
+
+	case "Mutation.updateDynoSession":
+		if e.complexity.Mutation.UpdateDynoSession == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateDynoSession_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateDynoSession(childComplexity, args["id"].(string), args["input"].(ent.UpdateDynoSessionInput)), true
 
 	case "Mutation.updateMedia":
 		if e.complexity.Mutation.UpdateMedia == nil {
@@ -3634,6 +3694,88 @@ func (ec *executionContext) field_Mutation_updateAlbum_argsInput(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_Mutation_updateDragSession_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_updateDragSession_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := ec.field_Mutation_updateDragSession_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_updateDragSession_argsID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateDragSession_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (ent.UpdateDragSessionInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNUpdateDragSessionInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateDragSessionInput(ctx, tmp)
+	}
+
+	var zeroVal ent.UpdateDragSessionInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateDynoSession_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_updateDynoSession_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := ec.field_Mutation_updateDynoSession_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_updateDynoSession_argsID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateDynoSession_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (ent.UpdateDynoSessionInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNUpdateDynoSessionInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateDynoSessionInput(ctx, tmp)
+	}
+
+	var zeroVal ent.UpdateDynoSessionInput
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Mutation_updateMedia_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -5099,6 +5241,8 @@ func (ec *executionContext) fieldContext_Car_dragSessions(_ context.Context, fie
 				return ec.fieldContext_DragSession_car(ctx, field)
 			case "results":
 				return ec.fieldContext_DragSession_results(ctx, field)
+			case "documents":
+				return ec.fieldContext_DragSession_documents(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DragSession", field.Name)
 		},
@@ -5611,6 +5755,10 @@ func (ec *executionContext) fieldContext_Car_documents(_ context.Context, field 
 				return ec.fieldContext_Document_fuelUp(ctx, field)
 			case "serviceLog":
 				return ec.fieldContext_Document_serviceLog(ctx, field)
+			case "dragSession":
+				return ec.fieldContext_Document_dragSession(ctx, field)
+			case "dynoSession":
+				return ec.fieldContext_Document_dynoSession(ctx, field)
 			case "url":
 				return ec.fieldContext_Document_url(ctx, field)
 			case "metadata":
@@ -5672,6 +5820,8 @@ func (ec *executionContext) fieldContext_Car_dynoSessions(_ context.Context, fie
 				return ec.fieldContext_DynoSession_car(ctx, field)
 			case "results":
 				return ec.fieldContext_DynoSession_results(ctx, field)
+			case "documents":
+				return ec.fieldContext_DynoSession_documents(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DynoSession", field.Name)
 		},
@@ -7111,6 +7261,124 @@ func (ec *executionContext) fieldContext_Document_serviceLog(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Document_dragSession(ctx context.Context, field graphql.CollectedField, obj *ent.Document) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Document_dragSession(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DragSession(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DragSession)
+	fc.Result = res
+	return ec.marshalODragSession2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDragSession(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Document_dragSession(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Document",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_DragSession_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_DragSession_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_DragSession_updateTime(ctx, field)
+			case "title":
+				return ec.fieldContext_DragSession_title(ctx, field)
+			case "notes":
+				return ec.fieldContext_DragSession_notes(ctx, field)
+			case "car":
+				return ec.fieldContext_DragSession_car(ctx, field)
+			case "results":
+				return ec.fieldContext_DragSession_results(ctx, field)
+			case "documents":
+				return ec.fieldContext_DragSession_documents(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DragSession", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Document_dynoSession(ctx context.Context, field graphql.CollectedField, obj *ent.Document) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Document_dynoSession(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DynoSession(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DynoSession)
+	fc.Result = res
+	return ec.marshalODynoSession2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDynoSession(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Document_dynoSession(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Document",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_DynoSession_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_DynoSession_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_DynoSession_updateTime(ctx, field)
+			case "title":
+				return ec.fieldContext_DynoSession_title(ctx, field)
+			case "notes":
+				return ec.fieldContext_DynoSession_notes(ctx, field)
+			case "car":
+				return ec.fieldContext_DynoSession_car(ctx, field)
+			case "results":
+				return ec.fieldContext_DynoSession_results(ctx, field)
+			case "documents":
+				return ec.fieldContext_DynoSession_documents(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DynoSession", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Document_url(ctx context.Context, field graphql.CollectedField, obj *ent.Document) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Document_url(ctx, field)
 	if err != nil {
@@ -7525,6 +7793,8 @@ func (ec *executionContext) fieldContext_DragResult_session(_ context.Context, f
 				return ec.fieldContext_DragSession_car(ctx, field)
 			case "results":
 				return ec.fieldContext_DragSession_results(ctx, field)
+			case "documents":
+				return ec.fieldContext_DragSession_documents(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DragSession", field.Name)
 		},
@@ -7908,6 +8178,75 @@ func (ec *executionContext) fieldContext_DragSession_results(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _DragSession_documents(ctx context.Context, field graphql.CollectedField, obj *ent.DragSession) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DragSession_documents(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Documents(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Document)
+	fc.Result = res
+	return ec.marshalODocument2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDocumentᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DragSession_documents(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DragSession",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Document_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Document_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Document_updateTime(ctx, field)
+			case "name":
+				return ec.fieldContext_Document_name(ctx, field)
+			case "tags":
+				return ec.fieldContext_Document_tags(ctx, field)
+			case "car":
+				return ec.fieldContext_Document_car(ctx, field)
+			case "expense":
+				return ec.fieldContext_Document_expense(ctx, field)
+			case "fuelUp":
+				return ec.fieldContext_Document_fuelUp(ctx, field)
+			case "serviceLog":
+				return ec.fieldContext_Document_serviceLog(ctx, field)
+			case "dragSession":
+				return ec.fieldContext_Document_dragSession(ctx, field)
+			case "dynoSession":
+				return ec.fieldContext_Document_dynoSession(ctx, field)
+			case "url":
+				return ec.fieldContext_Document_url(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Document_metadata(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Document", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _DynoResult_id(ctx context.Context, field graphql.CollectedField, obj *ent.DynoResult) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_DynoResult_id(ctx, field)
 	if err != nil {
@@ -8219,6 +8558,8 @@ func (ec *executionContext) fieldContext_DynoResult_session(_ context.Context, f
 				return ec.fieldContext_DynoSession_car(ctx, field)
 			case "results":
 				return ec.fieldContext_DynoSession_results(ctx, field)
+			case "documents":
+				return ec.fieldContext_DynoSession_documents(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DynoSession", field.Name)
 		},
@@ -8597,6 +8938,75 @@ func (ec *executionContext) fieldContext_DynoSession_results(_ context.Context, 
 				return ec.fieldContext_DynoResult_session(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DynoResult", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DynoSession_documents(ctx context.Context, field graphql.CollectedField, obj *ent.DynoSession) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DynoSession_documents(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Documents(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Document)
+	fc.Result = res
+	return ec.marshalODocument2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDocumentᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DynoSession_documents(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DynoSession",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Document_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Document_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Document_updateTime(ctx, field)
+			case "name":
+				return ec.fieldContext_Document_name(ctx, field)
+			case "tags":
+				return ec.fieldContext_Document_tags(ctx, field)
+			case "car":
+				return ec.fieldContext_Document_car(ctx, field)
+			case "expense":
+				return ec.fieldContext_Document_expense(ctx, field)
+			case "fuelUp":
+				return ec.fieldContext_Document_fuelUp(ctx, field)
+			case "serviceLog":
+				return ec.fieldContext_Document_serviceLog(ctx, field)
+			case "dragSession":
+				return ec.fieldContext_Document_dragSession(ctx, field)
+			case "dynoSession":
+				return ec.fieldContext_Document_dynoSession(ctx, field)
+			case "url":
+				return ec.fieldContext_Document_url(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Document_metadata(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Document", field.Name)
 		},
 	}
 	return fc, nil
@@ -9201,6 +9611,10 @@ func (ec *executionContext) fieldContext_Expense_documents(_ context.Context, fi
 				return ec.fieldContext_Document_fuelUp(ctx, field)
 			case "serviceLog":
 				return ec.fieldContext_Document_serviceLog(ctx, field)
+			case "dragSession":
+				return ec.fieldContext_Document_dragSession(ctx, field)
+			case "dynoSession":
+				return ec.fieldContext_Document_dynoSession(ctx, field)
 			case "url":
 				return ec.fieldContext_Document_url(ctx, field)
 			case "metadata":
@@ -10145,6 +10559,10 @@ func (ec *executionContext) fieldContext_FuelUp_documents(_ context.Context, fie
 				return ec.fieldContext_Document_fuelUp(ctx, field)
 			case "serviceLog":
 				return ec.fieldContext_Document_serviceLog(ctx, field)
+			case "dragSession":
+				return ec.fieldContext_Document_dragSession(ctx, field)
+			case "dynoSession":
+				return ec.fieldContext_Document_dynoSession(ctx, field)
 			case "url":
 				return ec.fieldContext_Document_url(ctx, field)
 			case "metadata":
@@ -13091,6 +13509,8 @@ func (ec *executionContext) fieldContext_Mutation_createDragSession(ctx context.
 				return ec.fieldContext_DragSession_car(ctx, field)
 			case "results":
 				return ec.fieldContext_DragSession_results(ctx, field)
+			case "documents":
+				return ec.fieldContext_DragSession_documents(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DragSession", field.Name)
 		},
@@ -13103,6 +13523,101 @@ func (ec *executionContext) fieldContext_Mutation_createDragSession(ctx context.
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createDragSession_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateDragSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateDragSession(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdateDragSession(rctx, fc.Args["id"].(string), fc.Args["input"].(ent.UpdateDragSessionInput))
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			if ec.directives.LoggedIn == nil {
+				var zeroVal *ent.DragSession
+				return zeroVal, errors.New("directive loggedIn is not implemented")
+			}
+			return ec.directives.LoggedIn(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*ent.DragSession); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/Dan6erbond/revline/ent.DragSession`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DragSession)
+	fc.Result = res
+	return ec.marshalNDragSession2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDragSession(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateDragSession(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_DragSession_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_DragSession_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_DragSession_updateTime(ctx, field)
+			case "title":
+				return ec.fieldContext_DragSession_title(ctx, field)
+			case "notes":
+				return ec.fieldContext_DragSession_notes(ctx, field)
+			case "car":
+				return ec.fieldContext_DragSession_car(ctx, field)
+			case "results":
+				return ec.fieldContext_DragSession_results(ctx, field)
+			case "documents":
+				return ec.fieldContext_DragSession_documents(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DragSession", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateDragSession_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -13277,6 +13792,8 @@ func (ec *executionContext) fieldContext_Mutation_createDynoSession(ctx context.
 				return ec.fieldContext_DynoSession_car(ctx, field)
 			case "results":
 				return ec.fieldContext_DynoSession_results(ctx, field)
+			case "documents":
+				return ec.fieldContext_DynoSession_documents(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DynoSession", field.Name)
 		},
@@ -13289,6 +13806,101 @@ func (ec *executionContext) fieldContext_Mutation_createDynoSession(ctx context.
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createDynoSession_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateDynoSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateDynoSession(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdateDynoSession(rctx, fc.Args["id"].(string), fc.Args["input"].(ent.UpdateDynoSessionInput))
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			if ec.directives.LoggedIn == nil {
+				var zeroVal *ent.DynoSession
+				return zeroVal, errors.New("directive loggedIn is not implemented")
+			}
+			return ec.directives.LoggedIn(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*ent.DynoSession); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/Dan6erbond/revline/ent.DynoSession`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.DynoSession)
+	fc.Result = res
+	return ec.marshalNDynoSession2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDynoSession(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateDynoSession(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_DynoSession_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_DynoSession_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_DynoSession_updateTime(ctx, field)
+			case "title":
+				return ec.fieldContext_DynoSession_title(ctx, field)
+			case "notes":
+				return ec.fieldContext_DynoSession_notes(ctx, field)
+			case "car":
+				return ec.fieldContext_DynoSession_car(ctx, field)
+			case "results":
+				return ec.fieldContext_DynoSession_results(ctx, field)
+			case "documents":
+				return ec.fieldContext_DynoSession_documents(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DynoSession", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateDynoSession_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -16094,6 +16706,8 @@ func (ec *executionContext) fieldContext_Query_dragSession(ctx context.Context, 
 				return ec.fieldContext_DragSession_car(ctx, field)
 			case "results":
 				return ec.fieldContext_DragSession_results(ctx, field)
+			case "documents":
+				return ec.fieldContext_DragSession_documents(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DragSession", field.Name)
 		},
@@ -16165,6 +16779,8 @@ func (ec *executionContext) fieldContext_Query_dynoSession(ctx context.Context, 
 				return ec.fieldContext_DynoSession_car(ctx, field)
 			case "results":
 				return ec.fieldContext_DynoSession_results(ctx, field)
+			case "documents":
+				return ec.fieldContext_DynoSession_documents(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DynoSession", field.Name)
 		},
@@ -16240,6 +16856,10 @@ func (ec *executionContext) fieldContext_Query_document(ctx context.Context, fie
 				return ec.fieldContext_Document_fuelUp(ctx, field)
 			case "serviceLog":
 				return ec.fieldContext_Document_serviceLog(ctx, field)
+			case "dragSession":
+				return ec.fieldContext_Document_dragSession(ctx, field)
+			case "dynoSession":
+				return ec.fieldContext_Document_dynoSession(ctx, field)
 			case "url":
 				return ec.fieldContext_Document_url(ctx, field)
 			case "metadata":
@@ -18093,6 +18713,10 @@ func (ec *executionContext) fieldContext_ServiceLog_documents(_ context.Context,
 				return ec.fieldContext_Document_fuelUp(ctx, field)
 			case "serviceLog":
 				return ec.fieldContext_Document_serviceLog(ctx, field)
+			case "dragSession":
+				return ec.fieldContext_Document_dragSession(ctx, field)
+			case "dynoSession":
+				return ec.fieldContext_Document_dynoSession(ctx, field)
 			case "url":
 				return ec.fieldContext_Document_url(ctx, field)
 			case "metadata":
@@ -20675,6 +21299,10 @@ func (ec *executionContext) fieldContext_UploadDocumentResult_document(_ context
 				return ec.fieldContext_Document_fuelUp(ctx, field)
 			case "serviceLog":
 				return ec.fieldContext_Document_serviceLog(ctx, field)
+			case "dragSession":
+				return ec.fieldContext_Document_dragSession(ctx, field)
+			case "dynoSession":
+				return ec.fieldContext_Document_dynoSession(ctx, field)
 			case "url":
 				return ec.fieldContext_Document_url(ctx, field)
 			case "metadata":
@@ -25516,7 +26144,7 @@ func (ec *executionContext) unmarshalInputCreateDocumentInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "tags", "carID", "expenseID", "fuelUpID", "serviceLogID"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "tags", "carID", "expenseID", "fuelUpID", "serviceLogID", "dragSessionID", "dynoSessionID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -25579,6 +26207,20 @@ func (ec *executionContext) unmarshalInputCreateDocumentInput(ctx context.Contex
 				return it, err
 			}
 			it.ServiceLogID = data
+		case "dragSessionID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dragSessionID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DragSessionID = data
+		case "dynoSessionID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dynoSessionID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DynoSessionID = data
 		}
 	}
 
@@ -25654,7 +26296,7 @@ func (ec *executionContext) unmarshalInputCreateDragSessionInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "notes", "carID", "resultIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "notes", "carID", "resultIDs", "documentIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -25703,6 +26345,13 @@ func (ec *executionContext) unmarshalInputCreateDragSessionInput(ctx context.Con
 				return it, err
 			}
 			it.ResultIDs = data
+		case "documentIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("documentIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DocumentIDs = data
 		}
 	}
 
@@ -25778,7 +26427,7 @@ func (ec *executionContext) unmarshalInputCreateDynoSessionInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "notes", "carID", "resultIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "notes", "carID", "resultIDs", "documentIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -25827,6 +26476,13 @@ func (ec *executionContext) unmarshalInputCreateDynoSessionInput(ctx context.Con
 				return it, err
 			}
 			it.ResultIDs = data
+		case "documentIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("documentIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DocumentIDs = data
 		}
 	}
 
@@ -27032,7 +27688,7 @@ func (ec *executionContext) unmarshalInputDocumentWhereInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "hasCar", "hasCarWith", "hasExpense", "hasExpenseWith", "hasFuelUp", "hasFuelUpWith", "hasServiceLog", "hasServiceLogWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "hasCar", "hasCarWith", "hasExpense", "hasExpenseWith", "hasFuelUp", "hasFuelUpWith", "hasServiceLog", "hasServiceLogWith", "hasDragSession", "hasDragSessionWith", "hasDynoSession", "hasDynoSessionWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -27375,6 +28031,34 @@ func (ec *executionContext) unmarshalInputDocumentWhereInput(ctx context.Context
 				return it, err
 			}
 			it.HasServiceLogWith = data
+		case "hasDragSession":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDragSession"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasDragSession = data
+		case "hasDragSessionWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDragSessionWith"))
+			data, err := ec.unmarshalODragSessionWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDragSessionWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasDragSessionWith = data
+		case "hasDynoSession":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDynoSession"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasDynoSession = data
+		case "hasDynoSessionWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDynoSessionWith"))
+			data, err := ec.unmarshalODynoSessionWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDynoSessionWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasDynoSessionWith = data
 		}
 	}
 
@@ -27751,7 +28435,7 @@ func (ec *executionContext) unmarshalInputDragSessionWhereInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasResults", "hasResultsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasResults", "hasResultsWith", "hasDocuments", "hasDocumentsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -28171,6 +28855,20 @@ func (ec *executionContext) unmarshalInputDragSessionWhereInput(ctx context.Cont
 				return it, err
 			}
 			it.HasResultsWith = data
+		case "hasDocuments":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDocuments"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasDocuments = data
+		case "hasDocumentsWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDocumentsWith"))
+			data, err := ec.unmarshalODocumentWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDocumentWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasDocumentsWith = data
 		}
 	}
 
@@ -28603,7 +29301,7 @@ func (ec *executionContext) unmarshalInputDynoSessionWhereInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasResults", "hasResultsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasResults", "hasResultsWith", "hasDocuments", "hasDocumentsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -29023,6 +29721,20 @@ func (ec *executionContext) unmarshalInputDynoSessionWhereInput(ctx context.Cont
 				return it, err
 			}
 			it.HasResultsWith = data
+		case "hasDocuments":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDocuments"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasDocuments = data
+		case "hasDocumentsWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDocumentsWith"))
+			data, err := ec.unmarshalODocumentWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDocumentWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasDocumentsWith = data
 		}
 	}
 
@@ -37306,7 +38018,7 @@ func (ec *executionContext) unmarshalInputUpdateDocumentInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "name", "tags", "appendTags", "carID", "clearCar", "expenseID", "clearExpense", "fuelUpID", "clearFuelUp", "serviceLogID", "clearServiceLog"}
+	fieldsInOrder := [...]string{"updateTime", "name", "tags", "appendTags", "carID", "clearCar", "expenseID", "clearExpense", "fuelUpID", "clearFuelUp", "serviceLogID", "clearServiceLog", "dragSessionID", "clearDragSession", "dynoSessionID", "clearDynoSession"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -37397,6 +38109,34 @@ func (ec *executionContext) unmarshalInputUpdateDocumentInput(ctx context.Contex
 				return it, err
 			}
 			it.ClearServiceLog = data
+		case "dragSessionID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dragSessionID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DragSessionID = data
+		case "clearDragSession":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearDragSession"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearDragSession = data
+		case "dynoSessionID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dynoSessionID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DynoSessionID = data
+		case "clearDynoSession":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearDynoSession"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearDynoSession = data
 		}
 	}
 
@@ -37465,7 +38205,7 @@ func (ec *executionContext) unmarshalInputUpdateDragSessionInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "title", "notes", "clearNotes", "carID", "addResultIDs", "removeResultIDs", "clearResults"}
+	fieldsInOrder := [...]string{"updateTime", "title", "notes", "clearNotes", "carID", "addResultIDs", "removeResultIDs", "clearResults", "addDocumentIDs", "removeDocumentIDs", "clearDocuments"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -37528,6 +38268,27 @@ func (ec *executionContext) unmarshalInputUpdateDragSessionInput(ctx context.Con
 				return it, err
 			}
 			it.ClearResults = data
+		case "addDocumentIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addDocumentIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddDocumentIDs = data
+		case "removeDocumentIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeDocumentIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveDocumentIDs = data
+		case "clearDocuments":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearDocuments"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearDocuments = data
 		}
 	}
 
@@ -37610,7 +38371,7 @@ func (ec *executionContext) unmarshalInputUpdateDynoSessionInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "title", "notes", "clearNotes", "carID", "addResultIDs", "removeResultIDs", "clearResults"}
+	fieldsInOrder := [...]string{"updateTime", "title", "notes", "clearNotes", "carID", "addResultIDs", "removeResultIDs", "clearResults", "addDocumentIDs", "removeDocumentIDs", "clearDocuments"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -37673,6 +38434,27 @@ func (ec *executionContext) unmarshalInputUpdateDynoSessionInput(ctx context.Con
 				return it, err
 			}
 			it.ClearResults = data
+		case "addDocumentIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addDocumentIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddDocumentIDs = data
+		case "removeDocumentIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeDocumentIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveDocumentIDs = data
+		case "clearDocuments":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearDocuments"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearDocuments = data
 		}
 	}
 
@@ -41147,6 +41929,72 @@ func (ec *executionContext) _Document(ctx context.Context, sel ast.SelectionSet,
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "dragSession":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Document_dragSession(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "dynoSession":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Document_dynoSession(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "url":
 			field := field
 
@@ -41441,6 +42289,39 @@ func (ec *executionContext) _DragSession(ctx context.Context, sel ast.SelectionS
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "documents":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DragSession_documents(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -41637,6 +42518,39 @@ func (ec *executionContext) _DynoSession(ctx context.Context, sel ast.SelectionS
 					}
 				}()
 				res = ec._DynoSession_results(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "documents":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DynoSession_documents(ctx, field, obj)
 				return res
 			}
 
@@ -42817,6 +43731,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "updateDragSession":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateDragSession(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createDragResult":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createDragResult(ctx, field)
@@ -42827,6 +43748,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createDynoSession":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createDynoSession(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateDynoSession":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateDynoSession(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -46309,6 +47237,16 @@ func (ec *executionContext) unmarshalNUpdateAlbumInput2githubᚗcomᚋDan6erbond
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNUpdateDragSessionInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateDragSessionInput(ctx context.Context, v any) (ent.UpdateDragSessionInput, error) {
+	res, err := ec.unmarshalInputUpdateDragSessionInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateDynoSessionInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateDynoSessionInput(ctx context.Context, v any) (ent.UpdateDynoSessionInput, error) {
+	res, err := ec.unmarshalInputUpdateDynoSessionInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNUpdateMediaInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateMediaInput(ctx context.Context, v any) (ent.UpdateMediaInput, error) {
 	res, err := ec.unmarshalInputUpdateMediaInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -47359,6 +48297,13 @@ func (ec *executionContext) marshalODragSession2ᚕᚖgithubᚗcomᚋDan6erbond�
 	return ret
 }
 
+func (ec *executionContext) marshalODragSession2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDragSession(ctx context.Context, sel ast.SelectionSet, v *ent.DragSession) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DragSession(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalODragSessionWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDragSessionWhereInputᚄ(ctx context.Context, v any) ([]*ent.DragSessionWhereInput, error) {
 	if v == nil {
 		return nil, nil
@@ -47503,6 +48448,13 @@ func (ec *executionContext) marshalODynoSession2ᚕᚖgithubᚗcomᚋDan6erbond�
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalODynoSession2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDynoSession(ctx context.Context, sel ast.SelectionSet, v *ent.DynoSession) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DynoSession(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalODynoSessionWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDynoSessionWhereInputᚄ(ctx context.Context, v any) ([]*ent.DynoSessionWhereInput, error) {

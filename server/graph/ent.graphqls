@@ -538,6 +538,8 @@ input CreateDocumentInput {
   expenseID: ID
   fuelUpID: ID
   serviceLogID: ID
+  dragSessionID: ID
+  dynoSessionID: ID
 }
 """
 CreateDragResultInput is used for create DragResult object.
@@ -562,6 +564,7 @@ input CreateDragSessionInput {
   notes: String
   carID: ID!
   resultIDs: [ID!]
+  documentIDs: [ID!]
 }
 """
 CreateDynoResultInput is used for create DynoResult object.
@@ -586,6 +589,7 @@ input CreateDynoSessionInput {
   notes: String
   carID: ID!
   resultIDs: [ID!]
+  documentIDs: [ID!]
 }
 """
 CreateExpenseInput is used for create Expense object.
@@ -811,6 +815,8 @@ type Document implements Node {
   expense: Expense
   fuelUp: FuelUp
   serviceLog: ServiceLog
+  dragSession: DragSession
+  dynoSession: DynoSession
 }
 """
 DocumentWhereInput is used for filtering Document objects.
@@ -889,6 +895,16 @@ input DocumentWhereInput {
   """
   hasServiceLog: Boolean
   hasServiceLogWith: [ServiceLogWhereInput!]
+  """
+  drag_session edge predicates
+  """
+  hasDragSession: Boolean
+  hasDragSessionWith: [DragSessionWhereInput!]
+  """
+  dyno_session edge predicates
+  """
+  hasDynoSession: Boolean
+  hasDynoSessionWith: [DynoSessionWhereInput!]
 }
 type DragResult implements Node {
   id: ID!
@@ -990,6 +1006,7 @@ type DragSession implements Node {
   notes: String
   car: Car!
   results: [DragResult!]
+  documents: [Document!]
 }
 """
 DragSessionWhereInput is used for filtering DragSession objects.
@@ -1076,6 +1093,11 @@ input DragSessionWhereInput {
   """
   hasResults: Boolean
   hasResultsWith: [DragResultWhereInput!]
+  """
+  documents edge predicates
+  """
+  hasDocuments: Boolean
+  hasDocumentsWith: [DocumentWhereInput!]
 }
 type DynoResult implements Node {
   id: ID!
@@ -1178,6 +1200,7 @@ type DynoSession implements Node {
   notes: String
   car: Car!
   results: [DynoResult!]
+  documents: [Document!]
 }
 """
 DynoSessionWhereInput is used for filtering DynoSession objects.
@@ -1264,6 +1287,11 @@ input DynoSessionWhereInput {
   """
   hasResults: Boolean
   hasResultsWith: [DynoResultWhereInput!]
+  """
+  documents edge predicates
+  """
+  hasDocuments: Boolean
+  hasDocumentsWith: [DocumentWhereInput!]
 }
 type Expense implements Node {
   id: ID!
@@ -3396,6 +3424,10 @@ input UpdateDocumentInput {
   clearFuelUp: Boolean
   serviceLogID: ID
   clearServiceLog: Boolean
+  dragSessionID: ID
+  clearDragSession: Boolean
+  dynoSessionID: ID
+  clearDynoSession: Boolean
 }
 """
 UpdateDragResultInput is used for update DragResult object.
@@ -3421,6 +3453,9 @@ input UpdateDragSessionInput {
   addResultIDs: [ID!]
   removeResultIDs: [ID!]
   clearResults: Boolean
+  addDocumentIDs: [ID!]
+  removeDocumentIDs: [ID!]
+  clearDocuments: Boolean
 }
 """
 UpdateDynoResultInput is used for update DynoResult object.
@@ -3448,6 +3483,9 @@ input UpdateDynoSessionInput {
   addResultIDs: [ID!]
   removeResultIDs: [ID!]
   clearResults: Boolean
+  addDocumentIDs: [ID!]
+  removeDocumentIDs: [ID!]
+  clearDocuments: Boolean
 }
 """
 UpdateExpenseInput is used for update Expense object.

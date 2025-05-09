@@ -75,8 +75,12 @@ extend type Mutation {
     @loggedIn
   createServiceLog(input: CreateServiceLogInput!): ServiceLog! @loggedIn
   createDragSession(input: CreateDragSessionInput!): DragSession! @loggedIn
+  updateDragSession(id: ID!, input: UpdateDragSessionInput!): DragSession!
+    @loggedIn
   createDragResult(input: CreateDragResultInput!): DragResult! @loggedIn
   createDynoSession(input: CreateDynoSessionInput!): DynoSession! @loggedIn
+  updateDynoSession(id: ID!, input: UpdateDynoSessionInput!): DynoSession!
+    @loggedIn
   createDynoResult(input: CreateDynoResultInput!): DynoResult! @loggedIn
   deleteDynoResult(id: ID!): Boolean!
   deleteDynoResults(ids: [ID!]!): Boolean!

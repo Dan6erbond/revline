@@ -1247,6 +1247,38 @@ func (c *DocumentClient) QueryServiceLog(d *Document) *ServiceLogQuery {
 	return query
 }
 
+// QueryDragSession queries the drag_session edge of a Document.
+func (c *DocumentClient) QueryDragSession(d *Document) *DragSessionQuery {
+	query := (&DragSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(document.Table, document.FieldID, id),
+			sqlgraph.To(dragsession.Table, dragsession.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, document.DragSessionTable, document.DragSessionColumn),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDynoSession queries the dyno_session edge of a Document.
+func (c *DocumentClient) QueryDynoSession(d *Document) *DynoSessionQuery {
+	query := (&DynoSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(document.Table, document.FieldID, id),
+			sqlgraph.To(dynosession.Table, dynosession.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, document.DynoSessionTable, document.DynoSessionColumn),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *DocumentClient) Hooks() []Hook {
 	return c.hooks.Document
@@ -1561,6 +1593,22 @@ func (c *DragSessionClient) QueryResults(ds *DragSession) *DragResultQuery {
 	return query
 }
 
+// QueryDocuments queries the documents edge of a DragSession.
+func (c *DragSessionClient) QueryDocuments(ds *DragSession) *DocumentQuery {
+	query := (&DocumentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ds.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dragsession.Table, dragsession.FieldID, id),
+			sqlgraph.To(document.Table, document.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dragsession.DocumentsTable, dragsession.DocumentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(ds.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *DragSessionClient) Hooks() []Hook {
 	return c.hooks.DragSession
@@ -1868,6 +1916,22 @@ func (c *DynoSessionClient) QueryResults(ds *DynoSession) *DynoResultQuery {
 			sqlgraph.From(dynosession.Table, dynosession.FieldID, id),
 			sqlgraph.To(dynoresult.Table, dynoresult.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, dynosession.ResultsTable, dynosession.ResultsColumn),
+		)
+		fromV = sqlgraph.Neighbors(ds.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDocuments queries the documents edge of a DynoSession.
+func (c *DynoSessionClient) QueryDocuments(ds *DynoSession) *DocumentQuery {
+	query := (&DocumentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ds.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dynosession.Table, dynosession.FieldID, id),
+			sqlgraph.To(document.Table, document.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dynosession.DocumentsTable, dynosession.DocumentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(ds.driver.Dialect(), step)
 		return fromV, nil

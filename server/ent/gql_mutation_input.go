@@ -434,14 +434,16 @@ func (c *CarUpdateOne) SetInput(i UpdateCarInput) *CarUpdateOne {
 
 // CreateDocumentInput represents a mutation input for creating documents.
 type CreateDocumentInput struct {
-	CreateTime   *time.Time
-	UpdateTime   *time.Time
-	Name         string
-	Tags         []string
-	CarID        *uuid.UUID
-	ExpenseID    *uuid.UUID
-	FuelUpID     *uuid.UUID
-	ServiceLogID *uuid.UUID
+	CreateTime    *time.Time
+	UpdateTime    *time.Time
+	Name          string
+	Tags          []string
+	CarID         *uuid.UUID
+	ExpenseID     *uuid.UUID
+	FuelUpID      *uuid.UUID
+	ServiceLogID  *uuid.UUID
+	DragSessionID *uuid.UUID
+	DynoSessionID *uuid.UUID
 }
 
 // Mutate applies the CreateDocumentInput on the DocumentMutation builder.
@@ -468,6 +470,12 @@ func (i *CreateDocumentInput) Mutate(m *DocumentMutation) {
 	if v := i.ServiceLogID; v != nil {
 		m.SetServiceLogID(*v)
 	}
+	if v := i.DragSessionID; v != nil {
+		m.SetDragSessionID(*v)
+	}
+	if v := i.DynoSessionID; v != nil {
+		m.SetDynoSessionID(*v)
+	}
 }
 
 // SetInput applies the change-set in the CreateDocumentInput on the DocumentCreate builder.
@@ -478,18 +486,22 @@ func (c *DocumentCreate) SetInput(i CreateDocumentInput) *DocumentCreate {
 
 // UpdateDocumentInput represents a mutation input for updating documents.
 type UpdateDocumentInput struct {
-	UpdateTime      *time.Time
-	Name            *string
-	Tags            []string
-	AppendTags      []string
-	ClearCar        bool
-	CarID           *uuid.UUID
-	ClearExpense    bool
-	ExpenseID       *uuid.UUID
-	ClearFuelUp     bool
-	FuelUpID        *uuid.UUID
-	ClearServiceLog bool
-	ServiceLogID    *uuid.UUID
+	UpdateTime       *time.Time
+	Name             *string
+	Tags             []string
+	AppendTags       []string
+	ClearCar         bool
+	CarID            *uuid.UUID
+	ClearExpense     bool
+	ExpenseID        *uuid.UUID
+	ClearFuelUp      bool
+	FuelUpID         *uuid.UUID
+	ClearServiceLog  bool
+	ServiceLogID     *uuid.UUID
+	ClearDragSession bool
+	DragSessionID    *uuid.UUID
+	ClearDynoSession bool
+	DynoSessionID    *uuid.UUID
 }
 
 // Mutate applies the UpdateDocumentInput on the DocumentMutation builder.
@@ -529,6 +541,18 @@ func (i *UpdateDocumentInput) Mutate(m *DocumentMutation) {
 	}
 	if v := i.ServiceLogID; v != nil {
 		m.SetServiceLogID(*v)
+	}
+	if i.ClearDragSession {
+		m.ClearDragSession()
+	}
+	if v := i.DragSessionID; v != nil {
+		m.SetDragSessionID(*v)
+	}
+	if i.ClearDynoSession {
+		m.ClearDynoSession()
+	}
+	if v := i.DynoSessionID; v != nil {
+		m.SetDynoSessionID(*v)
 	}
 }
 
@@ -616,12 +640,13 @@ func (c *DragResultUpdateOne) SetInput(i UpdateDragResultInput) *DragResultUpdat
 
 // CreateDragSessionInput represents a mutation input for creating dragsessions.
 type CreateDragSessionInput struct {
-	CreateTime *time.Time
-	UpdateTime *time.Time
-	Title      string
-	Notes      *string
-	CarID      uuid.UUID
-	ResultIDs  []uuid.UUID
+	CreateTime  *time.Time
+	UpdateTime  *time.Time
+	Title       string
+	Notes       *string
+	CarID       uuid.UUID
+	ResultIDs   []uuid.UUID
+	DocumentIDs []uuid.UUID
 }
 
 // Mutate applies the CreateDragSessionInput on the DragSessionMutation builder.
@@ -640,6 +665,9 @@ func (i *CreateDragSessionInput) Mutate(m *DragSessionMutation) {
 	if v := i.ResultIDs; len(v) > 0 {
 		m.AddResultIDs(v...)
 	}
+	if v := i.DocumentIDs; len(v) > 0 {
+		m.AddDocumentIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateDragSessionInput on the DragSessionCreate builder.
@@ -650,14 +678,17 @@ func (c *DragSessionCreate) SetInput(i CreateDragSessionInput) *DragSessionCreat
 
 // UpdateDragSessionInput represents a mutation input for updating dragsessions.
 type UpdateDragSessionInput struct {
-	UpdateTime      *time.Time
-	Title           *string
-	ClearNotes      bool
-	Notes           *string
-	CarID           *uuid.UUID
-	ClearResults    bool
-	AddResultIDs    []uuid.UUID
-	RemoveResultIDs []uuid.UUID
+	UpdateTime        *time.Time
+	Title             *string
+	ClearNotes        bool
+	Notes             *string
+	CarID             *uuid.UUID
+	ClearResults      bool
+	AddResultIDs      []uuid.UUID
+	RemoveResultIDs   []uuid.UUID
+	ClearDocuments    bool
+	AddDocumentIDs    []uuid.UUID
+	RemoveDocumentIDs []uuid.UUID
 }
 
 // Mutate applies the UpdateDragSessionInput on the DragSessionMutation builder.
@@ -685,6 +716,15 @@ func (i *UpdateDragSessionInput) Mutate(m *DragSessionMutation) {
 	}
 	if v := i.RemoveResultIDs; len(v) > 0 {
 		m.RemoveResultIDs(v...)
+	}
+	if i.ClearDocuments {
+		m.ClearDocuments()
+	}
+	if v := i.AddDocumentIDs; len(v) > 0 {
+		m.AddDocumentIDs(v...)
+	}
+	if v := i.RemoveDocumentIDs; len(v) > 0 {
+		m.RemoveDocumentIDs(v...)
 	}
 }
 
@@ -784,12 +824,13 @@ func (c *DynoResultUpdateOne) SetInput(i UpdateDynoResultInput) *DynoResultUpdat
 
 // CreateDynoSessionInput represents a mutation input for creating dynosessions.
 type CreateDynoSessionInput struct {
-	CreateTime *time.Time
-	UpdateTime *time.Time
-	Title      string
-	Notes      *string
-	CarID      uuid.UUID
-	ResultIDs  []uuid.UUID
+	CreateTime  *time.Time
+	UpdateTime  *time.Time
+	Title       string
+	Notes       *string
+	CarID       uuid.UUID
+	ResultIDs   []uuid.UUID
+	DocumentIDs []uuid.UUID
 }
 
 // Mutate applies the CreateDynoSessionInput on the DynoSessionMutation builder.
@@ -808,6 +849,9 @@ func (i *CreateDynoSessionInput) Mutate(m *DynoSessionMutation) {
 	if v := i.ResultIDs; len(v) > 0 {
 		m.AddResultIDs(v...)
 	}
+	if v := i.DocumentIDs; len(v) > 0 {
+		m.AddDocumentIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateDynoSessionInput on the DynoSessionCreate builder.
@@ -818,14 +862,17 @@ func (c *DynoSessionCreate) SetInput(i CreateDynoSessionInput) *DynoSessionCreat
 
 // UpdateDynoSessionInput represents a mutation input for updating dynosessions.
 type UpdateDynoSessionInput struct {
-	UpdateTime      *time.Time
-	Title           *string
-	ClearNotes      bool
-	Notes           *string
-	CarID           *uuid.UUID
-	ClearResults    bool
-	AddResultIDs    []uuid.UUID
-	RemoveResultIDs []uuid.UUID
+	UpdateTime        *time.Time
+	Title             *string
+	ClearNotes        bool
+	Notes             *string
+	CarID             *uuid.UUID
+	ClearResults      bool
+	AddResultIDs      []uuid.UUID
+	RemoveResultIDs   []uuid.UUID
+	ClearDocuments    bool
+	AddDocumentIDs    []uuid.UUID
+	RemoveDocumentIDs []uuid.UUID
 }
 
 // Mutate applies the UpdateDynoSessionInput on the DynoSessionMutation builder.
@@ -853,6 +900,15 @@ func (i *UpdateDynoSessionInput) Mutate(m *DynoSessionMutation) {
 	}
 	if v := i.RemoveResultIDs; len(v) > 0 {
 		m.RemoveResultIDs(v...)
+	}
+	if i.ClearDocuments {
+		m.ClearDocuments()
+	}
+	if v := i.AddDocumentIDs; len(v) > 0 {
+		m.AddDocumentIDs(v...)
+	}
+	if v := i.RemoveDocumentIDs; len(v) > 0 {
+		m.RemoveDocumentIDs(v...)
 	}
 }
 

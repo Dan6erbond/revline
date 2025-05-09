@@ -1677,6 +1677,14 @@ type DocumentWhereInput struct {
 	// "service_log" edge predicates.
 	HasServiceLog     *bool                   `json:"hasServiceLog,omitempty"`
 	HasServiceLogWith []*ServiceLogWhereInput `json:"hasServiceLogWith,omitempty"`
+
+	// "drag_session" edge predicates.
+	HasDragSession     *bool                    `json:"hasDragSession,omitempty"`
+	HasDragSessionWith []*DragSessionWhereInput `json:"hasDragSessionWith,omitempty"`
+
+	// "dyno_session" edge predicates.
+	HasDynoSession     *bool                    `json:"hasDynoSession,omitempty"`
+	HasDynoSessionWith []*DynoSessionWhereInput `json:"hasDynoSessionWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1933,6 +1941,42 @@ func (i *DocumentWhereInput) P() (predicate.Document, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, document.HasServiceLogWith(with...))
+	}
+	if i.HasDragSession != nil {
+		p := document.HasDragSession()
+		if !*i.HasDragSession {
+			p = document.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasDragSessionWith) > 0 {
+		with := make([]predicate.DragSession, 0, len(i.HasDragSessionWith))
+		for _, w := range i.HasDragSessionWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasDragSessionWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, document.HasDragSessionWith(with...))
+	}
+	if i.HasDynoSession != nil {
+		p := document.HasDynoSession()
+		if !*i.HasDynoSession {
+			p = document.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasDynoSessionWith) > 0 {
+		with := make([]predicate.DynoSession, 0, len(i.HasDynoSessionWith))
+		for _, w := range i.HasDynoSessionWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasDynoSessionWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, document.HasDynoSessionWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -2320,6 +2364,10 @@ type DragSessionWhereInput struct {
 	// "results" edge predicates.
 	HasResults     *bool                   `json:"hasResults,omitempty"`
 	HasResultsWith []*DragResultWhereInput `json:"hasResultsWith,omitempty"`
+
+	// "documents" edge predicates.
+	HasDocuments     *bool                 `json:"hasDocuments,omitempty"`
+	HasDocumentsWith []*DocumentWhereInput `json:"hasDocumentsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -2585,6 +2633,24 @@ func (i *DragSessionWhereInput) P() (predicate.DragSession, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, dragsession.HasResultsWith(with...))
+	}
+	if i.HasDocuments != nil {
+		p := dragsession.HasDocuments()
+		if !*i.HasDocuments {
+			p = dragsession.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasDocumentsWith) > 0 {
+		with := make([]predicate.Document, 0, len(i.HasDocumentsWith))
+		for _, w := range i.HasDocumentsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasDocumentsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, dragsession.HasDocumentsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -3004,6 +3070,10 @@ type DynoSessionWhereInput struct {
 	// "results" edge predicates.
 	HasResults     *bool                   `json:"hasResults,omitempty"`
 	HasResultsWith []*DynoResultWhereInput `json:"hasResultsWith,omitempty"`
+
+	// "documents" edge predicates.
+	HasDocuments     *bool                 `json:"hasDocuments,omitempty"`
+	HasDocumentsWith []*DocumentWhereInput `json:"hasDocumentsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -3269,6 +3339,24 @@ func (i *DynoSessionWhereInput) P() (predicate.DynoSession, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, dynosession.HasResultsWith(with...))
+	}
+	if i.HasDocuments != nil {
+		p := dynosession.HasDocuments()
+		if !*i.HasDocuments {
+			p = dynosession.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasDocumentsWith) > 0 {
+		with := make([]predicate.Document, 0, len(i.HasDocumentsWith))
+		for _, w := range i.HasDocumentsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasDocumentsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, dynosession.HasDocumentsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

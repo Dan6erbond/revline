@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/google/uuid"
@@ -109,6 +110,21 @@ func (dsc *DragSessionCreate) AddResults(d ...*DragResult) *DragSessionCreate {
 		ids[i] = d[i].ID
 	}
 	return dsc.AddResultIDs(ids...)
+}
+
+// AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
+func (dsc *DragSessionCreate) AddDocumentIDs(ids ...uuid.UUID) *DragSessionCreate {
+	dsc.mutation.AddDocumentIDs(ids...)
+	return dsc
+}
+
+// AddDocuments adds the "documents" edges to the Document entity.
+func (dsc *DragSessionCreate) AddDocuments(d ...*Document) *DragSessionCreate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return dsc.AddDocumentIDs(ids...)
 }
 
 // Mutation returns the DragSessionMutation object of the builder.
@@ -251,6 +267,22 @@ func (dsc *DragSessionCreate) createSpec() (*DragSession, *sqlgraph.CreateSpec) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dragresult.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dsc.mutation.DocumentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dragsession.DocumentsTable,
+			Columns: []string{dragsession.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

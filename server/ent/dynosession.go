@@ -40,13 +40,16 @@ type DynoSessionEdges struct {
 	Car *Car `json:"car,omitempty"`
 	// Results holds the value of the results edge.
 	Results []*DynoResult `json:"results,omitempty"`
+	// Documents holds the value of the documents edge.
+	Documents []*Document `json:"documents,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 	// totalCount holds the count of the edges above.
-	totalCount [2]map[string]int
+	totalCount [3]map[string]int
 
-	namedResults map[string][]*DynoResult
+	namedResults   map[string][]*DynoResult
+	namedDocuments map[string][]*Document
 }
 
 // CarOrErr returns the Car value or an error if the edge
@@ -67,6 +70,15 @@ func (e DynoSessionEdges) ResultsOrErr() ([]*DynoResult, error) {
 		return e.Results, nil
 	}
 	return nil, &NotLoadedError{edge: "results"}
+}
+
+// DocumentsOrErr returns the Documents value or an error if the edge
+// was not loaded in eager-loading.
+func (e DynoSessionEdges) DocumentsOrErr() ([]*Document, error) {
+	if e.loadedTypes[2] {
+		return e.Documents, nil
+	}
+	return nil, &NotLoadedError{edge: "documents"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -158,6 +170,11 @@ func (ds *DynoSession) QueryResults() *DynoResultQuery {
 	return NewDynoSessionClient(ds.config).QueryResults(ds)
 }
 
+// QueryDocuments queries the "documents" edge of the DynoSession entity.
+func (ds *DynoSession) QueryDocuments() *DocumentQuery {
+	return NewDynoSessionClient(ds.config).QueryDocuments(ds)
+}
+
 // Update returns a builder for updating this DynoSession.
 // Note that you need to call DynoSession.Unwrap() before calling this method if this DynoSession
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -219,6 +236,30 @@ func (ds *DynoSession) appendNamedResults(name string, edges ...*DynoResult) {
 		ds.Edges.namedResults[name] = []*DynoResult{}
 	} else {
 		ds.Edges.namedResults[name] = append(ds.Edges.namedResults[name], edges...)
+	}
+}
+
+// NamedDocuments returns the Documents named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (ds *DynoSession) NamedDocuments(name string) ([]*Document, error) {
+	if ds.Edges.namedDocuments == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := ds.Edges.namedDocuments[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (ds *DynoSession) appendNamedDocuments(name string, edges ...*Document) {
+	if ds.Edges.namedDocuments == nil {
+		ds.Edges.namedDocuments = make(map[string][]*Document)
+	}
+	if len(edges) == 0 {
+		ds.Edges.namedDocuments[name] = []*Document{}
+	} else {
+		ds.Edges.namedDocuments[name] = append(ds.Edges.namedDocuments[name], edges...)
 	}
 }
 

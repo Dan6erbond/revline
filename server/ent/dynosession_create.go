@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/google/uuid"
@@ -109,6 +110,21 @@ func (dsc *DynoSessionCreate) AddResults(d ...*DynoResult) *DynoSessionCreate {
 		ids[i] = d[i].ID
 	}
 	return dsc.AddResultIDs(ids...)
+}
+
+// AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
+func (dsc *DynoSessionCreate) AddDocumentIDs(ids ...uuid.UUID) *DynoSessionCreate {
+	dsc.mutation.AddDocumentIDs(ids...)
+	return dsc
+}
+
+// AddDocuments adds the "documents" edges to the Document entity.
+func (dsc *DynoSessionCreate) AddDocuments(d ...*Document) *DynoSessionCreate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return dsc.AddDocumentIDs(ids...)
 }
 
 // Mutation returns the DynoSessionMutation object of the builder.
@@ -251,6 +267,22 @@ func (dsc *DynoSessionCreate) createSpec() (*DynoSession, *sqlgraph.CreateSpec) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dynoresult.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dsc.mutation.DocumentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dynosession.DocumentsTable,
+			Columns: []string{dynosession.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

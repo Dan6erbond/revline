@@ -40,13 +40,16 @@ type DragSessionEdges struct {
 	Car *Car `json:"car,omitempty"`
 	// Results holds the value of the results edge.
 	Results []*DragResult `json:"results,omitempty"`
+	// Documents holds the value of the documents edge.
+	Documents []*Document `json:"documents,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 	// totalCount holds the count of the edges above.
-	totalCount [2]map[string]int
+	totalCount [3]map[string]int
 
-	namedResults map[string][]*DragResult
+	namedResults   map[string][]*DragResult
+	namedDocuments map[string][]*Document
 }
 
 // CarOrErr returns the Car value or an error if the edge
@@ -67,6 +70,15 @@ func (e DragSessionEdges) ResultsOrErr() ([]*DragResult, error) {
 		return e.Results, nil
 	}
 	return nil, &NotLoadedError{edge: "results"}
+}
+
+// DocumentsOrErr returns the Documents value or an error if the edge
+// was not loaded in eager-loading.
+func (e DragSessionEdges) DocumentsOrErr() ([]*Document, error) {
+	if e.loadedTypes[2] {
+		return e.Documents, nil
+	}
+	return nil, &NotLoadedError{edge: "documents"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -158,6 +170,11 @@ func (ds *DragSession) QueryResults() *DragResultQuery {
 	return NewDragSessionClient(ds.config).QueryResults(ds)
 }
 
+// QueryDocuments queries the "documents" edge of the DragSession entity.
+func (ds *DragSession) QueryDocuments() *DocumentQuery {
+	return NewDragSessionClient(ds.config).QueryDocuments(ds)
+}
+
 // Update returns a builder for updating this DragSession.
 // Note that you need to call DragSession.Unwrap() before calling this method if this DragSession
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -219,6 +236,30 @@ func (ds *DragSession) appendNamedResults(name string, edges ...*DragResult) {
 		ds.Edges.namedResults[name] = []*DragResult{}
 	} else {
 		ds.Edges.namedResults[name] = append(ds.Edges.namedResults[name], edges...)
+	}
+}
+
+// NamedDocuments returns the Documents named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (ds *DragSession) NamedDocuments(name string) ([]*Document, error) {
+	if ds.Edges.namedDocuments == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := ds.Edges.namedDocuments[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (ds *DragSession) appendNamedDocuments(name string, edges ...*Document) {
+	if ds.Edges.namedDocuments == nil {
+		ds.Edges.namedDocuments = make(map[string][]*Document)
+	}
+	if len(edges) == 0 {
+		ds.Edges.namedDocuments[name] = []*Document{}
+	} else {
+		ds.Edges.namedDocuments[name] = append(ds.Edges.namedDocuments[name], edges...)
 	}
 }
 

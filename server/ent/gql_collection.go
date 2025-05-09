@@ -688,6 +688,28 @@ func (d *DocumentQuery) collectField(ctx context.Context, oneNode bool, opCtx *g
 				return err
 			}
 			d.withServiceLog = query
+
+		case "dragSession":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&DragSessionClient{config: d.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, dragsessionImplementors)...); err != nil {
+				return err
+			}
+			d.withDragSession = query
+
+		case "dynoSession":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&DynoSessionClient{config: d.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, dynosessionImplementors)...); err != nil {
+				return err
+			}
+			d.withDynoSession = query
 		case "createTime":
 			if _, ok := fieldSeen[document.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, document.FieldCreateTime)
@@ -892,6 +914,19 @@ func (ds *DragSessionQuery) collectField(ctx context.Context, oneNode bool, opCt
 			ds.WithNamedResults(alias, func(wq *DragResultQuery) {
 				*wq = *query
 			})
+
+		case "documents":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&DocumentClient{config: ds.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, documentImplementors)...); err != nil {
+				return err
+			}
+			ds.WithNamedDocuments(alias, func(wq *DocumentQuery) {
+				*wq = *query
+			})
 		case "createTime":
 			if _, ok := fieldSeen[dragsession.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, dragsession.FieldCreateTime)
@@ -1094,6 +1129,19 @@ func (ds *DynoSessionQuery) collectField(ctx context.Context, oneNode bool, opCt
 				return err
 			}
 			ds.WithNamedResults(alias, func(wq *DynoResultQuery) {
+				*wq = *query
+			})
+
+		case "documents":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&DocumentClient{config: ds.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, documentImplementors)...); err != nil {
+				return err
+			}
+			ds.WithNamedDocuments(alias, func(wq *DocumentQuery) {
 				*wq = *query
 			})
 		case "createTime":

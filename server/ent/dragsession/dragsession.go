@@ -27,6 +27,8 @@ const (
 	EdgeCar = "car"
 	// EdgeResults holds the string denoting the results edge name in mutations.
 	EdgeResults = "results"
+	// EdgeDocuments holds the string denoting the documents edge name in mutations.
+	EdgeDocuments = "documents"
 	// Table holds the table name of the dragsession in the database.
 	Table = "drag_sessions"
 	// CarTable is the table that holds the car relation/edge.
@@ -43,6 +45,13 @@ const (
 	ResultsInverseTable = "drag_results"
 	// ResultsColumn is the table column denoting the results relation/edge.
 	ResultsColumn = "drag_session_results"
+	// DocumentsTable is the table that holds the documents relation/edge.
+	DocumentsTable = "documents"
+	// DocumentsInverseTable is the table name for the Document entity.
+	// It exists in this package in order to avoid circular dependency with the "document" package.
+	DocumentsInverseTable = "documents"
+	// DocumentsColumn is the table column denoting the documents relation/edge.
+	DocumentsColumn = "drag_session_documents"
 )
 
 // Columns holds all SQL columns for dragsession fields.
@@ -134,6 +143,20 @@ func ByResults(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newResultsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByDocumentsCount orders the results by documents count.
+func ByDocumentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDocumentsStep(), opts...)
+	}
+}
+
+// ByDocuments orders the results by documents terms.
+func ByDocuments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDocumentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newCarStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -146,5 +169,12 @@ func newResultsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ResultsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ResultsTable, ResultsColumn),
+	)
+}
+func newDocumentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DocumentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, DocumentsTable, DocumentsColumn),
 	)
 }

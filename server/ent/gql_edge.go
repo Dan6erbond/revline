@@ -257,6 +257,22 @@ func (d *Document) ServiceLog(ctx context.Context) (*ServiceLog, error) {
 	return result, MaskNotFound(err)
 }
 
+func (d *Document) DragSession(ctx context.Context) (*DragSession, error) {
+	result, err := d.Edges.DragSessionOrErr()
+	if IsNotLoaded(err) {
+		result, err = d.QueryDragSession().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (d *Document) DynoSession(ctx context.Context) (*DynoSession, error) {
+	result, err := d.Edges.DynoSessionOrErr()
+	if IsNotLoaded(err) {
+		result, err = d.QueryDynoSession().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (dr *DragResult) Session(ctx context.Context) (*DragSession, error) {
 	result, err := dr.Edges.SessionOrErr()
 	if IsNotLoaded(err) {
@@ -285,6 +301,18 @@ func (ds *DragSession) Results(ctx context.Context) (result []*DragResult, err e
 	return result, err
 }
 
+func (ds *DragSession) Documents(ctx context.Context) (result []*Document, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = ds.NamedDocuments(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = ds.Edges.DocumentsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = ds.QueryDocuments().All(ctx)
+	}
+	return result, err
+}
+
 func (dr *DynoResult) Session(ctx context.Context) (*DynoSession, error) {
 	result, err := dr.Edges.SessionOrErr()
 	if IsNotLoaded(err) {
@@ -309,6 +337,18 @@ func (ds *DynoSession) Results(ctx context.Context) (result []*DynoResult, err e
 	}
 	if IsNotLoaded(err) {
 		result, err = ds.QueryResults().All(ctx)
+	}
+	return result, err
+}
+
+func (ds *DynoSession) Documents(ctx context.Context) (result []*Document, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = ds.NamedDocuments(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = ds.Edges.DocumentsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = ds.QueryDocuments().All(ctx)
 	}
 	return result, err
 }

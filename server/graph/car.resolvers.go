@@ -501,6 +501,17 @@ func (r *mutationResolver) CreateDragSession(ctx context.Context, input ent.Crea
 	return r.entClient.DragSession.Create().SetInput(input).Save(ctx)
 }
 
+// UpdateDragSession is the resolver for the updateDragSession field.
+func (r *mutationResolver) UpdateDragSession(ctx context.Context, id string, input ent.UpdateDragSessionInput) (*ent.DragSession, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.DragSession.UpdateOneID(uid).SetInput(input).Save(ctx)
+}
+
 // CreateDragResult is the resolver for the createDragResult field.
 func (r *mutationResolver) CreateDragResult(ctx context.Context, input ent.CreateDragResultInput) (*ent.DragResult, error) {
 	return r.entClient.DragResult.Create().SetInput(input).Save(ctx)
@@ -509,6 +520,17 @@ func (r *mutationResolver) CreateDragResult(ctx context.Context, input ent.Creat
 // CreateDynoSession is the resolver for the createDynoSession field.
 func (r *mutationResolver) CreateDynoSession(ctx context.Context, input ent.CreateDynoSessionInput) (*ent.DynoSession, error) {
 	return r.entClient.DynoSession.Create().SetInput(input).Save(ctx)
+}
+
+// UpdateDynoSession is the resolver for the updateDynoSession field.
+func (r *mutationResolver) UpdateDynoSession(ctx context.Context, id string, input ent.UpdateDynoSessionInput) (*ent.DynoSession, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.DynoSession.UpdateOneID(uid).SetInput(input).Save(ctx)
 }
 
 // CreateDynoResult is the resolver for the createDynoResult field.

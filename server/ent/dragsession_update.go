@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -97,6 +98,21 @@ func (dsu *DragSessionUpdate) AddResults(d ...*DragResult) *DragSessionUpdate {
 	return dsu.AddResultIDs(ids...)
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
+func (dsu *DragSessionUpdate) AddDocumentIDs(ids ...uuid.UUID) *DragSessionUpdate {
+	dsu.mutation.AddDocumentIDs(ids...)
+	return dsu
+}
+
+// AddDocuments adds the "documents" edges to the Document entity.
+func (dsu *DragSessionUpdate) AddDocuments(d ...*Document) *DragSessionUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return dsu.AddDocumentIDs(ids...)
+}
+
 // Mutation returns the DragSessionMutation object of the builder.
 func (dsu *DragSessionUpdate) Mutation() *DragSessionMutation {
 	return dsu.mutation
@@ -127,6 +143,27 @@ func (dsu *DragSessionUpdate) RemoveResults(d ...*DragResult) *DragSessionUpdate
 		ids[i] = d[i].ID
 	}
 	return dsu.RemoveResultIDs(ids...)
+}
+
+// ClearDocuments clears all "documents" edges to the Document entity.
+func (dsu *DragSessionUpdate) ClearDocuments() *DragSessionUpdate {
+	dsu.mutation.ClearDocuments()
+	return dsu
+}
+
+// RemoveDocumentIDs removes the "documents" edge to Document entities by IDs.
+func (dsu *DragSessionUpdate) RemoveDocumentIDs(ids ...uuid.UUID) *DragSessionUpdate {
+	dsu.mutation.RemoveDocumentIDs(ids...)
+	return dsu
+}
+
+// RemoveDocuments removes "documents" edges to Document entities.
+func (dsu *DragSessionUpdate) RemoveDocuments(d ...*Document) *DragSessionUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return dsu.RemoveDocumentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -271,6 +308,51 @@ func (dsu *DragSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if dsu.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dragsession.DocumentsTable,
+			Columns: []string{dragsession.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dsu.mutation.RemovedDocumentsIDs(); len(nodes) > 0 && !dsu.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dragsession.DocumentsTable,
+			Columns: []string{dragsession.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dsu.mutation.DocumentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dragsession.DocumentsTable,
+			Columns: []string{dragsession.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, dsu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{dragsession.Label}
@@ -357,6 +439,21 @@ func (dsuo *DragSessionUpdateOne) AddResults(d ...*DragResult) *DragSessionUpdat
 	return dsuo.AddResultIDs(ids...)
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
+func (dsuo *DragSessionUpdateOne) AddDocumentIDs(ids ...uuid.UUID) *DragSessionUpdateOne {
+	dsuo.mutation.AddDocumentIDs(ids...)
+	return dsuo
+}
+
+// AddDocuments adds the "documents" edges to the Document entity.
+func (dsuo *DragSessionUpdateOne) AddDocuments(d ...*Document) *DragSessionUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return dsuo.AddDocumentIDs(ids...)
+}
+
 // Mutation returns the DragSessionMutation object of the builder.
 func (dsuo *DragSessionUpdateOne) Mutation() *DragSessionMutation {
 	return dsuo.mutation
@@ -387,6 +484,27 @@ func (dsuo *DragSessionUpdateOne) RemoveResults(d ...*DragResult) *DragSessionUp
 		ids[i] = d[i].ID
 	}
 	return dsuo.RemoveResultIDs(ids...)
+}
+
+// ClearDocuments clears all "documents" edges to the Document entity.
+func (dsuo *DragSessionUpdateOne) ClearDocuments() *DragSessionUpdateOne {
+	dsuo.mutation.ClearDocuments()
+	return dsuo
+}
+
+// RemoveDocumentIDs removes the "documents" edge to Document entities by IDs.
+func (dsuo *DragSessionUpdateOne) RemoveDocumentIDs(ids ...uuid.UUID) *DragSessionUpdateOne {
+	dsuo.mutation.RemoveDocumentIDs(ids...)
+	return dsuo
+}
+
+// RemoveDocuments removes "documents" edges to Document entities.
+func (dsuo *DragSessionUpdateOne) RemoveDocuments(d ...*Document) *DragSessionUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return dsuo.RemoveDocumentIDs(ids...)
 }
 
 // Where appends a list predicates to the DragSessionUpdate builder.
@@ -554,6 +672,51 @@ func (dsuo *DragSessionUpdateOne) sqlSave(ctx context.Context) (_node *DragSessi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dragresult.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if dsuo.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dragsession.DocumentsTable,
+			Columns: []string{dragsession.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dsuo.mutation.RemovedDocumentsIDs(); len(nodes) > 0 && !dsuo.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dragsession.DocumentsTable,
+			Columns: []string{dragsession.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dsuo.mutation.DocumentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dragsession.DocumentsTable,
+			Columns: []string{dragsession.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -12,6 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
+	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/servicelog"
@@ -33,12 +35,14 @@ type Document struct {
 	Tags []string `json:"tags,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DocumentQuery when eager-loading is set.
-	Edges                 DocumentEdges `json:"edges"`
-	car_documents         *uuid.UUID
-	expense_documents     *uuid.UUID
-	fuel_up_documents     *uuid.UUID
-	service_log_documents *uuid.UUID
-	selectValues          sql.SelectValues
+	Edges                  DocumentEdges `json:"edges"`
+	car_documents          *uuid.UUID
+	drag_session_documents *uuid.UUID
+	dyno_session_documents *uuid.UUID
+	expense_documents      *uuid.UUID
+	fuel_up_documents      *uuid.UUID
+	service_log_documents  *uuid.UUID
+	selectValues           sql.SelectValues
 }
 
 // DocumentEdges holds the relations/edges for other nodes in the graph.
@@ -51,11 +55,15 @@ type DocumentEdges struct {
 	FuelUp *FuelUp `json:"fuel_up,omitempty"`
 	// ServiceLog holds the value of the service_log edge.
 	ServiceLog *ServiceLog `json:"service_log,omitempty"`
+	// DragSession holds the value of the drag_session edge.
+	DragSession *DragSession `json:"drag_session,omitempty"`
+	// DynoSession holds the value of the dyno_session edge.
+	DynoSession *DynoSession `json:"dyno_session,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [6]bool
 	// totalCount holds the count of the edges above.
-	totalCount [4]map[string]int
+	totalCount [6]map[string]int
 }
 
 // CarOrErr returns the Car value or an error if the edge
@@ -102,6 +110,28 @@ func (e DocumentEdges) ServiceLogOrErr() (*ServiceLog, error) {
 	return nil, &NotLoadedError{edge: "service_log"}
 }
 
+// DragSessionOrErr returns the DragSession value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DocumentEdges) DragSessionOrErr() (*DragSession, error) {
+	if e.DragSession != nil {
+		return e.DragSession, nil
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: dragsession.Label}
+	}
+	return nil, &NotLoadedError{edge: "drag_session"}
+}
+
+// DynoSessionOrErr returns the DynoSession value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DocumentEdges) DynoSessionOrErr() (*DynoSession, error) {
+	if e.DynoSession != nil {
+		return e.DynoSession, nil
+	} else if e.loadedTypes[5] {
+		return nil, &NotFoundError{label: dynosession.Label}
+	}
+	return nil, &NotLoadedError{edge: "dyno_session"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Document) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -117,11 +147,15 @@ func (*Document) scanValues(columns []string) ([]any, error) {
 			values[i] = new(uuid.UUID)
 		case document.ForeignKeys[0]: // car_documents
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case document.ForeignKeys[1]: // expense_documents
+		case document.ForeignKeys[1]: // drag_session_documents
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case document.ForeignKeys[2]: // fuel_up_documents
+		case document.ForeignKeys[2]: // dyno_session_documents
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case document.ForeignKeys[3]: // service_log_documents
+		case document.ForeignKeys[3]: // expense_documents
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case document.ForeignKeys[4]: // fuel_up_documents
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case document.ForeignKeys[5]: // service_log_documents
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -179,19 +213,33 @@ func (d *Document) assignValues(columns []string, values []any) error {
 			}
 		case document.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field drag_session_documents", values[i])
+			} else if value.Valid {
+				d.drag_session_documents = new(uuid.UUID)
+				*d.drag_session_documents = *value.S.(*uuid.UUID)
+			}
+		case document.ForeignKeys[2]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field dyno_session_documents", values[i])
+			} else if value.Valid {
+				d.dyno_session_documents = new(uuid.UUID)
+				*d.dyno_session_documents = *value.S.(*uuid.UUID)
+			}
+		case document.ForeignKeys[3]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field expense_documents", values[i])
 			} else if value.Valid {
 				d.expense_documents = new(uuid.UUID)
 				*d.expense_documents = *value.S.(*uuid.UUID)
 			}
-		case document.ForeignKeys[2]:
+		case document.ForeignKeys[4]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field fuel_up_documents", values[i])
 			} else if value.Valid {
 				d.fuel_up_documents = new(uuid.UUID)
 				*d.fuel_up_documents = *value.S.(*uuid.UUID)
 			}
-		case document.ForeignKeys[3]:
+		case document.ForeignKeys[5]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field service_log_documents", values[i])
 			} else if value.Valid {
@@ -229,6 +277,16 @@ func (d *Document) QueryFuelUp() *FuelUpQuery {
 // QueryServiceLog queries the "service_log" edge of the Document entity.
 func (d *Document) QueryServiceLog() *ServiceLogQuery {
 	return NewDocumentClient(d.config).QueryServiceLog(d)
+}
+
+// QueryDragSession queries the "drag_session" edge of the Document entity.
+func (d *Document) QueryDragSession() *DragSessionQuery {
+	return NewDocumentClient(d.config).QueryDragSession(d)
+}
+
+// QueryDynoSession queries the "dyno_session" edge of the Document entity.
+func (d *Document) QueryDynoSession() *DynoSessionQuery {
+	return NewDocumentClient(d.config).QueryDynoSession(d)
 }
 
 // Update returns a builder for updating this Document.

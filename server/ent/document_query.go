@@ -13,6 +13,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
+	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -23,17 +25,19 @@ import (
 // DocumentQuery is the builder for querying Document entities.
 type DocumentQuery struct {
 	config
-	ctx            *QueryContext
-	order          []document.OrderOption
-	inters         []Interceptor
-	predicates     []predicate.Document
-	withCar        *CarQuery
-	withExpense    *ExpenseQuery
-	withFuelUp     *FuelUpQuery
-	withServiceLog *ServiceLogQuery
-	withFKs        bool
-	modifiers      []func(*sql.Selector)
-	loadTotal      []func(context.Context, []*Document) error
+	ctx             *QueryContext
+	order           []document.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.Document
+	withCar         *CarQuery
+	withExpense     *ExpenseQuery
+	withFuelUp      *FuelUpQuery
+	withServiceLog  *ServiceLogQuery
+	withDragSession *DragSessionQuery
+	withDynoSession *DynoSessionQuery
+	withFKs         bool
+	modifiers       []func(*sql.Selector)
+	loadTotal       []func(context.Context, []*Document) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -151,6 +155,50 @@ func (dq *DocumentQuery) QueryServiceLog() *ServiceLogQuery {
 			sqlgraph.From(document.Table, document.FieldID, selector),
 			sqlgraph.To(servicelog.Table, servicelog.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, document.ServiceLogTable, document.ServiceLogColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDragSession chains the current query on the "drag_session" edge.
+func (dq *DocumentQuery) QueryDragSession() *DragSessionQuery {
+	query := (&DragSessionClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(document.Table, document.FieldID, selector),
+			sqlgraph.To(dragsession.Table, dragsession.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, document.DragSessionTable, document.DragSessionColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDynoSession chains the current query on the "dyno_session" edge.
+func (dq *DocumentQuery) QueryDynoSession() *DynoSessionQuery {
+	query := (&DynoSessionClient{config: dq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(document.Table, document.FieldID, selector),
+			sqlgraph.To(dynosession.Table, dynosession.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, document.DynoSessionTable, document.DynoSessionColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -345,15 +393,17 @@ func (dq *DocumentQuery) Clone() *DocumentQuery {
 		return nil
 	}
 	return &DocumentQuery{
-		config:         dq.config,
-		ctx:            dq.ctx.Clone(),
-		order:          append([]document.OrderOption{}, dq.order...),
-		inters:         append([]Interceptor{}, dq.inters...),
-		predicates:     append([]predicate.Document{}, dq.predicates...),
-		withCar:        dq.withCar.Clone(),
-		withExpense:    dq.withExpense.Clone(),
-		withFuelUp:     dq.withFuelUp.Clone(),
-		withServiceLog: dq.withServiceLog.Clone(),
+		config:          dq.config,
+		ctx:             dq.ctx.Clone(),
+		order:           append([]document.OrderOption{}, dq.order...),
+		inters:          append([]Interceptor{}, dq.inters...),
+		predicates:      append([]predicate.Document{}, dq.predicates...),
+		withCar:         dq.withCar.Clone(),
+		withExpense:     dq.withExpense.Clone(),
+		withFuelUp:      dq.withFuelUp.Clone(),
+		withServiceLog:  dq.withServiceLog.Clone(),
+		withDragSession: dq.withDragSession.Clone(),
+		withDynoSession: dq.withDynoSession.Clone(),
 		// clone intermediate query.
 		sql:  dq.sql.Clone(),
 		path: dq.path,
@@ -401,6 +451,28 @@ func (dq *DocumentQuery) WithServiceLog(opts ...func(*ServiceLogQuery)) *Documen
 		opt(query)
 	}
 	dq.withServiceLog = query
+	return dq
+}
+
+// WithDragSession tells the query-builder to eager-load the nodes that are connected to
+// the "drag_session" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DocumentQuery) WithDragSession(opts ...func(*DragSessionQuery)) *DocumentQuery {
+	query := (&DragSessionClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withDragSession = query
+	return dq
+}
+
+// WithDynoSession tells the query-builder to eager-load the nodes that are connected to
+// the "dyno_session" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DocumentQuery) WithDynoSession(opts ...func(*DynoSessionQuery)) *DocumentQuery {
+	query := (&DynoSessionClient{config: dq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withDynoSession = query
 	return dq
 }
 
@@ -483,14 +555,16 @@ func (dq *DocumentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Doc
 		nodes       = []*Document{}
 		withFKs     = dq.withFKs
 		_spec       = dq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [6]bool{
 			dq.withCar != nil,
 			dq.withExpense != nil,
 			dq.withFuelUp != nil,
 			dq.withServiceLog != nil,
+			dq.withDragSession != nil,
+			dq.withDynoSession != nil,
 		}
 	)
-	if dq.withCar != nil || dq.withExpense != nil || dq.withFuelUp != nil || dq.withServiceLog != nil {
+	if dq.withCar != nil || dq.withExpense != nil || dq.withFuelUp != nil || dq.withServiceLog != nil || dq.withDragSession != nil || dq.withDynoSession != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -538,6 +612,18 @@ func (dq *DocumentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Doc
 	if query := dq.withServiceLog; query != nil {
 		if err := dq.loadServiceLog(ctx, query, nodes, nil,
 			func(n *Document, e *ServiceLog) { n.Edges.ServiceLog = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := dq.withDragSession; query != nil {
+		if err := dq.loadDragSession(ctx, query, nodes, nil,
+			func(n *Document, e *DragSession) { n.Edges.DragSession = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := dq.withDynoSession; query != nil {
+		if err := dq.loadDynoSession(ctx, query, nodes, nil,
+			func(n *Document, e *DynoSession) { n.Edges.DynoSession = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -670,6 +756,70 @@ func (dq *DocumentQuery) loadServiceLog(ctx context.Context, query *ServiceLogQu
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "service_log_documents" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (dq *DocumentQuery) loadDragSession(ctx context.Context, query *DragSessionQuery, nodes []*Document, init func(*Document), assign func(*Document, *DragSession)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Document)
+	for i := range nodes {
+		if nodes[i].drag_session_documents == nil {
+			continue
+		}
+		fk := *nodes[i].drag_session_documents
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(dragsession.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "drag_session_documents" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (dq *DocumentQuery) loadDynoSession(ctx context.Context, query *DynoSessionQuery, nodes []*Document, init func(*Document), assign func(*Document, *DynoSession)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Document)
+	for i := range nodes {
+		if nodes[i].dyno_session_documents == nil {
+			continue
+		}
+		fk := *nodes[i].dyno_session_documents
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(dynosession.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "dyno_session_documents" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

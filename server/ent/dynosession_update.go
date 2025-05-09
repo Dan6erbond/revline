@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -97,6 +98,21 @@ func (dsu *DynoSessionUpdate) AddResults(d ...*DynoResult) *DynoSessionUpdate {
 	return dsu.AddResultIDs(ids...)
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
+func (dsu *DynoSessionUpdate) AddDocumentIDs(ids ...uuid.UUID) *DynoSessionUpdate {
+	dsu.mutation.AddDocumentIDs(ids...)
+	return dsu
+}
+
+// AddDocuments adds the "documents" edges to the Document entity.
+func (dsu *DynoSessionUpdate) AddDocuments(d ...*Document) *DynoSessionUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return dsu.AddDocumentIDs(ids...)
+}
+
 // Mutation returns the DynoSessionMutation object of the builder.
 func (dsu *DynoSessionUpdate) Mutation() *DynoSessionMutation {
 	return dsu.mutation
@@ -127,6 +143,27 @@ func (dsu *DynoSessionUpdate) RemoveResults(d ...*DynoResult) *DynoSessionUpdate
 		ids[i] = d[i].ID
 	}
 	return dsu.RemoveResultIDs(ids...)
+}
+
+// ClearDocuments clears all "documents" edges to the Document entity.
+func (dsu *DynoSessionUpdate) ClearDocuments() *DynoSessionUpdate {
+	dsu.mutation.ClearDocuments()
+	return dsu
+}
+
+// RemoveDocumentIDs removes the "documents" edge to Document entities by IDs.
+func (dsu *DynoSessionUpdate) RemoveDocumentIDs(ids ...uuid.UUID) *DynoSessionUpdate {
+	dsu.mutation.RemoveDocumentIDs(ids...)
+	return dsu
+}
+
+// RemoveDocuments removes "documents" edges to Document entities.
+func (dsu *DynoSessionUpdate) RemoveDocuments(d ...*Document) *DynoSessionUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return dsu.RemoveDocumentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -271,6 +308,51 @@ func (dsu *DynoSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if dsu.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dynosession.DocumentsTable,
+			Columns: []string{dynosession.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dsu.mutation.RemovedDocumentsIDs(); len(nodes) > 0 && !dsu.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dynosession.DocumentsTable,
+			Columns: []string{dynosession.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dsu.mutation.DocumentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dynosession.DocumentsTable,
+			Columns: []string{dynosession.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, dsu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{dynosession.Label}
@@ -357,6 +439,21 @@ func (dsuo *DynoSessionUpdateOne) AddResults(d ...*DynoResult) *DynoSessionUpdat
 	return dsuo.AddResultIDs(ids...)
 }
 
+// AddDocumentIDs adds the "documents" edge to the Document entity by IDs.
+func (dsuo *DynoSessionUpdateOne) AddDocumentIDs(ids ...uuid.UUID) *DynoSessionUpdateOne {
+	dsuo.mutation.AddDocumentIDs(ids...)
+	return dsuo
+}
+
+// AddDocuments adds the "documents" edges to the Document entity.
+func (dsuo *DynoSessionUpdateOne) AddDocuments(d ...*Document) *DynoSessionUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return dsuo.AddDocumentIDs(ids...)
+}
+
 // Mutation returns the DynoSessionMutation object of the builder.
 func (dsuo *DynoSessionUpdateOne) Mutation() *DynoSessionMutation {
 	return dsuo.mutation
@@ -387,6 +484,27 @@ func (dsuo *DynoSessionUpdateOne) RemoveResults(d ...*DynoResult) *DynoSessionUp
 		ids[i] = d[i].ID
 	}
 	return dsuo.RemoveResultIDs(ids...)
+}
+
+// ClearDocuments clears all "documents" edges to the Document entity.
+func (dsuo *DynoSessionUpdateOne) ClearDocuments() *DynoSessionUpdateOne {
+	dsuo.mutation.ClearDocuments()
+	return dsuo
+}
+
+// RemoveDocumentIDs removes the "documents" edge to Document entities by IDs.
+func (dsuo *DynoSessionUpdateOne) RemoveDocumentIDs(ids ...uuid.UUID) *DynoSessionUpdateOne {
+	dsuo.mutation.RemoveDocumentIDs(ids...)
+	return dsuo
+}
+
+// RemoveDocuments removes "documents" edges to Document entities.
+func (dsuo *DynoSessionUpdateOne) RemoveDocuments(d ...*Document) *DynoSessionUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return dsuo.RemoveDocumentIDs(ids...)
 }
 
 // Where appends a list predicates to the DynoSessionUpdate builder.
@@ -554,6 +672,51 @@ func (dsuo *DynoSessionUpdateOne) sqlSave(ctx context.Context) (_node *DynoSessi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dynoresult.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if dsuo.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dynosession.DocumentsTable,
+			Columns: []string{dynosession.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dsuo.mutation.RemovedDocumentsIDs(); len(nodes) > 0 && !dsuo.mutation.DocumentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dynosession.DocumentsTable,
+			Columns: []string{dynosession.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dsuo.mutation.DocumentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dynosession.DocumentsTable,
+			Columns: []string{dynosession.DocumentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

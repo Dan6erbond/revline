@@ -34,8 +34,8 @@ func (DynoSession) Edges() []ent.Edge {
 			Ref("dyno_sessions").
 			Unique().
 			Required(),
-			edge.To("results", DynoResult.Type),
-			/* edge.To("documents", Document.Type), */
+		edge.To("results", DynoResult.Type),
+		edge.To("documents", Document.Type),
 	}
 }
 

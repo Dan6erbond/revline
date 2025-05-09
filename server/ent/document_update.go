@@ -14,6 +14,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
+	"github.com/Dan6erbond/revline/ent/dragsession"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -142,6 +144,44 @@ func (du *DocumentUpdate) SetServiceLog(s *ServiceLog) *DocumentUpdate {
 	return du.SetServiceLogID(s.ID)
 }
 
+// SetDragSessionID sets the "drag_session" edge to the DragSession entity by ID.
+func (du *DocumentUpdate) SetDragSessionID(id uuid.UUID) *DocumentUpdate {
+	du.mutation.SetDragSessionID(id)
+	return du
+}
+
+// SetNillableDragSessionID sets the "drag_session" edge to the DragSession entity by ID if the given value is not nil.
+func (du *DocumentUpdate) SetNillableDragSessionID(id *uuid.UUID) *DocumentUpdate {
+	if id != nil {
+		du = du.SetDragSessionID(*id)
+	}
+	return du
+}
+
+// SetDragSession sets the "drag_session" edge to the DragSession entity.
+func (du *DocumentUpdate) SetDragSession(d *DragSession) *DocumentUpdate {
+	return du.SetDragSessionID(d.ID)
+}
+
+// SetDynoSessionID sets the "dyno_session" edge to the DynoSession entity by ID.
+func (du *DocumentUpdate) SetDynoSessionID(id uuid.UUID) *DocumentUpdate {
+	du.mutation.SetDynoSessionID(id)
+	return du
+}
+
+// SetNillableDynoSessionID sets the "dyno_session" edge to the DynoSession entity by ID if the given value is not nil.
+func (du *DocumentUpdate) SetNillableDynoSessionID(id *uuid.UUID) *DocumentUpdate {
+	if id != nil {
+		du = du.SetDynoSessionID(*id)
+	}
+	return du
+}
+
+// SetDynoSession sets the "dyno_session" edge to the DynoSession entity.
+func (du *DocumentUpdate) SetDynoSession(d *DynoSession) *DocumentUpdate {
+	return du.SetDynoSessionID(d.ID)
+}
+
 // Mutation returns the DocumentMutation object of the builder.
 func (du *DocumentUpdate) Mutation() *DocumentMutation {
 	return du.mutation
@@ -168,6 +208,18 @@ func (du *DocumentUpdate) ClearFuelUp() *DocumentUpdate {
 // ClearServiceLog clears the "service_log" edge to the ServiceLog entity.
 func (du *DocumentUpdate) ClearServiceLog() *DocumentUpdate {
 	du.mutation.ClearServiceLog()
+	return du
+}
+
+// ClearDragSession clears the "drag_session" edge to the DragSession entity.
+func (du *DocumentUpdate) ClearDragSession() *DocumentUpdate {
+	du.mutation.ClearDragSession()
+	return du
+}
+
+// ClearDynoSession clears the "dyno_session" edge to the DynoSession entity.
+func (du *DocumentUpdate) ClearDynoSession() *DocumentUpdate {
+	du.mutation.ClearDynoSession()
 	return du
 }
 
@@ -346,6 +398,64 @@ func (du *DocumentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if du.mutation.DragSessionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.DragSessionTable,
+			Columns: []string{document.DragSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dragsession.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.DragSessionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.DragSessionTable,
+			Columns: []string{document.DragSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dragsession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if du.mutation.DynoSessionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.DynoSessionTable,
+			Columns: []string{document.DynoSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.DynoSessionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.DynoSessionTable,
+			Columns: []string{document.DynoSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{document.Label}
@@ -474,6 +584,44 @@ func (duo *DocumentUpdateOne) SetServiceLog(s *ServiceLog) *DocumentUpdateOne {
 	return duo.SetServiceLogID(s.ID)
 }
 
+// SetDragSessionID sets the "drag_session" edge to the DragSession entity by ID.
+func (duo *DocumentUpdateOne) SetDragSessionID(id uuid.UUID) *DocumentUpdateOne {
+	duo.mutation.SetDragSessionID(id)
+	return duo
+}
+
+// SetNillableDragSessionID sets the "drag_session" edge to the DragSession entity by ID if the given value is not nil.
+func (duo *DocumentUpdateOne) SetNillableDragSessionID(id *uuid.UUID) *DocumentUpdateOne {
+	if id != nil {
+		duo = duo.SetDragSessionID(*id)
+	}
+	return duo
+}
+
+// SetDragSession sets the "drag_session" edge to the DragSession entity.
+func (duo *DocumentUpdateOne) SetDragSession(d *DragSession) *DocumentUpdateOne {
+	return duo.SetDragSessionID(d.ID)
+}
+
+// SetDynoSessionID sets the "dyno_session" edge to the DynoSession entity by ID.
+func (duo *DocumentUpdateOne) SetDynoSessionID(id uuid.UUID) *DocumentUpdateOne {
+	duo.mutation.SetDynoSessionID(id)
+	return duo
+}
+
+// SetNillableDynoSessionID sets the "dyno_session" edge to the DynoSession entity by ID if the given value is not nil.
+func (duo *DocumentUpdateOne) SetNillableDynoSessionID(id *uuid.UUID) *DocumentUpdateOne {
+	if id != nil {
+		duo = duo.SetDynoSessionID(*id)
+	}
+	return duo
+}
+
+// SetDynoSession sets the "dyno_session" edge to the DynoSession entity.
+func (duo *DocumentUpdateOne) SetDynoSession(d *DynoSession) *DocumentUpdateOne {
+	return duo.SetDynoSessionID(d.ID)
+}
+
 // Mutation returns the DocumentMutation object of the builder.
 func (duo *DocumentUpdateOne) Mutation() *DocumentMutation {
 	return duo.mutation
@@ -500,6 +648,18 @@ func (duo *DocumentUpdateOne) ClearFuelUp() *DocumentUpdateOne {
 // ClearServiceLog clears the "service_log" edge to the ServiceLog entity.
 func (duo *DocumentUpdateOne) ClearServiceLog() *DocumentUpdateOne {
 	duo.mutation.ClearServiceLog()
+	return duo
+}
+
+// ClearDragSession clears the "drag_session" edge to the DragSession entity.
+func (duo *DocumentUpdateOne) ClearDragSession() *DocumentUpdateOne {
+	duo.mutation.ClearDragSession()
+	return duo
+}
+
+// ClearDynoSession clears the "dyno_session" edge to the DynoSession entity.
+func (duo *DocumentUpdateOne) ClearDynoSession() *DocumentUpdateOne {
+	duo.mutation.ClearDynoSession()
 	return duo
 }
 
@@ -701,6 +861,64 @@ func (duo *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(servicelog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.DragSessionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.DragSessionTable,
+			Columns: []string{document.DragSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dragsession.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.DragSessionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.DragSessionTable,
+			Columns: []string{document.DragSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dragsession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.DynoSessionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.DynoSessionTable,
+			Columns: []string{document.DynoSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.DynoSessionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   document.DynoSessionTable,
+			Columns: []string{document.DynoSessionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

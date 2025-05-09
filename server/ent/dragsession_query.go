@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/dragsession"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -22,16 +23,18 @@ import (
 // DragSessionQuery is the builder for querying DragSession entities.
 type DragSessionQuery struct {
 	config
-	ctx              *QueryContext
-	order            []dragsession.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.DragSession
-	withCar          *CarQuery
-	withResults      *DragResultQuery
-	withFKs          bool
-	modifiers        []func(*sql.Selector)
-	loadTotal        []func(context.Context, []*DragSession) error
-	withNamedResults map[string]*DragResultQuery
+	ctx                *QueryContext
+	order              []dragsession.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.DragSession
+	withCar            *CarQuery
+	withResults        *DragResultQuery
+	withDocuments      *DocumentQuery
+	withFKs            bool
+	modifiers          []func(*sql.Selector)
+	loadTotal          []func(context.Context, []*DragSession) error
+	withNamedResults   map[string]*DragResultQuery
+	withNamedDocuments map[string]*DocumentQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -105,6 +108,28 @@ func (dsq *DragSessionQuery) QueryResults() *DragResultQuery {
 			sqlgraph.From(dragsession.Table, dragsession.FieldID, selector),
 			sqlgraph.To(dragresult.Table, dragresult.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, dragsession.ResultsTable, dragsession.ResultsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dsq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDocuments chains the current query on the "documents" edge.
+func (dsq *DragSessionQuery) QueryDocuments() *DocumentQuery {
+	query := (&DocumentClient{config: dsq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dsq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dsq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dragsession.Table, dragsession.FieldID, selector),
+			sqlgraph.To(document.Table, document.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dragsession.DocumentsTable, dragsession.DocumentsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dsq.driver.Dialect(), step)
 		return fromU, nil
@@ -299,13 +324,14 @@ func (dsq *DragSessionQuery) Clone() *DragSessionQuery {
 		return nil
 	}
 	return &DragSessionQuery{
-		config:      dsq.config,
-		ctx:         dsq.ctx.Clone(),
-		order:       append([]dragsession.OrderOption{}, dsq.order...),
-		inters:      append([]Interceptor{}, dsq.inters...),
-		predicates:  append([]predicate.DragSession{}, dsq.predicates...),
-		withCar:     dsq.withCar.Clone(),
-		withResults: dsq.withResults.Clone(),
+		config:        dsq.config,
+		ctx:           dsq.ctx.Clone(),
+		order:         append([]dragsession.OrderOption{}, dsq.order...),
+		inters:        append([]Interceptor{}, dsq.inters...),
+		predicates:    append([]predicate.DragSession{}, dsq.predicates...),
+		withCar:       dsq.withCar.Clone(),
+		withResults:   dsq.withResults.Clone(),
+		withDocuments: dsq.withDocuments.Clone(),
 		// clone intermediate query.
 		sql:  dsq.sql.Clone(),
 		path: dsq.path,
@@ -331,6 +357,17 @@ func (dsq *DragSessionQuery) WithResults(opts ...func(*DragResultQuery)) *DragSe
 		opt(query)
 	}
 	dsq.withResults = query
+	return dsq
+}
+
+// WithDocuments tells the query-builder to eager-load the nodes that are connected to
+// the "documents" edge. The optional arguments are used to configure the query builder of the edge.
+func (dsq *DragSessionQuery) WithDocuments(opts ...func(*DocumentQuery)) *DragSessionQuery {
+	query := (&DocumentClient{config: dsq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dsq.withDocuments = query
 	return dsq
 }
 
@@ -413,9 +450,10 @@ func (dsq *DragSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		nodes       = []*DragSession{}
 		withFKs     = dsq.withFKs
 		_spec       = dsq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			dsq.withCar != nil,
 			dsq.withResults != nil,
+			dsq.withDocuments != nil,
 		}
 	)
 	if dsq.withCar != nil {
@@ -458,10 +496,24 @@ func (dsq *DragSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 			return nil, err
 		}
 	}
+	if query := dsq.withDocuments; query != nil {
+		if err := dsq.loadDocuments(ctx, query, nodes,
+			func(n *DragSession) { n.Edges.Documents = []*Document{} },
+			func(n *DragSession, e *Document) { n.Edges.Documents = append(n.Edges.Documents, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range dsq.withNamedResults {
 		if err := dsq.loadResults(ctx, query, nodes,
 			func(n *DragSession) { n.appendNamedResults(name) },
 			func(n *DragSession, e *DragResult) { n.appendNamedResults(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range dsq.withNamedDocuments {
+		if err := dsq.loadDocuments(ctx, query, nodes,
+			func(n *DragSession) { n.appendNamedDocuments(name) },
+			func(n *DragSession, e *Document) { n.appendNamedDocuments(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -531,6 +583,37 @@ func (dsq *DragSessionQuery) loadResults(ctx context.Context, query *DragResultQ
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "drag_session_results" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (dsq *DragSessionQuery) loadDocuments(ctx context.Context, query *DocumentQuery, nodes []*DragSession, init func(*DragSession), assign func(*DragSession, *Document)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*DragSession)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(dragsession.DocumentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.drag_session_documents
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "drag_session_documents" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "drag_session_documents" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -632,6 +715,20 @@ func (dsq *DragSessionQuery) WithNamedResults(name string, opts ...func(*DragRes
 		dsq.withNamedResults = make(map[string]*DragResultQuery)
 	}
 	dsq.withNamedResults[name] = query
+	return dsq
+}
+
+// WithNamedDocuments tells the query-builder to eager-load the nodes that are connected to the "documents"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (dsq *DragSessionQuery) WithNamedDocuments(name string, opts ...func(*DocumentQuery)) *DragSessionQuery {
+	query := (&DocumentClient{config: dsq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if dsq.withNamedDocuments == nil {
+		dsq.withNamedDocuments = make(map[string]*DocumentQuery)
+	}
+	dsq.withNamedDocuments[name] = query
 	return dsq
 }
 
