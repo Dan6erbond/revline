@@ -1,4 +1,5 @@
-import { Chip } from "@heroui/react";
+import { Chip, ChipProps } from "@heroui/react";
+
 import FileIcon from "../file-icon";
 import { FileMetadata } from "@/gql/graphql";
 import Link from "next/link";
@@ -7,13 +8,14 @@ import { useRouter } from "next/router";
 
 export default function DocumentChip({
   document: doc,
+  ...props
 }: {
   document: {
     id: string;
     name: string;
     metadata?: Partial<FileMetadata> | null;
   };
-}) {
+} & ChipProps) {
   const router = useRouter();
 
   return (
@@ -27,6 +29,7 @@ export default function DocumentChip({
           className="size-4 ml-2"
         />
       }
+      {...props}
     >
       <span className="max-w-32 overflow-hidden text-ellipsis block">
         {doc.name}

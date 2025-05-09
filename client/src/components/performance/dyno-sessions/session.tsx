@@ -3,6 +3,7 @@ import {
   Card,
   CardFooter,
   CardHeader,
+  Chip,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -14,6 +15,8 @@ import {
   ModalFooter,
   ModalHeader,
   NumberInput,
+  Select,
+  SelectItem,
   Selection,
   Table,
   TableBody,
@@ -44,19 +47,23 @@ import {
   RotateCcw,
   SlidersHorizontal,
   Trash,
+  X,
 } from "lucide-react";
 import { FormEventHandler, Key, ReactElement, useState } from "react";
 import { PowerUnit, TorqueUnit } from "@/gql/graphql";
 import { getKilowatts, getPower } from "@/utils/power";
 import { getNm, getTorque } from "@/utils/torque";
 import { powerUnitsShort, torqueUnitsShort } from "@/literals";
-import { useMutation, useSuspenseQuery } from "@apollo/client";
+import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
 
+import DocumentChip from "../../documents/chip";
 import FancySwitch from "../../fancy-switch";
+import FileIcon from "../../file-icon";
 import type { Payload } from "recharts/types/component/DefaultLegendContent";
+import { getQueryParam } from "../../../utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
-import { withNotification } from "../../../utils/with-notification";
+import { withNotification } from "@/utils/with-notification";
 
 const getDynoSession = graphql(`
   query GetDynoSession($id: ID!) {
@@ -77,6 +84,56 @@ const getDynoSession = graphql(`
         rpm
         powerKw
         torqueNm
+      }
+      documents {
+        id
+        name
+        tags
+        metadata {
+          contentType
+        }
+      }
+    }
+  }
+`);
+
+const getDocuments = graphql(`
+  query GetDocuments($id: ID!) {
+    car(id: $id) {
+      id
+      documents {
+        id
+        name
+        tags
+        url
+        metadata {
+          contentType
+          size
+        }
+      }
+    }
+  }
+`);
+
+const updateDynoSession = graphql(`
+  mutation UpdateDynoSession($id: ID!, $input: UpdateDynoSessionInput!) {
+    updateDynoSession(id: $id, input: $input) {
+      id
+      title
+      notes
+      results {
+        id
+        rpm
+        powerKw
+        torqueNm
+      }
+      documents {
+        id
+        name
+        tags
+        metadata {
+          contentType
+        }
       }
     }
   }
@@ -114,6 +171,11 @@ export default function Session() {
     },
   });
 
+  const { data: documentsData } = useQuery(getDocuments, {
+    variables: { id: getQueryParam(router.query.id) as string },
+    skip: !getQueryParam(router.query.id),
+  });
+
   const [selectedRows, setSelectedRows] = useState<Selection>(new Set());
 
   const powerUnit = data?.me?.profile?.powerUnit ?? PowerUnit.ImpHorsepower;
@@ -145,7 +207,9 @@ export default function Session() {
     defaultValues: {},
   });
 
-  const [mutate, { loading }] = useMutation(createDynoResult, {
+  const [mutate] = useMutation(updateDynoSession);
+
+  const [mutateCreate, { loading }] = useMutation(createDynoResult, {
     update(cache, res) {
       if (!res.data?.createDynoResult) return;
 
@@ -200,7 +264,7 @@ export default function Session() {
   });
 
   const onSubmit: SubmitHandler<Inputs> = ({ rpm, power, torque }) => {
-    mutate({
+    mutateCreate({
       variables: {
         input: {
           sessionID: router.query.tab![1],
@@ -235,7 +299,7 @@ export default function Session() {
         switch (bulkAddType) {
           case "power":
             [rpm, power] = res.split(",");
-            return mutate({
+            return mutateCreate({
               variables: {
                 input: {
                   sessionID: router.query.tab![1],
@@ -246,7 +310,7 @@ export default function Session() {
             });
           case "torque":
             [rpm, torque] = res.split(",");
-            return mutate({
+            return mutateCreate({
               variables: {
                 input: {
                   sessionID: router.query.tab![1],
@@ -257,7 +321,7 @@ export default function Session() {
             });
           case "both":
             [rpm, power, torque] = res.split(",");
-            return mutate({
+            return mutateCreate({
               variables: {
                 input: {
                   sessionID: router.query.tab![1],
@@ -287,6 +351,78 @@ export default function Session() {
             variant="bordered"
           />
         </form>
+      </div>
+      <div className="flex flex-col gap-4">
+        <p>Documents</p>
+
+        <div className="flex flex-wrap gap-2">
+          {data.dynoSession.documents?.map((doc) => (
+            <DocumentChip
+              key={doc.id}
+              document={doc}
+              endContent={
+                <Button
+                  isIconOnly
+                  size="sm"
+                  variant="light"
+                  color="danger"
+                  radius="full"
+                  onClick={(e) => e.preventDefault()}
+                  onPress={withNotification({}, () =>
+                    mutate({
+                      variables: {
+                        id: router.query.tab![1],
+                        input: { removeDocumentIDs: [doc.id] },
+                      },
+                    })
+                  )}
+                >
+                  <X size={16} />
+                </Button>
+              }
+            />
+          ))}
+        </div>
+
+        <Select
+          placeholder="Add"
+          classNames={{ innerWrapper: "py-4" }}
+          items={
+            documentsData?.car.documents?.filter(
+              (doc) =>
+                data.dynoSession.documents?.findIndex(
+                  (d) => d.id === doc.id
+                ) === -1
+            ) ?? []
+          }
+          selectedKeys={new Set()}
+          onSelectionChange={withNotification({}, async (keys) => {
+            const key = Array.from(keys)[0];
+            if (key)
+              await mutate({
+                variables: {
+                  id: router.query.tab![1],
+                  input: { addDocumentIDs: [key as string] },
+                },
+              });
+          })}
+          variant="bordered"
+        >
+          {({ id, name, metadata }) => (
+            <SelectItem key={id} textValue={name}>
+              <div className="flex items-center gap-2">
+                <FileIcon
+                  name={name}
+                  contentType={metadata?.contentType}
+                  className="size-4"
+                />
+                <span className="text-sm font-medium truncate max-w-xs">
+                  {name}
+                </span>
+              </div>
+            </SelectItem>
+          )}
+        </Select>
       </div>
       <div className="flex justify-between">
         <h3 className="text-xl">Results</h3>
@@ -318,7 +454,6 @@ export default function Session() {
           </DropdownMenu>
         </Dropdown>
       </div>
-
       <div className="aspect-video min-h-[300px] rounded-2xl bg-primary/5 backdrop-blur-xl px-6 md:px-10 py-8 md:py-12 border border-primary/10 shadow-sm">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
@@ -409,7 +544,6 @@ export default function Session() {
           </LineChart>
         </ResponsiveContainer>
       </div>
-
       <Table
         selectionMode="multiple"
         selectedKeys={selectedRows}
@@ -499,7 +633,6 @@ export default function Session() {
           )}
         </TableBody>
       </Table>
-
       <Modal
         isOpen={isOpen}
         onOpenChange={onOpenChange}
@@ -573,7 +706,6 @@ export default function Session() {
           )}
         </ModalContent>
       </Modal>
-
       <Modal
         isOpen={isBulkAddOpen}
         onOpenChange={onBulkAddOpenChange}
