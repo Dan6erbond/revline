@@ -35,6 +35,7 @@ func (DragSession) Edges() []ent.Edge {
 			Unique().
 			Required(),
 		edge.To("results", DragResult.Type),
+		/* edge.To("documents", Document.Type), */
 	}
 }
 

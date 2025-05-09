@@ -5913,7 +5913,7 @@ func (m *DynoResultMutation) PowerKw() (r float64, exists bool) {
 // OldPowerKw returns the old "power_kw" field's value of the DynoResult entity.
 // If the DynoResult object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DynoResultMutation) OldPowerKw(ctx context.Context) (v float64, err error) {
+func (m *DynoResultMutation) OldPowerKw(ctx context.Context) (v *float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPowerKw is only allowed on UpdateOne operations")
 	}
@@ -5945,10 +5945,24 @@ func (m *DynoResultMutation) AddedPowerKw() (r float64, exists bool) {
 	return *v, true
 }
 
+// ClearPowerKw clears the value of the "power_kw" field.
+func (m *DynoResultMutation) ClearPowerKw() {
+	m.power_kw = nil
+	m.addpower_kw = nil
+	m.clearedFields[dynoresult.FieldPowerKw] = struct{}{}
+}
+
+// PowerKwCleared returns if the "power_kw" field was cleared in this mutation.
+func (m *DynoResultMutation) PowerKwCleared() bool {
+	_, ok := m.clearedFields[dynoresult.FieldPowerKw]
+	return ok
+}
+
 // ResetPowerKw resets all changes to the "power_kw" field.
 func (m *DynoResultMutation) ResetPowerKw() {
 	m.power_kw = nil
 	m.addpower_kw = nil
+	delete(m.clearedFields, dynoresult.FieldPowerKw)
 }
 
 // SetTorqueNm sets the "torque_nm" field.
@@ -5969,7 +5983,7 @@ func (m *DynoResultMutation) TorqueNm() (r float64, exists bool) {
 // OldTorqueNm returns the old "torque_nm" field's value of the DynoResult entity.
 // If the DynoResult object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DynoResultMutation) OldTorqueNm(ctx context.Context) (v float64, err error) {
+func (m *DynoResultMutation) OldTorqueNm(ctx context.Context) (v *float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTorqueNm is only allowed on UpdateOne operations")
 	}
@@ -6001,10 +6015,24 @@ func (m *DynoResultMutation) AddedTorqueNm() (r float64, exists bool) {
 	return *v, true
 }
 
+// ClearTorqueNm clears the value of the "torque_nm" field.
+func (m *DynoResultMutation) ClearTorqueNm() {
+	m.torque_nm = nil
+	m.addtorque_nm = nil
+	m.clearedFields[dynoresult.FieldTorqueNm] = struct{}{}
+}
+
+// TorqueNmCleared returns if the "torque_nm" field was cleared in this mutation.
+func (m *DynoResultMutation) TorqueNmCleared() bool {
+	_, ok := m.clearedFields[dynoresult.FieldTorqueNm]
+	return ok
+}
+
 // ResetTorqueNm resets all changes to the "torque_nm" field.
 func (m *DynoResultMutation) ResetTorqueNm() {
 	m.torque_nm = nil
 	m.addtorque_nm = nil
+	delete(m.clearedFields, dynoresult.FieldTorqueNm)
 }
 
 // SetSessionID sets the "session" edge to the DynoSession entity by id.
@@ -6245,7 +6273,14 @@ func (m *DynoResultMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *DynoResultMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(dynoresult.FieldPowerKw) {
+		fields = append(fields, dynoresult.FieldPowerKw)
+	}
+	if m.FieldCleared(dynoresult.FieldTorqueNm) {
+		fields = append(fields, dynoresult.FieldTorqueNm)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -6258,6 +6293,14 @@ func (m *DynoResultMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *DynoResultMutation) ClearField(name string) error {
+	switch name {
+	case dynoresult.FieldPowerKw:
+		m.ClearPowerKw()
+		return nil
+	case dynoresult.FieldTorqueNm:
+		m.ClearTorqueNm()
+		return nil
+	}
 	return fmt.Errorf("unknown DynoResult nullable field %s", name)
 }
 

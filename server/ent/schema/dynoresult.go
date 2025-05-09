@@ -21,8 +21,12 @@ func (DynoResult) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.Int("rpm"),
-		field.Float("power_kw"),
-		field.Float("torque_nm"),
+		field.Float("power_kw").
+			Optional().
+			Nillable(),
+		field.Float("torque_nm").
+			Optional().
+			Nillable(),
 	}
 }
 

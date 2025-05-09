@@ -571,8 +571,8 @@ input CreateDynoResultInput {
   createTime: Time
   updateTime: Time
   rpm: Int!
-  powerKw: Float!
-  torqueNm: Float!
+  powerKw: Float
+  torqueNm: Float
   sessionID: ID!
 }
 """
@@ -1082,8 +1082,8 @@ type DynoResult implements Node {
   createTime: Time!
   updateTime: Time!
   rpm: Int!
-  powerKw: Float!
-  torqueNm: Float!
+  powerKw: Float
+  torqueNm: Float
   session: DynoSession!
 }
 """
@@ -1149,6 +1149,8 @@ input DynoResultWhereInput {
   powerKwGTE: Float
   powerKwLT: Float
   powerKwLTE: Float
+  powerKwIsNil: Boolean
+  powerKwNotNil: Boolean
   """
   torque_nm field predicates
   """
@@ -1160,6 +1162,8 @@ input DynoResultWhereInput {
   torqueNmGTE: Float
   torqueNmLT: Float
   torqueNmLTE: Float
+  torqueNmIsNil: Boolean
+  torqueNmNotNil: Boolean
   """
   session edge predicates
   """
@@ -3426,7 +3430,9 @@ input UpdateDynoResultInput {
   updateTime: Time
   rpm: Int
   powerKw: Float
+  clearPowerKw: Boolean
   torqueNm: Float
+  clearTorqueNm: Boolean
   sessionID: ID
 }
 """

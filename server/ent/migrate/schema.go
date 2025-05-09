@@ -187,8 +187,8 @@ var (
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "rpm", Type: field.TypeInt},
-		{Name: "power_kw", Type: field.TypeFloat64},
-		{Name: "torque_nm", Type: field.TypeFloat64},
+		{Name: "power_kw", Type: field.TypeFloat64, Nullable: true},
+		{Name: "torque_nm", Type: field.TypeFloat64, Nullable: true},
 		{Name: "dyno_session_results", Type: field.TypeUUID},
 	}
 	// DynoResultsTable holds the schema information for the "dyno_results" table.

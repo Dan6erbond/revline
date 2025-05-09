@@ -275,6 +275,8 @@ type ComplexityRoot struct {
 		CreateServiceLog           func(childComplexity int, input ent.CreateServiceLogInput) int
 		CreateServiceSchedule      func(childComplexity int, input ent.CreateServiceScheduleInput) int
 		CreateTask                 func(childComplexity int, input ent.CreateTaskInput) int
+		DeleteDynoResult           func(childComplexity int, id string) int
+		DeleteDynoResults          func(childComplexity int, ids []string) int
 		UpdateAlbum                func(childComplexity int, id string, input ent.UpdateAlbumInput) int
 		UpdateMedia                func(childComplexity int, id string, input ent.UpdateMediaInput) int
 		UpdateModIdea              func(childComplexity int, id string, input ent.UpdateModIdeaInput) int
@@ -498,6 +500,8 @@ type MutationResolver interface {
 	CreateDragResult(ctx context.Context, input ent.CreateDragResultInput) (*ent.DragResult, error)
 	CreateDynoSession(ctx context.Context, input ent.CreateDynoSessionInput) (*ent.DynoSession, error)
 	CreateDynoResult(ctx context.Context, input ent.CreateDynoResultInput) (*ent.DynoResult, error)
+	DeleteDynoResult(ctx context.Context, id string) (bool, error)
+	DeleteDynoResults(ctx context.Context, ids []string) (bool, error)
 	CreateAlbum(ctx context.Context, input ent.CreateAlbumInput) (*ent.Album, error)
 	UpdateAlbum(ctx context.Context, id string, input ent.UpdateAlbumInput) (*ent.Album, error)
 	CreateTask(ctx context.Context, input ent.CreateTaskInput) (*ent.Task, error)
@@ -1782,6 +1786,30 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.CreateTask(childComplexity, args["input"].(ent.CreateTaskInput)), true
+
+	case "Mutation.deleteDynoResult":
+		if e.complexity.Mutation.DeleteDynoResult == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteDynoResult_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteDynoResult(childComplexity, args["id"].(string)), true
+
+	case "Mutation.deleteDynoResults":
+		if e.complexity.Mutation.DeleteDynoResults == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteDynoResults_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteDynoResults(childComplexity, args["ids"].([]string)), true
 
 	case "Mutation.updateAlbum":
 		if e.complexity.Mutation.UpdateAlbum == nil {
@@ -3516,6 +3544,52 @@ func (ec *executionContext) field_Mutation_createTask_argsInput(
 	}
 
 	var zeroVal ent.CreateTaskInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteDynoResult_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_deleteDynoResult_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_deleteDynoResult_argsID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteDynoResults_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_deleteDynoResults_argsIds(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["ids"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_deleteDynoResults_argsIds(
+	ctx context.Context,
+	rawArgs map[string]any,
+) ([]string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("ids"))
+	if tmp, ok := rawArgs["ids"]; ok {
+		return ec.unmarshalNID2ᚕstringᚄ(ctx, tmp)
+	}
+
+	var zeroVal []string
 	return zeroVal, nil
 }
 
@@ -8031,14 +8105,11 @@ func (ec *executionContext) _DynoResult_powerKw(ctx context.Context, field graph
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(*float64)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DynoResult_powerKw(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8075,14 +8146,11 @@ func (ec *executionContext) _DynoResult_torqueNm(ctx context.Context, field grap
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(*float64)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DynoResult_torqueNm(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -13314,6 +13382,116 @@ func (ec *executionContext) fieldContext_Mutation_createDynoResult(ctx context.C
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createDynoResult_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteDynoResult(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteDynoResult(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteDynoResult(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteDynoResult(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteDynoResult_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteDynoResults(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteDynoResults(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteDynoResults(rctx, fc.Args["ids"].([]string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteDynoResults(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteDynoResults_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -25568,14 +25746,14 @@ func (ec *executionContext) unmarshalInputCreateDynoResultInput(ctx context.Cont
 			it.Rpm = data
 		case "powerKw":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerKw"))
-			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.PowerKw = data
 		case "torqueNm":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueNm"))
-			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -28006,7 +28184,7 @@ func (ec *executionContext) unmarshalInputDynoResultWhereInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "rpm", "rpmNEQ", "rpmIn", "rpmNotIn", "rpmGT", "rpmGTE", "rpmLT", "rpmLTE", "powerKw", "powerKwNEQ", "powerKwIn", "powerKwNotIn", "powerKwGT", "powerKwGTE", "powerKwLT", "powerKwLTE", "torqueNm", "torqueNmNEQ", "torqueNmIn", "torqueNmNotIn", "torqueNmGT", "torqueNmGTE", "torqueNmLT", "torqueNmLTE", "hasSession", "hasSessionWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "rpm", "rpmNEQ", "rpmIn", "rpmNotIn", "rpmGT", "rpmGTE", "rpmLT", "rpmLTE", "powerKw", "powerKwNEQ", "powerKwIn", "powerKwNotIn", "powerKwGT", "powerKwGTE", "powerKwLT", "powerKwLTE", "powerKwIsNil", "powerKwNotNil", "torqueNm", "torqueNmNEQ", "torqueNmIn", "torqueNmNotIn", "torqueNmGT", "torqueNmGTE", "torqueNmLT", "torqueNmLTE", "torqueNmIsNil", "torqueNmNotNil", "hasSession", "hasSessionWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -28314,6 +28492,20 @@ func (ec *executionContext) unmarshalInputDynoResultWhereInput(ctx context.Conte
 				return it, err
 			}
 			it.PowerKwLTE = data
+		case "powerKwIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerKwIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PowerKwIsNil = data
+		case "powerKwNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerKwNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PowerKwNotNil = data
 		case "torqueNm":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueNm"))
 			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
@@ -28370,6 +28562,20 @@ func (ec *executionContext) unmarshalInputDynoResultWhereInput(ctx context.Conte
 				return it, err
 			}
 			it.TorqueNmLTE = data
+		case "torqueNmIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueNmIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TorqueNmIsNil = data
+		case "torqueNmNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueNmNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TorqueNmNotNil = data
 		case "hasSession":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSession"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -37335,7 +37541,7 @@ func (ec *executionContext) unmarshalInputUpdateDynoResultInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "rpm", "powerKw", "torqueNm", "sessionID"}
+	fieldsInOrder := [...]string{"updateTime", "rpm", "powerKw", "clearPowerKw", "torqueNm", "clearTorqueNm", "sessionID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -37363,6 +37569,13 @@ func (ec *executionContext) unmarshalInputUpdateDynoResultInput(ctx context.Cont
 				return it, err
 			}
 			it.PowerKw = data
+		case "clearPowerKw":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearPowerKw"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearPowerKw = data
 		case "torqueNm":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueNm"))
 			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
@@ -37370,6 +37583,13 @@ func (ec *executionContext) unmarshalInputUpdateDynoResultInput(ctx context.Cont
 				return it, err
 			}
 			it.TorqueNm = data
+		case "clearTorqueNm":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearTorqueNm"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearTorqueNm = data
 		case "sessionID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sessionID"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -41277,14 +41497,8 @@ func (ec *executionContext) _DynoResult(ctx context.Context, sel ast.SelectionSe
 			}
 		case "powerKw":
 			out.Values[i] = ec._DynoResult_powerKw(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
 		case "torqueNm":
 			out.Values[i] = ec._DynoResult_torqueNm(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
 		case "session":
 			field := field
 
@@ -42620,6 +42834,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createDynoResult":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createDynoResult(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deleteDynoResult":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteDynoResult(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deleteDynoResults":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteDynoResults(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++

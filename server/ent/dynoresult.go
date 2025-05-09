@@ -26,9 +26,9 @@ type DynoResult struct {
 	// Rpm holds the value of the "rpm" field.
 	Rpm int `json:"rpm,omitempty"`
 	// PowerKw holds the value of the "power_kw" field.
-	PowerKw float64 `json:"power_kw,omitempty"`
+	PowerKw *float64 `json:"power_kw,omitempty"`
 	// TorqueNm holds the value of the "torque_nm" field.
-	TorqueNm float64 `json:"torque_nm,omitempty"`
+	TorqueNm *float64 `json:"torque_nm,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DynoResultQuery when eager-loading is set.
 	Edges                DynoResultEdges `json:"edges"`
@@ -116,13 +116,15 @@ func (dr *DynoResult) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field power_kw", values[i])
 			} else if value.Valid {
-				dr.PowerKw = value.Float64
+				dr.PowerKw = new(float64)
+				*dr.PowerKw = value.Float64
 			}
 		case dynoresult.FieldTorqueNm:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field torque_nm", values[i])
 			} else if value.Valid {
-				dr.TorqueNm = value.Float64
+				dr.TorqueNm = new(float64)
+				*dr.TorqueNm = value.Float64
 			}
 		case dynoresult.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -181,11 +183,15 @@ func (dr *DynoResult) String() string {
 	builder.WriteString("rpm=")
 	builder.WriteString(fmt.Sprintf("%v", dr.Rpm))
 	builder.WriteString(", ")
-	builder.WriteString("power_kw=")
-	builder.WriteString(fmt.Sprintf("%v", dr.PowerKw))
+	if v := dr.PowerKw; v != nil {
+		builder.WriteString("power_kw=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("torque_nm=")
-	builder.WriteString(fmt.Sprintf("%v", dr.TorqueNm))
+	if v := dr.TorqueNm; v != nil {
+		builder.WriteString("torque_nm=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

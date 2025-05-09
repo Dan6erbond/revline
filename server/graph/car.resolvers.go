@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/Dan6erbond/revline/auth"
 	"github.com/Dan6erbond/revline/ent"
+	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
@@ -513,6 +514,42 @@ func (r *mutationResolver) CreateDynoSession(ctx context.Context, input ent.Crea
 // CreateDynoResult is the resolver for the createDynoResult field.
 func (r *mutationResolver) CreateDynoResult(ctx context.Context, input ent.CreateDynoResultInput) (*ent.DynoResult, error) {
 	return r.entClient.DynoResult.Create().SetInput(input).Save(ctx)
+}
+
+// DeleteDynoResult is the resolver for the deleteDynoResult field.
+func (r *mutationResolver) DeleteDynoResult(ctx context.Context, id string) (bool, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return false, err
+	}
+
+	if err = r.entClient.DynoResult.DeleteOneID(uid).Exec(ctx); err != nil {
+		return false, err
+	}
+
+	return true, err
+}
+
+// DeleteDynoResults is the resolver for the deleteDynoResults field.
+func (r *mutationResolver) DeleteDynoResults(ctx context.Context, ids []string) (bool, error) {
+	uuids := make([]uuid.UUID, len(ids))
+
+	for _, id := range ids {
+		uid, err := uuid.Parse(id)
+
+		if err != nil {
+			return false, err
+		}
+
+		uuids = append(uuids, uid)
+	}
+
+	if _, err := r.entClient.DynoResult.Delete().Where(dynoresult.IDIn(uuids...)).Exec(ctx); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 // CreateAlbum is the resolver for the createAlbum field.

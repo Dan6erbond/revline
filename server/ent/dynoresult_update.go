@@ -78,6 +78,12 @@ func (dru *DynoResultUpdate) AddPowerKw(f float64) *DynoResultUpdate {
 	return dru
 }
 
+// ClearPowerKw clears the value of the "power_kw" field.
+func (dru *DynoResultUpdate) ClearPowerKw() *DynoResultUpdate {
+	dru.mutation.ClearPowerKw()
+	return dru
+}
+
 // SetTorqueNm sets the "torque_nm" field.
 func (dru *DynoResultUpdate) SetTorqueNm(f float64) *DynoResultUpdate {
 	dru.mutation.ResetTorqueNm()
@@ -96,6 +102,12 @@ func (dru *DynoResultUpdate) SetNillableTorqueNm(f *float64) *DynoResultUpdate {
 // AddTorqueNm adds f to the "torque_nm" field.
 func (dru *DynoResultUpdate) AddTorqueNm(f float64) *DynoResultUpdate {
 	dru.mutation.AddTorqueNm(f)
+	return dru
+}
+
+// ClearTorqueNm clears the value of the "torque_nm" field.
+func (dru *DynoResultUpdate) ClearTorqueNm() *DynoResultUpdate {
+	dru.mutation.ClearTorqueNm()
 	return dru
 }
 
@@ -192,11 +204,17 @@ func (dru *DynoResultUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := dru.mutation.AddedPowerKw(); ok {
 		_spec.AddField(dynoresult.FieldPowerKw, field.TypeFloat64, value)
 	}
+	if dru.mutation.PowerKwCleared() {
+		_spec.ClearField(dynoresult.FieldPowerKw, field.TypeFloat64)
+	}
 	if value, ok := dru.mutation.TorqueNm(); ok {
 		_spec.SetField(dynoresult.FieldTorqueNm, field.TypeFloat64, value)
 	}
 	if value, ok := dru.mutation.AddedTorqueNm(); ok {
 		_spec.AddField(dynoresult.FieldTorqueNm, field.TypeFloat64, value)
+	}
+	if dru.mutation.TorqueNmCleared() {
+		_spec.ClearField(dynoresult.FieldTorqueNm, field.TypeFloat64)
 	}
 	if dru.mutation.SessionCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -295,6 +313,12 @@ func (druo *DynoResultUpdateOne) AddPowerKw(f float64) *DynoResultUpdateOne {
 	return druo
 }
 
+// ClearPowerKw clears the value of the "power_kw" field.
+func (druo *DynoResultUpdateOne) ClearPowerKw() *DynoResultUpdateOne {
+	druo.mutation.ClearPowerKw()
+	return druo
+}
+
 // SetTorqueNm sets the "torque_nm" field.
 func (druo *DynoResultUpdateOne) SetTorqueNm(f float64) *DynoResultUpdateOne {
 	druo.mutation.ResetTorqueNm()
@@ -313,6 +337,12 @@ func (druo *DynoResultUpdateOne) SetNillableTorqueNm(f *float64) *DynoResultUpda
 // AddTorqueNm adds f to the "torque_nm" field.
 func (druo *DynoResultUpdateOne) AddTorqueNm(f float64) *DynoResultUpdateOne {
 	druo.mutation.AddTorqueNm(f)
+	return druo
+}
+
+// ClearTorqueNm clears the value of the "torque_nm" field.
+func (druo *DynoResultUpdateOne) ClearTorqueNm() *DynoResultUpdateOne {
+	druo.mutation.ClearTorqueNm()
 	return druo
 }
 
@@ -439,11 +469,17 @@ func (druo *DynoResultUpdateOne) sqlSave(ctx context.Context) (_node *DynoResult
 	if value, ok := druo.mutation.AddedPowerKw(); ok {
 		_spec.AddField(dynoresult.FieldPowerKw, field.TypeFloat64, value)
 	}
+	if druo.mutation.PowerKwCleared() {
+		_spec.ClearField(dynoresult.FieldPowerKw, field.TypeFloat64)
+	}
 	if value, ok := druo.mutation.TorqueNm(); ok {
 		_spec.SetField(dynoresult.FieldTorqueNm, field.TypeFloat64, value)
 	}
 	if value, ok := druo.mutation.AddedTorqueNm(); ok {
 		_spec.AddField(dynoresult.FieldTorqueNm, field.TypeFloat64, value)
+	}
+	if druo.mutation.TorqueNmCleared() {
+		_spec.ClearField(dynoresult.FieldTorqueNm, field.TypeFloat64)
 	}
 	if druo.mutation.SessionCleared() {
 		edge := &sqlgraph.EdgeSpec{

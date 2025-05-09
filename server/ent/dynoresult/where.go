@@ -241,6 +241,16 @@ func PowerKwLTE(v float64) predicate.DynoResult {
 	return predicate.DynoResult(sql.FieldLTE(FieldPowerKw, v))
 }
 
+// PowerKwIsNil applies the IsNil predicate on the "power_kw" field.
+func PowerKwIsNil() predicate.DynoResult {
+	return predicate.DynoResult(sql.FieldIsNull(FieldPowerKw))
+}
+
+// PowerKwNotNil applies the NotNil predicate on the "power_kw" field.
+func PowerKwNotNil() predicate.DynoResult {
+	return predicate.DynoResult(sql.FieldNotNull(FieldPowerKw))
+}
+
 // TorqueNmEQ applies the EQ predicate on the "torque_nm" field.
 func TorqueNmEQ(v float64) predicate.DynoResult {
 	return predicate.DynoResult(sql.FieldEQ(FieldTorqueNm, v))
@@ -279,6 +289,16 @@ func TorqueNmLT(v float64) predicate.DynoResult {
 // TorqueNmLTE applies the LTE predicate on the "torque_nm" field.
 func TorqueNmLTE(v float64) predicate.DynoResult {
 	return predicate.DynoResult(sql.FieldLTE(FieldTorqueNm, v))
+}
+
+// TorqueNmIsNil applies the IsNil predicate on the "torque_nm" field.
+func TorqueNmIsNil() predicate.DynoResult {
+	return predicate.DynoResult(sql.FieldIsNull(FieldTorqueNm))
+}
+
+// TorqueNmNotNil applies the NotNil predicate on the "torque_nm" field.
+func TorqueNmNotNil() predicate.DynoResult {
+	return predicate.DynoResult(sql.FieldNotNull(FieldTorqueNm))
 }
 
 // HasSession applies the HasEdge predicate on the "session" edge.

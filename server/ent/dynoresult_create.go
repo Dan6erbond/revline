@@ -62,9 +62,25 @@ func (drc *DynoResultCreate) SetPowerKw(f float64) *DynoResultCreate {
 	return drc
 }
 
+// SetNillablePowerKw sets the "power_kw" field if the given value is not nil.
+func (drc *DynoResultCreate) SetNillablePowerKw(f *float64) *DynoResultCreate {
+	if f != nil {
+		drc.SetPowerKw(*f)
+	}
+	return drc
+}
+
 // SetTorqueNm sets the "torque_nm" field.
 func (drc *DynoResultCreate) SetTorqueNm(f float64) *DynoResultCreate {
 	drc.mutation.SetTorqueNm(f)
+	return drc
+}
+
+// SetNillableTorqueNm sets the "torque_nm" field if the given value is not nil.
+func (drc *DynoResultCreate) SetNillableTorqueNm(f *float64) *DynoResultCreate {
+	if f != nil {
+		drc.SetTorqueNm(*f)
+	}
 	return drc
 }
 
@@ -153,12 +169,6 @@ func (drc *DynoResultCreate) check() error {
 	if _, ok := drc.mutation.Rpm(); !ok {
 		return &ValidationError{Name: "rpm", err: errors.New(`ent: missing required field "DynoResult.rpm"`)}
 	}
-	if _, ok := drc.mutation.PowerKw(); !ok {
-		return &ValidationError{Name: "power_kw", err: errors.New(`ent: missing required field "DynoResult.power_kw"`)}
-	}
-	if _, ok := drc.mutation.TorqueNm(); !ok {
-		return &ValidationError{Name: "torque_nm", err: errors.New(`ent: missing required field "DynoResult.torque_nm"`)}
-	}
 	if len(drc.mutation.SessionIDs()) == 0 {
 		return &ValidationError{Name: "session", err: errors.New(`ent: missing required edge "DynoResult.session"`)}
 	}
@@ -211,11 +221,11 @@ func (drc *DynoResultCreate) createSpec() (*DynoResult, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := drc.mutation.PowerKw(); ok {
 		_spec.SetField(dynoresult.FieldPowerKw, field.TypeFloat64, value)
-		_node.PowerKw = value
+		_node.PowerKw = &value
 	}
 	if value, ok := drc.mutation.TorqueNm(); ok {
 		_spec.SetField(dynoresult.FieldTorqueNm, field.TypeFloat64, value)
-		_node.TorqueNm = value
+		_node.TorqueNm = &value
 	}
 	if nodes := drc.mutation.SessionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

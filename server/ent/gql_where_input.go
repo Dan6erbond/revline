@@ -2644,24 +2644,28 @@ type DynoResultWhereInput struct {
 	RpmLTE   *int  `json:"rpmLTE,omitempty"`
 
 	// "power_kw" field predicates.
-	PowerKw      *float64  `json:"powerKw,omitempty"`
-	PowerKwNEQ   *float64  `json:"powerKwNEQ,omitempty"`
-	PowerKwIn    []float64 `json:"powerKwIn,omitempty"`
-	PowerKwNotIn []float64 `json:"powerKwNotIn,omitempty"`
-	PowerKwGT    *float64  `json:"powerKwGT,omitempty"`
-	PowerKwGTE   *float64  `json:"powerKwGTE,omitempty"`
-	PowerKwLT    *float64  `json:"powerKwLT,omitempty"`
-	PowerKwLTE   *float64  `json:"powerKwLTE,omitempty"`
+	PowerKw       *float64  `json:"powerKw,omitempty"`
+	PowerKwNEQ    *float64  `json:"powerKwNEQ,omitempty"`
+	PowerKwIn     []float64 `json:"powerKwIn,omitempty"`
+	PowerKwNotIn  []float64 `json:"powerKwNotIn,omitempty"`
+	PowerKwGT     *float64  `json:"powerKwGT,omitempty"`
+	PowerKwGTE    *float64  `json:"powerKwGTE,omitempty"`
+	PowerKwLT     *float64  `json:"powerKwLT,omitempty"`
+	PowerKwLTE    *float64  `json:"powerKwLTE,omitempty"`
+	PowerKwIsNil  bool      `json:"powerKwIsNil,omitempty"`
+	PowerKwNotNil bool      `json:"powerKwNotNil,omitempty"`
 
 	// "torque_nm" field predicates.
-	TorqueNm      *float64  `json:"torqueNm,omitempty"`
-	TorqueNmNEQ   *float64  `json:"torqueNmNEQ,omitempty"`
-	TorqueNmIn    []float64 `json:"torqueNmIn,omitempty"`
-	TorqueNmNotIn []float64 `json:"torqueNmNotIn,omitempty"`
-	TorqueNmGT    *float64  `json:"torqueNmGT,omitempty"`
-	TorqueNmGTE   *float64  `json:"torqueNmGTE,omitempty"`
-	TorqueNmLT    *float64  `json:"torqueNmLT,omitempty"`
-	TorqueNmLTE   *float64  `json:"torqueNmLTE,omitempty"`
+	TorqueNm       *float64  `json:"torqueNm,omitempty"`
+	TorqueNmNEQ    *float64  `json:"torqueNmNEQ,omitempty"`
+	TorqueNmIn     []float64 `json:"torqueNmIn,omitempty"`
+	TorqueNmNotIn  []float64 `json:"torqueNmNotIn,omitempty"`
+	TorqueNmGT     *float64  `json:"torqueNmGT,omitempty"`
+	TorqueNmGTE    *float64  `json:"torqueNmGTE,omitempty"`
+	TorqueNmLT     *float64  `json:"torqueNmLT,omitempty"`
+	TorqueNmLTE    *float64  `json:"torqueNmLTE,omitempty"`
+	TorqueNmIsNil  bool      `json:"torqueNmIsNil,omitempty"`
+	TorqueNmNotNil bool      `json:"torqueNmNotNil,omitempty"`
 
 	// "session" edge predicates.
 	HasSession     *bool                    `json:"hasSession,omitempty"`
@@ -2859,6 +2863,12 @@ func (i *DynoResultWhereInput) P() (predicate.DynoResult, error) {
 	if i.PowerKwLTE != nil {
 		predicates = append(predicates, dynoresult.PowerKwLTE(*i.PowerKwLTE))
 	}
+	if i.PowerKwIsNil {
+		predicates = append(predicates, dynoresult.PowerKwIsNil())
+	}
+	if i.PowerKwNotNil {
+		predicates = append(predicates, dynoresult.PowerKwNotNil())
+	}
 	if i.TorqueNm != nil {
 		predicates = append(predicates, dynoresult.TorqueNmEQ(*i.TorqueNm))
 	}
@@ -2882,6 +2892,12 @@ func (i *DynoResultWhereInput) P() (predicate.DynoResult, error) {
 	}
 	if i.TorqueNmLTE != nil {
 		predicates = append(predicates, dynoresult.TorqueNmLTE(*i.TorqueNmLTE))
+	}
+	if i.TorqueNmIsNil {
+		predicates = append(predicates, dynoresult.TorqueNmIsNil())
+	}
+	if i.TorqueNmNotNil {
+		predicates = append(predicates, dynoresult.TorqueNmNotNil())
 	}
 
 	if i.HasSession != nil {

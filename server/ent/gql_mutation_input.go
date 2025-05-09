@@ -705,8 +705,8 @@ type CreateDynoResultInput struct {
 	CreateTime *time.Time
 	UpdateTime *time.Time
 	Rpm        int
-	PowerKw    float64
-	TorqueNm   float64
+	PowerKw    *float64
+	TorqueNm   *float64
 	SessionID  uuid.UUID
 }
 
@@ -719,8 +719,12 @@ func (i *CreateDynoResultInput) Mutate(m *DynoResultMutation) {
 		m.SetUpdateTime(*v)
 	}
 	m.SetRpm(i.Rpm)
-	m.SetPowerKw(i.PowerKw)
-	m.SetTorqueNm(i.TorqueNm)
+	if v := i.PowerKw; v != nil {
+		m.SetPowerKw(*v)
+	}
+	if v := i.TorqueNm; v != nil {
+		m.SetTorqueNm(*v)
+	}
 	m.SetSessionID(i.SessionID)
 }
 
@@ -732,11 +736,13 @@ func (c *DynoResultCreate) SetInput(i CreateDynoResultInput) *DynoResultCreate {
 
 // UpdateDynoResultInput represents a mutation input for updating dynoresults.
 type UpdateDynoResultInput struct {
-	UpdateTime *time.Time
-	Rpm        *int
-	PowerKw    *float64
-	TorqueNm   *float64
-	SessionID  *uuid.UUID
+	UpdateTime    *time.Time
+	Rpm           *int
+	ClearPowerKw  bool
+	PowerKw       *float64
+	ClearTorqueNm bool
+	TorqueNm      *float64
+	SessionID     *uuid.UUID
 }
 
 // Mutate applies the UpdateDynoResultInput on the DynoResultMutation builder.
@@ -747,8 +753,14 @@ func (i *UpdateDynoResultInput) Mutate(m *DynoResultMutation) {
 	if v := i.Rpm; v != nil {
 		m.SetRpm(*v)
 	}
+	if i.ClearPowerKw {
+		m.ClearPowerKw()
+	}
 	if v := i.PowerKw; v != nil {
 		m.SetPowerKw(*v)
+	}
+	if i.ClearTorqueNm {
+		m.ClearTorqueNm()
 	}
 	if v := i.TorqueNm; v != nil {
 		m.SetTorqueNm(*v)
