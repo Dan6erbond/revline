@@ -147,7 +147,16 @@ export default function Session() {
 
   const [mutate, { loading }] = useMutation(createDynoResult, {
     update(cache, res) {
-      if (!res.data?.createDynoResult || !data.dynoSession) return;
+      if (!res.data?.createDynoResult) return;
+
+      const data = cache.readQuery({
+        query: getDynoSession,
+        variables: {
+          id: router.query.tab![1],
+        },
+      });
+
+      if (!data?.dynoSession) return;
 
       cache.writeQuery({
         query: getDynoSession,
@@ -260,7 +269,10 @@ export default function Session() {
             });
         }
       })
-    ).then(onBulkAddClose);
+    ).then(() => {
+      setBulkAddResults("");
+      onBulkAddClose();
+    });
   };
 
   return (
