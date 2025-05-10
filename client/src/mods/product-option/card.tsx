@@ -59,7 +59,7 @@ export function ProductOptionCard({
           </div>
         )}
 
-        {o.pros?.length > 0 && (
+        {o.pros && o.pros.length > 0 && (
           <div className="text-sm text-success-300">
             <div className="flex items-center gap-1">
               <BadgeCheck className="w-4 h-4" /> Pros:
@@ -72,7 +72,7 @@ export function ProductOptionCard({
           </div>
         )}
 
-        {o.cons?.length > 0 && (
+        {o.cons && o.cons.length > 0 && (
           <div className="text-sm text-danger-300">
             <div className="flex items-center gap-1">
               <XCircle className="w-4 h-4" /> Cons:
