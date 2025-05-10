@@ -31,7 +31,7 @@ export default function DocumentChip({
       }
       {...props}
     >
-      <span className="max-w-32 overflow-hidden text-ellipsis block">
+      <span className="max-w-32 overflow-hidden truncate block">
         {doc.name}
       </span>
     </Chip>

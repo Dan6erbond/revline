@@ -20,20 +20,6 @@ export function ServiceLogChip({
   href?: string;
   distanceUnit?: DistanceUnit | null;
 }) {
-  const content = (
-    <span className="ml-1 truncate">
-      Service @{" "}
-      {(log.odometerReading &&
-        getDistance(
-          log.odometerReading.readingKm,
-          distanceUnit ?? DistanceUnit.Miles
-        ).toLocaleString()) ??
-        "-"}{" "}
-      {distanceUnits[distanceUnit ?? DistanceUnit.Miles]} ·{" "}
-      {new Date(log.datePerformed).toLocaleDateString()}
-    </span>
-  );
-
   return (
     <Chip
       as={href ? Link : undefined}
@@ -41,7 +27,17 @@ export function ServiceLogChip({
       className="capitalize"
       startContent={<Wrench className="size-4 ml-1 text-muted-foreground" />}
     >
-      {content}
+      <span className="ml-1 truncate">
+        Service @{" "}
+        {(log.odometerReading &&
+          getDistance(
+            log.odometerReading.readingKm,
+            distanceUnit ?? DistanceUnit.Miles
+          ).toLocaleString()) ??
+          "-"}{" "}
+        {distanceUnits[distanceUnit ?? DistanceUnit.Miles]} ·{" "}
+        {new Date(log.datePerformed).toLocaleDateString()}
+      </span>
     </Chip>
   );
 }

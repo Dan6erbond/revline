@@ -9,6 +9,8 @@ import {
 import { Document, Page } from "react-pdf";
 import { FragmentType, graphql, useFragment } from "@/gql";
 
+import { DragSessionChip } from "../performance/drag-sessions/chip";
+import { DynoSessionChip } from "../performance/dyno-sessions/chip";
 import { ExpenseChip } from "../expenses/chip";
 import { FuelUpChip } from "../fuelups/chip";
 import { ServiceLogChip } from "../maintenance/service/logs/chip";
@@ -118,6 +120,28 @@ const getDocument = graphql(`
         notes
         isFullTank
       }
+      dragSession {
+        id
+        title
+        notes
+        results {
+          id
+          unit
+          value
+          result
+        }
+      }
+      dynoSession {
+        id
+        title
+        notes
+        results {
+          id
+          rpm
+          powerKw
+          torqueNm
+        }
+      }
     }
   }
 `);
@@ -168,6 +192,24 @@ export default function Details({
               log={data.document.serviceLog}
               href={`/cars/${router.query.id}`}
               distanceUnit={data.me.profile?.distanceUnit}
+            />
+          </div>
+        )}
+        {data.document.dragSession && (
+          <div className="flex flex-col gap-1">
+            <p>Drag session</p>
+            <DragSessionChip
+              session={data.document.dragSession}
+              href={`/cars/${router.query.id}/performance/drag-sessions/${data.document.dragSession.id}`}
+            />
+          </div>
+        )}
+        {data.document.dynoSession && (
+          <div className="flex flex-col gap-1">
+            <p>Dyno session</p>
+            <DynoSessionChip
+              session={data.document.dynoSession}
+              href={`/cars/${router.query.id}/performance/dyno-sessions/${data.document.dynoSession.id}`}
             />
           </div>
         )}
