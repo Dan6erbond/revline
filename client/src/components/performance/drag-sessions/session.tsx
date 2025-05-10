@@ -13,6 +13,7 @@ import {
   NumberInput,
   Select,
   SelectItem,
+  Spinner,
   Textarea,
   useDisclosure,
 } from "@heroui/react";
@@ -21,12 +22,29 @@ import { Gauge, Plus, Timer } from "lucide-react";
 import { useMutation, useSuspenseQuery } from "@apollo/client";
 
 import { DragResultUnit } from "@/gql/graphql";
+import { MinimalTiptapEditor } from "@/components/minimal-tiptap";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
 
 const getDragSession = graphql(`
   query GetDragSession($id: ID!) {
     dragSession(id: $id) {
+      id
+      title
+      notes
+      results {
+        id
+        unit
+        value
+        result
+      }
+    }
+  }
+`);
+
+const updateDragSession = graphql(`
+  mutation UpdateDragSession($id: ID!, $input: UpdateDragSessionInput!) {
+    updateDragSession(id: $id, input: $input) {
       id
       title
       notes
@@ -114,7 +132,9 @@ export default function Session() {
 
   const [unit, value] = watch(["unit", "value"]);
 
-  const [mutate] = useMutation(createDragResult, {
+  const [mutate, { loading }] = useMutation(updateDragSession);
+
+  const [mutateCreate] = useMutation(createDragResult, {
     update(cache, res) {
       if (!res.data?.createDragResult || !data.dragSession) return;
 
@@ -138,7 +158,7 @@ export default function Session() {
   });
 
   const onSubmit: SubmitHandler<Inputs> = ({ unit, value, result }) => {
-    mutate({
+    mutateCreate({
       variables: {
         input: {
           sessionID: router.query.tab![1],
@@ -155,14 +175,24 @@ export default function Session() {
   return (
     <div className="flex flex-col gap-4 container mx-auto">
       <h2 className="text-2xl">{data?.dragSession?.title}</h2>
-      <form>
-        <Textarea
-          label="Notes"
-          defaultValue={data.dragSession?.notes ?? undefined}
-          isDisabled
-          variant="bordered"
-        />
-      </form>
+      <MinimalTiptapEditor
+        placeholder="Notes"
+        throttleDelay={750}
+        value={data.dragSession.notes}
+        onChange={(c) => {
+          mutate({
+            variables: {
+              id: router.query.tab![1],
+              input: { notes: c },
+            },
+          });
+        }}
+        toolbarOptions={{
+          endContent: (
+            <div className="ml-auto">{loading && <Spinner size="sm" />}</div>
+          ),
+        }}
+      />
       <div className="flex justify-between">
         <h3 className="text-xl">Results</h3>
         <Button isIconOnly variant="bordered" radius="full" onPress={onOpen}>

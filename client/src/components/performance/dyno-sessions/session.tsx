@@ -53,13 +53,13 @@ import { getNm, getTorque } from "@/utils/torque";
 import { powerUnitsShort, torqueUnitsShort } from "@/literals";
 import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
 
-import DocumentChip from "../../documents/chip";
-import FancySwitch from "../../fancy-switch";
-import FileIcon from "../../file-icon";
+import DocumentChip from "@/components/documents/chip";
+import FancySwitch from "@/components/fancy-switch";
+import FileIcon from "@/components/file-icon";
 import { JSONContent } from "@tiptap/react";
-import { MinimalTiptapEditor } from "../../minimal-tiptap";
+import { MinimalTiptapEditor } from "@/components/minimal-tiptap";
 import type { Payload } from "recharts/types/component/DefaultLegendContent";
-import { getQueryParam } from "../../../utils/router";
+import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
 import { withNotification } from "@/utils/with-notification";
