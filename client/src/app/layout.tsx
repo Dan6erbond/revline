@@ -18,7 +18,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(
       new URL(
-        basePath,
         (process.env.COOLIFY_URL ?? "http://localhost:3001").split(",")[0]
       ).origin
     ),
