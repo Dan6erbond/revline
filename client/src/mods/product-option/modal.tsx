@@ -132,8 +132,6 @@ export default function ProductOptionModal({
   useEffect(() => {
     if (!po) return;
 
-    console.log(po.pros);
-
     reset({
       vendor: po.vendor || "",
       name: po.name || "",
@@ -207,6 +205,12 @@ export default function ProductOptionModal({
                     <div key={field.id} className="flex gap-2 items-center">
                       <Input
                         {...register(`pros.${idx}.value`)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            appendPro({ value: "" });
+                            e.preventDefault();
+                          }
+                        }}
                         className="flex-1"
                       />
                       <Button
@@ -234,6 +238,12 @@ export default function ProductOptionModal({
                     <div key={field.id} className="flex gap-2 items-center">
                       <Input
                         {...register(`cons.${idx}.value`)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            appendCon({ value: "" });
+                            e.preventDefault();
+                          }
+                        }}
                         className="flex-1"
                       />
                       <Button
@@ -262,11 +272,32 @@ export default function ProductOptionModal({
                       <Input
                         placeholder="Key"
                         {...register(`specs.${idx}.key`)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            (
+                              (
+                                e.currentTarget as HTMLInputElement
+                              ).parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.children
+                                .item(1)
+                                ?.children.item(0)
+                                ?.children.item(0)
+                                ?.children.item(0)
+                                ?.children.item(0) as HTMLElement
+                            )?.focus();
+                            e.preventDefault();
+                          }
+                        }}
                         className="w-1/2"
                       />
                       <Input
                         placeholder="Value"
                         {...register(`specs.${idx}.value`)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            appendSpec({ key: "", value: "" });
+                            e.preventDefault();
+                          }
+                        }}
                         className="w-1/2"
                       />
                       <Button
