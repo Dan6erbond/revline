@@ -2340,23 +2340,6 @@ type DragSessionWhereInput struct {
 	TitleEqualFold    *string  `json:"titleEqualFold,omitempty"`
 	TitleContainsFold *string  `json:"titleContainsFold,omitempty"`
 
-	// "notes" field predicates.
-	Notes             *string  `json:"notes,omitempty"`
-	NotesNEQ          *string  `json:"notesNEQ,omitempty"`
-	NotesIn           []string `json:"notesIn,omitempty"`
-	NotesNotIn        []string `json:"notesNotIn,omitempty"`
-	NotesGT           *string  `json:"notesGT,omitempty"`
-	NotesGTE          *string  `json:"notesGTE,omitempty"`
-	NotesLT           *string  `json:"notesLT,omitempty"`
-	NotesLTE          *string  `json:"notesLTE,omitempty"`
-	NotesContains     *string  `json:"notesContains,omitempty"`
-	NotesHasPrefix    *string  `json:"notesHasPrefix,omitempty"`
-	NotesHasSuffix    *string  `json:"notesHasSuffix,omitempty"`
-	NotesIsNil        bool     `json:"notesIsNil,omitempty"`
-	NotesNotNil       bool     `json:"notesNotNil,omitempty"`
-	NotesEqualFold    *string  `json:"notesEqualFold,omitempty"`
-	NotesContainsFold *string  `json:"notesContainsFold,omitempty"`
-
 	// "car" edge predicates.
 	HasCar     *bool            `json:"hasCar,omitempty"`
 	HasCarWith []*CarWhereInput `json:"hasCarWith,omitempty"`
@@ -2551,51 +2534,6 @@ func (i *DragSessionWhereInput) P() (predicate.DragSession, error) {
 	}
 	if i.TitleContainsFold != nil {
 		predicates = append(predicates, dragsession.TitleContainsFold(*i.TitleContainsFold))
-	}
-	if i.Notes != nil {
-		predicates = append(predicates, dragsession.NotesEQ(*i.Notes))
-	}
-	if i.NotesNEQ != nil {
-		predicates = append(predicates, dragsession.NotesNEQ(*i.NotesNEQ))
-	}
-	if len(i.NotesIn) > 0 {
-		predicates = append(predicates, dragsession.NotesIn(i.NotesIn...))
-	}
-	if len(i.NotesNotIn) > 0 {
-		predicates = append(predicates, dragsession.NotesNotIn(i.NotesNotIn...))
-	}
-	if i.NotesGT != nil {
-		predicates = append(predicates, dragsession.NotesGT(*i.NotesGT))
-	}
-	if i.NotesGTE != nil {
-		predicates = append(predicates, dragsession.NotesGTE(*i.NotesGTE))
-	}
-	if i.NotesLT != nil {
-		predicates = append(predicates, dragsession.NotesLT(*i.NotesLT))
-	}
-	if i.NotesLTE != nil {
-		predicates = append(predicates, dragsession.NotesLTE(*i.NotesLTE))
-	}
-	if i.NotesContains != nil {
-		predicates = append(predicates, dragsession.NotesContains(*i.NotesContains))
-	}
-	if i.NotesHasPrefix != nil {
-		predicates = append(predicates, dragsession.NotesHasPrefix(*i.NotesHasPrefix))
-	}
-	if i.NotesHasSuffix != nil {
-		predicates = append(predicates, dragsession.NotesHasSuffix(*i.NotesHasSuffix))
-	}
-	if i.NotesIsNil {
-		predicates = append(predicates, dragsession.NotesIsNil())
-	}
-	if i.NotesNotNil {
-		predicates = append(predicates, dragsession.NotesNotNil())
-	}
-	if i.NotesEqualFold != nil {
-		predicates = append(predicates, dragsession.NotesEqualFold(*i.NotesEqualFold))
-	}
-	if i.NotesContainsFold != nil {
-		predicates = append(predicates, dragsession.NotesContainsFold(*i.NotesContainsFold))
 	}
 
 	if i.HasCar != nil {

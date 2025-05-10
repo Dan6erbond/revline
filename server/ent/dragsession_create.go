@@ -59,16 +59,8 @@ func (dsc *DragSessionCreate) SetTitle(s string) *DragSessionCreate {
 }
 
 // SetNotes sets the "notes" field.
-func (dsc *DragSessionCreate) SetNotes(s string) *DragSessionCreate {
-	dsc.mutation.SetNotes(s)
-	return dsc
-}
-
-// SetNillableNotes sets the "notes" field if the given value is not nil.
-func (dsc *DragSessionCreate) SetNillableNotes(s *string) *DragSessionCreate {
-	if s != nil {
-		dsc.SetNotes(*s)
-	}
+func (dsc *DragSessionCreate) SetNotes(m map[string]interface{}) *DragSessionCreate {
+	dsc.mutation.SetNotes(m)
 	return dsc
 }
 
@@ -238,8 +230,8 @@ func (dsc *DragSessionCreate) createSpec() (*DragSession, *sqlgraph.CreateSpec) 
 		_node.Title = value
 	}
 	if value, ok := dsc.mutation.Notes(); ok {
-		_spec.SetField(dragsession.FieldNotes, field.TypeString, value)
-		_node.Notes = &value
+		_spec.SetField(dragsession.FieldNotes, field.TypeJSON, value)
+		_node.Notes = value
 	}
 	if nodes := dsc.mutation.CarIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

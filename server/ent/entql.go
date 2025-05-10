@@ -141,7 +141,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			dragsession.FieldCreateTime: {Type: field.TypeTime, Column: dragsession.FieldCreateTime},
 			dragsession.FieldUpdateTime: {Type: field.TypeTime, Column: dragsession.FieldUpdateTime},
 			dragsession.FieldTitle:      {Type: field.TypeString, Column: dragsession.FieldTitle},
-			dragsession.FieldNotes:      {Type: field.TypeString, Column: dragsession.FieldNotes},
+			dragsession.FieldNotes:      {Type: field.TypeJSON, Column: dragsession.FieldNotes},
 		},
 	}
 	graph.Nodes[6] = &sqlgraph.Node{
@@ -2088,8 +2088,8 @@ func (f *DragSessionFilter) WhereTitle(p entql.StringP) {
 	f.Where(p.Field(dragsession.FieldTitle))
 }
 
-// WhereNotes applies the entql string predicate on the notes field.
-func (f *DragSessionFilter) WhereNotes(p entql.StringP) {
+// WhereNotes applies the entql json.RawMessage predicate on the notes field.
+func (f *DragSessionFilter) WhereNotes(p entql.BytesP) {
 	f.Where(p.Field(dragsession.FieldNotes))
 }
 

@@ -7991,9 +7991,9 @@ func (ec *executionContext) _DragSession_notes(ctx context.Context, field graphq
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(map[string]interface{})
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DragSession_notes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8003,7 +8003,7 @@ func (ec *executionContext) fieldContext_DragSession_notes(_ context.Context, fi
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Map does not have child fields")
 		},
 	}
 	return fc, nil
@@ -26316,7 +26316,7 @@ func (ec *executionContext) unmarshalInputCreateDragSessionInput(ctx context.Con
 			it.Title = data
 		case "notes":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOMap2map(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -28421,7 +28421,7 @@ func (ec *executionContext) unmarshalInputDragSessionWhereInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasResults", "hasResultsWith", "hasDocuments", "hasDocumentsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "hasCar", "hasCarWith", "hasResults", "hasResultsWith", "hasDocuments", "hasDocumentsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -28708,111 +28708,6 @@ func (ec *executionContext) unmarshalInputDragSessionWhereInput(ctx context.Cont
 				return it, err
 			}
 			it.TitleContainsFold = data
-		case "notes":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Notes = data
-		case "notesNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesNEQ"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesNEQ = data
-		case "notesIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesIn = data
-		case "notesNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesNotIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesNotIn = data
-		case "notesGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesGT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesGT = data
-		case "notesGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesGTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesGTE = data
-		case "notesLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesLT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesLT = data
-		case "notesLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesLTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesLTE = data
-		case "notesContains":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesContains"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesContains = data
-		case "notesHasPrefix":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesHasPrefix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesHasPrefix = data
-		case "notesHasSuffix":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesHasSuffix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesHasSuffix = data
-		case "notesIsNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesIsNil = data
-		case "notesNotNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesNotNil = data
-		case "notesEqualFold":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesEqualFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesEqualFold = data
-		case "notesContainsFold":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesContainsFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesContainsFold = data
 		case "hasCar":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCar"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -38109,7 +38004,7 @@ func (ec *executionContext) unmarshalInputUpdateDragSessionInput(ctx context.Con
 			it.Title = data
 		case "notes":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOMap2map(ctx, v)
 			if err != nil {
 				return it, err
 			}

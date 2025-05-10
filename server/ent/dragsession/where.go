@@ -71,11 +71,6 @@ func Title(v string) predicate.DragSession {
 	return predicate.DragSession(sql.FieldEQ(FieldTitle, v))
 }
 
-// Notes applies equality check predicate on the "notes" field. It's identical to NotesEQ.
-func Notes(v string) predicate.DragSession {
-	return predicate.DragSession(sql.FieldEQ(FieldNotes, v))
-}
-
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.DragSession {
 	return predicate.DragSession(sql.FieldEQ(FieldCreateTime, v))
@@ -221,61 +216,6 @@ func TitleContainsFold(v string) predicate.DragSession {
 	return predicate.DragSession(sql.FieldContainsFold(FieldTitle, v))
 }
 
-// NotesEQ applies the EQ predicate on the "notes" field.
-func NotesEQ(v string) predicate.DragSession {
-	return predicate.DragSession(sql.FieldEQ(FieldNotes, v))
-}
-
-// NotesNEQ applies the NEQ predicate on the "notes" field.
-func NotesNEQ(v string) predicate.DragSession {
-	return predicate.DragSession(sql.FieldNEQ(FieldNotes, v))
-}
-
-// NotesIn applies the In predicate on the "notes" field.
-func NotesIn(vs ...string) predicate.DragSession {
-	return predicate.DragSession(sql.FieldIn(FieldNotes, vs...))
-}
-
-// NotesNotIn applies the NotIn predicate on the "notes" field.
-func NotesNotIn(vs ...string) predicate.DragSession {
-	return predicate.DragSession(sql.FieldNotIn(FieldNotes, vs...))
-}
-
-// NotesGT applies the GT predicate on the "notes" field.
-func NotesGT(v string) predicate.DragSession {
-	return predicate.DragSession(sql.FieldGT(FieldNotes, v))
-}
-
-// NotesGTE applies the GTE predicate on the "notes" field.
-func NotesGTE(v string) predicate.DragSession {
-	return predicate.DragSession(sql.FieldGTE(FieldNotes, v))
-}
-
-// NotesLT applies the LT predicate on the "notes" field.
-func NotesLT(v string) predicate.DragSession {
-	return predicate.DragSession(sql.FieldLT(FieldNotes, v))
-}
-
-// NotesLTE applies the LTE predicate on the "notes" field.
-func NotesLTE(v string) predicate.DragSession {
-	return predicate.DragSession(sql.FieldLTE(FieldNotes, v))
-}
-
-// NotesContains applies the Contains predicate on the "notes" field.
-func NotesContains(v string) predicate.DragSession {
-	return predicate.DragSession(sql.FieldContains(FieldNotes, v))
-}
-
-// NotesHasPrefix applies the HasPrefix predicate on the "notes" field.
-func NotesHasPrefix(v string) predicate.DragSession {
-	return predicate.DragSession(sql.FieldHasPrefix(FieldNotes, v))
-}
-
-// NotesHasSuffix applies the HasSuffix predicate on the "notes" field.
-func NotesHasSuffix(v string) predicate.DragSession {
-	return predicate.DragSession(sql.FieldHasSuffix(FieldNotes, v))
-}
-
 // NotesIsNil applies the IsNil predicate on the "notes" field.
 func NotesIsNil() predicate.DragSession {
 	return predicate.DragSession(sql.FieldIsNull(FieldNotes))
@@ -284,16 +224,6 @@ func NotesIsNil() predicate.DragSession {
 // NotesNotNil applies the NotNil predicate on the "notes" field.
 func NotesNotNil() predicate.DragSession {
 	return predicate.DragSession(sql.FieldNotNull(FieldNotes))
-}
-
-// NotesEqualFold applies the EqualFold predicate on the "notes" field.
-func NotesEqualFold(v string) predicate.DragSession {
-	return predicate.DragSession(sql.FieldEqualFold(FieldNotes, v))
-}
-
-// NotesContainsFold applies the ContainsFold predicate on the "notes" field.
-func NotesContainsFold(v string) predicate.DragSession {
-	return predicate.DragSession(sql.FieldContainsFold(FieldNotes, v))
 }
 
 // HasCar applies the HasEdge predicate on the "car" edge.

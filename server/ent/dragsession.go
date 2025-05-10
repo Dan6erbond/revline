@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -26,7 +27,7 @@ type DragSession struct {
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// Notes holds the value of the "notes" field.
-	Notes *string `json:"notes,omitempty"`
+	Notes map[string]interface{} `json:"notes,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DragSessionQuery when eager-loading is set.
 	Edges             DragSessionEdges `json:"edges"`
@@ -86,7 +87,9 @@ func (*DragSession) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case dragsession.FieldTitle, dragsession.FieldNotes:
+		case dragsession.FieldNotes:
+			values[i] = new([]byte)
+		case dragsession.FieldTitle:
 			values[i] = new(sql.NullString)
 		case dragsession.FieldCreateTime, dragsession.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
@@ -134,11 +137,12 @@ func (ds *DragSession) assignValues(columns []string, values []any) error {
 				ds.Title = value.String
 			}
 		case dragsession.FieldNotes:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field notes", values[i])
-			} else if value.Valid {
-				ds.Notes = new(string)
-				*ds.Notes = value.String
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &ds.Notes); err != nil {
+					return fmt.Errorf("unmarshal field notes: %w", err)
+				}
 			}
 		case dragsession.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -207,10 +211,8 @@ func (ds *DragSession) String() string {
 	builder.WriteString("title=")
 	builder.WriteString(ds.Title)
 	builder.WriteString(", ")
-	if v := ds.Notes; v != nil {
-		builder.WriteString("notes=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("notes=")
+	builder.WriteString(fmt.Sprintf("%v", ds.Notes))
 	builder.WriteByte(')')
 	return builder.String()
 }

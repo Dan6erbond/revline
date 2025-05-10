@@ -643,7 +643,7 @@ type CreateDragSessionInput struct {
 	CreateTime  *time.Time
 	UpdateTime  *time.Time
 	Title       string
-	Notes       *string
+	Notes       map[string]interface{}
 	CarID       uuid.UUID
 	ResultIDs   []uuid.UUID
 	DocumentIDs []uuid.UUID
@@ -659,7 +659,7 @@ func (i *CreateDragSessionInput) Mutate(m *DragSessionMutation) {
 	}
 	m.SetTitle(i.Title)
 	if v := i.Notes; v != nil {
-		m.SetNotes(*v)
+		m.SetNotes(v)
 	}
 	m.SetCarID(i.CarID)
 	if v := i.ResultIDs; len(v) > 0 {
@@ -681,7 +681,7 @@ type UpdateDragSessionInput struct {
 	UpdateTime        *time.Time
 	Title             *string
 	ClearNotes        bool
-	Notes             *string
+	Notes             map[string]interface{}
 	CarID             *uuid.UUID
 	ClearResults      bool
 	AddResultIDs      []uuid.UUID
@@ -703,7 +703,7 @@ func (i *UpdateDragSessionInput) Mutate(m *DragSessionMutation) {
 		m.ClearNotes()
 	}
 	if v := i.Notes; v != nil {
-		m.SetNotes(*v)
+		m.SetNotes(v)
 	}
 	if v := i.CarID; v != nil {
 		m.SetCarID(*v)

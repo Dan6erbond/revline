@@ -21,9 +21,11 @@ func (DragSession) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.String("title"),
-		field.String("notes").
+		field.JSON("notes", map[string]any{}).
 			Optional().
-			Nillable(),
+			Annotations(
+				entgql.Type("Map"),
+			),
 	}
 }
 

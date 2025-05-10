@@ -53,16 +53,8 @@ func (dsu *DragSessionUpdate) SetNillableTitle(s *string) *DragSessionUpdate {
 }
 
 // SetNotes sets the "notes" field.
-func (dsu *DragSessionUpdate) SetNotes(s string) *DragSessionUpdate {
-	dsu.mutation.SetNotes(s)
-	return dsu
-}
-
-// SetNillableNotes sets the "notes" field if the given value is not nil.
-func (dsu *DragSessionUpdate) SetNillableNotes(s *string) *DragSessionUpdate {
-	if s != nil {
-		dsu.SetNotes(*s)
-	}
+func (dsu *DragSessionUpdate) SetNotes(m map[string]interface{}) *DragSessionUpdate {
+	dsu.mutation.SetNotes(m)
 	return dsu
 }
 
@@ -229,10 +221,10 @@ func (dsu *DragSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(dragsession.FieldTitle, field.TypeString, value)
 	}
 	if value, ok := dsu.mutation.Notes(); ok {
-		_spec.SetField(dragsession.FieldNotes, field.TypeString, value)
+		_spec.SetField(dragsession.FieldNotes, field.TypeJSON, value)
 	}
 	if dsu.mutation.NotesCleared() {
-		_spec.ClearField(dragsession.FieldNotes, field.TypeString)
+		_spec.ClearField(dragsession.FieldNotes, field.TypeJSON)
 	}
 	if dsu.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -394,16 +386,8 @@ func (dsuo *DragSessionUpdateOne) SetNillableTitle(s *string) *DragSessionUpdate
 }
 
 // SetNotes sets the "notes" field.
-func (dsuo *DragSessionUpdateOne) SetNotes(s string) *DragSessionUpdateOne {
-	dsuo.mutation.SetNotes(s)
-	return dsuo
-}
-
-// SetNillableNotes sets the "notes" field if the given value is not nil.
-func (dsuo *DragSessionUpdateOne) SetNillableNotes(s *string) *DragSessionUpdateOne {
-	if s != nil {
-		dsuo.SetNotes(*s)
-	}
+func (dsuo *DragSessionUpdateOne) SetNotes(m map[string]interface{}) *DragSessionUpdateOne {
+	dsuo.mutation.SetNotes(m)
 	return dsuo
 }
 
@@ -600,10 +584,10 @@ func (dsuo *DragSessionUpdateOne) sqlSave(ctx context.Context) (_node *DragSessi
 		_spec.SetField(dragsession.FieldTitle, field.TypeString, value)
 	}
 	if value, ok := dsuo.mutation.Notes(); ok {
-		_spec.SetField(dragsession.FieldNotes, field.TypeString, value)
+		_spec.SetField(dragsession.FieldNotes, field.TypeJSON, value)
 	}
 	if dsuo.mutation.NotesCleared() {
-		_spec.ClearField(dragsession.FieldNotes, field.TypeString)
+		_spec.ClearField(dragsession.FieldNotes, field.TypeJSON)
 	}
 	if dsuo.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{

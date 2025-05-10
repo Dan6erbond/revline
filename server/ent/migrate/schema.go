@@ -178,7 +178,7 @@ var (
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "title", Type: field.TypeString},
-		{Name: "notes", Type: field.TypeString, Nullable: true},
+		{Name: "notes", Type: field.TypeJSON, Nullable: true},
 		{Name: "car_drag_sessions", Type: field.TypeUUID},
 	}
 	// DragSessionsTable holds the schema information for the "drag_sessions" table.
