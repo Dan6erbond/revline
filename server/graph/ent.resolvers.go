@@ -12,16 +12,6 @@ import (
 	"github.com/spf13/cast"
 )
 
-// Pros is the resolver for the pros field.
-func (r *modProductOptionResolver) Pros(ctx context.Context, obj *ent.ModProductOption) (any, error) {
-	return obj.Pros, nil
-}
-
-// Cons is the resolver for the cons field.
-func (r *modProductOptionResolver) Cons(ctx context.Context, obj *ent.ModProductOption) (any, error) {
-	return obj.Cons, nil
-}
-
 // Specs is the resolver for the specs field.
 func (r *modProductOptionResolver) Specs(ctx context.Context, obj *ent.ModProductOption) (map[string]any, error) {
 	converted := make(map[string]any, len(obj.Specs))
@@ -42,26 +32,6 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []string) ([]ent.Noder, e
 	panic(fmt.Errorf("not implemented: Nodes - nodes"))
 }
 
-// Pros is the resolver for the pros field.
-func (r *createModProductOptionInputResolver) Pros(ctx context.Context, obj *ent.CreateModProductOptionInput, data any) error {
-	converted := make([]string, len(data.([]any)))
-	for i, v := range data.([]any) {
-		converted[i] = cast.ToString(v)
-	}
-	obj.Pros = converted
-	return nil
-}
-
-// Cons is the resolver for the cons field.
-func (r *createModProductOptionInputResolver) Cons(ctx context.Context, obj *ent.CreateModProductOptionInput, data any) error {
-	converted := make([]string, len(data.([]any)))
-	for i, v := range data.([]any) {
-		converted[i] = cast.ToString(v)
-	}
-	obj.Cons = converted
-	return nil
-}
-
 // Specs is the resolver for the specs field.
 func (r *createModProductOptionInputResolver) Specs(ctx context.Context, obj *ent.CreateModProductOptionInput, data map[string]any) error {
 	converted := make(map[string]string, len(data))
@@ -69,46 +39,6 @@ func (r *createModProductOptionInputResolver) Specs(ctx context.Context, obj *en
 		converted[k] = cast.ToString(v)
 	}
 	obj.Specs = converted
-	return nil
-}
-
-// Pros is the resolver for the pros field.
-func (r *updateModProductOptionInputResolver) Pros(ctx context.Context, obj *ent.UpdateModProductOptionInput, data any) error {
-	converted := make([]string, len(data.([]any)))
-	for i, v := range data.([]any) {
-		converted[i] = cast.ToString(v)
-	}
-	obj.Pros = converted
-	return nil
-}
-
-// AppendPros is the resolver for the appendPros field.
-func (r *updateModProductOptionInputResolver) AppendPros(ctx context.Context, obj *ent.UpdateModProductOptionInput, data any) error {
-	converted := make([]string, len(data.([]any)))
-	for i, v := range data.([]any) {
-		converted[i] = cast.ToString(v)
-	}
-	obj.AppendPros = converted
-	return nil
-}
-
-// Cons is the resolver for the cons field.
-func (r *updateModProductOptionInputResolver) Cons(ctx context.Context, obj *ent.UpdateModProductOptionInput, data any) error {
-	converted := make([]string, len(data.([]any)))
-	for i, v := range data.([]any) {
-		converted[i] = cast.ToString(v)
-	}
-	obj.Cons = converted
-	return nil
-}
-
-// AppendCons is the resolver for the appendCons field.
-func (r *updateModProductOptionInputResolver) AppendCons(ctx context.Context, obj *ent.UpdateModProductOptionInput, data any) error {
-	converted := make([]string, len(data.([]any)))
-	for i, v := range data.([]any) {
-		converted[i] = cast.ToString(v)
-	}
-	obj.AppendCons = converted
 	return nil
 }
 

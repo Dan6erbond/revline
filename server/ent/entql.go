@@ -176,7 +176,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			dynosession.FieldCreateTime: {Type: field.TypeTime, Column: dynosession.FieldCreateTime},
 			dynosession.FieldUpdateTime: {Type: field.TypeTime, Column: dynosession.FieldUpdateTime},
 			dynosession.FieldTitle:      {Type: field.TypeString, Column: dynosession.FieldTitle},
-			dynosession.FieldNotes:      {Type: field.TypeString, Column: dynosession.FieldNotes},
+			dynosession.FieldNotes:      {Type: field.TypeJSON, Column: dynosession.FieldNotes},
 		},
 	}
 	graph.Nodes[8] = &sqlgraph.Node{
@@ -2269,8 +2269,8 @@ func (f *DynoSessionFilter) WhereTitle(p entql.StringP) {
 	f.Where(p.Field(dynosession.FieldTitle))
 }
 
-// WhereNotes applies the entql string predicate on the notes field.
-func (f *DynoSessionFilter) WhereNotes(p entql.StringP) {
+// WhereNotes applies the entql json.RawMessage predicate on the notes field.
+func (f *DynoSessionFilter) WhereNotes(p entql.BytesP) {
 	f.Where(p.Field(dynosession.FieldNotes))
 }
 

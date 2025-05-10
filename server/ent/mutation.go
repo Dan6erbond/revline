@@ -6611,7 +6611,7 @@ type DynoSessionMutation struct {
 	create_time      *time.Time
 	update_time      *time.Time
 	title            *string
-	notes            *string
+	notes            *map[string]interface{}
 	clearedFields    map[string]struct{}
 	car              *uuid.UUID
 	clearedcar       bool
@@ -6839,12 +6839,12 @@ func (m *DynoSessionMutation) ResetTitle() {
 }
 
 // SetNotes sets the "notes" field.
-func (m *DynoSessionMutation) SetNotes(s string) {
-	m.notes = &s
+func (m *DynoSessionMutation) SetNotes(value map[string]interface{}) {
+	m.notes = &value
 }
 
 // Notes returns the value of the "notes" field in the mutation.
-func (m *DynoSessionMutation) Notes() (r string, exists bool) {
+func (m *DynoSessionMutation) Notes() (r map[string]interface{}, exists bool) {
 	v := m.notes
 	if v == nil {
 		return
@@ -6855,7 +6855,7 @@ func (m *DynoSessionMutation) Notes() (r string, exists bool) {
 // OldNotes returns the old "notes" field's value of the DynoSession entity.
 // If the DynoSession object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DynoSessionMutation) OldNotes(ctx context.Context) (v *string, err error) {
+func (m *DynoSessionMutation) OldNotes(ctx context.Context) (v map[string]interface{}, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
 	}
@@ -7145,7 +7145,7 @@ func (m *DynoSessionMutation) SetField(name string, value ent.Value) error {
 		m.SetTitle(v)
 		return nil
 	case dynosession.FieldNotes:
-		v, ok := value.(string)
+		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

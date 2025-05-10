@@ -71,11 +71,6 @@ func Title(v string) predicate.DynoSession {
 	return predicate.DynoSession(sql.FieldEQ(FieldTitle, v))
 }
 
-// Notes applies equality check predicate on the "notes" field. It's identical to NotesEQ.
-func Notes(v string) predicate.DynoSession {
-	return predicate.DynoSession(sql.FieldEQ(FieldNotes, v))
-}
-
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.DynoSession {
 	return predicate.DynoSession(sql.FieldEQ(FieldCreateTime, v))
@@ -221,61 +216,6 @@ func TitleContainsFold(v string) predicate.DynoSession {
 	return predicate.DynoSession(sql.FieldContainsFold(FieldTitle, v))
 }
 
-// NotesEQ applies the EQ predicate on the "notes" field.
-func NotesEQ(v string) predicate.DynoSession {
-	return predicate.DynoSession(sql.FieldEQ(FieldNotes, v))
-}
-
-// NotesNEQ applies the NEQ predicate on the "notes" field.
-func NotesNEQ(v string) predicate.DynoSession {
-	return predicate.DynoSession(sql.FieldNEQ(FieldNotes, v))
-}
-
-// NotesIn applies the In predicate on the "notes" field.
-func NotesIn(vs ...string) predicate.DynoSession {
-	return predicate.DynoSession(sql.FieldIn(FieldNotes, vs...))
-}
-
-// NotesNotIn applies the NotIn predicate on the "notes" field.
-func NotesNotIn(vs ...string) predicate.DynoSession {
-	return predicate.DynoSession(sql.FieldNotIn(FieldNotes, vs...))
-}
-
-// NotesGT applies the GT predicate on the "notes" field.
-func NotesGT(v string) predicate.DynoSession {
-	return predicate.DynoSession(sql.FieldGT(FieldNotes, v))
-}
-
-// NotesGTE applies the GTE predicate on the "notes" field.
-func NotesGTE(v string) predicate.DynoSession {
-	return predicate.DynoSession(sql.FieldGTE(FieldNotes, v))
-}
-
-// NotesLT applies the LT predicate on the "notes" field.
-func NotesLT(v string) predicate.DynoSession {
-	return predicate.DynoSession(sql.FieldLT(FieldNotes, v))
-}
-
-// NotesLTE applies the LTE predicate on the "notes" field.
-func NotesLTE(v string) predicate.DynoSession {
-	return predicate.DynoSession(sql.FieldLTE(FieldNotes, v))
-}
-
-// NotesContains applies the Contains predicate on the "notes" field.
-func NotesContains(v string) predicate.DynoSession {
-	return predicate.DynoSession(sql.FieldContains(FieldNotes, v))
-}
-
-// NotesHasPrefix applies the HasPrefix predicate on the "notes" field.
-func NotesHasPrefix(v string) predicate.DynoSession {
-	return predicate.DynoSession(sql.FieldHasPrefix(FieldNotes, v))
-}
-
-// NotesHasSuffix applies the HasSuffix predicate on the "notes" field.
-func NotesHasSuffix(v string) predicate.DynoSession {
-	return predicate.DynoSession(sql.FieldHasSuffix(FieldNotes, v))
-}
-
 // NotesIsNil applies the IsNil predicate on the "notes" field.
 func NotesIsNil() predicate.DynoSession {
 	return predicate.DynoSession(sql.FieldIsNull(FieldNotes))
@@ -284,16 +224,6 @@ func NotesIsNil() predicate.DynoSession {
 // NotesNotNil applies the NotNil predicate on the "notes" field.
 func NotesNotNil() predicate.DynoSession {
 	return predicate.DynoSession(sql.FieldNotNull(FieldNotes))
-}
-
-// NotesEqualFold applies the EqualFold predicate on the "notes" field.
-func NotesEqualFold(v string) predicate.DynoSession {
-	return predicate.DynoSession(sql.FieldEqualFold(FieldNotes, v))
-}
-
-// NotesContainsFold applies the ContainsFold predicate on the "notes" field.
-func NotesContainsFold(v string) predicate.DynoSession {
-	return predicate.DynoSession(sql.FieldContainsFold(FieldNotes, v))
 }
 
 // HasCar applies the HasEdge predicate on the "car" edge.

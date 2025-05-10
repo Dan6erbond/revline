@@ -484,8 +484,6 @@ type MediaResolver interface {
 	Metadata(ctx context.Context, obj *ent.Media) (*minio.ObjectInfo, error)
 }
 type ModProductOptionResolver interface {
-	Pros(ctx context.Context, obj *ent.ModProductOption) (any, error)
-	Cons(ctx context.Context, obj *ent.ModProductOption) (any, error)
 	Specs(ctx context.Context, obj *ent.ModProductOption) (map[string]any, error)
 }
 type MutationResolver interface {
@@ -546,8 +544,6 @@ type CreateFuelUpInputResolver interface {
 	OdometerKm(ctx context.Context, obj *ent.CreateFuelUpInput, data *float64) error
 }
 type CreateModProductOptionInputResolver interface {
-	Pros(ctx context.Context, obj *ent.CreateModProductOptionInput, data any) error
-	Cons(ctx context.Context, obj *ent.CreateModProductOptionInput, data any) error
 	Specs(ctx context.Context, obj *ent.CreateModProductOptionInput, data map[string]any) error
 }
 type CreateServiceLogInputResolver interface {
@@ -555,12 +551,6 @@ type CreateServiceLogInputResolver interface {
 	OdometerKm(ctx context.Context, obj *ent.CreateServiceLogInput, data *float64) error
 }
 type UpdateModProductOptionInputResolver interface {
-	Pros(ctx context.Context, obj *ent.UpdateModProductOptionInput, data any) error
-	AppendPros(ctx context.Context, obj *ent.UpdateModProductOptionInput, data any) error
-
-	Cons(ctx context.Context, obj *ent.UpdateModProductOptionInput, data any) error
-	AppendCons(ctx context.Context, obj *ent.UpdateModProductOptionInput, data any) error
-
 	Specs(ctx context.Context, obj *ent.UpdateModProductOptionInput, data map[string]any) error
 }
 
@@ -8766,9 +8756,9 @@ func (ec *executionContext) _DynoSession_notes(ctx context.Context, field graphq
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(map[string]interface{})
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DynoSession_notes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8778,7 +8768,7 @@ func (ec *executionContext) fieldContext_DynoSession_notes(_ context.Context, fi
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Map does not have child fields")
 		},
 	}
 	return fc, nil
@@ -11940,7 +11930,7 @@ func (ec *executionContext) _ModProductOption_pros(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.ModProductOption().Pros(rctx, obj)
+		return obj.Pros, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11949,19 +11939,19 @@ func (ec *executionContext) _ModProductOption_pros(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(any)
+	res := resTmp.([]string)
 	fc.Result = res
-	return ec.marshalOAny2interface(ctx, field.Selections, res)
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ModProductOption_pros(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ModProductOption",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Any does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -11981,7 +11971,7 @@ func (ec *executionContext) _ModProductOption_cons(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.ModProductOption().Cons(rctx, obj)
+		return obj.Cons, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11990,19 +11980,19 @@ func (ec *executionContext) _ModProductOption_cons(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(any)
+	res := resTmp.([]string)
 	fc.Result = res
-	return ec.marshalOAny2interface(ctx, field.Selections, res)
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ModProductOption_cons(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ModProductOption",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Any does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -26457,7 +26447,7 @@ func (ec *executionContext) unmarshalInputCreateDynoSessionInput(ctx context.Con
 			it.Title = data
 		case "notes":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOMap2map(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -26918,22 +26908,18 @@ func (ec *executionContext) unmarshalInputCreateModProductOptionInput(ctx contex
 			it.Notes = data
 		case "pros":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pros"))
-			data, err := ec.unmarshalOAny2interface(ctx, v)
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.CreateModProductOptionInput().Pros(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.Pros = data
 		case "cons":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cons"))
-			data, err := ec.unmarshalOAny2interface(ctx, v)
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.CreateModProductOptionInput().Cons(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.Cons = data
 		case "specs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("specs"))
 			data, err := ec.unmarshalOMap2map(ctx, v)
@@ -29301,7 +29287,7 @@ func (ec *executionContext) unmarshalInputDynoSessionWhereInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasResults", "hasResultsWith", "hasDocuments", "hasDocumentsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "hasCar", "hasCarWith", "hasResults", "hasResultsWith", "hasDocuments", "hasDocumentsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -29588,111 +29574,6 @@ func (ec *executionContext) unmarshalInputDynoSessionWhereInput(ctx context.Cont
 				return it, err
 			}
 			it.TitleContainsFold = data
-		case "notes":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Notes = data
-		case "notesNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesNEQ"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesNEQ = data
-		case "notesIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesIn = data
-		case "notesNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesNotIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesNotIn = data
-		case "notesGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesGT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesGT = data
-		case "notesGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesGTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesGTE = data
-		case "notesLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesLT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesLT = data
-		case "notesLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesLTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesLTE = data
-		case "notesContains":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesContains"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesContains = data
-		case "notesHasPrefix":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesHasPrefix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesHasPrefix = data
-		case "notesHasSuffix":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesHasSuffix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesHasSuffix = data
-		case "notesIsNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesIsNil = data
-		case "notesNotNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesNotNil = data
-		case "notesEqualFold":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesEqualFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesEqualFold = data
-		case "notesContainsFold":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesContainsFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesContainsFold = data
 		case "hasCar":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCar"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -38394,7 +38275,7 @@ func (ec *executionContext) unmarshalInputUpdateDynoSessionInput(ctx context.Con
 			it.Title = data
 		case "notes":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOMap2map(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -39026,22 +38907,18 @@ func (ec *executionContext) unmarshalInputUpdateModProductOptionInput(ctx contex
 			it.ClearNotes = data
 		case "pros":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pros"))
-			data, err := ec.unmarshalOAny2interface(ctx, v)
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.UpdateModProductOptionInput().Pros(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.Pros = data
 		case "appendPros":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("appendPros"))
-			data, err := ec.unmarshalOAny2interface(ctx, v)
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.UpdateModProductOptionInput().AppendPros(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.AppendPros = data
 		case "clearPros":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearPros"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
@@ -39051,22 +38928,18 @@ func (ec *executionContext) unmarshalInputUpdateModProductOptionInput(ctx contex
 			it.ClearPros = data
 		case "cons":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cons"))
-			data, err := ec.unmarshalOAny2interface(ctx, v)
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.UpdateModProductOptionInput().Cons(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.Cons = data
 		case "appendCons":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("appendCons"))
-			data, err := ec.unmarshalOAny2interface(ctx, v)
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.UpdateModProductOptionInput().AppendCons(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.AppendCons = data
 		case "clearCons":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearCons"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
@@ -43457,71 +43330,9 @@ func (ec *executionContext) _ModProductOption(ctx context.Context, sel ast.Selec
 		case "notes":
 			out.Values[i] = ec._ModProductOption_notes(ctx, field, obj)
 		case "pros":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ModProductOption_pros(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._ModProductOption_pros(ctx, field, obj)
 		case "cons":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ModProductOption_cons(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._ModProductOption_cons(ctx, field, obj)
 		case "specs":
 			field := field
 
@@ -47641,22 +47452,6 @@ func (ec *executionContext) unmarshalOAlbumWhereInput2ᚖgithubᚗcomᚋDan6erbo
 	}
 	res, err := ec.unmarshalInputAlbumWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOAny2interface(ctx context.Context, v any) (any, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalAny(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOAny2interface(ctx context.Context, sel ast.SelectionSet, v any) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalAny(v)
-	return res
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {

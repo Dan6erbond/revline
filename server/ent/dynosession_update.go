@@ -53,16 +53,8 @@ func (dsu *DynoSessionUpdate) SetNillableTitle(s *string) *DynoSessionUpdate {
 }
 
 // SetNotes sets the "notes" field.
-func (dsu *DynoSessionUpdate) SetNotes(s string) *DynoSessionUpdate {
-	dsu.mutation.SetNotes(s)
-	return dsu
-}
-
-// SetNillableNotes sets the "notes" field if the given value is not nil.
-func (dsu *DynoSessionUpdate) SetNillableNotes(s *string) *DynoSessionUpdate {
-	if s != nil {
-		dsu.SetNotes(*s)
-	}
+func (dsu *DynoSessionUpdate) SetNotes(m map[string]interface{}) *DynoSessionUpdate {
+	dsu.mutation.SetNotes(m)
 	return dsu
 }
 
@@ -229,10 +221,10 @@ func (dsu *DynoSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(dynosession.FieldTitle, field.TypeString, value)
 	}
 	if value, ok := dsu.mutation.Notes(); ok {
-		_spec.SetField(dynosession.FieldNotes, field.TypeString, value)
+		_spec.SetField(dynosession.FieldNotes, field.TypeJSON, value)
 	}
 	if dsu.mutation.NotesCleared() {
-		_spec.ClearField(dynosession.FieldNotes, field.TypeString)
+		_spec.ClearField(dynosession.FieldNotes, field.TypeJSON)
 	}
 	if dsu.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -394,16 +386,8 @@ func (dsuo *DynoSessionUpdateOne) SetNillableTitle(s *string) *DynoSessionUpdate
 }
 
 // SetNotes sets the "notes" field.
-func (dsuo *DynoSessionUpdateOne) SetNotes(s string) *DynoSessionUpdateOne {
-	dsuo.mutation.SetNotes(s)
-	return dsuo
-}
-
-// SetNillableNotes sets the "notes" field if the given value is not nil.
-func (dsuo *DynoSessionUpdateOne) SetNillableNotes(s *string) *DynoSessionUpdateOne {
-	if s != nil {
-		dsuo.SetNotes(*s)
-	}
+func (dsuo *DynoSessionUpdateOne) SetNotes(m map[string]interface{}) *DynoSessionUpdateOne {
+	dsuo.mutation.SetNotes(m)
 	return dsuo
 }
 
@@ -600,10 +584,10 @@ func (dsuo *DynoSessionUpdateOne) sqlSave(ctx context.Context) (_node *DynoSessi
 		_spec.SetField(dynosession.FieldTitle, field.TypeString, value)
 	}
 	if value, ok := dsuo.mutation.Notes(); ok {
-		_spec.SetField(dynosession.FieldNotes, field.TypeString, value)
+		_spec.SetField(dynosession.FieldNotes, field.TypeJSON, value)
 	}
 	if dsuo.mutation.NotesCleared() {
-		_spec.ClearField(dynosession.FieldNotes, field.TypeString)
+		_spec.ClearField(dynosession.FieldNotes, field.TypeJSON)
 	}
 	if dsuo.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{

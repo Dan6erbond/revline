@@ -59,16 +59,8 @@ func (dsc *DynoSessionCreate) SetTitle(s string) *DynoSessionCreate {
 }
 
 // SetNotes sets the "notes" field.
-func (dsc *DynoSessionCreate) SetNotes(s string) *DynoSessionCreate {
-	dsc.mutation.SetNotes(s)
-	return dsc
-}
-
-// SetNillableNotes sets the "notes" field if the given value is not nil.
-func (dsc *DynoSessionCreate) SetNillableNotes(s *string) *DynoSessionCreate {
-	if s != nil {
-		dsc.SetNotes(*s)
-	}
+func (dsc *DynoSessionCreate) SetNotes(m map[string]interface{}) *DynoSessionCreate {
+	dsc.mutation.SetNotes(m)
 	return dsc
 }
 
@@ -238,8 +230,8 @@ func (dsc *DynoSessionCreate) createSpec() (*DynoSession, *sqlgraph.CreateSpec) 
 		_node.Title = value
 	}
 	if value, ok := dsc.mutation.Notes(); ok {
-		_spec.SetField(dynosession.FieldNotes, field.TypeString, value)
-		_node.Notes = &value
+		_spec.SetField(dynosession.FieldNotes, field.TypeJSON, value)
+		_node.Notes = value
 	}
 	if nodes := dsc.mutation.CarIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

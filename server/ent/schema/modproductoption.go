@@ -38,12 +38,12 @@ func (ModProductOption) Fields() []ent.Field {
 		field.JSON("pros", []string{}).
 			Optional().
 			Annotations(
-				entgql.Type("Any"),
+				entgql.Type("[String!]"),
 			),
 		field.JSON("cons", []string{}).
 			Optional().
 			Annotations(
-				entgql.Type("Any"),
+				entgql.Type("[String!]"),
 			),
 		field.JSON("specs", map[string]string{}).
 			Optional().
