@@ -2,16 +2,16 @@ import * as React from "react";
 
 import { Button, Input, Switch, cn } from "@heroui/react";
 
-export interface LinkEditorProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface LinkEditorProps extends React.HTMLAttributes<HTMLFormElement> {
   defaultUrl?: string;
   defaultText?: string;
   defaultIsNewTab?: boolean;
   onSave: (url: string, text?: string, isNewTab?: boolean) => void;
 }
 
-export const LinkEditBlock = React.forwardRef<HTMLDivElement, LinkEditorProps>(
+export const LinkEditBlock = React.forwardRef<HTMLFormElement, LinkEditorProps>(
   ({ onSave, defaultIsNewTab, defaultUrl, defaultText, className }, ref) => {
-    const formRef = React.useRef<HTMLDivElement>(null);
+    const formRef = React.useRef<HTMLFormElement>(null);
     const [url, setUrl] = React.useState(defaultUrl || "");
     const [text, setText] = React.useState(defaultText || "");
     const [isNewTab, setIsNewTab] = React.useState(defaultIsNewTab || false);
@@ -38,10 +38,10 @@ export const LinkEditBlock = React.forwardRef<HTMLDivElement, LinkEditorProps>(
       [onSave, url, text, isNewTab]
     );
 
-    React.useImperativeHandle(ref, () => formRef.current as HTMLDivElement);
+    React.useImperativeHandle(ref, () => formRef.current as HTMLFormElement);
 
     return (
-      <div ref={formRef}>
+      <form ref={formRef} onSubmit={handleSave}>
         <div className={cn("flex flex-col gap-4", className)}>
           <Input
             type="url"
@@ -66,12 +66,12 @@ export const LinkEditBlock = React.forwardRef<HTMLDivElement, LinkEditorProps>(
           </Switch>
 
           <div className="flex justify-end space-x-2">
-            <Button type="button" onClick={handleSave}>
+            <Button type="submit">
               Save
             </Button>
           </div>
         </div>
-      </div>
+      </form>
     );
   }
 );
