@@ -10,12 +10,18 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Revline 1",
-  description:
-    "Revline is the ultimate app for car enthusiasts and DIY mechanics—track maintenance, log upgrades, and connect with your ride like never before.",
-};
-
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    metadataBase: new URL(
+      new URL(
+        (process.env.COOLIFY_URL ?? "http://localhost:3001").split(",")[0]
+      ).origin
+    ),
+    title: "Revline 1",
+    description:
+      "Revline is the ultimate app for car enthusiasts and DIY mechanics—track maintenance, log upgrades, and connect with your ride like never before.",
+  };
+}
 export default function RootLayout({
   children,
 }: Readonly<{
