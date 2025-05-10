@@ -1,6 +1,7 @@
 import { Button, Input, Textarea } from "@heroui/react";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
+import { MinimalTiptapEditor } from "../../minimal-tiptap";
 import React from "react";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
@@ -19,13 +20,13 @@ const createDynoSession = graphql(`
 
 type Inputs = {
   title: string;
-  notes: string;
+  notes: any;
 };
 
 export default function Create() {
   const router = useRouter();
 
-  const { register, handleSubmit } = useForm<Inputs>({
+  const { register, handleSubmit, control } = useForm<Inputs>({
     defaultValues: {},
   });
 
@@ -60,7 +61,17 @@ export default function Create() {
         {...register("title", { required: true })}
         variant="bordered"
       />
-      <Textarea label="Notes" {...register("notes")} variant="bordered" />
+      <Controller
+        control={control}
+        name="notes"
+        render={({ field }) => (
+          <MinimalTiptapEditor
+            placeholder="Notes"
+            throttleDelay={750}
+            {...field}
+          />
+        )}
+      />
       <Button type="submit" className="self-end">
         Create
       </Button>

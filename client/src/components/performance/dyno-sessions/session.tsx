@@ -1,9 +1,5 @@
 import {
   Button,
-  Card,
-  CardFooter,
-  CardHeader,
-  Chip,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -18,6 +14,7 @@ import {
   Select,
   SelectItem,
   Selection,
+  Spinner,
   Table,
   TableBody,
   TableCell,
@@ -59,6 +56,8 @@ import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
 import DocumentChip from "../../documents/chip";
 import FancySwitch from "../../fancy-switch";
 import FileIcon from "../../file-icon";
+import { JSONContent } from "@tiptap/react";
+import { MinimalTiptapEditor } from "../../minimal-tiptap";
 import type { Payload } from "recharts/types/component/DefaultLegendContent";
 import { getQueryParam } from "../../../utils/router";
 import { graphql } from "@/gql";
@@ -171,6 +170,8 @@ export default function Session() {
     },
   });
 
+  const [notes, setNotes] = useState<JSONContent>(data.dynoSession.notes);
+
   const { data: documentsData } = useQuery(getDocuments, {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
@@ -207,39 +208,42 @@ export default function Session() {
     defaultValues: {},
   });
 
-  const [mutate] = useMutation(updateDynoSession);
+  const [mutate, { loading }] = useMutation(updateDynoSession);
 
-  const [mutateCreate, { loading }] = useMutation(createDynoResult, {
-    update(cache, res) {
-      if (!res.data?.createDynoResult) return;
+  const [mutateCreate, { loading: isCreating }] = useMutation(
+    createDynoResult,
+    {
+      update(cache, res) {
+        if (!res.data?.createDynoResult) return;
 
-      const data = cache.readQuery({
-        query: getDynoSession,
-        variables: {
-          id: router.query.tab![1],
-        },
-      });
-
-      if (!data?.dynoSession) return;
-
-      cache.writeQuery({
-        query: getDynoSession,
-        variables: {
-          id: router.query.tab![1],
-        },
-        data: {
-          ...data,
-          dynoSession: {
-            ...data.dynoSession,
-            results: [
-              ...(data.dynoSession.results ?? []),
-              res.data.createDynoResult,
-            ],
+        const data = cache.readQuery({
+          query: getDynoSession,
+          variables: {
+            id: router.query.tab![1],
           },
-        },
-      });
-    },
-  });
+        });
+
+        if (!data?.dynoSession) return;
+
+        cache.writeQuery({
+          query: getDynoSession,
+          variables: {
+            id: router.query.tab![1],
+          },
+          data: {
+            ...data,
+            dynoSession: {
+              ...data.dynoSession,
+              results: [
+                ...(data.dynoSession.results ?? []),
+                res.data.createDynoResult,
+              ],
+            },
+          },
+        });
+      },
+    }
+  );
 
   const [mutateDelete, { loading: deleting }] = useMutation(deleteDynoResults, {
     update(cache, res, { variables }) {
@@ -343,14 +347,24 @@ export default function Session() {
     <div className="flex flex-col gap-8 container mx-auto">
       <div className="flex flex-col gap-4">
         <h2 className="text-2xl">{data?.dynoSession?.title}</h2>
-        <form>
-          <Textarea
-            label="Notes"
-            defaultValue={data.dynoSession?.notes ?? undefined}
-            isDisabled
-            variant="bordered"
-          />
-        </form>
+        <MinimalTiptapEditor
+          placeholder="Notes"
+          throttleDelay={750}
+          value={data.dynoSession.notes}
+          onChange={(c) => {
+            mutate({
+              variables: {
+                id: router.query.tab![1],
+                input: { notes: c },
+              },
+            });
+          }}
+          toolbarOptions={{
+            endContent: (
+              <div className="ml-auto">{loading && <Spinner size="sm" />}</div>
+            ),
+          }}
+        />
       </div>
       <div className="flex flex-col gap-4">
         <p>Documents</p>
@@ -697,7 +711,7 @@ export default function Session() {
                   color="primary"
                   type="submit"
                   form="result-form"
-                  isLoading={loading}
+                  isLoading={isCreating}
                 >
                   Save
                 </Button>
@@ -781,7 +795,7 @@ export default function Session() {
                   color="primary"
                   type="submit"
                   form="result-form"
-                  isLoading={loading}
+                  isLoading={isCreating}
                 >
                   Add
                 </Button>

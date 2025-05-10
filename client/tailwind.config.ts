@@ -23,6 +23,7 @@ export default {
   darkMode: "class",
   plugins: [
     heroui({
+      addCommonColors: true,
       themes: {
         light: {
           colors: {

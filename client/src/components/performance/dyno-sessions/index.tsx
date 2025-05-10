@@ -5,6 +5,8 @@ import Create from "./create";
 import Link from "next/link";
 import Session from "./session";
 import { Suspense } from "react";
+import { createExtensions } from "@/components/minimal-tiptap/hooks/use-minimal-tiptap";
+import { generateHTML } from "@tiptap/react";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { isUUID } from "@/utils/is-uuid";
@@ -73,7 +75,12 @@ export default function DynoSessions() {
           {session.notes && (
             <CardBody className="text-sm text-muted-foreground flex items-start gap-2">
               <FileText className="w-4 h-4 mt-0.5 text-muted" />
-              <span className="line-clamp-2">{session.notes}</span>
+              <span
+                className="line-clamp-2"
+                dangerouslySetInnerHTML={{
+                  __html: generateHTML(session.notes, createExtensions("")),
+                }}
+              />
             </CardBody>
           )}
 
