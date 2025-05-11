@@ -27,6 +27,7 @@ export default function FeatureTabs() {
           color="primary"
           variant="bordered"
           className="w-full flex flex-col items-center"
+          classNames={{ tabList: "max-w-full" }}
         >
           <Tab
             key="kanban"
