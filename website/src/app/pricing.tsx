@@ -1,7 +1,17 @@
-import { Card, CardBody, CardHeader, Chip, Divider, cn } from "@heroui/react";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Chip,
+  Divider,
+  Link,
+  cn,
+} from "@heroui/react";
+import React, { ReactNode } from "react";
 
 import { Check } from "lucide-react";
-import React from "react";
 
 function SubscriptionCard({
   isRecommended,
@@ -9,6 +19,7 @@ function SubscriptionCard({
   title,
   description,
   features,
+  footerContent,
 }: {
   price?: number;
   onSubscribe?(): void;
@@ -18,6 +29,7 @@ function SubscriptionCard({
   title: string;
   description: string;
   features: string[];
+  footerContent?: ReactNode;
 }) {
   return (
     <Card
@@ -55,6 +67,7 @@ function SubscriptionCard({
           ))}
         </ul>
       </CardBody>
+      <CardFooter className="flex flex-col">{footerContent}</CardFooter>
     </Card>
   );
 }
@@ -70,8 +83,8 @@ export default function Pricing() {
           Simple, transparent pricing
         </h2>
         <p className="text-lg text-content2-foreground mb-12">
-          Whether you&apos;re tuning your weekend project or tracking your build&apos;s
-          evolution, we&apos;ve got you covered.
+          Whether you&apos;re tuning your weekend project or tracking your
+          build&apos;s evolution, we&apos;ve got you covered.
         </p>
       </div>
 
@@ -84,6 +97,16 @@ export default function Pricing() {
             "Fuel & maintenance tracking",
             "Service logs & odometer readings",
           ]}
+          footerContent={
+            <Button
+              as={Link}
+              href="https://revline.one/app"
+              color="primary"
+              className="bg-gradient-to-r from-teal-500 to-teal-700 flex flex-col gap-1 h-12 w-32"
+            >
+              <span>Get started</span>
+            </Button>
+          }
         />
         <SubscriptionCard
           title="DIY"
@@ -96,6 +119,17 @@ export default function Pricing() {
             "Unlimited vehicles",
             "Secure document storage",
           ]}
+          footerContent={
+            <Button
+              as={Link}
+              href="https://revline.one/app/subscription"
+              color="primary"
+              className="bg-gradient-to-r from-teal-500 to-teal-700 flex flex-col gap-1 h-12 w-32"
+            >
+              <span>Try Free</span>
+              <span className="text-xs">For 7 days</span>
+            </Button>
+          }
         />
         <SubscriptionCard
           title="Enthusiast"
@@ -108,6 +142,17 @@ export default function Pricing() {
             "Advanced logging for upgrades",
           ]}
           isRecommended
+          footerContent={
+            <Button
+              as={Link}
+              href="https://revline.one/app/subscription"
+              color="primary"
+              className="bg-gradient-to-r from-teal-500 to-teal-700 flex flex-col gap-1 h-12 w-32"
+            >
+              <span>Try Free</span>
+              <span className="text-xs">For 7 days</span>
+            </Button>
+          }
         />
       </div>
     </section>
