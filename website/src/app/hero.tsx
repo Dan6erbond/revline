@@ -31,6 +31,7 @@ export default function Hero() {
               href="https://www.producthunt.com/posts/revline-1?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-revline&#0045;1"
               target="_blank"
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=959506&theme=light&t=1746186614146"
                 alt="Revline&#0032;1 - Track&#0032;your&#0032;build&#0044;&#0032;not&#0032;just&#0032;your&#0032;miles&#0046; | Product Hunt"
@@ -52,6 +53,7 @@ export default function Hero() {
             fill
             priority
             removeWrapper
+            sizes="(max-width: 768px) 100vw, 50vw"
           />
         </div>
       </div>
