@@ -31,9 +31,9 @@ import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
 import { getDistance, getKilometers } from "@/utils/distance";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
-import DocumentChip from "../../../documents/chip";
-import Dropzone from "../../../dropzone";
-import FileIcon from "../../../file-icon";
+import DocumentChip from "@/components/documents/chip";
+import Dropzone from "@/components/dropzone";
+import FileIcon from "@/components/file-icon";
 import { distanceUnits } from "@/literals";
 import { formatBytes } from "@/utils/upload-file";
 import { getQueryParam } from "@/utils/router";
@@ -47,7 +47,7 @@ const getServiceLogs = graphql(`
   query GetServiceLogs($id: ID!) {
     me {
       id
-      profile {
+      settings {
         id
         distanceUnit
       }
@@ -100,7 +100,7 @@ const getServiceItems = graphql(`
   query GetServiceItems($id: ID!) {
     me {
       id
-      profile {
+      settings {
         id
         distanceUnit
       }
@@ -124,7 +124,7 @@ const getServiceSchedules = graphql(`
   query GetServiceSchedules($id: ID!) {
     me {
       id
-      profile {
+      settings {
         id
         distanceUnit
       }
@@ -222,7 +222,7 @@ export default function Logs() {
     skip: !getQueryParam(router.query.id),
   });
 
-  const distanceUnit = data?.me?.profile?.distanceUnit ?? DistanceUnit.Miles;
+  const distanceUnit = data?.me?.settings?.distanceUnit ?? DistanceUnit.Miles;
 
   const { data: serviceItems } = useQuery(getServiceItems, {
     variables: { id: getQueryParam(router.query.id) as string },

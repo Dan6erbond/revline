@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
+import { BadgeDollarSign, DoorOpen, Settings, User } from "lucide-react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { skipToken, useSuspenseQuery } from "@apollo/client";
 
@@ -50,13 +51,33 @@ export default function AuthButton({ path }: { path?: string | null }) {
           <p className="font-semibold">Signed in as</p>
           <p className="font-semibold">{data.me.email}</p>
         </DropdownItem>
-        <DropdownItem key="profile" href={"/profile"}>
+        <DropdownItem
+          key="profile"
+          href={"/profile"}
+          startContent={<User className="size-5" />}
+        >
           Profile
         </DropdownItem>
-        <DropdownItem key="subscription" href={"/subscription"}>
+        <DropdownItem
+          key="subscription"
+          href={"/subscription"}
+          startContent={<BadgeDollarSign className="size-5" />}
+        >
           Manage Subscription
         </DropdownItem>
-        <DropdownItem key="logout" color="danger" onPress={() => signOut()}>
+        <DropdownItem
+          key="settings"
+          href={"/settings"}
+          startContent={<Settings className="size-5" />}
+        >
+          Settings
+        </DropdownItem>
+        <DropdownItem
+          key="logout"
+          color="danger"
+          startContent={<DoorOpen className="size-5" />}
+          onPress={() => signOut()}
+        >
           Log Out
         </DropdownItem>
       </DropdownMenu>

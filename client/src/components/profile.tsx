@@ -1,13 +1,4 @@
-import {
-  Autocomplete,
-  AutocompleteItem,
-  Button,
-  Image,
-  Input,
-  Select,
-  SelectItem,
-  cn,
-} from "@heroui/react";
+import { Button, Image, Input, cn } from "@heroui/react";
 import {
   ChangeEvent,
   DragEvent,
@@ -16,41 +7,19 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  CircleUserRound,
-  Coins,
-  Fuel,
-  Gauge,
-  Ruler,
-  Thermometer,
-} from "lucide-react";
-import {
-  DistanceUnit,
-  FuelConsumptionUnit,
-  FuelVolumeUnit,
-  PowerUnit,
-  TemperatureUnit,
-  TorqueUnit,
-} from "@/gql/graphql";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { code, data as currencyCodes } from "currency-codes";
 import { skipToken, useMutation, useSuspenseQuery } from "@apollo/client";
 
+import { CircleUserRound } from "lucide-react";
+import { code } from "currency-codes";
 import { graphql } from "@/gql";
 import { useSession } from "next-auth/react";
-import { withNotification } from "../utils/with-notification";
+import { withNotification } from "@/utils/with-notification";
 
 type Inputs = {
   username: string;
   firstName: string;
   lastName: string;
-  currencyCode: string;
-  fuelVolumeUnit: FuelVolumeUnit;
-  distanceUnit: DistanceUnit;
-  fuelConsumptionUnit: FuelConsumptionUnit;
-  temperatureUnit: TemperatureUnit;
-  powerUnit: PowerUnit;
-  torqueUnit: TorqueUnit;
 };
 
 const getProfile = graphql(`
@@ -62,13 +31,6 @@ const getProfile = graphql(`
         username
         firstName
         lastName
-        currencyCode
-        fuelVolumeUnit
-        distanceUnit
-        fuelConsumptionUnit
-        temperatureUnit
-        powerUnit
-        torqueUnit
         pictureUrl
       }
     }
@@ -82,13 +44,6 @@ const updateProfile = graphql(`
       username
       firstName
       lastName
-      currencyCode
-      fuelVolumeUnit
-      distanceUnit
-      fuelConsumptionUnit
-      temperatureUnit
-      powerUnit
-      torqueUnit
     }
   }
 `);
@@ -196,31 +151,13 @@ export default function ProfileForm() {
 
   const onSubmit: SubmitHandler<Inputs> = withNotification(
     {},
-    ({
-      username,
-      firstName,
-      lastName,
-      currencyCode,
-      fuelVolumeUnit,
-      distanceUnit,
-      fuelConsumptionUnit,
-      temperatureUnit,
-      powerUnit,
-      torqueUnit,
-    }: Inputs) =>
+    ({ username, firstName, lastName }: Inputs) =>
       mutateUpdateProfile({
         variables: {
           input: {
             username,
             firstName,
             lastName,
-            currencyCode,
-            fuelVolumeUnit,
-            distanceUnit,
-            fuelConsumptionUnit,
-            temperatureUnit,
-            powerUnit,
-            torqueUnit,
           },
         },
       })
@@ -334,84 +271,6 @@ export default function ProfileForm() {
         />
         <Input label="Last name" {...register("lastName")} variant="bordered" />
       </div>
-      <p>Units</p>
-      <Autocomplete
-        defaultItems={currencyCodes}
-        defaultFilter={currencyFilter}
-        label="Currency"
-        endContent={<Coins />}
-        {...register("currencyCode")}
-        variant="bordered"
-      >
-        {(c) => (
-          <AutocompleteItem key={c.code} textValue={c.code}>
-            <div className="flex items-center gap-2">
-              <span className="text-small">{c.currency}</span>
-              <span className="text-tiny text-default-400">({c.code})</span>
-            </div>
-          </AutocompleteItem>
-        )}
-      </Autocomplete>
-      <Select
-        label="Fuel volume unit"
-        endContent={<Fuel />}
-        {...register("fuelVolumeUnit")}
-        variant="bordered"
-      >
-        {Object.entries(FuelVolumeUnit).map(([label, unit]) => (
-          <SelectItem key={unit}>{label}</SelectItem>
-        ))}
-      </Select>
-      <Select
-        label="Distance unit"
-        endContent={<Ruler />}
-        {...register("distanceUnit")}
-        variant="bordered"
-      >
-        {Object.entries(DistanceUnit).map(([label, unit]) => (
-          <SelectItem key={unit}>{label}</SelectItem>
-        ))}
-      </Select>
-      <Select
-        label="Fuel consumption unit"
-        endContent={<Gauge />}
-        {...register("fuelConsumptionUnit")}
-        variant="bordered"
-      >
-        {Object.entries(FuelConsumptionUnit).map(([label, unit]) => (
-          <SelectItem key={unit}>{label}</SelectItem>
-        ))}
-      </Select>
-      <Select
-        label="Temperature unit"
-        endContent={<Thermometer />}
-        {...register("temperatureUnit")}
-        variant="bordered"
-      >
-        {Object.entries(TemperatureUnit).map(([label, unit]) => (
-          <SelectItem key={unit}>{label}</SelectItem>
-        ))}
-      </Select>
-      <Select
-        label="Power unit"
-        endContent={<Thermometer />}
-        {...register("powerUnit")}
-        variant="bordered"
-      >
-        {Object.entries(PowerUnit).map(([label, unit]) => (
-          <SelectItem key={unit}>{label}</SelectItem>
-        ))}
-      </Select>
-      <Select
-        label="Torque unit"
-        endContent={<Thermometer />}
-        {...register("torqueUnit")}
-        variant="bordered"
-      >
-        {Object.entries(TorqueUnit).map(([label, unit]) => (
-          <SelectItem key={unit}>{label}</SelectItem>
-        ))}
-      </Select>
       <div className="flex justify-end">
         <Button color="primary" type="submit" isLoading={isUpdating}>
           Save

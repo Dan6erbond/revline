@@ -23,7 +23,7 @@ export const getModIdea = graphql(`
   query GetModIdea($id: ID!) {
     me {
       id
-      profile {
+      settings {
         id
         currencyCode
       }
@@ -56,7 +56,7 @@ const updateModIdea = graphql(`
 export default function ModIdea({ id }: { id: string }) {
   const { data } = useSuspenseQuery(getModIdea, { variables: { id } });
 
-  const currencyCode = data?.me?.profile?.currencyCode ?? "USD";
+  const currencyCode = data?.me?.settings?.currencyCode ?? "USD";
 
   const [mutate] = useMutation(updateModIdea);
 

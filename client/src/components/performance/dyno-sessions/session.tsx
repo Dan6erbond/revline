@@ -68,7 +68,7 @@ const getDynoSession = graphql(`
   query GetDynoSession($id: ID!) {
     me {
       id
-      profile {
+      settings {
         id
         powerUnit
         torqueUnit
@@ -179,8 +179,8 @@ export default function Session() {
 
   const [selectedRows, setSelectedRows] = useState<Selection>(new Set());
 
-  const powerUnit = data?.me?.profile?.powerUnit ?? PowerUnit.ImpHorsepower;
-  const torqueUnit = data?.me?.profile?.torqueUnit ?? TorqueUnit.PoundFeet;
+  const powerUnit = data?.me?.settings?.powerUnit ?? PowerUnit.ImpHorsepower;
+  const torqueUnit = data?.me?.settings?.torqueUnit ?? TorqueUnit.PoundFeet;
 
   const [visible, setVisible] = useState({
     power: true,

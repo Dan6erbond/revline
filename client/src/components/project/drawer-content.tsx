@@ -49,7 +49,7 @@ const getTask = graphql(`
   query GetTask($id: ID!) {
     me {
       id
-      profile {
+      settings {
         id
         currencyCode
       }
@@ -172,7 +172,7 @@ export default function TaskDrawerContent({
     refetchQueries: [getTasks, getTasksByRank],
   });
 
-  const currencyCode = data.me.profile?.currencyCode ?? "USD";
+  const currencyCode = data.me.settings?.currencyCode ?? "USD";
 
   const { register, handleSubmit, watch, control, setValue } = useForm<Inputs>({
     defaultValues: {

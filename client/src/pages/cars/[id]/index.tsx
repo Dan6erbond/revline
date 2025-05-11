@@ -50,7 +50,7 @@ const getExpenses = graphql(`
   query GetExpenses($id: ID!) {
     me {
       id
-      profile {
+      settings {
         id
         currencyCode
       }
@@ -145,7 +145,7 @@ export default function Car() {
     type: type as ExpenseType,
   }));
 
-  const currencyCode = data?.me?.profile?.currencyCode ?? "USD";
+  const currencyCode = data?.me?.settings?.currencyCode ?? "USD";
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 

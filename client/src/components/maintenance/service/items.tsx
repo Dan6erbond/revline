@@ -31,7 +31,7 @@ const getServiceItems = graphql(`
   query GetServiceItems($id: ID!) {
     me {
       id
-      profile {
+      settings {
         id
         distanceUnit
       }
@@ -90,7 +90,7 @@ export default function Items() {
     skip: !getQueryParam(router.query.id),
   });
 
-  const distanceUnit = data?.me?.profile?.distanceUnit ?? DistanceUnit.Miles;
+  const distanceUnit = data?.me?.settings?.distanceUnit ?? DistanceUnit.Miles;
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 

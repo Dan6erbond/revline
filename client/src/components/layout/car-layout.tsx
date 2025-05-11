@@ -29,7 +29,7 @@ const getCarBanner = graphql(`
   query GetCarBanner($id: ID!) {
     me {
       id
-      profile {
+      settings {
         id
         distanceUnit
         fuelConsumptionUnit
@@ -65,9 +65,9 @@ export default function CarLayout(props: ComponentProps<"main">) {
     skip: !getQueryParam(router.query.id),
   });
 
-  const distanceUnit = data?.me?.profile?.distanceUnit ?? DistanceUnit.Miles;
+  const distanceUnit = data?.me?.settings?.distanceUnit ?? DistanceUnit.Miles;
   const fuelConsumptionUnit =
-    data?.me?.profile?.fuelConsumptionUnit ?? FuelConsumptionUnit.Mpg;
+    data?.me?.settings?.fuelConsumptionUnit ?? FuelConsumptionUnit.Mpg;
 
   const [mutate] = useMutation(uploadBannerImage);
 

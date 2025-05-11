@@ -52,7 +52,7 @@ const getUpcomingServices = graphql(`
   query GetUpcomingServices($id: ID!) {
     me {
       id
-      profile {
+      settings {
         id
         distanceUnit
       }

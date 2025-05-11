@@ -71,7 +71,7 @@ const getFuelUps = graphql(`
   query GetFuelUps($id: ID!) {
     me {
       id
-      profile {
+      settings {
         id
         fuelConsumptionUnit
         currencyCode
@@ -175,11 +175,11 @@ export default function FuelUps() {
   });
 
   const fuelVolumeUnit =
-    data?.me?.profile?.fuelVolumeUnit ?? FuelVolumeUnit.Gallon;
-  const distanceUnit = data?.me?.profile?.distanceUnit ?? DistanceUnit.Miles;
-  const currencyCode = data?.me?.profile?.currencyCode ?? "USD";
+    data?.me?.settings?.fuelVolumeUnit ?? FuelVolumeUnit.Gallon;
+  const distanceUnit = data?.me?.settings?.distanceUnit ?? DistanceUnit.Miles;
+  const currencyCode = data?.me?.settings?.currencyCode ?? "USD";
   const fuelConsumptionUnit =
-    data?.me?.profile?.fuelConsumptionUnit ?? FuelConsumptionUnit.Mpg;
+    data?.me?.settings?.fuelConsumptionUnit ?? FuelConsumptionUnit.Mpg;
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 

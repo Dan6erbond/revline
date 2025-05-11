@@ -70,7 +70,7 @@ const getDocument = graphql(`
   query GetDocument($id: ID!) {
     me {
       id
-      profile {
+      settings {
         id
         currencyCode
         fuelVolumeUnit
@@ -169,7 +169,7 @@ export default function Details({
             <p>Expense</p>
             <ExpenseChip
               expense={data.document.expense}
-              currencyCode={data.me.profile?.currencyCode}
+              currencyCode={data.me.settings?.currencyCode}
               href={`/cars/${router.query.id}`}
             />
           </div>
@@ -180,8 +180,8 @@ export default function Details({
             <FuelUpChip
               fuelUp={data.document.fuelUp}
               href={`/cars/${router.query.id}`}
-              fuelVolumeUnit={data.me.profile?.fuelVolumeUnit}
-              distanceUnit={data.me.profile?.distanceUnit}
+              fuelVolumeUnit={data.me.settings?.fuelVolumeUnit}
+              distanceUnit={data.me.settings?.distanceUnit}
             />
           </div>
         )}
@@ -191,7 +191,7 @@ export default function Details({
             <ServiceLogChip
               log={data.document.serviceLog}
               href={`/cars/${router.query.id}`}
-              distanceUnit={data.me.profile?.distanceUnit}
+              distanceUnit={data.me.settings?.distanceUnit}
             />
           </div>
         )}

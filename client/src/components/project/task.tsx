@@ -80,15 +80,12 @@ export const TaskFields = graphql(`
   }
 `);
 
-const getProfile = graphql(`
-  query GetProfile {
+const getSettings = graphql(`
+  query GetSettings {
     me {
       id
-      profile {
+      settings {
         id
-        username
-        firstName
-        lastName
         currencyCode
         fuelVolumeUnit
         distanceUnit
@@ -96,7 +93,6 @@ const getProfile = graphql(`
         temperatureUnit
         powerUnit
         torqueUnit
-        pictureUrl
       }
     }
   }
@@ -110,11 +106,11 @@ export const TaskCard = forwardRef<
 >(({ task, className, ...props }, ref) => {
   const router = useRouter();
 
-  const { data } = useQuery(getProfile);
+  const { data } = useQuery(getSettings);
 
   const t = useFragment(TaskFields, task);
 
-  const currencyCode = data?.me?.profile?.currencyCode ?? "USD";
+  const currencyCode = data?.me?.settings?.currencyCode ?? "USD";
 
   return (
     <KanbanCard
