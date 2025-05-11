@@ -121,9 +121,13 @@ export const ToolbarSection: React.FC<ToolbarSectionProps> = ({
           <DropdownMenu
             className="w-full"
             disabledKeys={dropdownActions
-              .filter((a) => a.isActive(editor))
+              .filter((a) => !activeActions.includes(a.value))
               .map((a) => a.label)}
             onAction={handleAction}
+            selectionMode="multiple"
+            selectedKeys={dropdownActions
+              .filter((a) => a.isActive(editor))
+              .map((a) => a.label)}
           >
             {dropdownActions.map(renderDropdownMenuItem)}
           </DropdownMenu>

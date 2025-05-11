@@ -147,7 +147,18 @@ export const SectionOne: React.FC<SectionOneProps> = React.memo(
             <ChevronDown className="size-5" />
           </Button>
         </DropdownTrigger>
-        <DropdownMenu className="w-full" onAction={handleAction}>
+        <DropdownMenu
+          className="w-full"
+          onAction={handleAction}
+          selectionMode="single"
+          selectedKeys={filteredActions
+            .filter(({ level }) =>
+              level
+                ? editor.isActive("heading", { level })
+                : editor.isActive("paragraph")
+            )
+            .map((a) => a.label)}
+        >
           {filteredActions.map(renderMenuItem)}
         </DropdownMenu>
       </Dropdown>

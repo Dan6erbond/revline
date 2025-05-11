@@ -119,7 +119,7 @@ export const MinimalTiptapEditor = React.forwardRef<
         <EditorContent
           editor={editor}
           className={cn(
-            "minimal-tiptap-editor p-4 md:p-6 min-h-64",
+            "minimal-tiptap-editor p-4 md:p-6 min-h-64 flex items-stretch",
             editorContentClassName
           )}
         />
