@@ -440,6 +440,7 @@ type ComplexityRoot struct {
 	}
 
 	UpcomingService struct {
+		DueAtKm     func(childComplexity int) int
 		NextDueDate func(childComplexity int) int
 		NextDueKm   func(childComplexity int) int
 		Schedule    func(childComplexity int) int
@@ -2807,6 +2808,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.TaskEdge.Node(childComplexity), true
+
+	case "UpcomingService.dueAtKm":
+		if e.complexity.UpcomingService.DueAtKm == nil {
+			break
+		}
+
+		return e.complexity.UpcomingService.DueAtKm(childComplexity), true
 
 	case "UpcomingService.nextDueDate":
 		if e.complexity.UpcomingService.NextDueDate == nil {
@@ -6201,6 +6209,8 @@ func (ec *executionContext) fieldContext_Car_upcomingServices(_ context.Context,
 				return ec.fieldContext_UpcomingService_nextDueKm(ctx, field)
 			case "nextDueDate":
 				return ec.fieldContext_UpcomingService_nextDueDate(ctx, field)
+			case "dueAtKm":
+				return ec.fieldContext_UpcomingService_dueAtKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type UpcomingService", field.Name)
 		},
@@ -21227,6 +21237,50 @@ func (ec *executionContext) fieldContext_UpcomingService_nextDueDate(_ context.C
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UpcomingService_dueAtKm(ctx context.Context, field graphql.CollectedField, obj *model.UpcomingService) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UpcomingService_dueAtKm(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DueAtKm, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UpcomingService_dueAtKm(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UpcomingService",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -45282,6 +45336,11 @@ func (ec *executionContext) _UpcomingService(ctx context.Context, sel ast.Select
 			out.Values[i] = ec._UpcomingService_nextDueKm(ctx, field, obj)
 		case "nextDueDate":
 			out.Values[i] = ec._UpcomingService_nextDueDate(ctx, field, obj)
+		case "dueAtKm":
+			out.Values[i] = ec._UpcomingService_dueAtKm(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -48820,7 +48879,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]any, error) {
+func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]interface{}, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -48828,7 +48887,7 @@ func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[s
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
+func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

@@ -2,6 +2,7 @@ type UpcomingService {
   schedule: ServiceSchedule!
   nextDueKm: Float
   nextDueDate: Time
+  dueAtKm: Float!
 }
 
 extend type Car {

@@ -18,6 +18,7 @@ type UpcomingService struct {
 	Schedule    *ent.ServiceSchedule `json:"schedule"`
 	NextDueKm   *float64             `json:"nextDueKm,omitempty"`
 	NextDueDate *time.Time           `json:"nextDueDate,omitempty"`
+	DueAtKm     float64              `json:"dueAtKm"`
 }
 
 type UploadDocumentResult struct {

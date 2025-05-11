@@ -116,17 +116,15 @@ func (r *carResolver) AverageConsumptionLitersPerKm(ctx context.Context, obj *en
 
 // UpcomingServices is the resolver for the upcomingServices field.
 func (r *carResolver) UpcomingServices(ctx context.Context, obj *ent.Car) ([]*model.UpcomingService, error) {
-	/* var odometerKm float64
+	var odometerKm float64
 
 	lastReading, err := obj.QueryOdometerReadings().Order(odometerreading.ByCreateTime(sql.OrderDesc())).First(ctx)
-
-	if err != nil {
+	if err != nil && !ent.IsNotFound(err) {
 		return nil, err
 	}
-
 	if lastReading != nil {
 		odometerKm = lastReading.ReadingKm
-	} */
+	}
 
 	schedules, err := obj.QueryServiceSchedules().
 		WithLogs(func(slq *ent.ServiceLogQuery) {
@@ -134,28 +132,26 @@ func (r *carResolver) UpcomingServices(ctx context.Context, obj *ent.Car) ([]*mo
 		}).
 		Where(serviceschedule.ArchivedEQ(false)).
 		All(ctx)
-
 	if err != nil {
 		return nil, err
 	}
 
-	/* now := time.Now() */
+	now := time.Now()
+	const kmPerMonth = 1000.0
 
 	var upcoming []*model.UpcomingService
 
 	for _, schedule := range schedules {
 		logs, _ := schedule.Logs(ctx)
-
 		slices.SortFunc(logs, func(a, b *ent.ServiceLog) int {
 			return b.DatePerformed.Compare(a.DatePerformed)
 		})
 
 		var (
-			startKm float64
-			// startDate time.Time
-
+			startKm     float64
 			nextDueKm   *float64
 			nextDueDate *time.Time
+			dueAt       float64 // unified comparison value in km-equivalent
 		)
 
 		if schedule.StartsAtKm != nil {
@@ -163,56 +159,59 @@ func (r *carResolver) UpcomingServices(ctx context.Context, obj *ent.Car) ([]*mo
 		}
 
 		lastLogOdometerReading := startKm
-
+		var lastLogDate time.Time
 		if len(logs) > 0 {
 			if or, _ := logs[0].OdometerReading(ctx); or != nil {
 				lastLogOdometerReading = or.ReadingKm
 			}
+			lastLogDate = logs[0].DatePerformed
+		} else {
+			lastLogDate = time.Time{} // unset
 		}
 
-		// TODO: calculate start date based on start months
-
-		if schedule.RepeatEveryKm == nil {
-			repeatEveryKm := *schedule.RepeatEveryKm
-			lastKm := lastLogOdometerReading
-			cyclesSinceStart := math.Floor((lastKm-startKm)/repeatEveryKm) + 1
-			res := startKm + cyclesSinceStart*(repeatEveryKm)
+		// Calculate nextDueKm if applicable
+		if schedule.RepeatEveryKm != nil {
+			repeatKm := *schedule.RepeatEveryKm
+			cycles := math.Floor((lastLogOdometerReading - startKm) / repeatKm)
+			if cycles < 0 {
+				cycles = 0
+			}
+			res := startKm + (cycles+1)*repeatKm
 			nextDueKm = &res
-		} else {
-			continue
 		}
 
-		// TODO: compute next due by date
-		/* if (repeatMonths !== undefined) {
-			const baseDate = lastLog?.datePerformed ?? startDate;
-			nextDueDate = new Date(baseDate);
-			nextDueDate.setMonth(nextDueDate.getMonth() + repeatMonths);
-		} */
+		// Calculate nextDueDate only if we have a lastLogDate
+		if schedule.RepeatEveryMonths != nil && !lastLogDate.IsZero() {
+			repeatMonths := *schedule.RepeatEveryMonths
+			nextDate := lastLogDate.AddDate(0, int(repeatMonths), 0)
+			nextDueDate = &nextDate
+		}
 
-		// TODO: determine "dueAt" value for sorting
-		/* let dueAt: Date | number;
-		if (nextDueKm !== undefined && nextDueDate !== undefined) {
-			// Take whichever is sooner
-			const kmDelta = nextDueKm - odometerKm;
-			const dateDelta = nextDueDate.getTime() - now.getTime();
-			dueAt =
-				kmDelta < 0 || dateDelta < 0
-					? Math.min(kmDelta, dateDelta)
-					: Math.min(kmDelta, dateDelta);
-		} else if (nextDueKm !== undefined) {
-			dueAt = nextDueKm;
-		} else if (nextDueDate !== undefined) {
-			dueAt = nextDueDate;
-		} else {
-			continue; // Can't determine next due
-		} */
+		// Determine unified dueAt metric (lower is sooner)
+		switch {
+		case nextDueKm != nil && nextDueDate != nil:
+			kmUntilDue := *nextDueKm - odometerKm
+			monthsUntilDue := nextDueDate.Sub(now).Hours() / (24 * 30)
+			dueAt = math.Min(kmUntilDue, monthsUntilDue*kmPerMonth)
+		case nextDueKm != nil:
+			dueAt = *nextDueKm - odometerKm
+		case nextDueDate != nil:
+			monthsUntilDue := nextDueDate.Sub(now).Hours() / (24 * 30)
+			dueAt = monthsUntilDue * kmPerMonth
+		default:
+			continue // Cannot calculate due
+		}
 
-		upcoming = append(upcoming, &model.UpcomingService{schedule, nextDueKm, nextDueDate})
+		upcoming = append(upcoming, &model.UpcomingService{
+			Schedule:    schedule,
+			NextDueKm:   nextDueKm,
+			NextDueDate: nextDueDate,
+			DueAtKm:     dueAt,
+		})
 	}
 
 	slices.SortFunc(upcoming, func(a, b *model.UpcomingService) int {
-		andk, bndk := *a.NextDueKm, *b.NextDueKm
-		return int(andk - bndk)
+		return int(a.DueAtKm - b.DueAtKm)
 	})
 
 	return upcoming, nil
