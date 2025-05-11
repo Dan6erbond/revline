@@ -35,6 +35,7 @@ import FeaturesSection from "./features";
 import Hero from "./hero";
 import NextImage from "next/image";
 import Pricing from "./pricing";
+import { Testimonials } from "./testimonials";
 
 export default function Home() {
   return (
@@ -202,6 +203,8 @@ export default function Home() {
           </BentoGrid>
         </div>
       </section>
+
+      <Testimonials />
 
       <FeatureTabs />
 
