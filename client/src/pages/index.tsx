@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Card,
   CardBody,
@@ -7,7 +8,7 @@ import {
   Image,
   useDisclosure,
 } from "@heroui/react";
-import { ChevronRight, Flame, Gauge, Plus } from "lucide-react";
+import { ChevronRight, Flame, Gauge, Plus, Settings } from "lucide-react";
 
 import GateModal from "../components/subscription/gate-modal";
 import Link from "next/link";
@@ -25,6 +26,9 @@ const getGarage = graphql(`
       subscription {
         id
         tier
+      }
+      settings {
+        id
       }
       cars {
         id
@@ -58,8 +62,28 @@ export default function Home() {
   return (
     <>
       <RootNavbar pathname={router.pathname} path={router.asPath} />
-      <main className="p-8 container mx-auto">
-        <div className="flex justify-end mb-8">
+      <main className="flex flex-col gap-4 md:gap-8 p-4 md:p-8 container mx-auto">
+        {data?.me.settings == null && (
+          <Alert
+            color="warning"
+            variant="faded"
+            title="Unit settings incomplete"
+            description="To get accurate results, please set your preferred units for torque, power, and other measurements."
+            endContent={
+              <Button
+                as={Link}
+                href="/settings"
+                color="warning"
+                size="sm"
+                variant="flat"
+                startContent={<Settings className="size-4" />}
+              >
+                Configure now
+              </Button>
+            }
+          />
+        )}
+        <div className="flex justify-end">
           <Button
             startContent={<Plus />}
             onPress={() => {
