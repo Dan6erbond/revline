@@ -33,6 +33,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/ent/usersettings"
 	"github.com/google/uuid"
 )
 
@@ -66,6 +67,7 @@ const (
 	TypeSubscription     = "Subscription"
 	TypeTask             = "Task"
 	TypeUser             = "User"
+	TypeUserSettings     = "UserSettings"
 )
 
 // AlbumMutation represents an operation that mutates the Album nodes in the graph.
@@ -12864,29 +12866,22 @@ func (m *OdometerReadingMutation) ResetEdge(name string) error {
 // ProfileMutation represents an operation that mutates the Profile nodes in the graph.
 type ProfileMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *uuid.UUID
-	create_time           *time.Time
-	update_time           *time.Time
-	username              *string
-	first_name            *string
-	last_name             *string
-	picture               *uuid.UUID
-	currency_code         *string
-	fuel_volume_unit      *profile.FuelVolumeUnit
-	distance_unit         *profile.DistanceUnit
-	fuel_consumption_unit *profile.FuelConsumptionUnit
-	temperature_unit      *profile.TemperatureUnit
-	power_unit            *profile.PowerUnit
-	torque_unit           *profile.TorqueUnit
-	visibility            *profile.Visibility
-	clearedFields         map[string]struct{}
-	user                  *uuid.UUID
-	cleareduser           bool
-	done                  bool
-	oldValue              func(context.Context) (*Profile, error)
-	predicates            []predicate.Profile
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	create_time   *time.Time
+	update_time   *time.Time
+	username      *string
+	first_name    *string
+	last_name     *string
+	picture       *uuid.UUID
+	visibility    *profile.Visibility
+	clearedFields map[string]struct{}
+	user          *uuid.UUID
+	cleareduser   bool
+	done          bool
+	oldValue      func(context.Context) (*Profile, error)
+	predicates    []predicate.Profile
 }
 
 var _ ent.Mutation = (*ProfileMutation)(nil)
@@ -13261,349 +13256,6 @@ func (m *ProfileMutation) ResetPicture() {
 	delete(m.clearedFields, profile.FieldPicture)
 }
 
-// SetCurrencyCode sets the "currency_code" field.
-func (m *ProfileMutation) SetCurrencyCode(s string) {
-	m.currency_code = &s
-}
-
-// CurrencyCode returns the value of the "currency_code" field in the mutation.
-func (m *ProfileMutation) CurrencyCode() (r string, exists bool) {
-	v := m.currency_code
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCurrencyCode returns the old "currency_code" field's value of the Profile entity.
-// If the Profile object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProfileMutation) OldCurrencyCode(ctx context.Context) (v *string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCurrencyCode is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCurrencyCode requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCurrencyCode: %w", err)
-	}
-	return oldValue.CurrencyCode, nil
-}
-
-// ClearCurrencyCode clears the value of the "currency_code" field.
-func (m *ProfileMutation) ClearCurrencyCode() {
-	m.currency_code = nil
-	m.clearedFields[profile.FieldCurrencyCode] = struct{}{}
-}
-
-// CurrencyCodeCleared returns if the "currency_code" field was cleared in this mutation.
-func (m *ProfileMutation) CurrencyCodeCleared() bool {
-	_, ok := m.clearedFields[profile.FieldCurrencyCode]
-	return ok
-}
-
-// ResetCurrencyCode resets all changes to the "currency_code" field.
-func (m *ProfileMutation) ResetCurrencyCode() {
-	m.currency_code = nil
-	delete(m.clearedFields, profile.FieldCurrencyCode)
-}
-
-// SetFuelVolumeUnit sets the "fuel_volume_unit" field.
-func (m *ProfileMutation) SetFuelVolumeUnit(pvu profile.FuelVolumeUnit) {
-	m.fuel_volume_unit = &pvu
-}
-
-// FuelVolumeUnit returns the value of the "fuel_volume_unit" field in the mutation.
-func (m *ProfileMutation) FuelVolumeUnit() (r profile.FuelVolumeUnit, exists bool) {
-	v := m.fuel_volume_unit
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldFuelVolumeUnit returns the old "fuel_volume_unit" field's value of the Profile entity.
-// If the Profile object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProfileMutation) OldFuelVolumeUnit(ctx context.Context) (v *profile.FuelVolumeUnit, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldFuelVolumeUnit is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldFuelVolumeUnit requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldFuelVolumeUnit: %w", err)
-	}
-	return oldValue.FuelVolumeUnit, nil
-}
-
-// ClearFuelVolumeUnit clears the value of the "fuel_volume_unit" field.
-func (m *ProfileMutation) ClearFuelVolumeUnit() {
-	m.fuel_volume_unit = nil
-	m.clearedFields[profile.FieldFuelVolumeUnit] = struct{}{}
-}
-
-// FuelVolumeUnitCleared returns if the "fuel_volume_unit" field was cleared in this mutation.
-func (m *ProfileMutation) FuelVolumeUnitCleared() bool {
-	_, ok := m.clearedFields[profile.FieldFuelVolumeUnit]
-	return ok
-}
-
-// ResetFuelVolumeUnit resets all changes to the "fuel_volume_unit" field.
-func (m *ProfileMutation) ResetFuelVolumeUnit() {
-	m.fuel_volume_unit = nil
-	delete(m.clearedFields, profile.FieldFuelVolumeUnit)
-}
-
-// SetDistanceUnit sets the "distance_unit" field.
-func (m *ProfileMutation) SetDistanceUnit(pu profile.DistanceUnit) {
-	m.distance_unit = &pu
-}
-
-// DistanceUnit returns the value of the "distance_unit" field in the mutation.
-func (m *ProfileMutation) DistanceUnit() (r profile.DistanceUnit, exists bool) {
-	v := m.distance_unit
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDistanceUnit returns the old "distance_unit" field's value of the Profile entity.
-// If the Profile object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProfileMutation) OldDistanceUnit(ctx context.Context) (v *profile.DistanceUnit, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDistanceUnit is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDistanceUnit requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDistanceUnit: %w", err)
-	}
-	return oldValue.DistanceUnit, nil
-}
-
-// ClearDistanceUnit clears the value of the "distance_unit" field.
-func (m *ProfileMutation) ClearDistanceUnit() {
-	m.distance_unit = nil
-	m.clearedFields[profile.FieldDistanceUnit] = struct{}{}
-}
-
-// DistanceUnitCleared returns if the "distance_unit" field was cleared in this mutation.
-func (m *ProfileMutation) DistanceUnitCleared() bool {
-	_, ok := m.clearedFields[profile.FieldDistanceUnit]
-	return ok
-}
-
-// ResetDistanceUnit resets all changes to the "distance_unit" field.
-func (m *ProfileMutation) ResetDistanceUnit() {
-	m.distance_unit = nil
-	delete(m.clearedFields, profile.FieldDistanceUnit)
-}
-
-// SetFuelConsumptionUnit sets the "fuel_consumption_unit" field.
-func (m *ProfileMutation) SetFuelConsumptionUnit(pcu profile.FuelConsumptionUnit) {
-	m.fuel_consumption_unit = &pcu
-}
-
-// FuelConsumptionUnit returns the value of the "fuel_consumption_unit" field in the mutation.
-func (m *ProfileMutation) FuelConsumptionUnit() (r profile.FuelConsumptionUnit, exists bool) {
-	v := m.fuel_consumption_unit
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldFuelConsumptionUnit returns the old "fuel_consumption_unit" field's value of the Profile entity.
-// If the Profile object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProfileMutation) OldFuelConsumptionUnit(ctx context.Context) (v *profile.FuelConsumptionUnit, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldFuelConsumptionUnit is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldFuelConsumptionUnit requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldFuelConsumptionUnit: %w", err)
-	}
-	return oldValue.FuelConsumptionUnit, nil
-}
-
-// ClearFuelConsumptionUnit clears the value of the "fuel_consumption_unit" field.
-func (m *ProfileMutation) ClearFuelConsumptionUnit() {
-	m.fuel_consumption_unit = nil
-	m.clearedFields[profile.FieldFuelConsumptionUnit] = struct{}{}
-}
-
-// FuelConsumptionUnitCleared returns if the "fuel_consumption_unit" field was cleared in this mutation.
-func (m *ProfileMutation) FuelConsumptionUnitCleared() bool {
-	_, ok := m.clearedFields[profile.FieldFuelConsumptionUnit]
-	return ok
-}
-
-// ResetFuelConsumptionUnit resets all changes to the "fuel_consumption_unit" field.
-func (m *ProfileMutation) ResetFuelConsumptionUnit() {
-	m.fuel_consumption_unit = nil
-	delete(m.clearedFields, profile.FieldFuelConsumptionUnit)
-}
-
-// SetTemperatureUnit sets the "temperature_unit" field.
-func (m *ProfileMutation) SetTemperatureUnit(pu profile.TemperatureUnit) {
-	m.temperature_unit = &pu
-}
-
-// TemperatureUnit returns the value of the "temperature_unit" field in the mutation.
-func (m *ProfileMutation) TemperatureUnit() (r profile.TemperatureUnit, exists bool) {
-	v := m.temperature_unit
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTemperatureUnit returns the old "temperature_unit" field's value of the Profile entity.
-// If the Profile object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProfileMutation) OldTemperatureUnit(ctx context.Context) (v *profile.TemperatureUnit, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTemperatureUnit is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTemperatureUnit requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTemperatureUnit: %w", err)
-	}
-	return oldValue.TemperatureUnit, nil
-}
-
-// ClearTemperatureUnit clears the value of the "temperature_unit" field.
-func (m *ProfileMutation) ClearTemperatureUnit() {
-	m.temperature_unit = nil
-	m.clearedFields[profile.FieldTemperatureUnit] = struct{}{}
-}
-
-// TemperatureUnitCleared returns if the "temperature_unit" field was cleared in this mutation.
-func (m *ProfileMutation) TemperatureUnitCleared() bool {
-	_, ok := m.clearedFields[profile.FieldTemperatureUnit]
-	return ok
-}
-
-// ResetTemperatureUnit resets all changes to the "temperature_unit" field.
-func (m *ProfileMutation) ResetTemperatureUnit() {
-	m.temperature_unit = nil
-	delete(m.clearedFields, profile.FieldTemperatureUnit)
-}
-
-// SetPowerUnit sets the "power_unit" field.
-func (m *ProfileMutation) SetPowerUnit(pu profile.PowerUnit) {
-	m.power_unit = &pu
-}
-
-// PowerUnit returns the value of the "power_unit" field in the mutation.
-func (m *ProfileMutation) PowerUnit() (r profile.PowerUnit, exists bool) {
-	v := m.power_unit
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPowerUnit returns the old "power_unit" field's value of the Profile entity.
-// If the Profile object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProfileMutation) OldPowerUnit(ctx context.Context) (v *profile.PowerUnit, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPowerUnit is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPowerUnit requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPowerUnit: %w", err)
-	}
-	return oldValue.PowerUnit, nil
-}
-
-// ClearPowerUnit clears the value of the "power_unit" field.
-func (m *ProfileMutation) ClearPowerUnit() {
-	m.power_unit = nil
-	m.clearedFields[profile.FieldPowerUnit] = struct{}{}
-}
-
-// PowerUnitCleared returns if the "power_unit" field was cleared in this mutation.
-func (m *ProfileMutation) PowerUnitCleared() bool {
-	_, ok := m.clearedFields[profile.FieldPowerUnit]
-	return ok
-}
-
-// ResetPowerUnit resets all changes to the "power_unit" field.
-func (m *ProfileMutation) ResetPowerUnit() {
-	m.power_unit = nil
-	delete(m.clearedFields, profile.FieldPowerUnit)
-}
-
-// SetTorqueUnit sets the "torque_unit" field.
-func (m *ProfileMutation) SetTorqueUnit(pu profile.TorqueUnit) {
-	m.torque_unit = &pu
-}
-
-// TorqueUnit returns the value of the "torque_unit" field in the mutation.
-func (m *ProfileMutation) TorqueUnit() (r profile.TorqueUnit, exists bool) {
-	v := m.torque_unit
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTorqueUnit returns the old "torque_unit" field's value of the Profile entity.
-// If the Profile object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProfileMutation) OldTorqueUnit(ctx context.Context) (v *profile.TorqueUnit, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTorqueUnit is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTorqueUnit requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTorqueUnit: %w", err)
-	}
-	return oldValue.TorqueUnit, nil
-}
-
-// ClearTorqueUnit clears the value of the "torque_unit" field.
-func (m *ProfileMutation) ClearTorqueUnit() {
-	m.torque_unit = nil
-	m.clearedFields[profile.FieldTorqueUnit] = struct{}{}
-}
-
-// TorqueUnitCleared returns if the "torque_unit" field was cleared in this mutation.
-func (m *ProfileMutation) TorqueUnitCleared() bool {
-	_, ok := m.clearedFields[profile.FieldTorqueUnit]
-	return ok
-}
-
-// ResetTorqueUnit resets all changes to the "torque_unit" field.
-func (m *ProfileMutation) ResetTorqueUnit() {
-	m.torque_unit = nil
-	delete(m.clearedFields, profile.FieldTorqueUnit)
-}
-
 // SetVisibility sets the "visibility" field.
 func (m *ProfileMutation) SetVisibility(pr profile.Visibility) {
 	m.visibility = &pr
@@ -13713,7 +13365,7 @@ func (m *ProfileMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProfileMutation) Fields() []string {
-	fields := make([]string, 0, 14)
+	fields := make([]string, 0, 7)
 	if m.create_time != nil {
 		fields = append(fields, profile.FieldCreateTime)
 	}
@@ -13731,27 +13383,6 @@ func (m *ProfileMutation) Fields() []string {
 	}
 	if m.picture != nil {
 		fields = append(fields, profile.FieldPicture)
-	}
-	if m.currency_code != nil {
-		fields = append(fields, profile.FieldCurrencyCode)
-	}
-	if m.fuel_volume_unit != nil {
-		fields = append(fields, profile.FieldFuelVolumeUnit)
-	}
-	if m.distance_unit != nil {
-		fields = append(fields, profile.FieldDistanceUnit)
-	}
-	if m.fuel_consumption_unit != nil {
-		fields = append(fields, profile.FieldFuelConsumptionUnit)
-	}
-	if m.temperature_unit != nil {
-		fields = append(fields, profile.FieldTemperatureUnit)
-	}
-	if m.power_unit != nil {
-		fields = append(fields, profile.FieldPowerUnit)
-	}
-	if m.torque_unit != nil {
-		fields = append(fields, profile.FieldTorqueUnit)
 	}
 	if m.visibility != nil {
 		fields = append(fields, profile.FieldVisibility)
@@ -13776,20 +13407,6 @@ func (m *ProfileMutation) Field(name string) (ent.Value, bool) {
 		return m.LastName()
 	case profile.FieldPicture:
 		return m.Picture()
-	case profile.FieldCurrencyCode:
-		return m.CurrencyCode()
-	case profile.FieldFuelVolumeUnit:
-		return m.FuelVolumeUnit()
-	case profile.FieldDistanceUnit:
-		return m.DistanceUnit()
-	case profile.FieldFuelConsumptionUnit:
-		return m.FuelConsumptionUnit()
-	case profile.FieldTemperatureUnit:
-		return m.TemperatureUnit()
-	case profile.FieldPowerUnit:
-		return m.PowerUnit()
-	case profile.FieldTorqueUnit:
-		return m.TorqueUnit()
 	case profile.FieldVisibility:
 		return m.Visibility()
 	}
@@ -13813,20 +13430,6 @@ func (m *ProfileMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldLastName(ctx)
 	case profile.FieldPicture:
 		return m.OldPicture(ctx)
-	case profile.FieldCurrencyCode:
-		return m.OldCurrencyCode(ctx)
-	case profile.FieldFuelVolumeUnit:
-		return m.OldFuelVolumeUnit(ctx)
-	case profile.FieldDistanceUnit:
-		return m.OldDistanceUnit(ctx)
-	case profile.FieldFuelConsumptionUnit:
-		return m.OldFuelConsumptionUnit(ctx)
-	case profile.FieldTemperatureUnit:
-		return m.OldTemperatureUnit(ctx)
-	case profile.FieldPowerUnit:
-		return m.OldPowerUnit(ctx)
-	case profile.FieldTorqueUnit:
-		return m.OldTorqueUnit(ctx)
 	case profile.FieldVisibility:
 		return m.OldVisibility(ctx)
 	}
@@ -13880,55 +13483,6 @@ func (m *ProfileMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetPicture(v)
 		return nil
-	case profile.FieldCurrencyCode:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCurrencyCode(v)
-		return nil
-	case profile.FieldFuelVolumeUnit:
-		v, ok := value.(profile.FuelVolumeUnit)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetFuelVolumeUnit(v)
-		return nil
-	case profile.FieldDistanceUnit:
-		v, ok := value.(profile.DistanceUnit)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDistanceUnit(v)
-		return nil
-	case profile.FieldFuelConsumptionUnit:
-		v, ok := value.(profile.FuelConsumptionUnit)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetFuelConsumptionUnit(v)
-		return nil
-	case profile.FieldTemperatureUnit:
-		v, ok := value.(profile.TemperatureUnit)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTemperatureUnit(v)
-		return nil
-	case profile.FieldPowerUnit:
-		v, ok := value.(profile.PowerUnit)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPowerUnit(v)
-		return nil
-	case profile.FieldTorqueUnit:
-		v, ok := value.(profile.TorqueUnit)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTorqueUnit(v)
-		return nil
 	case profile.FieldVisibility:
 		v, ok := value.(profile.Visibility)
 		if !ok {
@@ -13978,27 +13532,6 @@ func (m *ProfileMutation) ClearedFields() []string {
 	if m.FieldCleared(profile.FieldPicture) {
 		fields = append(fields, profile.FieldPicture)
 	}
-	if m.FieldCleared(profile.FieldCurrencyCode) {
-		fields = append(fields, profile.FieldCurrencyCode)
-	}
-	if m.FieldCleared(profile.FieldFuelVolumeUnit) {
-		fields = append(fields, profile.FieldFuelVolumeUnit)
-	}
-	if m.FieldCleared(profile.FieldDistanceUnit) {
-		fields = append(fields, profile.FieldDistanceUnit)
-	}
-	if m.FieldCleared(profile.FieldFuelConsumptionUnit) {
-		fields = append(fields, profile.FieldFuelConsumptionUnit)
-	}
-	if m.FieldCleared(profile.FieldTemperatureUnit) {
-		fields = append(fields, profile.FieldTemperatureUnit)
-	}
-	if m.FieldCleared(profile.FieldPowerUnit) {
-		fields = append(fields, profile.FieldPowerUnit)
-	}
-	if m.FieldCleared(profile.FieldTorqueUnit) {
-		fields = append(fields, profile.FieldTorqueUnit)
-	}
 	return fields
 }
 
@@ -14025,27 +13558,6 @@ func (m *ProfileMutation) ClearField(name string) error {
 	case profile.FieldPicture:
 		m.ClearPicture()
 		return nil
-	case profile.FieldCurrencyCode:
-		m.ClearCurrencyCode()
-		return nil
-	case profile.FieldFuelVolumeUnit:
-		m.ClearFuelVolumeUnit()
-		return nil
-	case profile.FieldDistanceUnit:
-		m.ClearDistanceUnit()
-		return nil
-	case profile.FieldFuelConsumptionUnit:
-		m.ClearFuelConsumptionUnit()
-		return nil
-	case profile.FieldTemperatureUnit:
-		m.ClearTemperatureUnit()
-		return nil
-	case profile.FieldPowerUnit:
-		m.ClearPowerUnit()
-		return nil
-	case profile.FieldTorqueUnit:
-		m.ClearTorqueUnit()
-		return nil
 	}
 	return fmt.Errorf("unknown Profile nullable field %s", name)
 }
@@ -14071,27 +13583,6 @@ func (m *ProfileMutation) ResetField(name string) error {
 		return nil
 	case profile.FieldPicture:
 		m.ResetPicture()
-		return nil
-	case profile.FieldCurrencyCode:
-		m.ResetCurrencyCode()
-		return nil
-	case profile.FieldFuelVolumeUnit:
-		m.ResetFuelVolumeUnit()
-		return nil
-	case profile.FieldDistanceUnit:
-		m.ResetDistanceUnit()
-		return nil
-	case profile.FieldFuelConsumptionUnit:
-		m.ResetFuelConsumptionUnit()
-		return nil
-	case profile.FieldTemperatureUnit:
-		m.ResetTemperatureUnit()
-		return nil
-	case profile.FieldPowerUnit:
-		m.ResetPowerUnit()
-		return nil
-	case profile.FieldTorqueUnit:
-		m.ResetTorqueUnit()
 		return nil
 	case profile.FieldVisibility:
 		m.ResetVisibility()
@@ -20001,6 +19492,8 @@ type UserMutation struct {
 	clearedcars              bool
 	profile                  *uuid.UUID
 	clearedprofile           bool
+	settings                 *uuid.UUID
+	clearedsettings          bool
 	subscriptions            map[uuid.UUID]struct{}
 	removedsubscriptions     map[uuid.UUID]struct{}
 	clearedsubscriptions     bool
@@ -20366,6 +19859,45 @@ func (m *UserMutation) ResetProfile() {
 	m.clearedprofile = false
 }
 
+// SetSettingsID sets the "settings" edge to the UserSettings entity by id.
+func (m *UserMutation) SetSettingsID(id uuid.UUID) {
+	m.settings = &id
+}
+
+// ClearSettings clears the "settings" edge to the UserSettings entity.
+func (m *UserMutation) ClearSettings() {
+	m.clearedsettings = true
+}
+
+// SettingsCleared reports if the "settings" edge to the UserSettings entity was cleared.
+func (m *UserMutation) SettingsCleared() bool {
+	return m.clearedsettings
+}
+
+// SettingsID returns the "settings" edge ID in the mutation.
+func (m *UserMutation) SettingsID() (id uuid.UUID, exists bool) {
+	if m.settings != nil {
+		return *m.settings, true
+	}
+	return
+}
+
+// SettingsIDs returns the "settings" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// SettingsID instead. It exists only for internal usage by the builders.
+func (m *UserMutation) SettingsIDs() (ids []uuid.UUID) {
+	if id := m.settings; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetSettings resets all changes to the "settings" edge.
+func (m *UserMutation) ResetSettings() {
+	m.settings = nil
+	m.clearedsettings = false
+}
+
 // AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by ids.
 func (m *UserMutation) AddSubscriptionIDs(ids ...uuid.UUID) {
 	if m.subscriptions == nil {
@@ -20667,12 +20199,15 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.cars != nil {
 		edges = append(edges, user.EdgeCars)
 	}
 	if m.profile != nil {
 		edges = append(edges, user.EdgeProfile)
+	}
+	if m.settings != nil {
+		edges = append(edges, user.EdgeSettings)
 	}
 	if m.subscriptions != nil {
 		edges = append(edges, user.EdgeSubscriptions)
@@ -20697,6 +20232,10 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 		if id := m.profile; id != nil {
 			return []ent.Value{*id}
 		}
+	case user.EdgeSettings:
+		if id := m.settings; id != nil {
+			return []ent.Value{*id}
+		}
 	case user.EdgeSubscriptions:
 		ids := make([]ent.Value, 0, len(m.subscriptions))
 		for id := range m.subscriptions {
@@ -20715,7 +20254,7 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedcars != nil {
 		edges = append(edges, user.EdgeCars)
 	}
@@ -20756,12 +20295,15 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedcars {
 		edges = append(edges, user.EdgeCars)
 	}
 	if m.clearedprofile {
 		edges = append(edges, user.EdgeProfile)
+	}
+	if m.clearedsettings {
+		edges = append(edges, user.EdgeSettings)
 	}
 	if m.clearedsubscriptions {
 		edges = append(edges, user.EdgeSubscriptions)
@@ -20780,6 +20322,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedcars
 	case user.EdgeProfile:
 		return m.clearedprofile
+	case user.EdgeSettings:
+		return m.clearedsettings
 	case user.EdgeSubscriptions:
 		return m.clearedsubscriptions
 	case user.EdgeCheckoutSessions:
@@ -20795,6 +20339,9 @@ func (m *UserMutation) ClearEdge(name string) error {
 	case user.EdgeProfile:
 		m.ClearProfile()
 		return nil
+	case user.EdgeSettings:
+		m.ClearSettings()
+		return nil
 	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
@@ -20809,6 +20356,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 	case user.EdgeProfile:
 		m.ResetProfile()
 		return nil
+	case user.EdgeSettings:
+		m.ResetSettings()
+		return nil
 	case user.EdgeSubscriptions:
 		m.ResetSubscriptions()
 		return nil
@@ -20817,4 +20367,971 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)
+}
+
+// UserSettingsMutation represents an operation that mutates the UserSettings nodes in the graph.
+type UserSettingsMutation struct {
+	config
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	create_time           *time.Time
+	update_time           *time.Time
+	currency_code         *string
+	fuel_volume_unit      *usersettings.FuelVolumeUnit
+	distance_unit         *usersettings.DistanceUnit
+	fuel_consumption_unit *usersettings.FuelConsumptionUnit
+	temperature_unit      *usersettings.TemperatureUnit
+	power_unit            *usersettings.PowerUnit
+	torque_unit           *usersettings.TorqueUnit
+	clearedFields         map[string]struct{}
+	user                  *uuid.UUID
+	cleareduser           bool
+	done                  bool
+	oldValue              func(context.Context) (*UserSettings, error)
+	predicates            []predicate.UserSettings
+}
+
+var _ ent.Mutation = (*UserSettingsMutation)(nil)
+
+// usersettingsOption allows management of the mutation configuration using functional options.
+type usersettingsOption func(*UserSettingsMutation)
+
+// newUserSettingsMutation creates new mutation for the UserSettings entity.
+func newUserSettingsMutation(c config, op Op, opts ...usersettingsOption) *UserSettingsMutation {
+	m := &UserSettingsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeUserSettings,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withUserSettingsID sets the ID field of the mutation.
+func withUserSettingsID(id uuid.UUID) usersettingsOption {
+	return func(m *UserSettingsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *UserSettings
+		)
+		m.oldValue = func(ctx context.Context) (*UserSettings, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().UserSettings.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withUserSettings sets the old UserSettings of the mutation.
+func withUserSettings(node *UserSettings) usersettingsOption {
+	return func(m *UserSettingsMutation) {
+		m.oldValue = func(context.Context) (*UserSettings, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m UserSettingsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m UserSettingsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of UserSettings entities.
+func (m *UserSettingsMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *UserSettingsMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *UserSettingsMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().UserSettings.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *UserSettingsMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *UserSettingsMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the UserSettings entity.
+// If the UserSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserSettingsMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *UserSettingsMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *UserSettingsMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *UserSettingsMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the UserSettings entity.
+// If the UserSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserSettingsMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *UserSettingsMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetCurrencyCode sets the "currency_code" field.
+func (m *UserSettingsMutation) SetCurrencyCode(s string) {
+	m.currency_code = &s
+}
+
+// CurrencyCode returns the value of the "currency_code" field in the mutation.
+func (m *UserSettingsMutation) CurrencyCode() (r string, exists bool) {
+	v := m.currency_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCurrencyCode returns the old "currency_code" field's value of the UserSettings entity.
+// If the UserSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserSettingsMutation) OldCurrencyCode(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCurrencyCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCurrencyCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCurrencyCode: %w", err)
+	}
+	return oldValue.CurrencyCode, nil
+}
+
+// ClearCurrencyCode clears the value of the "currency_code" field.
+func (m *UserSettingsMutation) ClearCurrencyCode() {
+	m.currency_code = nil
+	m.clearedFields[usersettings.FieldCurrencyCode] = struct{}{}
+}
+
+// CurrencyCodeCleared returns if the "currency_code" field was cleared in this mutation.
+func (m *UserSettingsMutation) CurrencyCodeCleared() bool {
+	_, ok := m.clearedFields[usersettings.FieldCurrencyCode]
+	return ok
+}
+
+// ResetCurrencyCode resets all changes to the "currency_code" field.
+func (m *UserSettingsMutation) ResetCurrencyCode() {
+	m.currency_code = nil
+	delete(m.clearedFields, usersettings.FieldCurrencyCode)
+}
+
+// SetFuelVolumeUnit sets the "fuel_volume_unit" field.
+func (m *UserSettingsMutation) SetFuelVolumeUnit(uvu usersettings.FuelVolumeUnit) {
+	m.fuel_volume_unit = &uvu
+}
+
+// FuelVolumeUnit returns the value of the "fuel_volume_unit" field in the mutation.
+func (m *UserSettingsMutation) FuelVolumeUnit() (r usersettings.FuelVolumeUnit, exists bool) {
+	v := m.fuel_volume_unit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFuelVolumeUnit returns the old "fuel_volume_unit" field's value of the UserSettings entity.
+// If the UserSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserSettingsMutation) OldFuelVolumeUnit(ctx context.Context) (v *usersettings.FuelVolumeUnit, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFuelVolumeUnit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFuelVolumeUnit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFuelVolumeUnit: %w", err)
+	}
+	return oldValue.FuelVolumeUnit, nil
+}
+
+// ClearFuelVolumeUnit clears the value of the "fuel_volume_unit" field.
+func (m *UserSettingsMutation) ClearFuelVolumeUnit() {
+	m.fuel_volume_unit = nil
+	m.clearedFields[usersettings.FieldFuelVolumeUnit] = struct{}{}
+}
+
+// FuelVolumeUnitCleared returns if the "fuel_volume_unit" field was cleared in this mutation.
+func (m *UserSettingsMutation) FuelVolumeUnitCleared() bool {
+	_, ok := m.clearedFields[usersettings.FieldFuelVolumeUnit]
+	return ok
+}
+
+// ResetFuelVolumeUnit resets all changes to the "fuel_volume_unit" field.
+func (m *UserSettingsMutation) ResetFuelVolumeUnit() {
+	m.fuel_volume_unit = nil
+	delete(m.clearedFields, usersettings.FieldFuelVolumeUnit)
+}
+
+// SetDistanceUnit sets the "distance_unit" field.
+func (m *UserSettingsMutation) SetDistanceUnit(uu usersettings.DistanceUnit) {
+	m.distance_unit = &uu
+}
+
+// DistanceUnit returns the value of the "distance_unit" field in the mutation.
+func (m *UserSettingsMutation) DistanceUnit() (r usersettings.DistanceUnit, exists bool) {
+	v := m.distance_unit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDistanceUnit returns the old "distance_unit" field's value of the UserSettings entity.
+// If the UserSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserSettingsMutation) OldDistanceUnit(ctx context.Context) (v *usersettings.DistanceUnit, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDistanceUnit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDistanceUnit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDistanceUnit: %w", err)
+	}
+	return oldValue.DistanceUnit, nil
+}
+
+// ClearDistanceUnit clears the value of the "distance_unit" field.
+func (m *UserSettingsMutation) ClearDistanceUnit() {
+	m.distance_unit = nil
+	m.clearedFields[usersettings.FieldDistanceUnit] = struct{}{}
+}
+
+// DistanceUnitCleared returns if the "distance_unit" field was cleared in this mutation.
+func (m *UserSettingsMutation) DistanceUnitCleared() bool {
+	_, ok := m.clearedFields[usersettings.FieldDistanceUnit]
+	return ok
+}
+
+// ResetDistanceUnit resets all changes to the "distance_unit" field.
+func (m *UserSettingsMutation) ResetDistanceUnit() {
+	m.distance_unit = nil
+	delete(m.clearedFields, usersettings.FieldDistanceUnit)
+}
+
+// SetFuelConsumptionUnit sets the "fuel_consumption_unit" field.
+func (m *UserSettingsMutation) SetFuelConsumptionUnit(ucu usersettings.FuelConsumptionUnit) {
+	m.fuel_consumption_unit = &ucu
+}
+
+// FuelConsumptionUnit returns the value of the "fuel_consumption_unit" field in the mutation.
+func (m *UserSettingsMutation) FuelConsumptionUnit() (r usersettings.FuelConsumptionUnit, exists bool) {
+	v := m.fuel_consumption_unit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFuelConsumptionUnit returns the old "fuel_consumption_unit" field's value of the UserSettings entity.
+// If the UserSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserSettingsMutation) OldFuelConsumptionUnit(ctx context.Context) (v *usersettings.FuelConsumptionUnit, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFuelConsumptionUnit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFuelConsumptionUnit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFuelConsumptionUnit: %w", err)
+	}
+	return oldValue.FuelConsumptionUnit, nil
+}
+
+// ClearFuelConsumptionUnit clears the value of the "fuel_consumption_unit" field.
+func (m *UserSettingsMutation) ClearFuelConsumptionUnit() {
+	m.fuel_consumption_unit = nil
+	m.clearedFields[usersettings.FieldFuelConsumptionUnit] = struct{}{}
+}
+
+// FuelConsumptionUnitCleared returns if the "fuel_consumption_unit" field was cleared in this mutation.
+func (m *UserSettingsMutation) FuelConsumptionUnitCleared() bool {
+	_, ok := m.clearedFields[usersettings.FieldFuelConsumptionUnit]
+	return ok
+}
+
+// ResetFuelConsumptionUnit resets all changes to the "fuel_consumption_unit" field.
+func (m *UserSettingsMutation) ResetFuelConsumptionUnit() {
+	m.fuel_consumption_unit = nil
+	delete(m.clearedFields, usersettings.FieldFuelConsumptionUnit)
+}
+
+// SetTemperatureUnit sets the "temperature_unit" field.
+func (m *UserSettingsMutation) SetTemperatureUnit(uu usersettings.TemperatureUnit) {
+	m.temperature_unit = &uu
+}
+
+// TemperatureUnit returns the value of the "temperature_unit" field in the mutation.
+func (m *UserSettingsMutation) TemperatureUnit() (r usersettings.TemperatureUnit, exists bool) {
+	v := m.temperature_unit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTemperatureUnit returns the old "temperature_unit" field's value of the UserSettings entity.
+// If the UserSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserSettingsMutation) OldTemperatureUnit(ctx context.Context) (v *usersettings.TemperatureUnit, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTemperatureUnit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTemperatureUnit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTemperatureUnit: %w", err)
+	}
+	return oldValue.TemperatureUnit, nil
+}
+
+// ClearTemperatureUnit clears the value of the "temperature_unit" field.
+func (m *UserSettingsMutation) ClearTemperatureUnit() {
+	m.temperature_unit = nil
+	m.clearedFields[usersettings.FieldTemperatureUnit] = struct{}{}
+}
+
+// TemperatureUnitCleared returns if the "temperature_unit" field was cleared in this mutation.
+func (m *UserSettingsMutation) TemperatureUnitCleared() bool {
+	_, ok := m.clearedFields[usersettings.FieldTemperatureUnit]
+	return ok
+}
+
+// ResetTemperatureUnit resets all changes to the "temperature_unit" field.
+func (m *UserSettingsMutation) ResetTemperatureUnit() {
+	m.temperature_unit = nil
+	delete(m.clearedFields, usersettings.FieldTemperatureUnit)
+}
+
+// SetPowerUnit sets the "power_unit" field.
+func (m *UserSettingsMutation) SetPowerUnit(uu usersettings.PowerUnit) {
+	m.power_unit = &uu
+}
+
+// PowerUnit returns the value of the "power_unit" field in the mutation.
+func (m *UserSettingsMutation) PowerUnit() (r usersettings.PowerUnit, exists bool) {
+	v := m.power_unit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPowerUnit returns the old "power_unit" field's value of the UserSettings entity.
+// If the UserSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserSettingsMutation) OldPowerUnit(ctx context.Context) (v *usersettings.PowerUnit, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPowerUnit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPowerUnit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPowerUnit: %w", err)
+	}
+	return oldValue.PowerUnit, nil
+}
+
+// ClearPowerUnit clears the value of the "power_unit" field.
+func (m *UserSettingsMutation) ClearPowerUnit() {
+	m.power_unit = nil
+	m.clearedFields[usersettings.FieldPowerUnit] = struct{}{}
+}
+
+// PowerUnitCleared returns if the "power_unit" field was cleared in this mutation.
+func (m *UserSettingsMutation) PowerUnitCleared() bool {
+	_, ok := m.clearedFields[usersettings.FieldPowerUnit]
+	return ok
+}
+
+// ResetPowerUnit resets all changes to the "power_unit" field.
+func (m *UserSettingsMutation) ResetPowerUnit() {
+	m.power_unit = nil
+	delete(m.clearedFields, usersettings.FieldPowerUnit)
+}
+
+// SetTorqueUnit sets the "torque_unit" field.
+func (m *UserSettingsMutation) SetTorqueUnit(uu usersettings.TorqueUnit) {
+	m.torque_unit = &uu
+}
+
+// TorqueUnit returns the value of the "torque_unit" field in the mutation.
+func (m *UserSettingsMutation) TorqueUnit() (r usersettings.TorqueUnit, exists bool) {
+	v := m.torque_unit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTorqueUnit returns the old "torque_unit" field's value of the UserSettings entity.
+// If the UserSettings object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserSettingsMutation) OldTorqueUnit(ctx context.Context) (v *usersettings.TorqueUnit, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTorqueUnit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTorqueUnit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTorqueUnit: %w", err)
+	}
+	return oldValue.TorqueUnit, nil
+}
+
+// ClearTorqueUnit clears the value of the "torque_unit" field.
+func (m *UserSettingsMutation) ClearTorqueUnit() {
+	m.torque_unit = nil
+	m.clearedFields[usersettings.FieldTorqueUnit] = struct{}{}
+}
+
+// TorqueUnitCleared returns if the "torque_unit" field was cleared in this mutation.
+func (m *UserSettingsMutation) TorqueUnitCleared() bool {
+	_, ok := m.clearedFields[usersettings.FieldTorqueUnit]
+	return ok
+}
+
+// ResetTorqueUnit resets all changes to the "torque_unit" field.
+func (m *UserSettingsMutation) ResetTorqueUnit() {
+	m.torque_unit = nil
+	delete(m.clearedFields, usersettings.FieldTorqueUnit)
+}
+
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *UserSettingsMutation) SetUserID(id uuid.UUID) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *UserSettingsMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *UserSettingsMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *UserSettingsMutation) UserID() (id uuid.UUID, exists bool) {
+	if m.user != nil {
+		return *m.user, true
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *UserSettingsMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *UserSettingsMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// Where appends a list predicates to the UserSettingsMutation builder.
+func (m *UserSettingsMutation) Where(ps ...predicate.UserSettings) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the UserSettingsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *UserSettingsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.UserSettings, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *UserSettingsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *UserSettingsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (UserSettings).
+func (m *UserSettingsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *UserSettingsMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.create_time != nil {
+		fields = append(fields, usersettings.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, usersettings.FieldUpdateTime)
+	}
+	if m.currency_code != nil {
+		fields = append(fields, usersettings.FieldCurrencyCode)
+	}
+	if m.fuel_volume_unit != nil {
+		fields = append(fields, usersettings.FieldFuelVolumeUnit)
+	}
+	if m.distance_unit != nil {
+		fields = append(fields, usersettings.FieldDistanceUnit)
+	}
+	if m.fuel_consumption_unit != nil {
+		fields = append(fields, usersettings.FieldFuelConsumptionUnit)
+	}
+	if m.temperature_unit != nil {
+		fields = append(fields, usersettings.FieldTemperatureUnit)
+	}
+	if m.power_unit != nil {
+		fields = append(fields, usersettings.FieldPowerUnit)
+	}
+	if m.torque_unit != nil {
+		fields = append(fields, usersettings.FieldTorqueUnit)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *UserSettingsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case usersettings.FieldCreateTime:
+		return m.CreateTime()
+	case usersettings.FieldUpdateTime:
+		return m.UpdateTime()
+	case usersettings.FieldCurrencyCode:
+		return m.CurrencyCode()
+	case usersettings.FieldFuelVolumeUnit:
+		return m.FuelVolumeUnit()
+	case usersettings.FieldDistanceUnit:
+		return m.DistanceUnit()
+	case usersettings.FieldFuelConsumptionUnit:
+		return m.FuelConsumptionUnit()
+	case usersettings.FieldTemperatureUnit:
+		return m.TemperatureUnit()
+	case usersettings.FieldPowerUnit:
+		return m.PowerUnit()
+	case usersettings.FieldTorqueUnit:
+		return m.TorqueUnit()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *UserSettingsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case usersettings.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case usersettings.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case usersettings.FieldCurrencyCode:
+		return m.OldCurrencyCode(ctx)
+	case usersettings.FieldFuelVolumeUnit:
+		return m.OldFuelVolumeUnit(ctx)
+	case usersettings.FieldDistanceUnit:
+		return m.OldDistanceUnit(ctx)
+	case usersettings.FieldFuelConsumptionUnit:
+		return m.OldFuelConsumptionUnit(ctx)
+	case usersettings.FieldTemperatureUnit:
+		return m.OldTemperatureUnit(ctx)
+	case usersettings.FieldPowerUnit:
+		return m.OldPowerUnit(ctx)
+	case usersettings.FieldTorqueUnit:
+		return m.OldTorqueUnit(ctx)
+	}
+	return nil, fmt.Errorf("unknown UserSettings field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UserSettingsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case usersettings.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case usersettings.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case usersettings.FieldCurrencyCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCurrencyCode(v)
+		return nil
+	case usersettings.FieldFuelVolumeUnit:
+		v, ok := value.(usersettings.FuelVolumeUnit)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFuelVolumeUnit(v)
+		return nil
+	case usersettings.FieldDistanceUnit:
+		v, ok := value.(usersettings.DistanceUnit)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDistanceUnit(v)
+		return nil
+	case usersettings.FieldFuelConsumptionUnit:
+		v, ok := value.(usersettings.FuelConsumptionUnit)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFuelConsumptionUnit(v)
+		return nil
+	case usersettings.FieldTemperatureUnit:
+		v, ok := value.(usersettings.TemperatureUnit)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTemperatureUnit(v)
+		return nil
+	case usersettings.FieldPowerUnit:
+		v, ok := value.(usersettings.PowerUnit)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPowerUnit(v)
+		return nil
+	case usersettings.FieldTorqueUnit:
+		v, ok := value.(usersettings.TorqueUnit)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTorqueUnit(v)
+		return nil
+	}
+	return fmt.Errorf("unknown UserSettings field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *UserSettingsMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *UserSettingsMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UserSettingsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown UserSettings numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *UserSettingsMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(usersettings.FieldCurrencyCode) {
+		fields = append(fields, usersettings.FieldCurrencyCode)
+	}
+	if m.FieldCleared(usersettings.FieldFuelVolumeUnit) {
+		fields = append(fields, usersettings.FieldFuelVolumeUnit)
+	}
+	if m.FieldCleared(usersettings.FieldDistanceUnit) {
+		fields = append(fields, usersettings.FieldDistanceUnit)
+	}
+	if m.FieldCleared(usersettings.FieldFuelConsumptionUnit) {
+		fields = append(fields, usersettings.FieldFuelConsumptionUnit)
+	}
+	if m.FieldCleared(usersettings.FieldTemperatureUnit) {
+		fields = append(fields, usersettings.FieldTemperatureUnit)
+	}
+	if m.FieldCleared(usersettings.FieldPowerUnit) {
+		fields = append(fields, usersettings.FieldPowerUnit)
+	}
+	if m.FieldCleared(usersettings.FieldTorqueUnit) {
+		fields = append(fields, usersettings.FieldTorqueUnit)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *UserSettingsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *UserSettingsMutation) ClearField(name string) error {
+	switch name {
+	case usersettings.FieldCurrencyCode:
+		m.ClearCurrencyCode()
+		return nil
+	case usersettings.FieldFuelVolumeUnit:
+		m.ClearFuelVolumeUnit()
+		return nil
+	case usersettings.FieldDistanceUnit:
+		m.ClearDistanceUnit()
+		return nil
+	case usersettings.FieldFuelConsumptionUnit:
+		m.ClearFuelConsumptionUnit()
+		return nil
+	case usersettings.FieldTemperatureUnit:
+		m.ClearTemperatureUnit()
+		return nil
+	case usersettings.FieldPowerUnit:
+		m.ClearPowerUnit()
+		return nil
+	case usersettings.FieldTorqueUnit:
+		m.ClearTorqueUnit()
+		return nil
+	}
+	return fmt.Errorf("unknown UserSettings nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *UserSettingsMutation) ResetField(name string) error {
+	switch name {
+	case usersettings.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case usersettings.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case usersettings.FieldCurrencyCode:
+		m.ResetCurrencyCode()
+		return nil
+	case usersettings.FieldFuelVolumeUnit:
+		m.ResetFuelVolumeUnit()
+		return nil
+	case usersettings.FieldDistanceUnit:
+		m.ResetDistanceUnit()
+		return nil
+	case usersettings.FieldFuelConsumptionUnit:
+		m.ResetFuelConsumptionUnit()
+		return nil
+	case usersettings.FieldTemperatureUnit:
+		m.ResetTemperatureUnit()
+		return nil
+	case usersettings.FieldPowerUnit:
+		m.ResetPowerUnit()
+		return nil
+	case usersettings.FieldTorqueUnit:
+		m.ResetTorqueUnit()
+		return nil
+	}
+	return fmt.Errorf("unknown UserSettings field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *UserSettingsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.user != nil {
+		edges = append(edges, usersettings.EdgeUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *UserSettingsMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case usersettings.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *UserSettingsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *UserSettingsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *UserSettingsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleareduser {
+		edges = append(edges, usersettings.EdgeUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *UserSettingsMutation) EdgeCleared(name string) bool {
+	switch name {
+	case usersettings.EdgeUser:
+		return m.cleareduser
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *UserSettingsMutation) ClearEdge(name string) error {
+	switch name {
+	case usersettings.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
+	return fmt.Errorf("unknown UserSettings unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *UserSettingsMutation) ResetEdge(name string) error {
+	switch name {
+	case usersettings.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
+	return fmt.Errorf("unknown UserSettings edge %s", name)
 }

@@ -31,20 +31,6 @@ type Profile struct {
 	LastName *string `json:"last_name,omitempty"`
 	// Picture holds the value of the "picture" field.
 	Picture *uuid.UUID `json:"picture,omitempty"`
-	// CurrencyCode holds the value of the "currency_code" field.
-	CurrencyCode *string `json:"currency_code,omitempty"`
-	// FuelVolumeUnit holds the value of the "fuel_volume_unit" field.
-	FuelVolumeUnit *profile.FuelVolumeUnit `json:"fuel_volume_unit,omitempty"`
-	// DistanceUnit holds the value of the "distance_unit" field.
-	DistanceUnit *profile.DistanceUnit `json:"distance_unit,omitempty"`
-	// FuelConsumptionUnit holds the value of the "fuel_consumption_unit" field.
-	FuelConsumptionUnit *profile.FuelConsumptionUnit `json:"fuel_consumption_unit,omitempty"`
-	// TemperatureUnit holds the value of the "temperature_unit" field.
-	TemperatureUnit *profile.TemperatureUnit `json:"temperature_unit,omitempty"`
-	// PowerUnit holds the value of the "power_unit" field.
-	PowerUnit *profile.PowerUnit `json:"power_unit,omitempty"`
-	// TorqueUnit holds the value of the "torque_unit" field.
-	TorqueUnit *profile.TorqueUnit `json:"torque_unit,omitempty"`
 	// Visibility holds the value of the "visibility" field.
 	Visibility profile.Visibility `json:"visibility,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -83,7 +69,7 @@ func (*Profile) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case profile.FieldPicture:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case profile.FieldUsername, profile.FieldFirstName, profile.FieldLastName, profile.FieldCurrencyCode, profile.FieldFuelVolumeUnit, profile.FieldDistanceUnit, profile.FieldFuelConsumptionUnit, profile.FieldTemperatureUnit, profile.FieldPowerUnit, profile.FieldTorqueUnit, profile.FieldVisibility:
+		case profile.FieldUsername, profile.FieldFirstName, profile.FieldLastName, profile.FieldVisibility:
 			values[i] = new(sql.NullString)
 		case profile.FieldCreateTime, profile.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
@@ -151,55 +137,6 @@ func (pr *Profile) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.Picture = new(uuid.UUID)
 				*pr.Picture = *value.S.(*uuid.UUID)
-			}
-		case profile.FieldCurrencyCode:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field currency_code", values[i])
-			} else if value.Valid {
-				pr.CurrencyCode = new(string)
-				*pr.CurrencyCode = value.String
-			}
-		case profile.FieldFuelVolumeUnit:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field fuel_volume_unit", values[i])
-			} else if value.Valid {
-				pr.FuelVolumeUnit = new(profile.FuelVolumeUnit)
-				*pr.FuelVolumeUnit = profile.FuelVolumeUnit(value.String)
-			}
-		case profile.FieldDistanceUnit:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field distance_unit", values[i])
-			} else if value.Valid {
-				pr.DistanceUnit = new(profile.DistanceUnit)
-				*pr.DistanceUnit = profile.DistanceUnit(value.String)
-			}
-		case profile.FieldFuelConsumptionUnit:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field fuel_consumption_unit", values[i])
-			} else if value.Valid {
-				pr.FuelConsumptionUnit = new(profile.FuelConsumptionUnit)
-				*pr.FuelConsumptionUnit = profile.FuelConsumptionUnit(value.String)
-			}
-		case profile.FieldTemperatureUnit:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field temperature_unit", values[i])
-			} else if value.Valid {
-				pr.TemperatureUnit = new(profile.TemperatureUnit)
-				*pr.TemperatureUnit = profile.TemperatureUnit(value.String)
-			}
-		case profile.FieldPowerUnit:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field power_unit", values[i])
-			} else if value.Valid {
-				pr.PowerUnit = new(profile.PowerUnit)
-				*pr.PowerUnit = profile.PowerUnit(value.String)
-			}
-		case profile.FieldTorqueUnit:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field torque_unit", values[i])
-			} else if value.Valid {
-				pr.TorqueUnit = new(profile.TorqueUnit)
-				*pr.TorqueUnit = profile.TorqueUnit(value.String)
 			}
 		case profile.FieldVisibility:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -278,41 +215,6 @@ func (pr *Profile) String() string {
 	builder.WriteString(", ")
 	if v := pr.Picture; v != nil {
 		builder.WriteString("picture=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := pr.CurrencyCode; v != nil {
-		builder.WriteString("currency_code=")
-		builder.WriteString(*v)
-	}
-	builder.WriteString(", ")
-	if v := pr.FuelVolumeUnit; v != nil {
-		builder.WriteString("fuel_volume_unit=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := pr.DistanceUnit; v != nil {
-		builder.WriteString("distance_unit=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := pr.FuelConsumptionUnit; v != nil {
-		builder.WriteString("fuel_consumption_unit=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := pr.TemperatureUnit; v != nil {
-		builder.WriteString("temperature_unit=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := pr.PowerUnit; v != nil {
-		builder.WriteString("power_unit=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := pr.TorqueUnit; v != nil {
-		builder.WriteString("torque_unit=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")

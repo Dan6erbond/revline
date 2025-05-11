@@ -18,6 +18,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/ent/usersettings"
 	"github.com/google/uuid"
 )
 
@@ -30,6 +31,7 @@ type UserQuery struct {
 	predicates                []predicate.User
 	withCars                  *CarQuery
 	withProfile               *ProfileQuery
+	withSettings              *UserSettingsQuery
 	withSubscriptions         *SubscriptionQuery
 	withCheckoutSessions      *CheckoutSessionQuery
 	modifiers                 []func(*sql.Selector)
@@ -110,6 +112,28 @@ func (uq *UserQuery) QueryProfile() *ProfileQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(profile.Table, profile.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, user.ProfileTable, user.ProfileColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySettings chains the current query on the "settings" edge.
+func (uq *UserQuery) QuerySettings() *UserSettingsQuery {
+	query := (&UserSettingsClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(usersettings.Table, usersettings.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.SettingsTable, user.SettingsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -355,6 +379,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		predicates:           append([]predicate.User{}, uq.predicates...),
 		withCars:             uq.withCars.Clone(),
 		withProfile:          uq.withProfile.Clone(),
+		withSettings:         uq.withSettings.Clone(),
 		withSubscriptions:    uq.withSubscriptions.Clone(),
 		withCheckoutSessions: uq.withCheckoutSessions.Clone(),
 		// clone intermediate query.
@@ -382,6 +407,17 @@ func (uq *UserQuery) WithProfile(opts ...func(*ProfileQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withProfile = query
+	return uq
+}
+
+// WithSettings tells the query-builder to eager-load the nodes that are connected to
+// the "settings" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithSettings(opts ...func(*UserSettingsQuery)) *UserQuery {
+	query := (&UserSettingsClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withSettings = query
 	return uq
 }
 
@@ -485,9 +521,10 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			uq.withCars != nil,
 			uq.withProfile != nil,
+			uq.withSettings != nil,
 			uq.withSubscriptions != nil,
 			uq.withCheckoutSessions != nil,
 		}
@@ -523,6 +560,12 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	if query := uq.withProfile; query != nil {
 		if err := uq.loadProfile(ctx, query, nodes, nil,
 			func(n *User, e *Profile) { n.Edges.Profile = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withSettings; query != nil {
+		if err := uq.loadSettings(ctx, query, nodes, nil,
+			func(n *User, e *UserSettings) { n.Edges.Settings = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -623,6 +666,34 @@ func (uq *UserQuery) loadProfile(ctx context.Context, query *ProfileQuery, nodes
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "user_profile" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadSettings(ctx context.Context, query *UserSettingsQuery, nodes []*User, init func(*User), assign func(*User, *UserSettings)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.UserSettings(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.SettingsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_settings
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_settings" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_settings" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

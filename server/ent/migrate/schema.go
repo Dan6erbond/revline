@@ -426,13 +426,6 @@ var (
 		{Name: "first_name", Type: field.TypeString, Nullable: true},
 		{Name: "last_name", Type: field.TypeString, Nullable: true},
 		{Name: "picture", Type: field.TypeUUID, Nullable: true},
-		{Name: "currency_code", Type: field.TypeString, Nullable: true},
-		{Name: "fuel_volume_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"liter", "gallon", "imp_gallon"}, SchemaType: map[string]string{"postgres": "fuel_volume_unit"}},
-		{Name: "distance_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"kilometers", "miles"}, SchemaType: map[string]string{"postgres": "distance_unit"}},
-		{Name: "fuel_consumption_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"mpg", "imp_mpg", "kpl", "lp100k"}, SchemaType: map[string]string{"postgres": "fuel_consumption_unit"}},
-		{Name: "temperature_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"celsius", "fahrenheit"}, SchemaType: map[string]string{"postgres": "temperature_unit"}},
-		{Name: "power_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"metric_horsepower", "mech_horsepower", "kilowatts", "imp_horsepower", "electric_horsepower"}, SchemaType: map[string]string{"postgres": "power_unit"}},
-		{Name: "torque_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"newton_meters", "pound_feet", "kilogram_meter"}, SchemaType: map[string]string{"postgres": "torque_unit"}},
 		{Name: "visibility", Type: field.TypeEnum, Enums: []string{"public", "private"}, Default: "private"},
 		{Name: "user_profile", Type: field.TypeUUID, Unique: true},
 	}
@@ -444,7 +437,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "profiles_users_profile",
-				Columns:    []*schema.Column{ProfilesColumns[15]},
+				Columns:    []*schema.Column{ProfilesColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -630,6 +623,34 @@ var (
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
+	// UserSettingsColumns holds the columns for the "user_settings" table.
+	UserSettingsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "currency_code", Type: field.TypeString, Nullable: true},
+		{Name: "fuel_volume_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"liter", "gallon", "imp_gallon"}, SchemaType: map[string]string{"postgres": "fuel_volume_unit"}},
+		{Name: "distance_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"kilometers", "miles"}, SchemaType: map[string]string{"postgres": "distance_unit"}},
+		{Name: "fuel_consumption_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"mpg", "imp_mpg", "kpl", "lp100k"}, SchemaType: map[string]string{"postgres": "fuel_consumption_unit"}},
+		{Name: "temperature_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"celsius", "fahrenheit"}, SchemaType: map[string]string{"postgres": "temperature_unit"}},
+		{Name: "power_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"metric_horsepower", "mech_horsepower", "kilowatts", "imp_horsepower", "electric_horsepower"}, SchemaType: map[string]string{"postgres": "power_unit"}},
+		{Name: "torque_unit", Type: field.TypeEnum, Nullable: true, Enums: []string{"newton_meters", "pound_feet", "kilogram_meter"}, SchemaType: map[string]string{"postgres": "torque_unit"}},
+		{Name: "user_settings", Type: field.TypeUUID, Unique: true},
+	}
+	// UserSettingsTable holds the schema information for the "user_settings" table.
+	UserSettingsTable = &schema.Table{
+		Name:       "user_settings",
+		Columns:    UserSettingsColumns,
+		PrimaryKey: []*schema.Column{UserSettingsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_settings_users_settings",
+				Columns:    []*schema.Column{UserSettingsColumns[10]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// AlbumMediaColumns holds the columns for the "album_media" table.
 	AlbumMediaColumns = []*schema.Column{
 		{Name: "album_id", Type: field.TypeUUID},
@@ -753,6 +774,7 @@ var (
 		SubscriptionsTable,
 		TasksTable,
 		UsersTable,
+		UserSettingsTable,
 		AlbumMediaTable,
 		ServiceLogItemsTable,
 		ServiceScheduleItemsTable,
@@ -794,6 +816,7 @@ func init() {
 	SubscriptionsTable.ForeignKeys[1].RefTable = UsersTable
 	TasksTable.ForeignKeys[0].RefTable = CarsTable
 	TasksTable.ForeignKeys[1].RefTable = TasksTable
+	UserSettingsTable.ForeignKeys[0].RefTable = UsersTable
 	AlbumMediaTable.ForeignKeys[0].RefTable = AlbumsTable
 	AlbumMediaTable.ForeignKeys[1].RefTable = MediaTable
 	ServiceLogItemsTable.ForeignKeys[0].RefTable = ServiceLogsTable

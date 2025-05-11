@@ -29,6 +29,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/ent/usersettings"
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-multierror"
 )
@@ -142,6 +143,11 @@ var userImplementors = []string{"User", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
 func (*User) IsNode() {}
+
+var usersettingsImplementors = []string{"UserSettings", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*UserSettings) IsNode() {}
 
 var errNodeInvalidID = &NotFoundError{"node"}
 
@@ -386,6 +392,15 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 			Where(user.ID(id))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
 			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, userImplementors...); err != nil {
+				return nil, err
+			}
+		}
+		return query.Only(ctx)
+	case usersettings.Table:
+		query := c.UserSettings.Query().
+			Where(usersettings.ID(id))
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, usersettingsImplementors...); err != nil {
 				return nil, err
 			}
 		}
@@ -787,6 +802,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		query := c.User.Query().
 			Where(user.IDIn(ids...))
 		query, err := query.CollectFields(ctx, userImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case usersettings.Table:
+		query := c.UserSettings.Query().
+			Where(usersettings.IDIn(ids...))
+		query, err := query.CollectFields(ctx, usersettingsImplementors...)
 		if err != nil {
 			return nil, err
 		}

@@ -15,6 +15,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/ent/usersettings"
 	"github.com/google/uuid"
 )
 
@@ -119,6 +120,25 @@ func (uc *UserCreate) SetNillableProfileID(id *uuid.UUID) *UserCreate {
 // SetProfile sets the "profile" edge to the Profile entity.
 func (uc *UserCreate) SetProfile(p *Profile) *UserCreate {
 	return uc.SetProfileID(p.ID)
+}
+
+// SetSettingsID sets the "settings" edge to the UserSettings entity by ID.
+func (uc *UserCreate) SetSettingsID(id uuid.UUID) *UserCreate {
+	uc.mutation.SetSettingsID(id)
+	return uc
+}
+
+// SetNillableSettingsID sets the "settings" edge to the UserSettings entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillableSettingsID(id *uuid.UUID) *UserCreate {
+	if id != nil {
+		uc = uc.SetSettingsID(*id)
+	}
+	return uc
+}
+
+// SetSettings sets the "settings" edge to the UserSettings entity.
+func (uc *UserCreate) SetSettings(u *UserSettings) *UserCreate {
+	return uc.SetSettingsID(u.ID)
 }
 
 // AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
@@ -287,6 +307,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(profile.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.SettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.SettingsTable,
+			Columns: []string{user.SettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usersettings.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

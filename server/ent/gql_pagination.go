@@ -35,6 +35,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/ent/usersettings"
 	"github.com/google/uuid"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -5629,5 +5630,254 @@ func (u *User) ToEdge(order *UserOrder) *UserEdge {
 	return &UserEdge{
 		Node:   u,
 		Cursor: order.Field.toCursor(u),
+	}
+}
+
+// UserSettingsEdge is the edge representation of UserSettings.
+type UserSettingsEdge struct {
+	Node   *UserSettings `json:"node"`
+	Cursor Cursor        `json:"cursor"`
+}
+
+// UserSettingsConnection is the connection containing edges to UserSettings.
+type UserSettingsConnection struct {
+	Edges      []*UserSettingsEdge `json:"edges"`
+	PageInfo   PageInfo            `json:"pageInfo"`
+	TotalCount int                 `json:"totalCount"`
+}
+
+func (c *UserSettingsConnection) build(nodes []*UserSettings, pager *usersettingsPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *UserSettings
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *UserSettings {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *UserSettings {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*UserSettingsEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &UserSettingsEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// UserSettingsPaginateOption enables pagination customization.
+type UserSettingsPaginateOption func(*usersettingsPager) error
+
+// WithUserSettingsOrder configures pagination ordering.
+func WithUserSettingsOrder(order *UserSettingsOrder) UserSettingsPaginateOption {
+	if order == nil {
+		order = DefaultUserSettingsOrder
+	}
+	o := *order
+	return func(pager *usersettingsPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultUserSettingsOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithUserSettingsFilter configures pagination filter.
+func WithUserSettingsFilter(filter func(*UserSettingsQuery) (*UserSettingsQuery, error)) UserSettingsPaginateOption {
+	return func(pager *usersettingsPager) error {
+		if filter == nil {
+			return errors.New("UserSettingsQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type usersettingsPager struct {
+	reverse bool
+	order   *UserSettingsOrder
+	filter  func(*UserSettingsQuery) (*UserSettingsQuery, error)
+}
+
+func newUserSettingsPager(opts []UserSettingsPaginateOption, reverse bool) (*usersettingsPager, error) {
+	pager := &usersettingsPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultUserSettingsOrder
+	}
+	return pager, nil
+}
+
+func (p *usersettingsPager) applyFilter(query *UserSettingsQuery) (*UserSettingsQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *usersettingsPager) toCursor(us *UserSettings) Cursor {
+	return p.order.Field.toCursor(us)
+}
+
+func (p *usersettingsPager) applyCursors(query *UserSettingsQuery, after, before *Cursor) (*UserSettingsQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultUserSettingsOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *usersettingsPager) applyOrder(query *UserSettingsQuery) *UserSettingsQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultUserSettingsOrder.Field {
+		query = query.Order(DefaultUserSettingsOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *usersettingsPager) orderExpr(query *UserSettingsQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultUserSettingsOrder.Field {
+			b.Comma().Ident(DefaultUserSettingsOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to UserSettings.
+func (us *UserSettingsQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...UserSettingsPaginateOption,
+) (*UserSettingsConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newUserSettingsPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if us, err = pager.applyFilter(us); err != nil {
+		return nil, err
+	}
+	conn := &UserSettingsConnection{Edges: []*UserSettingsEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := us.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if us, err = pager.applyCursors(us, after, before); err != nil {
+		return nil, err
+	}
+	limit := paginateLimit(first, last)
+	if limit != 0 {
+		us.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := us.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	us = pager.applyOrder(us)
+	nodes, err := us.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// UserSettingsOrderField defines the ordering field of UserSettings.
+type UserSettingsOrderField struct {
+	// Value extracts the ordering value from the given UserSettings.
+	Value    func(*UserSettings) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) usersettings.OrderOption
+	toCursor func(*UserSettings) Cursor
+}
+
+// UserSettingsOrder defines the ordering of UserSettings.
+type UserSettingsOrder struct {
+	Direction OrderDirection          `json:"direction"`
+	Field     *UserSettingsOrderField `json:"field"`
+}
+
+// DefaultUserSettingsOrder is the default ordering of UserSettings.
+var DefaultUserSettingsOrder = &UserSettingsOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &UserSettingsOrderField{
+		Value: func(us *UserSettings) (ent.Value, error) {
+			return us.ID, nil
+		},
+		column: usersettings.FieldID,
+		toTerm: usersettings.ByID,
+		toCursor: func(us *UserSettings) Cursor {
+			return Cursor{ID: us.ID}
+		},
+	},
+}
+
+// ToEdge converts UserSettings into UserSettingsEdge.
+func (us *UserSettings) ToEdge(order *UserSettingsOrder) *UserSettingsEdge {
+	if order == nil {
+		order = DefaultUserSettingsOrder
+	}
+	return &UserSettingsEdge{
+		Node:   us,
+		Cursor: order.Field.toCursor(us),
 	}
 }

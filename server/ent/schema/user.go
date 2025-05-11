@@ -34,6 +34,8 @@ func (User) Edges() []ent.Edge {
 		edge.To("cars", Car.Type),
 		edge.To("profile", Profile.Type).
 			Unique(),
+		edge.To("settings", UserSettings.Type).
+			Unique(),
 		edge.To("subscriptions", Subscription.Type),
 		edge.To("checkout_sessions", CheckoutSession.Type),
 	}

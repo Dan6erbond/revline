@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/ent/usersettings"
 	"github.com/google/uuid"
 )
 
@@ -39,15 +40,17 @@ type UserEdges struct {
 	Cars []*Car `json:"cars,omitempty"`
 	// Profile holds the value of the profile edge.
 	Profile *Profile `json:"profile,omitempty"`
+	// Settings holds the value of the settings edge.
+	Settings *UserSettings `json:"settings,omitempty"`
 	// Subscriptions holds the value of the subscriptions edge.
 	Subscriptions []*Subscription `json:"subscriptions,omitempty"`
 	// CheckoutSessions holds the value of the checkout_sessions edge.
 	CheckoutSessions []*CheckoutSession `json:"checkout_sessions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 	// totalCount holds the count of the edges above.
-	totalCount [4]map[string]int
+	totalCount [5]map[string]int
 
 	namedCars             map[string][]*Car
 	namedSubscriptions    map[string][]*Subscription
@@ -74,10 +77,21 @@ func (e UserEdges) ProfileOrErr() (*Profile, error) {
 	return nil, &NotLoadedError{edge: "profile"}
 }
 
+// SettingsOrErr returns the Settings value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) SettingsOrErr() (*UserSettings, error) {
+	if e.Settings != nil {
+		return e.Settings, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: usersettings.Label}
+	}
+	return nil, &NotLoadedError{edge: "settings"}
+}
+
 // SubscriptionsOrErr returns the Subscriptions value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) SubscriptionsOrErr() ([]*Subscription, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Subscriptions, nil
 	}
 	return nil, &NotLoadedError{edge: "subscriptions"}
@@ -86,7 +100,7 @@ func (e UserEdges) SubscriptionsOrErr() ([]*Subscription, error) {
 // CheckoutSessionsOrErr returns the CheckoutSessions value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) CheckoutSessionsOrErr() ([]*CheckoutSession, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.CheckoutSessions, nil
 	}
 	return nil, &NotLoadedError{edge: "checkout_sessions"}
@@ -170,6 +184,11 @@ func (u *User) QueryCars() *CarQuery {
 // QueryProfile queries the "profile" edge of the User entity.
 func (u *User) QueryProfile() *ProfileQuery {
 	return NewUserClient(u.config).QueryProfile(u)
+}
+
+// QuerySettings queries the "settings" edge of the User entity.
+func (u *User) QuerySettings() *UserSettingsQuery {
+	return NewUserClient(u.config).QuerySettings(u)
 }
 
 // QuerySubscriptions queries the "subscriptions" edge of the User entity.

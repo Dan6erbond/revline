@@ -106,104 +106,6 @@ func (pc *ProfileCreate) SetNillablePicture(u *uuid.UUID) *ProfileCreate {
 	return pc
 }
 
-// SetCurrencyCode sets the "currency_code" field.
-func (pc *ProfileCreate) SetCurrencyCode(s string) *ProfileCreate {
-	pc.mutation.SetCurrencyCode(s)
-	return pc
-}
-
-// SetNillableCurrencyCode sets the "currency_code" field if the given value is not nil.
-func (pc *ProfileCreate) SetNillableCurrencyCode(s *string) *ProfileCreate {
-	if s != nil {
-		pc.SetCurrencyCode(*s)
-	}
-	return pc
-}
-
-// SetFuelVolumeUnit sets the "fuel_volume_unit" field.
-func (pc *ProfileCreate) SetFuelVolumeUnit(pvu profile.FuelVolumeUnit) *ProfileCreate {
-	pc.mutation.SetFuelVolumeUnit(pvu)
-	return pc
-}
-
-// SetNillableFuelVolumeUnit sets the "fuel_volume_unit" field if the given value is not nil.
-func (pc *ProfileCreate) SetNillableFuelVolumeUnit(pvu *profile.FuelVolumeUnit) *ProfileCreate {
-	if pvu != nil {
-		pc.SetFuelVolumeUnit(*pvu)
-	}
-	return pc
-}
-
-// SetDistanceUnit sets the "distance_unit" field.
-func (pc *ProfileCreate) SetDistanceUnit(pu profile.DistanceUnit) *ProfileCreate {
-	pc.mutation.SetDistanceUnit(pu)
-	return pc
-}
-
-// SetNillableDistanceUnit sets the "distance_unit" field if the given value is not nil.
-func (pc *ProfileCreate) SetNillableDistanceUnit(pu *profile.DistanceUnit) *ProfileCreate {
-	if pu != nil {
-		pc.SetDistanceUnit(*pu)
-	}
-	return pc
-}
-
-// SetFuelConsumptionUnit sets the "fuel_consumption_unit" field.
-func (pc *ProfileCreate) SetFuelConsumptionUnit(pcu profile.FuelConsumptionUnit) *ProfileCreate {
-	pc.mutation.SetFuelConsumptionUnit(pcu)
-	return pc
-}
-
-// SetNillableFuelConsumptionUnit sets the "fuel_consumption_unit" field if the given value is not nil.
-func (pc *ProfileCreate) SetNillableFuelConsumptionUnit(pcu *profile.FuelConsumptionUnit) *ProfileCreate {
-	if pcu != nil {
-		pc.SetFuelConsumptionUnit(*pcu)
-	}
-	return pc
-}
-
-// SetTemperatureUnit sets the "temperature_unit" field.
-func (pc *ProfileCreate) SetTemperatureUnit(pu profile.TemperatureUnit) *ProfileCreate {
-	pc.mutation.SetTemperatureUnit(pu)
-	return pc
-}
-
-// SetNillableTemperatureUnit sets the "temperature_unit" field if the given value is not nil.
-func (pc *ProfileCreate) SetNillableTemperatureUnit(pu *profile.TemperatureUnit) *ProfileCreate {
-	if pu != nil {
-		pc.SetTemperatureUnit(*pu)
-	}
-	return pc
-}
-
-// SetPowerUnit sets the "power_unit" field.
-func (pc *ProfileCreate) SetPowerUnit(pu profile.PowerUnit) *ProfileCreate {
-	pc.mutation.SetPowerUnit(pu)
-	return pc
-}
-
-// SetNillablePowerUnit sets the "power_unit" field if the given value is not nil.
-func (pc *ProfileCreate) SetNillablePowerUnit(pu *profile.PowerUnit) *ProfileCreate {
-	if pu != nil {
-		pc.SetPowerUnit(*pu)
-	}
-	return pc
-}
-
-// SetTorqueUnit sets the "torque_unit" field.
-func (pc *ProfileCreate) SetTorqueUnit(pu profile.TorqueUnit) *ProfileCreate {
-	pc.mutation.SetTorqueUnit(pu)
-	return pc
-}
-
-// SetNillableTorqueUnit sets the "torque_unit" field if the given value is not nil.
-func (pc *ProfileCreate) SetNillableTorqueUnit(pu *profile.TorqueUnit) *ProfileCreate {
-	if pu != nil {
-		pc.SetTorqueUnit(*pu)
-	}
-	return pc
-}
-
 // SetVisibility sets the "visibility" field.
 func (pc *ProfileCreate) SetVisibility(pr profile.Visibility) *ProfileCreate {
 	pc.mutation.SetVisibility(pr)
@@ -304,36 +206,6 @@ func (pc *ProfileCreate) check() error {
 	if _, ok := pc.mutation.UpdateTime(); !ok {
 		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Profile.update_time"`)}
 	}
-	if v, ok := pc.mutation.FuelVolumeUnit(); ok {
-		if err := profile.FuelVolumeUnitValidator(v); err != nil {
-			return &ValidationError{Name: "fuel_volume_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.fuel_volume_unit": %w`, err)}
-		}
-	}
-	if v, ok := pc.mutation.DistanceUnit(); ok {
-		if err := profile.DistanceUnitValidator(v); err != nil {
-			return &ValidationError{Name: "distance_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.distance_unit": %w`, err)}
-		}
-	}
-	if v, ok := pc.mutation.FuelConsumptionUnit(); ok {
-		if err := profile.FuelConsumptionUnitValidator(v); err != nil {
-			return &ValidationError{Name: "fuel_consumption_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.fuel_consumption_unit": %w`, err)}
-		}
-	}
-	if v, ok := pc.mutation.TemperatureUnit(); ok {
-		if err := profile.TemperatureUnitValidator(v); err != nil {
-			return &ValidationError{Name: "temperature_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.temperature_unit": %w`, err)}
-		}
-	}
-	if v, ok := pc.mutation.PowerUnit(); ok {
-		if err := profile.PowerUnitValidator(v); err != nil {
-			return &ValidationError{Name: "power_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.power_unit": %w`, err)}
-		}
-	}
-	if v, ok := pc.mutation.TorqueUnit(); ok {
-		if err := profile.TorqueUnitValidator(v); err != nil {
-			return &ValidationError{Name: "torque_unit", err: fmt.Errorf(`ent: validator failed for field "Profile.torque_unit": %w`, err)}
-		}
-	}
 	if _, ok := pc.mutation.Visibility(); !ok {
 		return &ValidationError{Name: "visibility", err: errors.New(`ent: missing required field "Profile.visibility"`)}
 	}
@@ -403,34 +275,6 @@ func (pc *ProfileCreate) createSpec() (*Profile, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Picture(); ok {
 		_spec.SetField(profile.FieldPicture, field.TypeUUID, value)
 		_node.Picture = &value
-	}
-	if value, ok := pc.mutation.CurrencyCode(); ok {
-		_spec.SetField(profile.FieldCurrencyCode, field.TypeString, value)
-		_node.CurrencyCode = &value
-	}
-	if value, ok := pc.mutation.FuelVolumeUnit(); ok {
-		_spec.SetField(profile.FieldFuelVolumeUnit, field.TypeEnum, value)
-		_node.FuelVolumeUnit = &value
-	}
-	if value, ok := pc.mutation.DistanceUnit(); ok {
-		_spec.SetField(profile.FieldDistanceUnit, field.TypeEnum, value)
-		_node.DistanceUnit = &value
-	}
-	if value, ok := pc.mutation.FuelConsumptionUnit(); ok {
-		_spec.SetField(profile.FieldFuelConsumptionUnit, field.TypeEnum, value)
-		_node.FuelConsumptionUnit = &value
-	}
-	if value, ok := pc.mutation.TemperatureUnit(); ok {
-		_spec.SetField(profile.FieldTemperatureUnit, field.TypeEnum, value)
-		_node.TemperatureUnit = &value
-	}
-	if value, ok := pc.mutation.PowerUnit(); ok {
-		_spec.SetField(profile.FieldPowerUnit, field.TypeEnum, value)
-		_node.PowerUnit = &value
-	}
-	if value, ok := pc.mutation.TorqueUnit(); ok {
-		_spec.SetField(profile.FieldTorqueUnit, field.TypeEnum, value)
-		_node.TorqueUnit = &value
 	}
 	if value, ok := pc.mutation.Visibility(); ok {
 		_spec.SetField(profile.FieldVisibility, field.TypeEnum, value)

@@ -17,6 +17,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/ent/usersettings"
 	"github.com/google/uuid"
 )
 
@@ -107,6 +108,25 @@ func (uu *UserUpdate) SetProfile(p *Profile) *UserUpdate {
 	return uu.SetProfileID(p.ID)
 }
 
+// SetSettingsID sets the "settings" edge to the UserSettings entity by ID.
+func (uu *UserUpdate) SetSettingsID(id uuid.UUID) *UserUpdate {
+	uu.mutation.SetSettingsID(id)
+	return uu
+}
+
+// SetNillableSettingsID sets the "settings" edge to the UserSettings entity by ID if the given value is not nil.
+func (uu *UserUpdate) SetNillableSettingsID(id *uuid.UUID) *UserUpdate {
+	if id != nil {
+		uu = uu.SetSettingsID(*id)
+	}
+	return uu
+}
+
+// SetSettings sets the "settings" edge to the UserSettings entity.
+func (uu *UserUpdate) SetSettings(u *UserSettings) *UserUpdate {
+	return uu.SetSettingsID(u.ID)
+}
+
 // AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
 func (uu *UserUpdate) AddSubscriptionIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddSubscriptionIDs(ids...)
@@ -166,6 +186,12 @@ func (uu *UserUpdate) RemoveCars(c ...*Car) *UserUpdate {
 // ClearProfile clears the "profile" edge to the Profile entity.
 func (uu *UserUpdate) ClearProfile() *UserUpdate {
 	uu.mutation.ClearProfile()
+	return uu
+}
+
+// ClearSettings clears the "settings" edge to the UserSettings entity.
+func (uu *UserUpdate) ClearSettings() *UserUpdate {
+	uu.mutation.ClearSettings()
 	return uu
 }
 
@@ -335,6 +361,35 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(profile.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uu.mutation.SettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.SettingsTable,
+			Columns: []string{user.SettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usersettings.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.SettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.SettingsTable,
+			Columns: []string{user.SettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usersettings.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -526,6 +581,25 @@ func (uuo *UserUpdateOne) SetProfile(p *Profile) *UserUpdateOne {
 	return uuo.SetProfileID(p.ID)
 }
 
+// SetSettingsID sets the "settings" edge to the UserSettings entity by ID.
+func (uuo *UserUpdateOne) SetSettingsID(id uuid.UUID) *UserUpdateOne {
+	uuo.mutation.SetSettingsID(id)
+	return uuo
+}
+
+// SetNillableSettingsID sets the "settings" edge to the UserSettings entity by ID if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableSettingsID(id *uuid.UUID) *UserUpdateOne {
+	if id != nil {
+		uuo = uuo.SetSettingsID(*id)
+	}
+	return uuo
+}
+
+// SetSettings sets the "settings" edge to the UserSettings entity.
+func (uuo *UserUpdateOne) SetSettings(u *UserSettings) *UserUpdateOne {
+	return uuo.SetSettingsID(u.ID)
+}
+
 // AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
 func (uuo *UserUpdateOne) AddSubscriptionIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddSubscriptionIDs(ids...)
@@ -585,6 +659,12 @@ func (uuo *UserUpdateOne) RemoveCars(c ...*Car) *UserUpdateOne {
 // ClearProfile clears the "profile" edge to the Profile entity.
 func (uuo *UserUpdateOne) ClearProfile() *UserUpdateOne {
 	uuo.mutation.ClearProfile()
+	return uuo
+}
+
+// ClearSettings clears the "settings" edge to the UserSettings entity.
+func (uuo *UserUpdateOne) ClearSettings() *UserUpdateOne {
+	uuo.mutation.ClearSettings()
 	return uuo
 }
 
@@ -784,6 +864,35 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(profile.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.SettingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.SettingsTable,
+			Columns: []string{user.SettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usersettings.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.SettingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.SettingsTable,
+			Columns: []string{user.SettingsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(usersettings.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

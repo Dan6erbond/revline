@@ -31,6 +31,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/ent/usersettings"
 	"github.com/google/uuid"
 )
 
@@ -2031,41 +2032,6 @@ func (pr *ProfileQuery) collectField(ctx context.Context, oneNode bool, opCtx *g
 				selectedFields = append(selectedFields, profile.FieldLastName)
 				fieldSeen[profile.FieldLastName] = struct{}{}
 			}
-		case "currencyCode":
-			if _, ok := fieldSeen[profile.FieldCurrencyCode]; !ok {
-				selectedFields = append(selectedFields, profile.FieldCurrencyCode)
-				fieldSeen[profile.FieldCurrencyCode] = struct{}{}
-			}
-		case "fuelVolumeUnit":
-			if _, ok := fieldSeen[profile.FieldFuelVolumeUnit]; !ok {
-				selectedFields = append(selectedFields, profile.FieldFuelVolumeUnit)
-				fieldSeen[profile.FieldFuelVolumeUnit] = struct{}{}
-			}
-		case "distanceUnit":
-			if _, ok := fieldSeen[profile.FieldDistanceUnit]; !ok {
-				selectedFields = append(selectedFields, profile.FieldDistanceUnit)
-				fieldSeen[profile.FieldDistanceUnit] = struct{}{}
-			}
-		case "fuelConsumptionUnit":
-			if _, ok := fieldSeen[profile.FieldFuelConsumptionUnit]; !ok {
-				selectedFields = append(selectedFields, profile.FieldFuelConsumptionUnit)
-				fieldSeen[profile.FieldFuelConsumptionUnit] = struct{}{}
-			}
-		case "temperatureUnit":
-			if _, ok := fieldSeen[profile.FieldTemperatureUnit]; !ok {
-				selectedFields = append(selectedFields, profile.FieldTemperatureUnit)
-				fieldSeen[profile.FieldTemperatureUnit] = struct{}{}
-			}
-		case "powerUnit":
-			if _, ok := fieldSeen[profile.FieldPowerUnit]; !ok {
-				selectedFields = append(selectedFields, profile.FieldPowerUnit)
-				fieldSeen[profile.FieldPowerUnit] = struct{}{}
-			}
-		case "torqueUnit":
-			if _, ok := fieldSeen[profile.FieldTorqueUnit]; !ok {
-				selectedFields = append(selectedFields, profile.FieldTorqueUnit)
-				fieldSeen[profile.FieldTorqueUnit] = struct{}{}
-			}
 		case "visibility":
 			if _, ok := fieldSeen[profile.FieldVisibility]; !ok {
 				selectedFields = append(selectedFields, profile.FieldVisibility)
@@ -2925,6 +2891,17 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 			}
 			u.withProfile = query
 
+		case "settings":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&UserSettingsClient{config: u.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, usersettingsImplementors)...); err != nil {
+				return err
+			}
+			u.withSettings = query
+
 		case "subscriptions":
 			var (
 				alias = field.Alias
@@ -3007,6 +2984,124 @@ func newUserPaginateArgs(rv map[string]any) *userPaginateArgs {
 	}
 	if v, ok := rv[whereField].(*UserWhereInput); ok {
 		args.opts = append(args.opts, WithUserFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (us *UserSettingsQuery) CollectFields(ctx context.Context, satisfies ...string) (*UserSettingsQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return us, nil
+	}
+	if err := us.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return us, nil
+}
+
+func (us *UserSettingsQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(usersettings.Columns))
+		selectedFields = []string{usersettings.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+
+		case "user":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&UserClient{config: us.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, userImplementors)...); err != nil {
+				return err
+			}
+			us.withUser = query
+		case "createTime":
+			if _, ok := fieldSeen[usersettings.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, usersettings.FieldCreateTime)
+				fieldSeen[usersettings.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[usersettings.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, usersettings.FieldUpdateTime)
+				fieldSeen[usersettings.FieldUpdateTime] = struct{}{}
+			}
+		case "currencyCode":
+			if _, ok := fieldSeen[usersettings.FieldCurrencyCode]; !ok {
+				selectedFields = append(selectedFields, usersettings.FieldCurrencyCode)
+				fieldSeen[usersettings.FieldCurrencyCode] = struct{}{}
+			}
+		case "fuelVolumeUnit":
+			if _, ok := fieldSeen[usersettings.FieldFuelVolumeUnit]; !ok {
+				selectedFields = append(selectedFields, usersettings.FieldFuelVolumeUnit)
+				fieldSeen[usersettings.FieldFuelVolumeUnit] = struct{}{}
+			}
+		case "distanceUnit":
+			if _, ok := fieldSeen[usersettings.FieldDistanceUnit]; !ok {
+				selectedFields = append(selectedFields, usersettings.FieldDistanceUnit)
+				fieldSeen[usersettings.FieldDistanceUnit] = struct{}{}
+			}
+		case "fuelConsumptionUnit":
+			if _, ok := fieldSeen[usersettings.FieldFuelConsumptionUnit]; !ok {
+				selectedFields = append(selectedFields, usersettings.FieldFuelConsumptionUnit)
+				fieldSeen[usersettings.FieldFuelConsumptionUnit] = struct{}{}
+			}
+		case "temperatureUnit":
+			if _, ok := fieldSeen[usersettings.FieldTemperatureUnit]; !ok {
+				selectedFields = append(selectedFields, usersettings.FieldTemperatureUnit)
+				fieldSeen[usersettings.FieldTemperatureUnit] = struct{}{}
+			}
+		case "powerUnit":
+			if _, ok := fieldSeen[usersettings.FieldPowerUnit]; !ok {
+				selectedFields = append(selectedFields, usersettings.FieldPowerUnit)
+				fieldSeen[usersettings.FieldPowerUnit] = struct{}{}
+			}
+		case "torqueUnit":
+			if _, ok := fieldSeen[usersettings.FieldTorqueUnit]; !ok {
+				selectedFields = append(selectedFields, usersettings.FieldTorqueUnit)
+				fieldSeen[usersettings.FieldTorqueUnit] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		us.Select(selectedFields...)
+	}
+	return nil
+}
+
+type usersettingsPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []UserSettingsPaginateOption
+}
+
+func newUserSettingsPaginateArgs(rv map[string]any) *usersettingsPaginateArgs {
+	args := &usersettingsPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*UserSettingsWhereInput); ok {
+		args.opts = append(args.opts, WithUserSettingsFilter(v.Filter))
 	}
 	return args
 }

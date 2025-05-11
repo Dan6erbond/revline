@@ -29,6 +29,7 @@ input UploadProfilePictureInput {
 type Mutation {
   updateProfile(input: UpdateProfileInput!): Profile! @loggedIn
   uploadProfilePicture(input: UploadProfilePictureInput): Profile! @loggedIn
+  updateSettings(input: UpdateUserSettingsInput!): UserSettings! @loggedIn
 }
 
 # type Subscription

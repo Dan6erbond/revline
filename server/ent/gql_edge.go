@@ -713,6 +713,14 @@ func (u *User) Profile(ctx context.Context) (*Profile, error) {
 	return result, MaskNotFound(err)
 }
 
+func (u *User) Settings(ctx context.Context) (*UserSettings, error) {
+	result, err := u.Edges.SettingsOrErr()
+	if IsNotLoaded(err) {
+		result, err = u.QuerySettings().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (u *User) Subscriptions(ctx context.Context) (result []*Subscription, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = u.NamedSubscriptions(graphql.GetFieldContext(ctx).Field.Alias)
@@ -733,6 +741,14 @@ func (u *User) CheckoutSessions(ctx context.Context) (result []*CheckoutSession,
 	}
 	if IsNotLoaded(err) {
 		result, err = u.QueryCheckoutSessions().All(ctx)
+	}
+	return result, err
+}
+
+func (us *UserSettings) User(ctx context.Context) (*User, error) {
+	result, err := us.Edges.UserOrErr()
+	if IsNotLoaded(err) {
+		result, err = us.QueryUser().Only(ctx)
 	}
 	return result, err
 }

@@ -25,6 +25,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/ent/usersettings"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -34,7 +35,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 21)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 22)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   album.Table,
@@ -308,20 +309,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Profile",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			profile.FieldCreateTime:          {Type: field.TypeTime, Column: profile.FieldCreateTime},
-			profile.FieldUpdateTime:          {Type: field.TypeTime, Column: profile.FieldUpdateTime},
-			profile.FieldUsername:            {Type: field.TypeString, Column: profile.FieldUsername},
-			profile.FieldFirstName:           {Type: field.TypeString, Column: profile.FieldFirstName},
-			profile.FieldLastName:            {Type: field.TypeString, Column: profile.FieldLastName},
-			profile.FieldPicture:             {Type: field.TypeUUID, Column: profile.FieldPicture},
-			profile.FieldCurrencyCode:        {Type: field.TypeString, Column: profile.FieldCurrencyCode},
-			profile.FieldFuelVolumeUnit:      {Type: field.TypeEnum, Column: profile.FieldFuelVolumeUnit},
-			profile.FieldDistanceUnit:        {Type: field.TypeEnum, Column: profile.FieldDistanceUnit},
-			profile.FieldFuelConsumptionUnit: {Type: field.TypeEnum, Column: profile.FieldFuelConsumptionUnit},
-			profile.FieldTemperatureUnit:     {Type: field.TypeEnum, Column: profile.FieldTemperatureUnit},
-			profile.FieldPowerUnit:           {Type: field.TypeEnum, Column: profile.FieldPowerUnit},
-			profile.FieldTorqueUnit:          {Type: field.TypeEnum, Column: profile.FieldTorqueUnit},
-			profile.FieldVisibility:          {Type: field.TypeEnum, Column: profile.FieldVisibility},
+			profile.FieldCreateTime: {Type: field.TypeTime, Column: profile.FieldCreateTime},
+			profile.FieldUpdateTime: {Type: field.TypeTime, Column: profile.FieldUpdateTime},
+			profile.FieldUsername:   {Type: field.TypeString, Column: profile.FieldUsername},
+			profile.FieldFirstName:  {Type: field.TypeString, Column: profile.FieldFirstName},
+			profile.FieldLastName:   {Type: field.TypeString, Column: profile.FieldLastName},
+			profile.FieldPicture:    {Type: field.TypeUUID, Column: profile.FieldPicture},
+			profile.FieldVisibility: {Type: field.TypeEnum, Column: profile.FieldVisibility},
 		},
 	}
 	graph.Nodes[15] = &sqlgraph.Node{
@@ -447,6 +441,28 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldUpdateTime:       {Type: field.TypeTime, Column: user.FieldUpdateTime},
 			user.FieldEmail:            {Type: field.TypeString, Column: user.FieldEmail},
 			user.FieldStripeCustomerID: {Type: field.TypeString, Column: user.FieldStripeCustomerID},
+		},
+	}
+	graph.Nodes[21] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   usersettings.Table,
+			Columns: usersettings.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: usersettings.FieldID,
+			},
+		},
+		Type: "UserSettings",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			usersettings.FieldCreateTime:          {Type: field.TypeTime, Column: usersettings.FieldCreateTime},
+			usersettings.FieldUpdateTime:          {Type: field.TypeTime, Column: usersettings.FieldUpdateTime},
+			usersettings.FieldCurrencyCode:        {Type: field.TypeString, Column: usersettings.FieldCurrencyCode},
+			usersettings.FieldFuelVolumeUnit:      {Type: field.TypeEnum, Column: usersettings.FieldFuelVolumeUnit},
+			usersettings.FieldDistanceUnit:        {Type: field.TypeEnum, Column: usersettings.FieldDistanceUnit},
+			usersettings.FieldFuelConsumptionUnit: {Type: field.TypeEnum, Column: usersettings.FieldFuelConsumptionUnit},
+			usersettings.FieldTemperatureUnit:     {Type: field.TypeEnum, Column: usersettings.FieldTemperatureUnit},
+			usersettings.FieldPowerUnit:           {Type: field.TypeEnum, Column: usersettings.FieldPowerUnit},
+			usersettings.FieldTorqueUnit:          {Type: field.TypeEnum, Column: usersettings.FieldTorqueUnit},
 		},
 	}
 	graph.MustAddE(
@@ -1302,6 +1318,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Profile",
 	)
 	graph.MustAddE(
+		"settings",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.SettingsTable,
+			Columns: []string{user.SettingsColumn},
+			Bidi:    false,
+		},
+		"User",
+		"UserSettings",
+	)
+	graph.MustAddE(
 		"subscriptions",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1324,6 +1352,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"User",
 		"CheckoutSession",
+	)
+	graph.MustAddE(
+		"user",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   usersettings.UserTable,
+			Columns: []string{usersettings.UserColumn},
+			Bidi:    false,
+		},
+		"UserSettings",
+		"User",
 	)
 	return graph
 }()
@@ -3064,41 +3104,6 @@ func (f *ProfileFilter) WherePicture(p entql.ValueP) {
 	f.Where(p.Field(profile.FieldPicture))
 }
 
-// WhereCurrencyCode applies the entql string predicate on the currency_code field.
-func (f *ProfileFilter) WhereCurrencyCode(p entql.StringP) {
-	f.Where(p.Field(profile.FieldCurrencyCode))
-}
-
-// WhereFuelVolumeUnit applies the entql string predicate on the fuel_volume_unit field.
-func (f *ProfileFilter) WhereFuelVolumeUnit(p entql.StringP) {
-	f.Where(p.Field(profile.FieldFuelVolumeUnit))
-}
-
-// WhereDistanceUnit applies the entql string predicate on the distance_unit field.
-func (f *ProfileFilter) WhereDistanceUnit(p entql.StringP) {
-	f.Where(p.Field(profile.FieldDistanceUnit))
-}
-
-// WhereFuelConsumptionUnit applies the entql string predicate on the fuel_consumption_unit field.
-func (f *ProfileFilter) WhereFuelConsumptionUnit(p entql.StringP) {
-	f.Where(p.Field(profile.FieldFuelConsumptionUnit))
-}
-
-// WhereTemperatureUnit applies the entql string predicate on the temperature_unit field.
-func (f *ProfileFilter) WhereTemperatureUnit(p entql.StringP) {
-	f.Where(p.Field(profile.FieldTemperatureUnit))
-}
-
-// WherePowerUnit applies the entql string predicate on the power_unit field.
-func (f *ProfileFilter) WherePowerUnit(p entql.StringP) {
-	f.Where(p.Field(profile.FieldPowerUnit))
-}
-
-// WhereTorqueUnit applies the entql string predicate on the torque_unit field.
-func (f *ProfileFilter) WhereTorqueUnit(p entql.StringP) {
-	f.Where(p.Field(profile.FieldTorqueUnit))
-}
-
 // WhereVisibility applies the entql string predicate on the visibility field.
 func (f *ProfileFilter) WhereVisibility(p entql.StringP) {
 	f.Where(p.Field(profile.FieldVisibility))
@@ -3873,6 +3878,20 @@ func (f *UserFilter) WhereHasProfileWith(preds ...predicate.Profile) {
 	})))
 }
 
+// WhereHasSettings applies a predicate to check if query has an edge settings.
+func (f *UserFilter) WhereHasSettings() {
+	f.Where(entql.HasEdge("settings"))
+}
+
+// WhereHasSettingsWith applies a predicate to check if query has an edge settings with a given conditions (other predicates).
+func (f *UserFilter) WhereHasSettingsWith(preds ...predicate.UserSettings) {
+	f.Where(entql.HasEdgeWith("settings", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // WhereHasSubscriptions applies a predicate to check if query has an edge subscriptions.
 func (f *UserFilter) WhereHasSubscriptions() {
 	f.Where(entql.HasEdge("subscriptions"))
@@ -3895,6 +3914,105 @@ func (f *UserFilter) WhereHasCheckoutSessions() {
 // WhereHasCheckoutSessionsWith applies a predicate to check if query has an edge checkout_sessions with a given conditions (other predicates).
 func (f *UserFilter) WhereHasCheckoutSessionsWith(preds ...predicate.CheckoutSession) {
 	f.Where(entql.HasEdgeWith("checkout_sessions", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (usq *UserSettingsQuery) addPredicate(pred func(s *sql.Selector)) {
+	usq.predicates = append(usq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the UserSettingsQuery builder.
+func (usq *UserSettingsQuery) Filter() *UserSettingsFilter {
+	return &UserSettingsFilter{config: usq.config, predicateAdder: usq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *UserSettingsMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the UserSettingsMutation builder.
+func (m *UserSettingsMutation) Filter() *UserSettingsFilter {
+	return &UserSettingsFilter{config: m.config, predicateAdder: m}
+}
+
+// UserSettingsFilter provides a generic filtering capability at runtime for UserSettingsQuery.
+type UserSettingsFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *UserSettingsFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[21].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *UserSettingsFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(usersettings.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *UserSettingsFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(usersettings.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *UserSettingsFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(usersettings.FieldUpdateTime))
+}
+
+// WhereCurrencyCode applies the entql string predicate on the currency_code field.
+func (f *UserSettingsFilter) WhereCurrencyCode(p entql.StringP) {
+	f.Where(p.Field(usersettings.FieldCurrencyCode))
+}
+
+// WhereFuelVolumeUnit applies the entql string predicate on the fuel_volume_unit field.
+func (f *UserSettingsFilter) WhereFuelVolumeUnit(p entql.StringP) {
+	f.Where(p.Field(usersettings.FieldFuelVolumeUnit))
+}
+
+// WhereDistanceUnit applies the entql string predicate on the distance_unit field.
+func (f *UserSettingsFilter) WhereDistanceUnit(p entql.StringP) {
+	f.Where(p.Field(usersettings.FieldDistanceUnit))
+}
+
+// WhereFuelConsumptionUnit applies the entql string predicate on the fuel_consumption_unit field.
+func (f *UserSettingsFilter) WhereFuelConsumptionUnit(p entql.StringP) {
+	f.Where(p.Field(usersettings.FieldFuelConsumptionUnit))
+}
+
+// WhereTemperatureUnit applies the entql string predicate on the temperature_unit field.
+func (f *UserSettingsFilter) WhereTemperatureUnit(p entql.StringP) {
+	f.Where(p.Field(usersettings.FieldTemperatureUnit))
+}
+
+// WherePowerUnit applies the entql string predicate on the power_unit field.
+func (f *UserSettingsFilter) WherePowerUnit(p entql.StringP) {
+	f.Where(p.Field(usersettings.FieldPowerUnit))
+}
+
+// WhereTorqueUnit applies the entql string predicate on the torque_unit field.
+func (f *UserSettingsFilter) WhereTorqueUnit(p entql.StringP) {
+	f.Where(p.Field(usersettings.FieldTorqueUnit))
+}
+
+// WhereHasUser applies a predicate to check if query has an edge user.
+func (f *UserSettingsFilter) WhereHasUser() {
+	f.Where(entql.HasEdge("user"))
+}
+
+// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
+func (f *UserSettingsFilter) WhereHasUserWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

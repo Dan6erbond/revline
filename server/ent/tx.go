@@ -54,6 +54,8 @@ type Tx struct {
 	Task *TaskClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserSettings is the client for interacting with the UserSettings builders.
+	UserSettings *UserSettingsClient
 
 	// lazily loaded.
 	client     *Client
@@ -206,6 +208,7 @@ func (tx *Tx) init() {
 	tx.Subscription = NewSubscriptionClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.User = NewUserClient(tx.config)
+	tx.UserSettings = NewUserSettingsClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

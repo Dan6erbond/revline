@@ -29,6 +29,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/ent/usersettings"
 	"github.com/google/uuid"
 )
 
@@ -5984,71 +5985,6 @@ type ProfileWhereInput struct {
 	LastNameEqualFold    *string  `json:"lastNameEqualFold,omitempty"`
 	LastNameContainsFold *string  `json:"lastNameContainsFold,omitempty"`
 
-	// "currency_code" field predicates.
-	CurrencyCode             *string  `json:"currencyCode,omitempty"`
-	CurrencyCodeNEQ          *string  `json:"currencyCodeNEQ,omitempty"`
-	CurrencyCodeIn           []string `json:"currencyCodeIn,omitempty"`
-	CurrencyCodeNotIn        []string `json:"currencyCodeNotIn,omitempty"`
-	CurrencyCodeGT           *string  `json:"currencyCodeGT,omitempty"`
-	CurrencyCodeGTE          *string  `json:"currencyCodeGTE,omitempty"`
-	CurrencyCodeLT           *string  `json:"currencyCodeLT,omitempty"`
-	CurrencyCodeLTE          *string  `json:"currencyCodeLTE,omitempty"`
-	CurrencyCodeContains     *string  `json:"currencyCodeContains,omitempty"`
-	CurrencyCodeHasPrefix    *string  `json:"currencyCodeHasPrefix,omitempty"`
-	CurrencyCodeHasSuffix    *string  `json:"currencyCodeHasSuffix,omitempty"`
-	CurrencyCodeIsNil        bool     `json:"currencyCodeIsNil,omitempty"`
-	CurrencyCodeNotNil       bool     `json:"currencyCodeNotNil,omitempty"`
-	CurrencyCodeEqualFold    *string  `json:"currencyCodeEqualFold,omitempty"`
-	CurrencyCodeContainsFold *string  `json:"currencyCodeContainsFold,omitempty"`
-
-	// "fuel_volume_unit" field predicates.
-	FuelVolumeUnit       *profile.FuelVolumeUnit  `json:"fuelVolumeUnit,omitempty"`
-	FuelVolumeUnitNEQ    *profile.FuelVolumeUnit  `json:"fuelVolumeUnitNEQ,omitempty"`
-	FuelVolumeUnitIn     []profile.FuelVolumeUnit `json:"fuelVolumeUnitIn,omitempty"`
-	FuelVolumeUnitNotIn  []profile.FuelVolumeUnit `json:"fuelVolumeUnitNotIn,omitempty"`
-	FuelVolumeUnitIsNil  bool                     `json:"fuelVolumeUnitIsNil,omitempty"`
-	FuelVolumeUnitNotNil bool                     `json:"fuelVolumeUnitNotNil,omitempty"`
-
-	// "distance_unit" field predicates.
-	DistanceUnit       *profile.DistanceUnit  `json:"distanceUnit,omitempty"`
-	DistanceUnitNEQ    *profile.DistanceUnit  `json:"distanceUnitNEQ,omitempty"`
-	DistanceUnitIn     []profile.DistanceUnit `json:"distanceUnitIn,omitempty"`
-	DistanceUnitNotIn  []profile.DistanceUnit `json:"distanceUnitNotIn,omitempty"`
-	DistanceUnitIsNil  bool                   `json:"distanceUnitIsNil,omitempty"`
-	DistanceUnitNotNil bool                   `json:"distanceUnitNotNil,omitempty"`
-
-	// "fuel_consumption_unit" field predicates.
-	FuelConsumptionUnit       *profile.FuelConsumptionUnit  `json:"fuelConsumptionUnit,omitempty"`
-	FuelConsumptionUnitNEQ    *profile.FuelConsumptionUnit  `json:"fuelConsumptionUnitNEQ,omitempty"`
-	FuelConsumptionUnitIn     []profile.FuelConsumptionUnit `json:"fuelConsumptionUnitIn,omitempty"`
-	FuelConsumptionUnitNotIn  []profile.FuelConsumptionUnit `json:"fuelConsumptionUnitNotIn,omitempty"`
-	FuelConsumptionUnitIsNil  bool                          `json:"fuelConsumptionUnitIsNil,omitempty"`
-	FuelConsumptionUnitNotNil bool                          `json:"fuelConsumptionUnitNotNil,omitempty"`
-
-	// "temperature_unit" field predicates.
-	TemperatureUnit       *profile.TemperatureUnit  `json:"temperatureUnit,omitempty"`
-	TemperatureUnitNEQ    *profile.TemperatureUnit  `json:"temperatureUnitNEQ,omitempty"`
-	TemperatureUnitIn     []profile.TemperatureUnit `json:"temperatureUnitIn,omitempty"`
-	TemperatureUnitNotIn  []profile.TemperatureUnit `json:"temperatureUnitNotIn,omitempty"`
-	TemperatureUnitIsNil  bool                      `json:"temperatureUnitIsNil,omitempty"`
-	TemperatureUnitNotNil bool                      `json:"temperatureUnitNotNil,omitempty"`
-
-	// "power_unit" field predicates.
-	PowerUnit       *profile.PowerUnit  `json:"powerUnit,omitempty"`
-	PowerUnitNEQ    *profile.PowerUnit  `json:"powerUnitNEQ,omitempty"`
-	PowerUnitIn     []profile.PowerUnit `json:"powerUnitIn,omitempty"`
-	PowerUnitNotIn  []profile.PowerUnit `json:"powerUnitNotIn,omitempty"`
-	PowerUnitIsNil  bool                `json:"powerUnitIsNil,omitempty"`
-	PowerUnitNotNil bool                `json:"powerUnitNotNil,omitempty"`
-
-	// "torque_unit" field predicates.
-	TorqueUnit       *profile.TorqueUnit  `json:"torqueUnit,omitempty"`
-	TorqueUnitNEQ    *profile.TorqueUnit  `json:"torqueUnitNEQ,omitempty"`
-	TorqueUnitIn     []profile.TorqueUnit `json:"torqueUnitIn,omitempty"`
-	TorqueUnitNotIn  []profile.TorqueUnit `json:"torqueUnitNotIn,omitempty"`
-	TorqueUnitIsNil  bool                 `json:"torqueUnitIsNil,omitempty"`
-	TorqueUnitNotNil bool                 `json:"torqueUnitNotNil,omitempty"`
-
 	// "visibility" field predicates.
 	Visibility      *profile.Visibility  `json:"visibility,omitempty"`
 	VisibilityNEQ   *profile.Visibility  `json:"visibilityNEQ,omitempty"`
@@ -6337,159 +6273,6 @@ func (i *ProfileWhereInput) P() (predicate.Profile, error) {
 	}
 	if i.LastNameContainsFold != nil {
 		predicates = append(predicates, profile.LastNameContainsFold(*i.LastNameContainsFold))
-	}
-	if i.CurrencyCode != nil {
-		predicates = append(predicates, profile.CurrencyCodeEQ(*i.CurrencyCode))
-	}
-	if i.CurrencyCodeNEQ != nil {
-		predicates = append(predicates, profile.CurrencyCodeNEQ(*i.CurrencyCodeNEQ))
-	}
-	if len(i.CurrencyCodeIn) > 0 {
-		predicates = append(predicates, profile.CurrencyCodeIn(i.CurrencyCodeIn...))
-	}
-	if len(i.CurrencyCodeNotIn) > 0 {
-		predicates = append(predicates, profile.CurrencyCodeNotIn(i.CurrencyCodeNotIn...))
-	}
-	if i.CurrencyCodeGT != nil {
-		predicates = append(predicates, profile.CurrencyCodeGT(*i.CurrencyCodeGT))
-	}
-	if i.CurrencyCodeGTE != nil {
-		predicates = append(predicates, profile.CurrencyCodeGTE(*i.CurrencyCodeGTE))
-	}
-	if i.CurrencyCodeLT != nil {
-		predicates = append(predicates, profile.CurrencyCodeLT(*i.CurrencyCodeLT))
-	}
-	if i.CurrencyCodeLTE != nil {
-		predicates = append(predicates, profile.CurrencyCodeLTE(*i.CurrencyCodeLTE))
-	}
-	if i.CurrencyCodeContains != nil {
-		predicates = append(predicates, profile.CurrencyCodeContains(*i.CurrencyCodeContains))
-	}
-	if i.CurrencyCodeHasPrefix != nil {
-		predicates = append(predicates, profile.CurrencyCodeHasPrefix(*i.CurrencyCodeHasPrefix))
-	}
-	if i.CurrencyCodeHasSuffix != nil {
-		predicates = append(predicates, profile.CurrencyCodeHasSuffix(*i.CurrencyCodeHasSuffix))
-	}
-	if i.CurrencyCodeIsNil {
-		predicates = append(predicates, profile.CurrencyCodeIsNil())
-	}
-	if i.CurrencyCodeNotNil {
-		predicates = append(predicates, profile.CurrencyCodeNotNil())
-	}
-	if i.CurrencyCodeEqualFold != nil {
-		predicates = append(predicates, profile.CurrencyCodeEqualFold(*i.CurrencyCodeEqualFold))
-	}
-	if i.CurrencyCodeContainsFold != nil {
-		predicates = append(predicates, profile.CurrencyCodeContainsFold(*i.CurrencyCodeContainsFold))
-	}
-	if i.FuelVolumeUnit != nil {
-		predicates = append(predicates, profile.FuelVolumeUnitEQ(*i.FuelVolumeUnit))
-	}
-	if i.FuelVolumeUnitNEQ != nil {
-		predicates = append(predicates, profile.FuelVolumeUnitNEQ(*i.FuelVolumeUnitNEQ))
-	}
-	if len(i.FuelVolumeUnitIn) > 0 {
-		predicates = append(predicates, profile.FuelVolumeUnitIn(i.FuelVolumeUnitIn...))
-	}
-	if len(i.FuelVolumeUnitNotIn) > 0 {
-		predicates = append(predicates, profile.FuelVolumeUnitNotIn(i.FuelVolumeUnitNotIn...))
-	}
-	if i.FuelVolumeUnitIsNil {
-		predicates = append(predicates, profile.FuelVolumeUnitIsNil())
-	}
-	if i.FuelVolumeUnitNotNil {
-		predicates = append(predicates, profile.FuelVolumeUnitNotNil())
-	}
-	if i.DistanceUnit != nil {
-		predicates = append(predicates, profile.DistanceUnitEQ(*i.DistanceUnit))
-	}
-	if i.DistanceUnitNEQ != nil {
-		predicates = append(predicates, profile.DistanceUnitNEQ(*i.DistanceUnitNEQ))
-	}
-	if len(i.DistanceUnitIn) > 0 {
-		predicates = append(predicates, profile.DistanceUnitIn(i.DistanceUnitIn...))
-	}
-	if len(i.DistanceUnitNotIn) > 0 {
-		predicates = append(predicates, profile.DistanceUnitNotIn(i.DistanceUnitNotIn...))
-	}
-	if i.DistanceUnitIsNil {
-		predicates = append(predicates, profile.DistanceUnitIsNil())
-	}
-	if i.DistanceUnitNotNil {
-		predicates = append(predicates, profile.DistanceUnitNotNil())
-	}
-	if i.FuelConsumptionUnit != nil {
-		predicates = append(predicates, profile.FuelConsumptionUnitEQ(*i.FuelConsumptionUnit))
-	}
-	if i.FuelConsumptionUnitNEQ != nil {
-		predicates = append(predicates, profile.FuelConsumptionUnitNEQ(*i.FuelConsumptionUnitNEQ))
-	}
-	if len(i.FuelConsumptionUnitIn) > 0 {
-		predicates = append(predicates, profile.FuelConsumptionUnitIn(i.FuelConsumptionUnitIn...))
-	}
-	if len(i.FuelConsumptionUnitNotIn) > 0 {
-		predicates = append(predicates, profile.FuelConsumptionUnitNotIn(i.FuelConsumptionUnitNotIn...))
-	}
-	if i.FuelConsumptionUnitIsNil {
-		predicates = append(predicates, profile.FuelConsumptionUnitIsNil())
-	}
-	if i.FuelConsumptionUnitNotNil {
-		predicates = append(predicates, profile.FuelConsumptionUnitNotNil())
-	}
-	if i.TemperatureUnit != nil {
-		predicates = append(predicates, profile.TemperatureUnitEQ(*i.TemperatureUnit))
-	}
-	if i.TemperatureUnitNEQ != nil {
-		predicates = append(predicates, profile.TemperatureUnitNEQ(*i.TemperatureUnitNEQ))
-	}
-	if len(i.TemperatureUnitIn) > 0 {
-		predicates = append(predicates, profile.TemperatureUnitIn(i.TemperatureUnitIn...))
-	}
-	if len(i.TemperatureUnitNotIn) > 0 {
-		predicates = append(predicates, profile.TemperatureUnitNotIn(i.TemperatureUnitNotIn...))
-	}
-	if i.TemperatureUnitIsNil {
-		predicates = append(predicates, profile.TemperatureUnitIsNil())
-	}
-	if i.TemperatureUnitNotNil {
-		predicates = append(predicates, profile.TemperatureUnitNotNil())
-	}
-	if i.PowerUnit != nil {
-		predicates = append(predicates, profile.PowerUnitEQ(*i.PowerUnit))
-	}
-	if i.PowerUnitNEQ != nil {
-		predicates = append(predicates, profile.PowerUnitNEQ(*i.PowerUnitNEQ))
-	}
-	if len(i.PowerUnitIn) > 0 {
-		predicates = append(predicates, profile.PowerUnitIn(i.PowerUnitIn...))
-	}
-	if len(i.PowerUnitNotIn) > 0 {
-		predicates = append(predicates, profile.PowerUnitNotIn(i.PowerUnitNotIn...))
-	}
-	if i.PowerUnitIsNil {
-		predicates = append(predicates, profile.PowerUnitIsNil())
-	}
-	if i.PowerUnitNotNil {
-		predicates = append(predicates, profile.PowerUnitNotNil())
-	}
-	if i.TorqueUnit != nil {
-		predicates = append(predicates, profile.TorqueUnitEQ(*i.TorqueUnit))
-	}
-	if i.TorqueUnitNEQ != nil {
-		predicates = append(predicates, profile.TorqueUnitNEQ(*i.TorqueUnitNEQ))
-	}
-	if len(i.TorqueUnitIn) > 0 {
-		predicates = append(predicates, profile.TorqueUnitIn(i.TorqueUnitIn...))
-	}
-	if len(i.TorqueUnitNotIn) > 0 {
-		predicates = append(predicates, profile.TorqueUnitNotIn(i.TorqueUnitNotIn...))
-	}
-	if i.TorqueUnitIsNil {
-		predicates = append(predicates, profile.TorqueUnitIsNil())
-	}
-	if i.TorqueUnitNotNil {
-		predicates = append(predicates, profile.TorqueUnitNotNil())
 	}
 	if i.Visibility != nil {
 		predicates = append(predicates, profile.VisibilityEQ(*i.Visibility))
@@ -9269,6 +9052,10 @@ type UserWhereInput struct {
 	HasProfile     *bool                `json:"hasProfile,omitempty"`
 	HasProfileWith []*ProfileWhereInput `json:"hasProfileWith,omitempty"`
 
+	// "settings" edge predicates.
+	HasSettings     *bool                     `json:"hasSettings,omitempty"`
+	HasSettingsWith []*UserSettingsWhereInput `json:"hasSettingsWith,omitempty"`
+
 	// "subscriptions" edge predicates.
 	HasSubscriptions     *bool                         `json:"hasSubscriptions,omitempty"`
 	HasSubscriptionsWith []*SubscriptionPlanWhereInput `json:"hasSubscriptionsWith,omitempty"`
@@ -9542,6 +9329,24 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 		}
 		predicates = append(predicates, user.HasProfileWith(with...))
 	}
+	if i.HasSettings != nil {
+		p := user.HasSettings()
+		if !*i.HasSettings {
+			p = user.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasSettingsWith) > 0 {
+		with := make([]predicate.UserSettings, 0, len(i.HasSettingsWith))
+		for _, w := range i.HasSettingsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasSettingsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, user.HasSettingsWith(with...))
+	}
 	if i.HasSubscriptions != nil {
 		p := user.HasSubscriptions()
 		if !*i.HasSubscriptions {
@@ -9585,5 +9390,437 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 		return predicates[0], nil
 	default:
 		return user.And(predicates...), nil
+	}
+}
+
+// UserSettingsWhereInput represents a where input for filtering UserSettings queries.
+type UserSettingsWhereInput struct {
+	Predicates []predicate.UserSettings  `json:"-"`
+	Not        *UserSettingsWhereInput   `json:"not,omitempty"`
+	Or         []*UserSettingsWhereInput `json:"or,omitempty"`
+	And        []*UserSettingsWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *uuid.UUID  `json:"id,omitempty"`
+	IDNEQ   *uuid.UUID  `json:"idNEQ,omitempty"`
+	IDIn    []uuid.UUID `json:"idIn,omitempty"`
+	IDNotIn []uuid.UUID `json:"idNotIn,omitempty"`
+	IDGT    *uuid.UUID  `json:"idGT,omitempty"`
+	IDGTE   *uuid.UUID  `json:"idGTE,omitempty"`
+	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
+	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
+
+	// "create_time" field predicates.
+	CreateTime      *time.Time  `json:"createTime,omitempty"`
+	CreateTimeNEQ   *time.Time  `json:"createTimeNEQ,omitempty"`
+	CreateTimeIn    []time.Time `json:"createTimeIn,omitempty"`
+	CreateTimeNotIn []time.Time `json:"createTimeNotIn,omitempty"`
+	CreateTimeGT    *time.Time  `json:"createTimeGT,omitempty"`
+	CreateTimeGTE   *time.Time  `json:"createTimeGTE,omitempty"`
+	CreateTimeLT    *time.Time  `json:"createTimeLT,omitempty"`
+	CreateTimeLTE   *time.Time  `json:"createTimeLTE,omitempty"`
+
+	// "update_time" field predicates.
+	UpdateTime      *time.Time  `json:"updateTime,omitempty"`
+	UpdateTimeNEQ   *time.Time  `json:"updateTimeNEQ,omitempty"`
+	UpdateTimeIn    []time.Time `json:"updateTimeIn,omitempty"`
+	UpdateTimeNotIn []time.Time `json:"updateTimeNotIn,omitempty"`
+	UpdateTimeGT    *time.Time  `json:"updateTimeGT,omitempty"`
+	UpdateTimeGTE   *time.Time  `json:"updateTimeGTE,omitempty"`
+	UpdateTimeLT    *time.Time  `json:"updateTimeLT,omitempty"`
+	UpdateTimeLTE   *time.Time  `json:"updateTimeLTE,omitempty"`
+
+	// "currency_code" field predicates.
+	CurrencyCode             *string  `json:"currencyCode,omitempty"`
+	CurrencyCodeNEQ          *string  `json:"currencyCodeNEQ,omitempty"`
+	CurrencyCodeIn           []string `json:"currencyCodeIn,omitempty"`
+	CurrencyCodeNotIn        []string `json:"currencyCodeNotIn,omitempty"`
+	CurrencyCodeGT           *string  `json:"currencyCodeGT,omitempty"`
+	CurrencyCodeGTE          *string  `json:"currencyCodeGTE,omitempty"`
+	CurrencyCodeLT           *string  `json:"currencyCodeLT,omitempty"`
+	CurrencyCodeLTE          *string  `json:"currencyCodeLTE,omitempty"`
+	CurrencyCodeContains     *string  `json:"currencyCodeContains,omitempty"`
+	CurrencyCodeHasPrefix    *string  `json:"currencyCodeHasPrefix,omitempty"`
+	CurrencyCodeHasSuffix    *string  `json:"currencyCodeHasSuffix,omitempty"`
+	CurrencyCodeIsNil        bool     `json:"currencyCodeIsNil,omitempty"`
+	CurrencyCodeNotNil       bool     `json:"currencyCodeNotNil,omitempty"`
+	CurrencyCodeEqualFold    *string  `json:"currencyCodeEqualFold,omitempty"`
+	CurrencyCodeContainsFold *string  `json:"currencyCodeContainsFold,omitempty"`
+
+	// "fuel_volume_unit" field predicates.
+	FuelVolumeUnit       *usersettings.FuelVolumeUnit  `json:"fuelVolumeUnit,omitempty"`
+	FuelVolumeUnitNEQ    *usersettings.FuelVolumeUnit  `json:"fuelVolumeUnitNEQ,omitempty"`
+	FuelVolumeUnitIn     []usersettings.FuelVolumeUnit `json:"fuelVolumeUnitIn,omitempty"`
+	FuelVolumeUnitNotIn  []usersettings.FuelVolumeUnit `json:"fuelVolumeUnitNotIn,omitempty"`
+	FuelVolumeUnitIsNil  bool                          `json:"fuelVolumeUnitIsNil,omitempty"`
+	FuelVolumeUnitNotNil bool                          `json:"fuelVolumeUnitNotNil,omitempty"`
+
+	// "distance_unit" field predicates.
+	DistanceUnit       *usersettings.DistanceUnit  `json:"distanceUnit,omitempty"`
+	DistanceUnitNEQ    *usersettings.DistanceUnit  `json:"distanceUnitNEQ,omitempty"`
+	DistanceUnitIn     []usersettings.DistanceUnit `json:"distanceUnitIn,omitempty"`
+	DistanceUnitNotIn  []usersettings.DistanceUnit `json:"distanceUnitNotIn,omitempty"`
+	DistanceUnitIsNil  bool                        `json:"distanceUnitIsNil,omitempty"`
+	DistanceUnitNotNil bool                        `json:"distanceUnitNotNil,omitempty"`
+
+	// "fuel_consumption_unit" field predicates.
+	FuelConsumptionUnit       *usersettings.FuelConsumptionUnit  `json:"fuelConsumptionUnit,omitempty"`
+	FuelConsumptionUnitNEQ    *usersettings.FuelConsumptionUnit  `json:"fuelConsumptionUnitNEQ,omitempty"`
+	FuelConsumptionUnitIn     []usersettings.FuelConsumptionUnit `json:"fuelConsumptionUnitIn,omitempty"`
+	FuelConsumptionUnitNotIn  []usersettings.FuelConsumptionUnit `json:"fuelConsumptionUnitNotIn,omitempty"`
+	FuelConsumptionUnitIsNil  bool                               `json:"fuelConsumptionUnitIsNil,omitempty"`
+	FuelConsumptionUnitNotNil bool                               `json:"fuelConsumptionUnitNotNil,omitempty"`
+
+	// "temperature_unit" field predicates.
+	TemperatureUnit       *usersettings.TemperatureUnit  `json:"temperatureUnit,omitempty"`
+	TemperatureUnitNEQ    *usersettings.TemperatureUnit  `json:"temperatureUnitNEQ,omitempty"`
+	TemperatureUnitIn     []usersettings.TemperatureUnit `json:"temperatureUnitIn,omitempty"`
+	TemperatureUnitNotIn  []usersettings.TemperatureUnit `json:"temperatureUnitNotIn,omitempty"`
+	TemperatureUnitIsNil  bool                           `json:"temperatureUnitIsNil,omitempty"`
+	TemperatureUnitNotNil bool                           `json:"temperatureUnitNotNil,omitempty"`
+
+	// "power_unit" field predicates.
+	PowerUnit       *usersettings.PowerUnit  `json:"powerUnit,omitempty"`
+	PowerUnitNEQ    *usersettings.PowerUnit  `json:"powerUnitNEQ,omitempty"`
+	PowerUnitIn     []usersettings.PowerUnit `json:"powerUnitIn,omitempty"`
+	PowerUnitNotIn  []usersettings.PowerUnit `json:"powerUnitNotIn,omitempty"`
+	PowerUnitIsNil  bool                     `json:"powerUnitIsNil,omitempty"`
+	PowerUnitNotNil bool                     `json:"powerUnitNotNil,omitempty"`
+
+	// "torque_unit" field predicates.
+	TorqueUnit       *usersettings.TorqueUnit  `json:"torqueUnit,omitempty"`
+	TorqueUnitNEQ    *usersettings.TorqueUnit  `json:"torqueUnitNEQ,omitempty"`
+	TorqueUnitIn     []usersettings.TorqueUnit `json:"torqueUnitIn,omitempty"`
+	TorqueUnitNotIn  []usersettings.TorqueUnit `json:"torqueUnitNotIn,omitempty"`
+	TorqueUnitIsNil  bool                      `json:"torqueUnitIsNil,omitempty"`
+	TorqueUnitNotNil bool                      `json:"torqueUnitNotNil,omitempty"`
+
+	// "user" edge predicates.
+	HasUser     *bool             `json:"hasUser,omitempty"`
+	HasUserWith []*UserWhereInput `json:"hasUserWith,omitempty"`
+}
+
+// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
+func (i *UserSettingsWhereInput) AddPredicates(predicates ...predicate.UserSettings) {
+	i.Predicates = append(i.Predicates, predicates...)
+}
+
+// Filter applies the UserSettingsWhereInput filter on the UserSettingsQuery builder.
+func (i *UserSettingsWhereInput) Filter(q *UserSettingsQuery) (*UserSettingsQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		if err == ErrEmptyUserSettingsWhereInput {
+			return q, nil
+		}
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// ErrEmptyUserSettingsWhereInput is returned in case the UserSettingsWhereInput is empty.
+var ErrEmptyUserSettingsWhereInput = errors.New("ent: empty predicate UserSettingsWhereInput")
+
+// P returns a predicate for filtering usersettingsslice.
+// An error is returned if the input is empty or invalid.
+func (i *UserSettingsWhereInput) P() (predicate.UserSettings, error) {
+	var predicates []predicate.UserSettings
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'not'", err)
+		}
+		predicates = append(predicates, usersettings.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'or'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.UserSettings, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'or'", err)
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, usersettings.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'and'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.UserSettings, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'and'", err)
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, usersettings.And(and...))
+	}
+	predicates = append(predicates, i.Predicates...)
+	if i.ID != nil {
+		predicates = append(predicates, usersettings.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, usersettings.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, usersettings.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, usersettings.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, usersettings.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, usersettings.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, usersettings.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, usersettings.IDLTE(*i.IDLTE))
+	}
+	if i.CreateTime != nil {
+		predicates = append(predicates, usersettings.CreateTimeEQ(*i.CreateTime))
+	}
+	if i.CreateTimeNEQ != nil {
+		predicates = append(predicates, usersettings.CreateTimeNEQ(*i.CreateTimeNEQ))
+	}
+	if len(i.CreateTimeIn) > 0 {
+		predicates = append(predicates, usersettings.CreateTimeIn(i.CreateTimeIn...))
+	}
+	if len(i.CreateTimeNotIn) > 0 {
+		predicates = append(predicates, usersettings.CreateTimeNotIn(i.CreateTimeNotIn...))
+	}
+	if i.CreateTimeGT != nil {
+		predicates = append(predicates, usersettings.CreateTimeGT(*i.CreateTimeGT))
+	}
+	if i.CreateTimeGTE != nil {
+		predicates = append(predicates, usersettings.CreateTimeGTE(*i.CreateTimeGTE))
+	}
+	if i.CreateTimeLT != nil {
+		predicates = append(predicates, usersettings.CreateTimeLT(*i.CreateTimeLT))
+	}
+	if i.CreateTimeLTE != nil {
+		predicates = append(predicates, usersettings.CreateTimeLTE(*i.CreateTimeLTE))
+	}
+	if i.UpdateTime != nil {
+		predicates = append(predicates, usersettings.UpdateTimeEQ(*i.UpdateTime))
+	}
+	if i.UpdateTimeNEQ != nil {
+		predicates = append(predicates, usersettings.UpdateTimeNEQ(*i.UpdateTimeNEQ))
+	}
+	if len(i.UpdateTimeIn) > 0 {
+		predicates = append(predicates, usersettings.UpdateTimeIn(i.UpdateTimeIn...))
+	}
+	if len(i.UpdateTimeNotIn) > 0 {
+		predicates = append(predicates, usersettings.UpdateTimeNotIn(i.UpdateTimeNotIn...))
+	}
+	if i.UpdateTimeGT != nil {
+		predicates = append(predicates, usersettings.UpdateTimeGT(*i.UpdateTimeGT))
+	}
+	if i.UpdateTimeGTE != nil {
+		predicates = append(predicates, usersettings.UpdateTimeGTE(*i.UpdateTimeGTE))
+	}
+	if i.UpdateTimeLT != nil {
+		predicates = append(predicates, usersettings.UpdateTimeLT(*i.UpdateTimeLT))
+	}
+	if i.UpdateTimeLTE != nil {
+		predicates = append(predicates, usersettings.UpdateTimeLTE(*i.UpdateTimeLTE))
+	}
+	if i.CurrencyCode != nil {
+		predicates = append(predicates, usersettings.CurrencyCodeEQ(*i.CurrencyCode))
+	}
+	if i.CurrencyCodeNEQ != nil {
+		predicates = append(predicates, usersettings.CurrencyCodeNEQ(*i.CurrencyCodeNEQ))
+	}
+	if len(i.CurrencyCodeIn) > 0 {
+		predicates = append(predicates, usersettings.CurrencyCodeIn(i.CurrencyCodeIn...))
+	}
+	if len(i.CurrencyCodeNotIn) > 0 {
+		predicates = append(predicates, usersettings.CurrencyCodeNotIn(i.CurrencyCodeNotIn...))
+	}
+	if i.CurrencyCodeGT != nil {
+		predicates = append(predicates, usersettings.CurrencyCodeGT(*i.CurrencyCodeGT))
+	}
+	if i.CurrencyCodeGTE != nil {
+		predicates = append(predicates, usersettings.CurrencyCodeGTE(*i.CurrencyCodeGTE))
+	}
+	if i.CurrencyCodeLT != nil {
+		predicates = append(predicates, usersettings.CurrencyCodeLT(*i.CurrencyCodeLT))
+	}
+	if i.CurrencyCodeLTE != nil {
+		predicates = append(predicates, usersettings.CurrencyCodeLTE(*i.CurrencyCodeLTE))
+	}
+	if i.CurrencyCodeContains != nil {
+		predicates = append(predicates, usersettings.CurrencyCodeContains(*i.CurrencyCodeContains))
+	}
+	if i.CurrencyCodeHasPrefix != nil {
+		predicates = append(predicates, usersettings.CurrencyCodeHasPrefix(*i.CurrencyCodeHasPrefix))
+	}
+	if i.CurrencyCodeHasSuffix != nil {
+		predicates = append(predicates, usersettings.CurrencyCodeHasSuffix(*i.CurrencyCodeHasSuffix))
+	}
+	if i.CurrencyCodeIsNil {
+		predicates = append(predicates, usersettings.CurrencyCodeIsNil())
+	}
+	if i.CurrencyCodeNotNil {
+		predicates = append(predicates, usersettings.CurrencyCodeNotNil())
+	}
+	if i.CurrencyCodeEqualFold != nil {
+		predicates = append(predicates, usersettings.CurrencyCodeEqualFold(*i.CurrencyCodeEqualFold))
+	}
+	if i.CurrencyCodeContainsFold != nil {
+		predicates = append(predicates, usersettings.CurrencyCodeContainsFold(*i.CurrencyCodeContainsFold))
+	}
+	if i.FuelVolumeUnit != nil {
+		predicates = append(predicates, usersettings.FuelVolumeUnitEQ(*i.FuelVolumeUnit))
+	}
+	if i.FuelVolumeUnitNEQ != nil {
+		predicates = append(predicates, usersettings.FuelVolumeUnitNEQ(*i.FuelVolumeUnitNEQ))
+	}
+	if len(i.FuelVolumeUnitIn) > 0 {
+		predicates = append(predicates, usersettings.FuelVolumeUnitIn(i.FuelVolumeUnitIn...))
+	}
+	if len(i.FuelVolumeUnitNotIn) > 0 {
+		predicates = append(predicates, usersettings.FuelVolumeUnitNotIn(i.FuelVolumeUnitNotIn...))
+	}
+	if i.FuelVolumeUnitIsNil {
+		predicates = append(predicates, usersettings.FuelVolumeUnitIsNil())
+	}
+	if i.FuelVolumeUnitNotNil {
+		predicates = append(predicates, usersettings.FuelVolumeUnitNotNil())
+	}
+	if i.DistanceUnit != nil {
+		predicates = append(predicates, usersettings.DistanceUnitEQ(*i.DistanceUnit))
+	}
+	if i.DistanceUnitNEQ != nil {
+		predicates = append(predicates, usersettings.DistanceUnitNEQ(*i.DistanceUnitNEQ))
+	}
+	if len(i.DistanceUnitIn) > 0 {
+		predicates = append(predicates, usersettings.DistanceUnitIn(i.DistanceUnitIn...))
+	}
+	if len(i.DistanceUnitNotIn) > 0 {
+		predicates = append(predicates, usersettings.DistanceUnitNotIn(i.DistanceUnitNotIn...))
+	}
+	if i.DistanceUnitIsNil {
+		predicates = append(predicates, usersettings.DistanceUnitIsNil())
+	}
+	if i.DistanceUnitNotNil {
+		predicates = append(predicates, usersettings.DistanceUnitNotNil())
+	}
+	if i.FuelConsumptionUnit != nil {
+		predicates = append(predicates, usersettings.FuelConsumptionUnitEQ(*i.FuelConsumptionUnit))
+	}
+	if i.FuelConsumptionUnitNEQ != nil {
+		predicates = append(predicates, usersettings.FuelConsumptionUnitNEQ(*i.FuelConsumptionUnitNEQ))
+	}
+	if len(i.FuelConsumptionUnitIn) > 0 {
+		predicates = append(predicates, usersettings.FuelConsumptionUnitIn(i.FuelConsumptionUnitIn...))
+	}
+	if len(i.FuelConsumptionUnitNotIn) > 0 {
+		predicates = append(predicates, usersettings.FuelConsumptionUnitNotIn(i.FuelConsumptionUnitNotIn...))
+	}
+	if i.FuelConsumptionUnitIsNil {
+		predicates = append(predicates, usersettings.FuelConsumptionUnitIsNil())
+	}
+	if i.FuelConsumptionUnitNotNil {
+		predicates = append(predicates, usersettings.FuelConsumptionUnitNotNil())
+	}
+	if i.TemperatureUnit != nil {
+		predicates = append(predicates, usersettings.TemperatureUnitEQ(*i.TemperatureUnit))
+	}
+	if i.TemperatureUnitNEQ != nil {
+		predicates = append(predicates, usersettings.TemperatureUnitNEQ(*i.TemperatureUnitNEQ))
+	}
+	if len(i.TemperatureUnitIn) > 0 {
+		predicates = append(predicates, usersettings.TemperatureUnitIn(i.TemperatureUnitIn...))
+	}
+	if len(i.TemperatureUnitNotIn) > 0 {
+		predicates = append(predicates, usersettings.TemperatureUnitNotIn(i.TemperatureUnitNotIn...))
+	}
+	if i.TemperatureUnitIsNil {
+		predicates = append(predicates, usersettings.TemperatureUnitIsNil())
+	}
+	if i.TemperatureUnitNotNil {
+		predicates = append(predicates, usersettings.TemperatureUnitNotNil())
+	}
+	if i.PowerUnit != nil {
+		predicates = append(predicates, usersettings.PowerUnitEQ(*i.PowerUnit))
+	}
+	if i.PowerUnitNEQ != nil {
+		predicates = append(predicates, usersettings.PowerUnitNEQ(*i.PowerUnitNEQ))
+	}
+	if len(i.PowerUnitIn) > 0 {
+		predicates = append(predicates, usersettings.PowerUnitIn(i.PowerUnitIn...))
+	}
+	if len(i.PowerUnitNotIn) > 0 {
+		predicates = append(predicates, usersettings.PowerUnitNotIn(i.PowerUnitNotIn...))
+	}
+	if i.PowerUnitIsNil {
+		predicates = append(predicates, usersettings.PowerUnitIsNil())
+	}
+	if i.PowerUnitNotNil {
+		predicates = append(predicates, usersettings.PowerUnitNotNil())
+	}
+	if i.TorqueUnit != nil {
+		predicates = append(predicates, usersettings.TorqueUnitEQ(*i.TorqueUnit))
+	}
+	if i.TorqueUnitNEQ != nil {
+		predicates = append(predicates, usersettings.TorqueUnitNEQ(*i.TorqueUnitNEQ))
+	}
+	if len(i.TorqueUnitIn) > 0 {
+		predicates = append(predicates, usersettings.TorqueUnitIn(i.TorqueUnitIn...))
+	}
+	if len(i.TorqueUnitNotIn) > 0 {
+		predicates = append(predicates, usersettings.TorqueUnitNotIn(i.TorqueUnitNotIn...))
+	}
+	if i.TorqueUnitIsNil {
+		predicates = append(predicates, usersettings.TorqueUnitIsNil())
+	}
+	if i.TorqueUnitNotNil {
+		predicates = append(predicates, usersettings.TorqueUnitNotNil())
+	}
+
+	if i.HasUser != nil {
+		p := usersettings.HasUser()
+		if !*i.HasUser {
+			p = usersettings.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasUserWith) > 0 {
+		with := make([]predicate.User, 0, len(i.HasUserWith))
+		for _, w := range i.HasUserWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasUserWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, usersettings.HasUserWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, ErrEmptyUserSettingsWhereInput
+	case 1:
+		return predicates[0], nil
+	default:
+		return usersettings.And(predicates...), nil
 	}
 }

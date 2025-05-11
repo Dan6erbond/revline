@@ -30,18 +30,11 @@ func (r *mutationResolver) UpdateProfile(ctx context.Context, input ent.UpdatePr
 
 	if profile == nil {
 		if profile, err = r.entClient.Profile.Create().SetInput(ent.CreateProfileInput{
-			Username:            input.Username,
-			FirstName:           input.FirstName,
-			LastName:            input.LastName,
-			CurrencyCode:        input.CurrencyCode,
-			FuelVolumeUnit:      input.FuelVolumeUnit,
-			DistanceUnit:        input.DistanceUnit,
-			FuelConsumptionUnit: input.FuelConsumptionUnit,
-			TemperatureUnit:     input.TemperatureUnit,
-			PowerUnit:           input.PowerUnit,
-			TorqueUnit:          input.TorqueUnit,
-			Visibility:          input.Visibility,
-			UserID:              user.ID,
+			Username:   input.Username,
+			FirstName:  input.FirstName,
+			LastName:   input.LastName,
+			Visibility: input.Visibility,
+			UserID:     user.ID,
 		}).Save(ctx); err != nil {
 			return nil, err
 		}
@@ -97,6 +90,36 @@ func (r *mutationResolver) UploadProfilePicture(ctx context.Context, input *mode
 	}
 
 	return profile.Update().SetPicture(id).Save(ctx)
+}
+
+// UpdateSettings is the resolver for the updateSettings field.
+func (r *mutationResolver) UpdateSettings(ctx context.Context, input ent.UpdateUserSettingsInput) (*ent.UserSettings, error) {
+	user := auth.ForContext(ctx)
+
+	settings, err := user.Settings(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if settings == nil {
+		if settings, err = r.entClient.UserSettings.Create().SetInput(ent.CreateUserSettingsInput{
+			CurrencyCode:        input.CurrencyCode,
+			FuelVolumeUnit:      input.FuelVolumeUnit,
+			DistanceUnit:        input.DistanceUnit,
+			FuelConsumptionUnit: input.FuelConsumptionUnit,
+			TemperatureUnit:     input.TemperatureUnit,
+			PowerUnit:           input.PowerUnit,
+			TorqueUnit:          input.TorqueUnit,
+			UserID:              user.ID,
+		}).Save(ctx); err != nil {
+			return nil, err
+		}
+	} else {
+		settings, err = settings.Update().SetInput(input).Save(ctx)
+	}
+
+	return settings, err
 }
 
 // PictureURL is the resolver for the pictureUrl field.

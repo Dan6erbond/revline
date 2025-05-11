@@ -27,6 +27,8 @@ const (
 	EdgeCars = "cars"
 	// EdgeProfile holds the string denoting the profile edge name in mutations.
 	EdgeProfile = "profile"
+	// EdgeSettings holds the string denoting the settings edge name in mutations.
+	EdgeSettings = "settings"
 	// EdgeSubscriptions holds the string denoting the subscriptions edge name in mutations.
 	EdgeSubscriptions = "subscriptions"
 	// EdgeCheckoutSessions holds the string denoting the checkout_sessions edge name in mutations.
@@ -47,6 +49,13 @@ const (
 	ProfileInverseTable = "profiles"
 	// ProfileColumn is the table column denoting the profile relation/edge.
 	ProfileColumn = "user_profile"
+	// SettingsTable is the table that holds the settings relation/edge.
+	SettingsTable = "user_settings"
+	// SettingsInverseTable is the table name for the UserSettings entity.
+	// It exists in this package in order to avoid circular dependency with the "usersettings" package.
+	SettingsInverseTable = "user_settings"
+	// SettingsColumn is the table column denoting the settings relation/edge.
+	SettingsColumn = "user_settings"
 	// SubscriptionsTable is the table that holds the subscriptions relation/edge.
 	SubscriptionsTable = "subscriptions"
 	// SubscriptionsInverseTable is the table name for the Subscription entity.
@@ -142,6 +151,13 @@ func ByProfileField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// BySettingsField orders the results by settings field.
+func BySettingsField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSettingsStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // BySubscriptionsCount orders the results by subscriptions count.
 func BySubscriptionsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -181,6 +197,13 @@ func newProfileStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ProfileInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, false, ProfileTable, ProfileColumn),
+	)
+}
+func newSettingsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SettingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, SettingsTable, SettingsColumn),
 	)
 }
 func newSubscriptionsStep() *sqlgraph.Step {

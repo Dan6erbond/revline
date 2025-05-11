@@ -11,6 +11,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/modidea"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/task"
+	"github.com/Dan6erbond/revline/ent/usersettings"
 	"github.com/google/uuid"
 )
 
@@ -1670,20 +1671,13 @@ func (c *OdometerReadingUpdateOne) SetInput(i UpdateOdometerReadingInput) *Odome
 
 // CreateProfileInput represents a mutation input for creating profiles.
 type CreateProfileInput struct {
-	CreateTime          *time.Time
-	UpdateTime          *time.Time
-	Username            *string
-	FirstName           *string
-	LastName            *string
-	CurrencyCode        *string
-	FuelVolumeUnit      *profile.FuelVolumeUnit
-	DistanceUnit        *profile.DistanceUnit
-	FuelConsumptionUnit *profile.FuelConsumptionUnit
-	TemperatureUnit     *profile.TemperatureUnit
-	PowerUnit           *profile.PowerUnit
-	TorqueUnit          *profile.TorqueUnit
-	Visibility          *profile.Visibility
-	UserID              uuid.UUID
+	CreateTime *time.Time
+	UpdateTime *time.Time
+	Username   *string
+	FirstName  *string
+	LastName   *string
+	Visibility *profile.Visibility
+	UserID     uuid.UUID
 }
 
 // Mutate applies the CreateProfileInput on the ProfileMutation builder.
@@ -1703,27 +1697,6 @@ func (i *CreateProfileInput) Mutate(m *ProfileMutation) {
 	if v := i.LastName; v != nil {
 		m.SetLastName(*v)
 	}
-	if v := i.CurrencyCode; v != nil {
-		m.SetCurrencyCode(*v)
-	}
-	if v := i.FuelVolumeUnit; v != nil {
-		m.SetFuelVolumeUnit(*v)
-	}
-	if v := i.DistanceUnit; v != nil {
-		m.SetDistanceUnit(*v)
-	}
-	if v := i.FuelConsumptionUnit; v != nil {
-		m.SetFuelConsumptionUnit(*v)
-	}
-	if v := i.TemperatureUnit; v != nil {
-		m.SetTemperatureUnit(*v)
-	}
-	if v := i.PowerUnit; v != nil {
-		m.SetPowerUnit(*v)
-	}
-	if v := i.TorqueUnit; v != nil {
-		m.SetTorqueUnit(*v)
-	}
 	if v := i.Visibility; v != nil {
 		m.SetVisibility(*v)
 	}
@@ -1738,29 +1711,15 @@ func (c *ProfileCreate) SetInput(i CreateProfileInput) *ProfileCreate {
 
 // UpdateProfileInput represents a mutation input for updating profiles.
 type UpdateProfileInput struct {
-	UpdateTime               *time.Time
-	ClearUsername            bool
-	Username                 *string
-	ClearFirstName           bool
-	FirstName                *string
-	ClearLastName            bool
-	LastName                 *string
-	ClearCurrencyCode        bool
-	CurrencyCode             *string
-	ClearFuelVolumeUnit      bool
-	FuelVolumeUnit           *profile.FuelVolumeUnit
-	ClearDistanceUnit        bool
-	DistanceUnit             *profile.DistanceUnit
-	ClearFuelConsumptionUnit bool
-	FuelConsumptionUnit      *profile.FuelConsumptionUnit
-	ClearTemperatureUnit     bool
-	TemperatureUnit          *profile.TemperatureUnit
-	ClearPowerUnit           bool
-	PowerUnit                *profile.PowerUnit
-	ClearTorqueUnit          bool
-	TorqueUnit               *profile.TorqueUnit
-	Visibility               *profile.Visibility
-	UserID                   *uuid.UUID
+	UpdateTime     *time.Time
+	ClearUsername  bool
+	Username       *string
+	ClearFirstName bool
+	FirstName      *string
+	ClearLastName  bool
+	LastName       *string
+	Visibility     *profile.Visibility
+	UserID         *uuid.UUID
 }
 
 // Mutate applies the UpdateProfileInput on the ProfileMutation builder.
@@ -1785,48 +1744,6 @@ func (i *UpdateProfileInput) Mutate(m *ProfileMutation) {
 	}
 	if v := i.LastName; v != nil {
 		m.SetLastName(*v)
-	}
-	if i.ClearCurrencyCode {
-		m.ClearCurrencyCode()
-	}
-	if v := i.CurrencyCode; v != nil {
-		m.SetCurrencyCode(*v)
-	}
-	if i.ClearFuelVolumeUnit {
-		m.ClearFuelVolumeUnit()
-	}
-	if v := i.FuelVolumeUnit; v != nil {
-		m.SetFuelVolumeUnit(*v)
-	}
-	if i.ClearDistanceUnit {
-		m.ClearDistanceUnit()
-	}
-	if v := i.DistanceUnit; v != nil {
-		m.SetDistanceUnit(*v)
-	}
-	if i.ClearFuelConsumptionUnit {
-		m.ClearFuelConsumptionUnit()
-	}
-	if v := i.FuelConsumptionUnit; v != nil {
-		m.SetFuelConsumptionUnit(*v)
-	}
-	if i.ClearTemperatureUnit {
-		m.ClearTemperatureUnit()
-	}
-	if v := i.TemperatureUnit; v != nil {
-		m.SetTemperatureUnit(*v)
-	}
-	if i.ClearPowerUnit {
-		m.ClearPowerUnit()
-	}
-	if v := i.PowerUnit; v != nil {
-		m.SetPowerUnit(*v)
-	}
-	if i.ClearTorqueUnit {
-		m.ClearTorqueUnit()
-	}
-	if v := i.TorqueUnit; v != nil {
-		m.SetTorqueUnit(*v)
 	}
 	if v := i.Visibility; v != nil {
 		m.SetVisibility(*v)
@@ -2526,6 +2443,7 @@ type CreateUserInput struct {
 	StripeCustomerID   *string
 	CarIDs             []uuid.UUID
 	ProfileID          *uuid.UUID
+	SettingsID         *uuid.UUID
 	SubscriptionIDs    []uuid.UUID
 	CheckoutSessionIDs []uuid.UUID
 }
@@ -2547,6 +2465,9 @@ func (i *CreateUserInput) Mutate(m *UserMutation) {
 	}
 	if v := i.ProfileID; v != nil {
 		m.SetProfileID(*v)
+	}
+	if v := i.SettingsID; v != nil {
+		m.SetSettingsID(*v)
 	}
 	if v := i.SubscriptionIDs; len(v) > 0 {
 		m.AddSubscriptionIDs(v...)
@@ -2573,6 +2494,8 @@ type UpdateUserInput struct {
 	RemoveCarIDs             []uuid.UUID
 	ClearProfile             bool
 	ProfileID                *uuid.UUID
+	ClearSettings            bool
+	SettingsID               *uuid.UUID
 	ClearSubscriptions       bool
 	AddSubscriptionIDs       []uuid.UUID
 	RemoveSubscriptionIDs    []uuid.UUID
@@ -2610,6 +2533,12 @@ func (i *UpdateUserInput) Mutate(m *UserMutation) {
 	if v := i.ProfileID; v != nil {
 		m.SetProfileID(*v)
 	}
+	if i.ClearSettings {
+		m.ClearSettings()
+	}
+	if v := i.SettingsID; v != nil {
+		m.SetSettingsID(*v)
+	}
 	if i.ClearSubscriptions {
 		m.ClearSubscriptions()
 	}
@@ -2638,6 +2567,142 @@ func (c *UserUpdate) SetInput(i UpdateUserInput) *UserUpdate {
 
 // SetInput applies the change-set in the UpdateUserInput on the UserUpdateOne builder.
 func (c *UserUpdateOne) SetInput(i UpdateUserInput) *UserUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateUserSettingsInput represents a mutation input for creating usersettingsslice.
+type CreateUserSettingsInput struct {
+	CreateTime          *time.Time
+	UpdateTime          *time.Time
+	CurrencyCode        *string
+	FuelVolumeUnit      *usersettings.FuelVolumeUnit
+	DistanceUnit        *usersettings.DistanceUnit
+	FuelConsumptionUnit *usersettings.FuelConsumptionUnit
+	TemperatureUnit     *usersettings.TemperatureUnit
+	PowerUnit           *usersettings.PowerUnit
+	TorqueUnit          *usersettings.TorqueUnit
+	UserID              uuid.UUID
+}
+
+// Mutate applies the CreateUserSettingsInput on the UserSettingsMutation builder.
+func (i *CreateUserSettingsInput) Mutate(m *UserSettingsMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.CurrencyCode; v != nil {
+		m.SetCurrencyCode(*v)
+	}
+	if v := i.FuelVolumeUnit; v != nil {
+		m.SetFuelVolumeUnit(*v)
+	}
+	if v := i.DistanceUnit; v != nil {
+		m.SetDistanceUnit(*v)
+	}
+	if v := i.FuelConsumptionUnit; v != nil {
+		m.SetFuelConsumptionUnit(*v)
+	}
+	if v := i.TemperatureUnit; v != nil {
+		m.SetTemperatureUnit(*v)
+	}
+	if v := i.PowerUnit; v != nil {
+		m.SetPowerUnit(*v)
+	}
+	if v := i.TorqueUnit; v != nil {
+		m.SetTorqueUnit(*v)
+	}
+	m.SetUserID(i.UserID)
+}
+
+// SetInput applies the change-set in the CreateUserSettingsInput on the UserSettingsCreate builder.
+func (c *UserSettingsCreate) SetInput(i CreateUserSettingsInput) *UserSettingsCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateUserSettingsInput represents a mutation input for updating usersettingsslice.
+type UpdateUserSettingsInput struct {
+	UpdateTime               *time.Time
+	ClearCurrencyCode        bool
+	CurrencyCode             *string
+	ClearFuelVolumeUnit      bool
+	FuelVolumeUnit           *usersettings.FuelVolumeUnit
+	ClearDistanceUnit        bool
+	DistanceUnit             *usersettings.DistanceUnit
+	ClearFuelConsumptionUnit bool
+	FuelConsumptionUnit      *usersettings.FuelConsumptionUnit
+	ClearTemperatureUnit     bool
+	TemperatureUnit          *usersettings.TemperatureUnit
+	ClearPowerUnit           bool
+	PowerUnit                *usersettings.PowerUnit
+	ClearTorqueUnit          bool
+	TorqueUnit               *usersettings.TorqueUnit
+	UserID                   *uuid.UUID
+}
+
+// Mutate applies the UpdateUserSettingsInput on the UserSettingsMutation builder.
+func (i *UpdateUserSettingsInput) Mutate(m *UserSettingsMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if i.ClearCurrencyCode {
+		m.ClearCurrencyCode()
+	}
+	if v := i.CurrencyCode; v != nil {
+		m.SetCurrencyCode(*v)
+	}
+	if i.ClearFuelVolumeUnit {
+		m.ClearFuelVolumeUnit()
+	}
+	if v := i.FuelVolumeUnit; v != nil {
+		m.SetFuelVolumeUnit(*v)
+	}
+	if i.ClearDistanceUnit {
+		m.ClearDistanceUnit()
+	}
+	if v := i.DistanceUnit; v != nil {
+		m.SetDistanceUnit(*v)
+	}
+	if i.ClearFuelConsumptionUnit {
+		m.ClearFuelConsumptionUnit()
+	}
+	if v := i.FuelConsumptionUnit; v != nil {
+		m.SetFuelConsumptionUnit(*v)
+	}
+	if i.ClearTemperatureUnit {
+		m.ClearTemperatureUnit()
+	}
+	if v := i.TemperatureUnit; v != nil {
+		m.SetTemperatureUnit(*v)
+	}
+	if i.ClearPowerUnit {
+		m.ClearPowerUnit()
+	}
+	if v := i.PowerUnit; v != nil {
+		m.SetPowerUnit(*v)
+	}
+	if i.ClearTorqueUnit {
+		m.ClearTorqueUnit()
+	}
+	if v := i.TorqueUnit; v != nil {
+		m.SetTorqueUnit(*v)
+	}
+	if v := i.UserID; v != nil {
+		m.SetUserID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateUserSettingsInput on the UserSettingsUpdate builder.
+func (c *UserSettingsUpdate) SetInput(i UpdateUserSettingsInput) *UserSettingsUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateUserSettingsInput on the UserSettingsUpdateOne builder.
+func (c *UserSettingsUpdateOne) SetInput(i UpdateUserSettingsInput) *UserSettingsUpdateOne {
 	i.Mutate(c.Mutation())
 	return c
 }

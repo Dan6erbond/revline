@@ -25,6 +25,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/task"
+	"github.com/Dan6erbond/revline/ent/usersettings"
 	"github.com/Dan6erbond/revline/graph/model"
 	"github.com/google/uuid"
 	minio "github.com/minio/minio-go/v7"
@@ -288,6 +289,7 @@ type ComplexityRoot struct {
 		UpdateModIdea              func(childComplexity int, id string, input ent.UpdateModIdeaInput) int
 		UpdateModProductOption     func(childComplexity int, id string, input ent.UpdateModProductOptionInput) int
 		UpdateProfile              func(childComplexity int, input ent.UpdateProfileInput) int
+		UpdateSettings             func(childComplexity int, input ent.UpdateUserSettingsInput) int
 		UpdateTask                 func(childComplexity int, id string, input ent.UpdateTaskInput) int
 		UploadBannerImage          func(childComplexity int, input ent.CreateMediaInput) int
 		UploadDocument             func(childComplexity int, input ent.CreateDocumentInput) int
@@ -315,22 +317,15 @@ type ComplexityRoot struct {
 	}
 
 	Profile struct {
-		CreateTime          func(childComplexity int) int
-		CurrencyCode        func(childComplexity int) int
-		DistanceUnit        func(childComplexity int) int
-		FirstName           func(childComplexity int) int
-		FuelConsumptionUnit func(childComplexity int) int
-		FuelVolumeUnit      func(childComplexity int) int
-		ID                  func(childComplexity int) int
-		LastName            func(childComplexity int) int
-		PictureURL          func(childComplexity int) int
-		PowerUnit           func(childComplexity int) int
-		TemperatureUnit     func(childComplexity int) int
-		TorqueUnit          func(childComplexity int) int
-		UpdateTime          func(childComplexity int) int
-		User                func(childComplexity int) int
-		Username            func(childComplexity int) int
-		Visibility          func(childComplexity int) int
+		CreateTime func(childComplexity int) int
+		FirstName  func(childComplexity int) int
+		ID         func(childComplexity int) int
+		LastName   func(childComplexity int) int
+		PictureURL func(childComplexity int) int
+		UpdateTime func(childComplexity int) int
+		User       func(childComplexity int) int
+		Username   func(childComplexity int) int
+		Visibility func(childComplexity int) int
 	}
 
 	Query struct {
@@ -463,10 +458,25 @@ type ComplexityRoot struct {
 		Email            func(childComplexity int) int
 		ID               func(childComplexity int) int
 		Profile          func(childComplexity int) int
+		Settings         func(childComplexity int) int
 		StripeCustomerID func(childComplexity int) int
 		Subscription     func(childComplexity int) int
 		Subscriptions    func(childComplexity int) int
 		UpdateTime       func(childComplexity int) int
+	}
+
+	UserSettings struct {
+		CreateTime          func(childComplexity int) int
+		CurrencyCode        func(childComplexity int) int
+		DistanceUnit        func(childComplexity int) int
+		FuelConsumptionUnit func(childComplexity int) int
+		FuelVolumeUnit      func(childComplexity int) int
+		ID                  func(childComplexity int) int
+		PowerUnit           func(childComplexity int) int
+		TemperatureUnit     func(childComplexity int) int
+		TorqueUnit          func(childComplexity int) int
+		UpdateTime          func(childComplexity int) int
+		User                func(childComplexity int) int
 	}
 }
 
@@ -490,6 +500,7 @@ type ModProductOptionResolver interface {
 type MutationResolver interface {
 	UpdateProfile(ctx context.Context, input ent.UpdateProfileInput) (*ent.Profile, error)
 	UploadProfilePicture(ctx context.Context, input *model.UploadProfilePictureInput) (*ent.Profile, error)
+	UpdateSettings(ctx context.Context, input ent.UpdateUserSettingsInput) (*ent.UserSettings, error)
 	CreateCar(ctx context.Context, input ent.CreateCarInput) (*ent.Car, error)
 	UploadBannerImage(ctx context.Context, input ent.CreateMediaInput) (*model.UploadMediaResult, error)
 	UploadMedia(ctx context.Context, input ent.CreateMediaInput) (*model.UploadMediaResult, error)
@@ -1922,6 +1933,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Mutation.UpdateProfile(childComplexity, args["input"].(ent.UpdateProfileInput)), true
 
+	case "Mutation.updateSettings":
+		if e.complexity.Mutation.UpdateSettings == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateSettings_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateSettings(childComplexity, args["input"].(ent.UpdateUserSettingsInput)), true
+
 	case "Mutation.updateTask":
 		if e.complexity.Mutation.UpdateTask == nil {
 			break
@@ -2080,40 +2103,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Profile.CreateTime(childComplexity), true
 
-	case "Profile.currencyCode":
-		if e.complexity.Profile.CurrencyCode == nil {
-			break
-		}
-
-		return e.complexity.Profile.CurrencyCode(childComplexity), true
-
-	case "Profile.distanceUnit":
-		if e.complexity.Profile.DistanceUnit == nil {
-			break
-		}
-
-		return e.complexity.Profile.DistanceUnit(childComplexity), true
-
 	case "Profile.firstName":
 		if e.complexity.Profile.FirstName == nil {
 			break
 		}
 
 		return e.complexity.Profile.FirstName(childComplexity), true
-
-	case "Profile.fuelConsumptionUnit":
-		if e.complexity.Profile.FuelConsumptionUnit == nil {
-			break
-		}
-
-		return e.complexity.Profile.FuelConsumptionUnit(childComplexity), true
-
-	case "Profile.fuelVolumeUnit":
-		if e.complexity.Profile.FuelVolumeUnit == nil {
-			break
-		}
-
-		return e.complexity.Profile.FuelVolumeUnit(childComplexity), true
 
 	case "Profile.id":
 		if e.complexity.Profile.ID == nil {
@@ -2135,27 +2130,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Profile.PictureURL(childComplexity), true
-
-	case "Profile.powerUnit":
-		if e.complexity.Profile.PowerUnit == nil {
-			break
-		}
-
-		return e.complexity.Profile.PowerUnit(childComplexity), true
-
-	case "Profile.temperatureUnit":
-		if e.complexity.Profile.TemperatureUnit == nil {
-			break
-		}
-
-		return e.complexity.Profile.TemperatureUnit(childComplexity), true
-
-	case "Profile.torqueUnit":
-		if e.complexity.Profile.TorqueUnit == nil {
-			break
-		}
-
-		return e.complexity.Profile.TorqueUnit(childComplexity), true
 
 	case "Profile.updateTime":
 		if e.complexity.Profile.UpdateTime == nil {
@@ -2907,6 +2881,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.User.Profile(childComplexity), true
 
+	case "User.settings":
+		if e.complexity.User.Settings == nil {
+			break
+		}
+
+		return e.complexity.User.Settings(childComplexity), true
+
 	case "User.stripeCustomerID":
 		if e.complexity.User.StripeCustomerID == nil {
 			break
@@ -2934,6 +2915,83 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.User.UpdateTime(childComplexity), true
+
+	case "UserSettings.createTime":
+		if e.complexity.UserSettings.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.UserSettings.CreateTime(childComplexity), true
+
+	case "UserSettings.currencyCode":
+		if e.complexity.UserSettings.CurrencyCode == nil {
+			break
+		}
+
+		return e.complexity.UserSettings.CurrencyCode(childComplexity), true
+
+	case "UserSettings.distanceUnit":
+		if e.complexity.UserSettings.DistanceUnit == nil {
+			break
+		}
+
+		return e.complexity.UserSettings.DistanceUnit(childComplexity), true
+
+	case "UserSettings.fuelConsumptionUnit":
+		if e.complexity.UserSettings.FuelConsumptionUnit == nil {
+			break
+		}
+
+		return e.complexity.UserSettings.FuelConsumptionUnit(childComplexity), true
+
+	case "UserSettings.fuelVolumeUnit":
+		if e.complexity.UserSettings.FuelVolumeUnit == nil {
+			break
+		}
+
+		return e.complexity.UserSettings.FuelVolumeUnit(childComplexity), true
+
+	case "UserSettings.id":
+		if e.complexity.UserSettings.ID == nil {
+			break
+		}
+
+		return e.complexity.UserSettings.ID(childComplexity), true
+
+	case "UserSettings.powerUnit":
+		if e.complexity.UserSettings.PowerUnit == nil {
+			break
+		}
+
+		return e.complexity.UserSettings.PowerUnit(childComplexity), true
+
+	case "UserSettings.temperatureUnit":
+		if e.complexity.UserSettings.TemperatureUnit == nil {
+			break
+		}
+
+		return e.complexity.UserSettings.TemperatureUnit(childComplexity), true
+
+	case "UserSettings.torqueUnit":
+		if e.complexity.UserSettings.TorqueUnit == nil {
+			break
+		}
+
+		return e.complexity.UserSettings.TorqueUnit(childComplexity), true
+
+	case "UserSettings.updateTime":
+		if e.complexity.UserSettings.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.UserSettings.UpdateTime(childComplexity), true
+
+	case "UserSettings.user":
+		if e.complexity.UserSettings.User == nil {
+			break
+		}
+
+		return e.complexity.UserSettings.User(childComplexity), true
 
 	}
 	return 0, false
@@ -2966,6 +3024,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateServiceScheduleInput,
 		ec.unmarshalInputCreateTaskInput,
 		ec.unmarshalInputCreateUserInput,
+		ec.unmarshalInputCreateUserSettingsInput,
 		ec.unmarshalInputDocumentWhereInput,
 		ec.unmarshalInputDragResultWhereInput,
 		ec.unmarshalInputDragSessionWhereInput,
@@ -3003,7 +3062,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputUpdateServiceScheduleInput,
 		ec.unmarshalInputUpdateTaskInput,
 		ec.unmarshalInputUpdateUserInput,
+		ec.unmarshalInputUpdateUserSettingsInput,
 		ec.unmarshalInputUploadProfilePictureInput,
+		ec.unmarshalInputUserSettingsWhereInput,
 		ec.unmarshalInputUserWhereInput,
 	)
 	first := true
@@ -3917,6 +3978,29 @@ func (ec *executionContext) field_Mutation_updateProfile_argsInput(
 	}
 
 	var zeroVal ent.UpdateProfileInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateSettings_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_updateSettings_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_updateSettings_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (ent.UpdateUserSettingsInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNUpdateUserSettingsInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateUserSettingsInput(ctx, tmp)
+	}
+
+	var zeroVal ent.UpdateUserSettingsInput
 	return zeroVal, nil
 }
 
@@ -5176,6 +5260,8 @@ func (ec *executionContext) fieldContext_Car_owner(_ context.Context, field grap
 				return ec.fieldContext_User_cars(ctx, field)
 			case "profile":
 				return ec.fieldContext_User_profile(ctx, field)
+			case "settings":
+				return ec.fieldContext_User_settings(ctx, field)
 			case "subscriptions":
 				return ec.fieldContext_User_subscriptions(ctx, field)
 			case "checkoutSessions":
@@ -6661,6 +6747,8 @@ func (ec *executionContext) fieldContext_CheckoutSession_user(_ context.Context,
 				return ec.fieldContext_User_cars(ctx, field)
 			case "profile":
 				return ec.fieldContext_User_profile(ctx, field)
+			case "settings":
+				return ec.fieldContext_User_settings(ctx, field)
 			case "subscriptions":
 				return ec.fieldContext_User_subscriptions(ctx, field)
 			case "checkoutSessions":
@@ -12188,20 +12276,6 @@ func (ec *executionContext) fieldContext_Mutation_updateProfile(ctx context.Cont
 				return ec.fieldContext_Profile_firstName(ctx, field)
 			case "lastName":
 				return ec.fieldContext_Profile_lastName(ctx, field)
-			case "currencyCode":
-				return ec.fieldContext_Profile_currencyCode(ctx, field)
-			case "fuelVolumeUnit":
-				return ec.fieldContext_Profile_fuelVolumeUnit(ctx, field)
-			case "distanceUnit":
-				return ec.fieldContext_Profile_distanceUnit(ctx, field)
-			case "fuelConsumptionUnit":
-				return ec.fieldContext_Profile_fuelConsumptionUnit(ctx, field)
-			case "temperatureUnit":
-				return ec.fieldContext_Profile_temperatureUnit(ctx, field)
-			case "powerUnit":
-				return ec.fieldContext_Profile_powerUnit(ctx, field)
-			case "torqueUnit":
-				return ec.fieldContext_Profile_torqueUnit(ctx, field)
 			case "visibility":
 				return ec.fieldContext_Profile_visibility(ctx, field)
 			case "user":
@@ -12299,20 +12373,6 @@ func (ec *executionContext) fieldContext_Mutation_uploadProfilePicture(ctx conte
 				return ec.fieldContext_Profile_firstName(ctx, field)
 			case "lastName":
 				return ec.fieldContext_Profile_lastName(ctx, field)
-			case "currencyCode":
-				return ec.fieldContext_Profile_currencyCode(ctx, field)
-			case "fuelVolumeUnit":
-				return ec.fieldContext_Profile_fuelVolumeUnit(ctx, field)
-			case "distanceUnit":
-				return ec.fieldContext_Profile_distanceUnit(ctx, field)
-			case "fuelConsumptionUnit":
-				return ec.fieldContext_Profile_fuelConsumptionUnit(ctx, field)
-			case "temperatureUnit":
-				return ec.fieldContext_Profile_temperatureUnit(ctx, field)
-			case "powerUnit":
-				return ec.fieldContext_Profile_powerUnit(ctx, field)
-			case "torqueUnit":
-				return ec.fieldContext_Profile_torqueUnit(ctx, field)
 			case "visibility":
 				return ec.fieldContext_Profile_visibility(ctx, field)
 			case "user":
@@ -12331,6 +12391,107 @@ func (ec *executionContext) fieldContext_Mutation_uploadProfilePicture(ctx conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_uploadProfilePicture_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateSettings(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateSettings(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdateSettings(rctx, fc.Args["input"].(ent.UpdateUserSettingsInput))
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			if ec.directives.LoggedIn == nil {
+				var zeroVal *ent.UserSettings
+				return zeroVal, errors.New("directive loggedIn is not implemented")
+			}
+			return ec.directives.LoggedIn(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*ent.UserSettings); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/Dan6erbond/revline/ent.UserSettings`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.UserSettings)
+	fc.Result = res
+	return ec.marshalNUserSettings2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserSettings(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateSettings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_UserSettings_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_UserSettings_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_UserSettings_updateTime(ctx, field)
+			case "currencyCode":
+				return ec.fieldContext_UserSettings_currencyCode(ctx, field)
+			case "fuelVolumeUnit":
+				return ec.fieldContext_UserSettings_fuelVolumeUnit(ctx, field)
+			case "distanceUnit":
+				return ec.fieldContext_UserSettings_distanceUnit(ctx, field)
+			case "fuelConsumptionUnit":
+				return ec.fieldContext_UserSettings_fuelConsumptionUnit(ctx, field)
+			case "temperatureUnit":
+				return ec.fieldContext_UserSettings_temperatureUnit(ctx, field)
+			case "powerUnit":
+				return ec.fieldContext_UserSettings_powerUnit(ctx, field)
+			case "torqueUnit":
+				return ec.fieldContext_UserSettings_torqueUnit(ctx, field)
+			case "user":
+				return ec.fieldContext_UserSettings_user(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type UserSettings", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateSettings_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -15995,293 +16156,6 @@ func (ec *executionContext) fieldContext_Profile_lastName(_ context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Profile_currencyCode(ctx context.Context, field graphql.CollectedField, obj *ent.Profile) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Profile_currencyCode(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CurrencyCode, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Profile_currencyCode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Profile",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Profile_fuelVolumeUnit(ctx context.Context, field graphql.CollectedField, obj *ent.Profile) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Profile_fuelVolumeUnit(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.FuelVolumeUnit, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*profile.FuelVolumeUnit)
-	fc.Result = res
-	return ec.marshalOFuelVolumeUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnit(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Profile_fuelVolumeUnit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Profile",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type FuelVolumeUnit does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Profile_distanceUnit(ctx context.Context, field graphql.CollectedField, obj *ent.Profile) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Profile_distanceUnit(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DistanceUnit, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*profile.DistanceUnit)
-	fc.Result = res
-	return ec.marshalODistanceUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnit(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Profile_distanceUnit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Profile",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type DistanceUnit does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Profile_fuelConsumptionUnit(ctx context.Context, field graphql.CollectedField, obj *ent.Profile) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Profile_fuelConsumptionUnit(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.FuelConsumptionUnit, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*profile.FuelConsumptionUnit)
-	fc.Result = res
-	return ec.marshalOFuelConsumptionUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnit(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Profile_fuelConsumptionUnit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Profile",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type FuelConsumptionUnit does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Profile_temperatureUnit(ctx context.Context, field graphql.CollectedField, obj *ent.Profile) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Profile_temperatureUnit(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.TemperatureUnit, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*profile.TemperatureUnit)
-	fc.Result = res
-	return ec.marshalOTemperatureUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnit(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Profile_temperatureUnit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Profile",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type TemperatureUnit does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Profile_powerUnit(ctx context.Context, field graphql.CollectedField, obj *ent.Profile) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Profile_powerUnit(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.PowerUnit, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*profile.PowerUnit)
-	fc.Result = res
-	return ec.marshalOPowerUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnit(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Profile_powerUnit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Profile",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type PowerUnit does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Profile_torqueUnit(ctx context.Context, field graphql.CollectedField, obj *ent.Profile) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Profile_torqueUnit(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.TorqueUnit, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*profile.TorqueUnit)
-	fc.Result = res
-	return ec.marshalOTorqueUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnit(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Profile_torqueUnit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Profile",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type TorqueUnit does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Profile_visibility(ctx context.Context, field graphql.CollectedField, obj *ent.Profile) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Profile_visibility(ctx, field)
 	if err != nil {
@@ -16379,6 +16253,8 @@ func (ec *executionContext) fieldContext_Profile_user(_ context.Context, field g
 				return ec.fieldContext_User_cars(ctx, field)
 			case "profile":
 				return ec.fieldContext_User_profile(ctx, field)
+			case "settings":
+				return ec.fieldContext_User_settings(ctx, field)
 			case "subscriptions":
 				return ec.fieldContext_User_subscriptions(ctx, field)
 			case "checkoutSessions":
@@ -17271,6 +17147,8 @@ func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graph
 				return ec.fieldContext_User_cars(ctx, field)
 			case "profile":
 				return ec.fieldContext_User_profile(ctx, field)
+			case "settings":
+				return ec.fieldContext_User_settings(ctx, field)
 			case "subscriptions":
 				return ec.fieldContext_User_subscriptions(ctx, field)
 			case "checkoutSessions":
@@ -19829,6 +19707,8 @@ func (ec *executionContext) fieldContext_SubscriptionPlan_user(_ context.Context
 				return ec.fieldContext_User_cars(ctx, field)
 			case "profile":
 				return ec.fieldContext_User_profile(ctx, field)
+			case "settings":
+				return ec.fieldContext_User_settings(ctx, field)
 			case "subscriptions":
 				return ec.fieldContext_User_subscriptions(ctx, field)
 			case "checkoutSessions":
@@ -21874,20 +21754,6 @@ func (ec *executionContext) fieldContext_User_profile(_ context.Context, field g
 				return ec.fieldContext_Profile_firstName(ctx, field)
 			case "lastName":
 				return ec.fieldContext_Profile_lastName(ctx, field)
-			case "currencyCode":
-				return ec.fieldContext_Profile_currencyCode(ctx, field)
-			case "fuelVolumeUnit":
-				return ec.fieldContext_Profile_fuelVolumeUnit(ctx, field)
-			case "distanceUnit":
-				return ec.fieldContext_Profile_distanceUnit(ctx, field)
-			case "fuelConsumptionUnit":
-				return ec.fieldContext_Profile_fuelConsumptionUnit(ctx, field)
-			case "temperatureUnit":
-				return ec.fieldContext_Profile_temperatureUnit(ctx, field)
-			case "powerUnit":
-				return ec.fieldContext_Profile_powerUnit(ctx, field)
-			case "torqueUnit":
-				return ec.fieldContext_Profile_torqueUnit(ctx, field)
 			case "visibility":
 				return ec.fieldContext_Profile_visibility(ctx, field)
 			case "user":
@@ -21896,6 +21762,71 @@ func (ec *executionContext) fieldContext_User_profile(_ context.Context, field g
 				return ec.fieldContext_Profile_pictureUrl(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Profile", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_settings(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_settings(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Settings(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.UserSettings)
+	fc.Result = res
+	return ec.marshalOUserSettings2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserSettings(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_settings(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_UserSettings_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_UserSettings_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_UserSettings_updateTime(ctx, field)
+			case "currencyCode":
+				return ec.fieldContext_UserSettings_currencyCode(ctx, field)
+			case "fuelVolumeUnit":
+				return ec.fieldContext_UserSettings_fuelVolumeUnit(ctx, field)
+			case "distanceUnit":
+				return ec.fieldContext_UserSettings_distanceUnit(ctx, field)
+			case "fuelConsumptionUnit":
+				return ec.fieldContext_UserSettings_fuelConsumptionUnit(ctx, field)
+			case "temperatureUnit":
+				return ec.fieldContext_UserSettings_temperatureUnit(ctx, field)
+			case "powerUnit":
+				return ec.fieldContext_UserSettings_powerUnit(ctx, field)
+			case "torqueUnit":
+				return ec.fieldContext_UserSettings_torqueUnit(ctx, field)
+			case "user":
+				return ec.fieldContext_UserSettings_user(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type UserSettings", field.Name)
 		},
 	}
 	return fc, nil
@@ -22089,6 +22020,493 @@ func (ec *executionContext) fieldContext_User_subscription(_ context.Context, fi
 				return ec.fieldContext_SubscriptionPlan_checkoutSession(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SubscriptionPlan", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserSettings_id(ctx context.Context, field graphql.CollectedField, obj *ent.UserSettings) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserSettings_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserSettings_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserSettings",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserSettings_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.UserSettings) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserSettings_createTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserSettings_createTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserSettings",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserSettings_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.UserSettings) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserSettings_updateTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserSettings_updateTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserSettings",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserSettings_currencyCode(ctx context.Context, field graphql.CollectedField, obj *ent.UserSettings) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserSettings_currencyCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CurrencyCode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserSettings_currencyCode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserSettings",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserSettings_fuelVolumeUnit(ctx context.Context, field graphql.CollectedField, obj *ent.UserSettings) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserSettings_fuelVolumeUnit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FuelVolumeUnit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*usersettings.FuelVolumeUnit)
+	fc.Result = res
+	return ec.marshalOFuelVolumeUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserSettings_fuelVolumeUnit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserSettings",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type FuelVolumeUnit does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserSettings_distanceUnit(ctx context.Context, field graphql.CollectedField, obj *ent.UserSettings) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserSettings_distanceUnit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DistanceUnit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*usersettings.DistanceUnit)
+	fc.Result = res
+	return ec.marshalODistanceUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserSettings_distanceUnit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserSettings",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type DistanceUnit does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserSettings_fuelConsumptionUnit(ctx context.Context, field graphql.CollectedField, obj *ent.UserSettings) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserSettings_fuelConsumptionUnit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FuelConsumptionUnit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*usersettings.FuelConsumptionUnit)
+	fc.Result = res
+	return ec.marshalOFuelConsumptionUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserSettings_fuelConsumptionUnit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserSettings",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type FuelConsumptionUnit does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserSettings_temperatureUnit(ctx context.Context, field graphql.CollectedField, obj *ent.UserSettings) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserSettings_temperatureUnit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TemperatureUnit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*usersettings.TemperatureUnit)
+	fc.Result = res
+	return ec.marshalOTemperatureUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserSettings_temperatureUnit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserSettings",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type TemperatureUnit does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserSettings_powerUnit(ctx context.Context, field graphql.CollectedField, obj *ent.UserSettings) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserSettings_powerUnit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PowerUnit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*usersettings.PowerUnit)
+	fc.Result = res
+	return ec.marshalOPowerUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserSettings_powerUnit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserSettings",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type PowerUnit does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserSettings_torqueUnit(ctx context.Context, field graphql.CollectedField, obj *ent.UserSettings) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserSettings_torqueUnit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TorqueUnit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*usersettings.TorqueUnit)
+	fc.Result = res
+	return ec.marshalOTorqueUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserSettings_torqueUnit(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserSettings",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type TorqueUnit does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserSettings_user(ctx context.Context, field graphql.CollectedField, obj *ent.UserSettings) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserSettings_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.User(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserSettings_user(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserSettings",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_User_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_User_updateTime(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "stripeCustomerID":
+				return ec.fieldContext_User_stripeCustomerID(ctx, field)
+			case "cars":
+				return ec.fieldContext_User_cars(ctx, field)
+			case "profile":
+				return ec.fieldContext_User_profile(ctx, field)
+			case "settings":
+				return ec.fieldContext_User_settings(ctx, field)
+			case "subscriptions":
+				return ec.fieldContext_User_subscriptions(ctx, field)
+			case "checkoutSessions":
+				return ec.fieldContext_User_checkoutSessions(ctx, field)
+			case "subscription":
+				return ec.fieldContext_User_subscription(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
 	}
 	return fc, nil
@@ -27079,7 +27497,7 @@ func (ec *executionContext) unmarshalInputCreateProfileInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "username", "firstName", "lastName", "currencyCode", "fuelVolumeUnit", "distanceUnit", "fuelConsumptionUnit", "temperatureUnit", "powerUnit", "torqueUnit", "visibility", "userID"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "username", "firstName", "lastName", "visibility", "userID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -27121,55 +27539,6 @@ func (ec *executionContext) unmarshalInputCreateProfileInput(ctx context.Context
 				return it, err
 			}
 			it.LastName = data
-		case "currencyCode":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCode"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCode = data
-		case "fuelVolumeUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnit"))
-			data, err := ec.unmarshalOFuelVolumeUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelVolumeUnit = data
-		case "distanceUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnit"))
-			data, err := ec.unmarshalODistanceUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DistanceUnit = data
-		case "fuelConsumptionUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnit"))
-			data, err := ec.unmarshalOFuelConsumptionUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelConsumptionUnit = data
-		case "temperatureUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnit"))
-			data, err := ec.unmarshalOTemperatureUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TemperatureUnit = data
-		case "powerUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnit"))
-			data, err := ec.unmarshalOPowerUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PowerUnit = data
-		case "torqueUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnit"))
-			data, err := ec.unmarshalOTorqueUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TorqueUnit = data
 		case "visibility":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visibility"))
 			data, err := ec.unmarshalOProfileVisibility2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐVisibility(ctx, v)
@@ -27652,7 +28021,7 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "email", "stripeCustomerID", "carIDs", "profileID", "subscriptionIDs", "checkoutSessionIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "email", "stripeCustomerID", "carIDs", "profileID", "settingsID", "subscriptionIDs", "checkoutSessionIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -27701,6 +28070,13 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.ProfileID = data
+		case "settingsID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("settingsID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SettingsID = data
 		case "subscriptionIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subscriptionIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
@@ -27715,6 +28091,96 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.CheckoutSessionIDs = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateUserSettingsInput(ctx context.Context, obj any) (ent.CreateUserSettingsInput, error) {
+	var it ent.CreateUserSettingsInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"createTime", "updateTime", "currencyCode", "fuelVolumeUnit", "distanceUnit", "fuelConsumptionUnit", "temperatureUnit", "powerUnit", "torqueUnit", "userID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "currencyCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCode = data
+		case "fuelVolumeUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnit"))
+			data, err := ec.unmarshalOFuelVolumeUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelVolumeUnit = data
+		case "distanceUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnit"))
+			data, err := ec.unmarshalODistanceUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DistanceUnit = data
+		case "fuelConsumptionUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnit"))
+			data, err := ec.unmarshalOFuelConsumptionUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelConsumptionUnit = data
+		case "temperatureUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnit"))
+			data, err := ec.unmarshalOTemperatureUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TemperatureUnit = data
+		case "powerUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnit"))
+			data, err := ec.unmarshalOPowerUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PowerUnit = data
+		case "torqueUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnit"))
+			data, err := ec.unmarshalOTorqueUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TorqueUnit = data
+		case "userID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserID = data
 		}
 	}
 
@@ -32953,7 +33419,7 @@ func (ec *executionContext) unmarshalInputProfileWhereInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "username", "usernameNEQ", "usernameIn", "usernameNotIn", "usernameGT", "usernameGTE", "usernameLT", "usernameLTE", "usernameContains", "usernameHasPrefix", "usernameHasSuffix", "usernameIsNil", "usernameNotNil", "usernameEqualFold", "usernameContainsFold", "firstName", "firstNameNEQ", "firstNameIn", "firstNameNotIn", "firstNameGT", "firstNameGTE", "firstNameLT", "firstNameLTE", "firstNameContains", "firstNameHasPrefix", "firstNameHasSuffix", "firstNameIsNil", "firstNameNotNil", "firstNameEqualFold", "firstNameContainsFold", "lastName", "lastNameNEQ", "lastNameIn", "lastNameNotIn", "lastNameGT", "lastNameGTE", "lastNameLT", "lastNameLTE", "lastNameContains", "lastNameHasPrefix", "lastNameHasSuffix", "lastNameIsNil", "lastNameNotNil", "lastNameEqualFold", "lastNameContainsFold", "currencyCode", "currencyCodeNEQ", "currencyCodeIn", "currencyCodeNotIn", "currencyCodeGT", "currencyCodeGTE", "currencyCodeLT", "currencyCodeLTE", "currencyCodeContains", "currencyCodeHasPrefix", "currencyCodeHasSuffix", "currencyCodeIsNil", "currencyCodeNotNil", "currencyCodeEqualFold", "currencyCodeContainsFold", "fuelVolumeUnit", "fuelVolumeUnitNEQ", "fuelVolumeUnitIn", "fuelVolumeUnitNotIn", "fuelVolumeUnitIsNil", "fuelVolumeUnitNotNil", "distanceUnit", "distanceUnitNEQ", "distanceUnitIn", "distanceUnitNotIn", "distanceUnitIsNil", "distanceUnitNotNil", "fuelConsumptionUnit", "fuelConsumptionUnitNEQ", "fuelConsumptionUnitIn", "fuelConsumptionUnitNotIn", "fuelConsumptionUnitIsNil", "fuelConsumptionUnitNotNil", "temperatureUnit", "temperatureUnitNEQ", "temperatureUnitIn", "temperatureUnitNotIn", "temperatureUnitIsNil", "temperatureUnitNotNil", "powerUnit", "powerUnitNEQ", "powerUnitIn", "powerUnitNotIn", "powerUnitIsNil", "powerUnitNotNil", "torqueUnit", "torqueUnitNEQ", "torqueUnitIn", "torqueUnitNotIn", "torqueUnitIsNil", "torqueUnitNotNil", "visibility", "visibilityNEQ", "visibilityIn", "visibilityNotIn", "hasUser", "hasUserWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "username", "usernameNEQ", "usernameIn", "usernameNotIn", "usernameGT", "usernameGTE", "usernameLT", "usernameLTE", "usernameContains", "usernameHasPrefix", "usernameHasSuffix", "usernameIsNil", "usernameNotNil", "usernameEqualFold", "usernameContainsFold", "firstName", "firstNameNEQ", "firstNameIn", "firstNameNotIn", "firstNameGT", "firstNameGTE", "firstNameLT", "firstNameLTE", "firstNameContains", "firstNameHasPrefix", "firstNameHasSuffix", "firstNameIsNil", "firstNameNotNil", "firstNameEqualFold", "firstNameContainsFold", "lastName", "lastNameNEQ", "lastNameIn", "lastNameNotIn", "lastNameGT", "lastNameGTE", "lastNameLT", "lastNameLTE", "lastNameContains", "lastNameHasPrefix", "lastNameHasSuffix", "lastNameIsNil", "lastNameNotNil", "lastNameEqualFold", "lastNameContainsFold", "visibility", "visibilityNEQ", "visibilityIn", "visibilityNotIn", "hasUser", "hasUserWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -33464,363 +33930,6 @@ func (ec *executionContext) unmarshalInputProfileWhereInput(ctx context.Context,
 				return it, err
 			}
 			it.LastNameContainsFold = data
-		case "currencyCode":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCode"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCode = data
-		case "currencyCodeNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeNEQ"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCodeNEQ = data
-		case "currencyCodeIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCodeIn = data
-		case "currencyCodeNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeNotIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCodeNotIn = data
-		case "currencyCodeGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeGT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCodeGT = data
-		case "currencyCodeGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeGTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCodeGTE = data
-		case "currencyCodeLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeLT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCodeLT = data
-		case "currencyCodeLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeLTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCodeLTE = data
-		case "currencyCodeContains":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeContains"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCodeContains = data
-		case "currencyCodeHasPrefix":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeHasPrefix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCodeHasPrefix = data
-		case "currencyCodeHasSuffix":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeHasSuffix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCodeHasSuffix = data
-		case "currencyCodeIsNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCodeIsNil = data
-		case "currencyCodeNotNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCodeNotNil = data
-		case "currencyCodeEqualFold":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeEqualFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCodeEqualFold = data
-		case "currencyCodeContainsFold":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeContainsFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCodeContainsFold = data
-		case "fuelVolumeUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnit"))
-			data, err := ec.unmarshalOFuelVolumeUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelVolumeUnit = data
-		case "fuelVolumeUnitNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnitNEQ"))
-			data, err := ec.unmarshalOFuelVolumeUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelVolumeUnitNEQ = data
-		case "fuelVolumeUnitIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnitIn"))
-			data, err := ec.unmarshalOFuelVolumeUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnitᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelVolumeUnitIn = data
-		case "fuelVolumeUnitNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnitNotIn"))
-			data, err := ec.unmarshalOFuelVolumeUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnitᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelVolumeUnitNotIn = data
-		case "fuelVolumeUnitIsNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnitIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelVolumeUnitIsNil = data
-		case "fuelVolumeUnitNotNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnitNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelVolumeUnitNotNil = data
-		case "distanceUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnit"))
-			data, err := ec.unmarshalODistanceUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DistanceUnit = data
-		case "distanceUnitNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnitNEQ"))
-			data, err := ec.unmarshalODistanceUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DistanceUnitNEQ = data
-		case "distanceUnitIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnitIn"))
-			data, err := ec.unmarshalODistanceUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnitᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DistanceUnitIn = data
-		case "distanceUnitNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnitNotIn"))
-			data, err := ec.unmarshalODistanceUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnitᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DistanceUnitNotIn = data
-		case "distanceUnitIsNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnitIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DistanceUnitIsNil = data
-		case "distanceUnitNotNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnitNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DistanceUnitNotNil = data
-		case "fuelConsumptionUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnit"))
-			data, err := ec.unmarshalOFuelConsumptionUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelConsumptionUnit = data
-		case "fuelConsumptionUnitNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnitNEQ"))
-			data, err := ec.unmarshalOFuelConsumptionUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelConsumptionUnitNEQ = data
-		case "fuelConsumptionUnitIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnitIn"))
-			data, err := ec.unmarshalOFuelConsumptionUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnitᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelConsumptionUnitIn = data
-		case "fuelConsumptionUnitNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnitNotIn"))
-			data, err := ec.unmarshalOFuelConsumptionUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnitᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelConsumptionUnitNotIn = data
-		case "fuelConsumptionUnitIsNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnitIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelConsumptionUnitIsNil = data
-		case "fuelConsumptionUnitNotNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnitNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelConsumptionUnitNotNil = data
-		case "temperatureUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnit"))
-			data, err := ec.unmarshalOTemperatureUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TemperatureUnit = data
-		case "temperatureUnitNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnitNEQ"))
-			data, err := ec.unmarshalOTemperatureUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TemperatureUnitNEQ = data
-		case "temperatureUnitIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnitIn"))
-			data, err := ec.unmarshalOTemperatureUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnitᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TemperatureUnitIn = data
-		case "temperatureUnitNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnitNotIn"))
-			data, err := ec.unmarshalOTemperatureUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnitᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TemperatureUnitNotIn = data
-		case "temperatureUnitIsNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnitIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TemperatureUnitIsNil = data
-		case "temperatureUnitNotNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnitNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TemperatureUnitNotNil = data
-		case "powerUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnit"))
-			data, err := ec.unmarshalOPowerUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PowerUnit = data
-		case "powerUnitNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnitNEQ"))
-			data, err := ec.unmarshalOPowerUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PowerUnitNEQ = data
-		case "powerUnitIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnitIn"))
-			data, err := ec.unmarshalOPowerUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnitᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PowerUnitIn = data
-		case "powerUnitNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnitNotIn"))
-			data, err := ec.unmarshalOPowerUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnitᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PowerUnitNotIn = data
-		case "powerUnitIsNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnitIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PowerUnitIsNil = data
-		case "powerUnitNotNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnitNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PowerUnitNotNil = data
-		case "torqueUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnit"))
-			data, err := ec.unmarshalOTorqueUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TorqueUnit = data
-		case "torqueUnitNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnitNEQ"))
-			data, err := ec.unmarshalOTorqueUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TorqueUnitNEQ = data
-		case "torqueUnitIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnitIn"))
-			data, err := ec.unmarshalOTorqueUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnitᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TorqueUnitIn = data
-		case "torqueUnitNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnitNotIn"))
-			data, err := ec.unmarshalOTorqueUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnitᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TorqueUnitNotIn = data
-		case "torqueUnitIsNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnitIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TorqueUnitIsNil = data
-		case "torqueUnitNotNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnitNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TorqueUnitNotNil = data
 		case "visibility":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visibility"))
 			data, err := ec.unmarshalOProfileVisibility2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐVisibility(ctx, v)
@@ -39022,7 +39131,7 @@ func (ec *executionContext) unmarshalInputUpdateProfileInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "username", "clearUsername", "firstName", "clearFirstName", "lastName", "clearLastName", "currencyCode", "clearCurrencyCode", "fuelVolumeUnit", "clearFuelVolumeUnit", "distanceUnit", "clearDistanceUnit", "fuelConsumptionUnit", "clearFuelConsumptionUnit", "temperatureUnit", "clearTemperatureUnit", "powerUnit", "clearPowerUnit", "torqueUnit", "clearTorqueUnit", "visibility", "userID"}
+	fieldsInOrder := [...]string{"updateTime", "username", "clearUsername", "firstName", "clearFirstName", "lastName", "clearLastName", "visibility", "userID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -39078,104 +39187,6 @@ func (ec *executionContext) unmarshalInputUpdateProfileInput(ctx context.Context
 				return it, err
 			}
 			it.ClearLastName = data
-		case "currencyCode":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCode"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CurrencyCode = data
-		case "clearCurrencyCode":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearCurrencyCode"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearCurrencyCode = data
-		case "fuelVolumeUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnit"))
-			data, err := ec.unmarshalOFuelVolumeUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelVolumeUnit = data
-		case "clearFuelVolumeUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearFuelVolumeUnit"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearFuelVolumeUnit = data
-		case "distanceUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnit"))
-			data, err := ec.unmarshalODistanceUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DistanceUnit = data
-		case "clearDistanceUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearDistanceUnit"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearDistanceUnit = data
-		case "fuelConsumptionUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnit"))
-			data, err := ec.unmarshalOFuelConsumptionUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FuelConsumptionUnit = data
-		case "clearFuelConsumptionUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearFuelConsumptionUnit"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearFuelConsumptionUnit = data
-		case "temperatureUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnit"))
-			data, err := ec.unmarshalOTemperatureUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TemperatureUnit = data
-		case "clearTemperatureUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearTemperatureUnit"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearTemperatureUnit = data
-		case "powerUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnit"))
-			data, err := ec.unmarshalOPowerUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.PowerUnit = data
-		case "clearPowerUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearPowerUnit"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearPowerUnit = data
-		case "torqueUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnit"))
-			data, err := ec.unmarshalOTorqueUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnit(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TorqueUnit = data
-		case "clearTorqueUnit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearTorqueUnit"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearTorqueUnit = data
 		case "visibility":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visibility"))
 			data, err := ec.unmarshalOProfileVisibility2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐVisibility(ctx, v)
@@ -39892,7 +39903,7 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "email", "stripeCustomerID", "clearStripeCustomerID", "addCarIDs", "removeCarIDs", "clearCars", "profileID", "clearProfile", "addSubscriptionIDs", "removeSubscriptionIDs", "clearSubscriptions", "addCheckoutSessionIDs", "removeCheckoutSessionIDs", "clearCheckoutSessions"}
+	fieldsInOrder := [...]string{"updateTime", "email", "stripeCustomerID", "clearStripeCustomerID", "addCarIDs", "removeCarIDs", "clearCars", "profileID", "clearProfile", "settingsID", "clearSettings", "addSubscriptionIDs", "removeSubscriptionIDs", "clearSubscriptions", "addCheckoutSessionIDs", "removeCheckoutSessionIDs", "clearCheckoutSessions"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -39962,6 +39973,20 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.ClearProfile = data
+		case "settingsID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("settingsID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SettingsID = data
+		case "clearSettings":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearSettings"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearSettings = data
 		case "addSubscriptionIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addSubscriptionIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
@@ -40010,6 +40035,138 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateUserSettingsInput(ctx context.Context, obj any) (ent.UpdateUserSettingsInput, error) {
+	var it ent.UpdateUserSettingsInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"updateTime", "currencyCode", "clearCurrencyCode", "fuelVolumeUnit", "clearFuelVolumeUnit", "distanceUnit", "clearDistanceUnit", "fuelConsumptionUnit", "clearFuelConsumptionUnit", "temperatureUnit", "clearTemperatureUnit", "powerUnit", "clearPowerUnit", "torqueUnit", "clearTorqueUnit", "userID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "currencyCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCode = data
+		case "clearCurrencyCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearCurrencyCode"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearCurrencyCode = data
+		case "fuelVolumeUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnit"))
+			data, err := ec.unmarshalOFuelVolumeUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelVolumeUnit = data
+		case "clearFuelVolumeUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearFuelVolumeUnit"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearFuelVolumeUnit = data
+		case "distanceUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnit"))
+			data, err := ec.unmarshalODistanceUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DistanceUnit = data
+		case "clearDistanceUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearDistanceUnit"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearDistanceUnit = data
+		case "fuelConsumptionUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnit"))
+			data, err := ec.unmarshalOFuelConsumptionUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelConsumptionUnit = data
+		case "clearFuelConsumptionUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearFuelConsumptionUnit"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearFuelConsumptionUnit = data
+		case "temperatureUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnit"))
+			data, err := ec.unmarshalOTemperatureUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TemperatureUnit = data
+		case "clearTemperatureUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearTemperatureUnit"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearTemperatureUnit = data
+		case "powerUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnit"))
+			data, err := ec.unmarshalOPowerUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PowerUnit = data
+		case "clearPowerUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearPowerUnit"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearPowerUnit = data
+		case "torqueUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnit"))
+			data, err := ec.unmarshalOTorqueUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TorqueUnit = data
+		case "clearTorqueUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearTorqueUnit"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearTorqueUnit = data
+		case "userID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUploadProfilePictureInput(ctx context.Context, obj any) (model.UploadProfilePictureInput, error) {
 	var it model.UploadProfilePictureInput
 	asMap := map[string]any{}
@@ -40037,6 +40194,586 @@ func (ec *executionContext) unmarshalInputUploadProfilePictureInput(ctx context.
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUserSettingsWhereInput(ctx context.Context, obj any) (ent.UserSettingsWhereInput, error) {
+	var it ent.UserSettingsWhereInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "currencyCode", "currencyCodeNEQ", "currencyCodeIn", "currencyCodeNotIn", "currencyCodeGT", "currencyCodeGTE", "currencyCodeLT", "currencyCodeLTE", "currencyCodeContains", "currencyCodeHasPrefix", "currencyCodeHasSuffix", "currencyCodeIsNil", "currencyCodeNotNil", "currencyCodeEqualFold", "currencyCodeContainsFold", "fuelVolumeUnit", "fuelVolumeUnitNEQ", "fuelVolumeUnitIn", "fuelVolumeUnitNotIn", "fuelVolumeUnitIsNil", "fuelVolumeUnitNotNil", "distanceUnit", "distanceUnitNEQ", "distanceUnitIn", "distanceUnitNotIn", "distanceUnitIsNil", "distanceUnitNotNil", "fuelConsumptionUnit", "fuelConsumptionUnitNEQ", "fuelConsumptionUnitIn", "fuelConsumptionUnitNotIn", "fuelConsumptionUnitIsNil", "fuelConsumptionUnitNotNil", "temperatureUnit", "temperatureUnitNEQ", "temperatureUnitIn", "temperatureUnitNotIn", "temperatureUnitIsNil", "temperatureUnitNotNil", "powerUnit", "powerUnitNEQ", "powerUnitIn", "powerUnitNotIn", "powerUnitIsNil", "powerUnitNotNil", "torqueUnit", "torqueUnitNEQ", "torqueUnitIn", "torqueUnitNotIn", "torqueUnitIsNil", "torqueUnitNotNil", "hasUser", "hasUserWith"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "not":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
+			data, err := ec.unmarshalOUserSettingsWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserSettingsWhereInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Not = data
+		case "and":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
+			data, err := ec.unmarshalOUserSettingsWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserSettingsWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.And = data
+		case "or":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
+			data, err := ec.unmarshalOUserSettingsWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserSettingsWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Or = data
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "idNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDNEQ = data
+		case "idIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDIn = data
+		case "idNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDNotIn = data
+		case "idGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDGT = data
+		case "idGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDGTE = data
+		case "idLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDLT = data
+		case "idLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
+		case "currencyCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCode = data
+		case "currencyCodeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCodeNEQ = data
+		case "currencyCodeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCodeIn = data
+		case "currencyCodeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCodeNotIn = data
+		case "currencyCodeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCodeGT = data
+		case "currencyCodeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCodeGTE = data
+		case "currencyCodeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCodeLT = data
+		case "currencyCodeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCodeLTE = data
+		case "currencyCodeContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCodeContains = data
+		case "currencyCodeHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCodeHasPrefix = data
+		case "currencyCodeHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCodeHasSuffix = data
+		case "currencyCodeIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCodeIsNil = data
+		case "currencyCodeNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCodeNotNil = data
+		case "currencyCodeEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCodeEqualFold = data
+		case "currencyCodeContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("currencyCodeContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CurrencyCodeContainsFold = data
+		case "fuelVolumeUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnit"))
+			data, err := ec.unmarshalOFuelVolumeUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelVolumeUnit = data
+		case "fuelVolumeUnitNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnitNEQ"))
+			data, err := ec.unmarshalOFuelVolumeUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelVolumeUnitNEQ = data
+		case "fuelVolumeUnitIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnitIn"))
+			data, err := ec.unmarshalOFuelVolumeUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnitᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelVolumeUnitIn = data
+		case "fuelVolumeUnitNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnitNotIn"))
+			data, err := ec.unmarshalOFuelVolumeUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnitᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelVolumeUnitNotIn = data
+		case "fuelVolumeUnitIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnitIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelVolumeUnitIsNil = data
+		case "fuelVolumeUnitNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelVolumeUnitNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelVolumeUnitNotNil = data
+		case "distanceUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnit"))
+			data, err := ec.unmarshalODistanceUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DistanceUnit = data
+		case "distanceUnitNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnitNEQ"))
+			data, err := ec.unmarshalODistanceUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DistanceUnitNEQ = data
+		case "distanceUnitIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnitIn"))
+			data, err := ec.unmarshalODistanceUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnitᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DistanceUnitIn = data
+		case "distanceUnitNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnitNotIn"))
+			data, err := ec.unmarshalODistanceUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnitᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DistanceUnitNotIn = data
+		case "distanceUnitIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnitIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DistanceUnitIsNil = data
+		case "distanceUnitNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distanceUnitNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DistanceUnitNotNil = data
+		case "fuelConsumptionUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnit"))
+			data, err := ec.unmarshalOFuelConsumptionUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelConsumptionUnit = data
+		case "fuelConsumptionUnitNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnitNEQ"))
+			data, err := ec.unmarshalOFuelConsumptionUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelConsumptionUnitNEQ = data
+		case "fuelConsumptionUnitIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnitIn"))
+			data, err := ec.unmarshalOFuelConsumptionUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnitᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelConsumptionUnitIn = data
+		case "fuelConsumptionUnitNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnitNotIn"))
+			data, err := ec.unmarshalOFuelConsumptionUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnitᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelConsumptionUnitNotIn = data
+		case "fuelConsumptionUnitIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnitIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelConsumptionUnitIsNil = data
+		case "fuelConsumptionUnitNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelConsumptionUnitNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelConsumptionUnitNotNil = data
+		case "temperatureUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnit"))
+			data, err := ec.unmarshalOTemperatureUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TemperatureUnit = data
+		case "temperatureUnitNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnitNEQ"))
+			data, err := ec.unmarshalOTemperatureUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TemperatureUnitNEQ = data
+		case "temperatureUnitIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnitIn"))
+			data, err := ec.unmarshalOTemperatureUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnitᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TemperatureUnitIn = data
+		case "temperatureUnitNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnitNotIn"))
+			data, err := ec.unmarshalOTemperatureUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnitᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TemperatureUnitNotIn = data
+		case "temperatureUnitIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnitIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TemperatureUnitIsNil = data
+		case "temperatureUnitNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("temperatureUnitNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TemperatureUnitNotNil = data
+		case "powerUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnit"))
+			data, err := ec.unmarshalOPowerUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PowerUnit = data
+		case "powerUnitNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnitNEQ"))
+			data, err := ec.unmarshalOPowerUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PowerUnitNEQ = data
+		case "powerUnitIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnitIn"))
+			data, err := ec.unmarshalOPowerUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnitᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PowerUnitIn = data
+		case "powerUnitNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnitNotIn"))
+			data, err := ec.unmarshalOPowerUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnitᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PowerUnitNotIn = data
+		case "powerUnitIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnitIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PowerUnitIsNil = data
+		case "powerUnitNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("powerUnitNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PowerUnitNotNil = data
+		case "torqueUnit":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnit"))
+			data, err := ec.unmarshalOTorqueUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TorqueUnit = data
+		case "torqueUnitNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnitNEQ"))
+			data, err := ec.unmarshalOTorqueUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnit(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TorqueUnitNEQ = data
+		case "torqueUnitIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnitIn"))
+			data, err := ec.unmarshalOTorqueUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnitᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TorqueUnitIn = data
+		case "torqueUnitNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnitNotIn"))
+			data, err := ec.unmarshalOTorqueUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnitᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TorqueUnitNotIn = data
+		case "torqueUnitIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnitIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TorqueUnitIsNil = data
+		case "torqueUnitNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("torqueUnitNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TorqueUnitNotNil = data
+		case "hasUser":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUser"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasUser = data
+		case "hasUserWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUserWith"))
+			data, err := ec.unmarshalOUserWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasUserWith = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, obj any) (ent.UserWhereInput, error) {
 	var it ent.UserWhereInput
 	asMap := map[string]any{}
@@ -40044,7 +40781,7 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "stripeCustomerID", "stripeCustomerIDNEQ", "stripeCustomerIDIn", "stripeCustomerIDNotIn", "stripeCustomerIDGT", "stripeCustomerIDGTE", "stripeCustomerIDLT", "stripeCustomerIDLTE", "stripeCustomerIDContains", "stripeCustomerIDHasPrefix", "stripeCustomerIDHasSuffix", "stripeCustomerIDIsNil", "stripeCustomerIDNotNil", "stripeCustomerIDEqualFold", "stripeCustomerIDContainsFold", "hasCars", "hasCarsWith", "hasProfile", "hasProfileWith", "hasSubscriptions", "hasSubscriptionsWith", "hasCheckoutSessions", "hasCheckoutSessionsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "stripeCustomerID", "stripeCustomerIDNEQ", "stripeCustomerIDIn", "stripeCustomerIDNotIn", "stripeCustomerIDGT", "stripeCustomerIDGTE", "stripeCustomerIDLT", "stripeCustomerIDLTE", "stripeCustomerIDContains", "stripeCustomerIDHasPrefix", "stripeCustomerIDHasSuffix", "stripeCustomerIDIsNil", "stripeCustomerIDNotNil", "stripeCustomerIDEqualFold", "stripeCustomerIDContainsFold", "hasCars", "hasCarsWith", "hasProfile", "hasProfileWith", "hasSettings", "hasSettingsWith", "hasSubscriptions", "hasSubscriptionsWith", "hasCheckoutSessions", "hasCheckoutSessionsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -40464,6 +41201,20 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.HasProfileWith = data
+		case "hasSettings":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSettings"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasSettings = data
+		case "hasSettingsWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSettingsWith"))
+			data, err := ec.unmarshalOUserSettingsWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserSettingsWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasSettingsWith = data
 		case "hasSubscriptions":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSubscriptions"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -40506,6 +41257,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
+	case *ent.UserSettings:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._UserSettings(ctx, sel, obj)
 	case *ent.User:
 		if obj == nil {
 			return graphql.Null
@@ -43407,6 +44163,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "updateSettings":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateSettings(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createCar":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createCar(ctx, field)
@@ -43876,20 +44639,6 @@ func (ec *executionContext) _Profile(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Profile_firstName(ctx, field, obj)
 		case "lastName":
 			out.Values[i] = ec._Profile_lastName(ctx, field, obj)
-		case "currencyCode":
-			out.Values[i] = ec._Profile_currencyCode(ctx, field, obj)
-		case "fuelVolumeUnit":
-			out.Values[i] = ec._Profile_fuelVolumeUnit(ctx, field, obj)
-		case "distanceUnit":
-			out.Values[i] = ec._Profile_distanceUnit(ctx, field, obj)
-		case "fuelConsumptionUnit":
-			out.Values[i] = ec._Profile_fuelConsumptionUnit(ctx, field, obj)
-		case "temperatureUnit":
-			out.Values[i] = ec._Profile_temperatureUnit(ctx, field, obj)
-		case "powerUnit":
-			out.Values[i] = ec._Profile_powerUnit(ctx, field, obj)
-		case "torqueUnit":
-			out.Values[i] = ec._Profile_torqueUnit(ctx, field, obj)
 		case "visibility":
 			out.Values[i] = ec._Profile_visibility(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -45551,6 +46300,39 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "settings":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_settings(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "subscriptions":
 			field := field
 
@@ -45627,6 +46409,105 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._User_subscription(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var userSettingsImplementors = []string{"UserSettings", "Node"}
+
+func (ec *executionContext) _UserSettings(ctx context.Context, sel ast.SelectionSet, obj *ent.UserSettings) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, userSettingsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UserSettings")
+		case "id":
+			out.Values[i] = ec._UserSettings_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "createTime":
+			out.Values[i] = ec._UserSettings_createTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updateTime":
+			out.Values[i] = ec._UserSettings_updateTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "currencyCode":
+			out.Values[i] = ec._UserSettings_currencyCode(ctx, field, obj)
+		case "fuelVolumeUnit":
+			out.Values[i] = ec._UserSettings_fuelVolumeUnit(ctx, field, obj)
+		case "distanceUnit":
+			out.Values[i] = ec._UserSettings_distanceUnit(ctx, field, obj)
+		case "fuelConsumptionUnit":
+			out.Values[i] = ec._UserSettings_fuelConsumptionUnit(ctx, field, obj)
+		case "temperatureUnit":
+			out.Values[i] = ec._UserSettings_temperatureUnit(ctx, field, obj)
+		case "powerUnit":
+			out.Values[i] = ec._UserSettings_powerUnit(ctx, field, obj)
+		case "torqueUnit":
+			out.Values[i] = ec._UserSettings_torqueUnit(ctx, field, obj)
+		case "user":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._UserSettings_user(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -46186,13 +47067,13 @@ func (ec *executionContext) marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCurso
 	return v
 }
 
-func (ec *executionContext) unmarshalNDistanceUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnit(ctx context.Context, v any) (profile.DistanceUnit, error) {
-	var res profile.DistanceUnit
+func (ec *executionContext) unmarshalNDistanceUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnit(ctx context.Context, v any) (usersettings.DistanceUnit, error) {
+	var res usersettings.DistanceUnit
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNDistanceUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnit(ctx context.Context, sel ast.SelectionSet, v profile.DistanceUnit) graphql.Marshaler {
+func (ec *executionContext) marshalNDistanceUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnit(ctx context.Context, sel ast.SelectionSet, v usersettings.DistanceUnit) graphql.Marshaler {
 	return v
 }
 
@@ -46355,13 +47236,13 @@ func (ec *executionContext) marshalNFuelCategory2githubᚗcomᚋDan6erbondᚋrev
 	return v
 }
 
-func (ec *executionContext) unmarshalNFuelConsumptionUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnit(ctx context.Context, v any) (profile.FuelConsumptionUnit, error) {
-	var res profile.FuelConsumptionUnit
+func (ec *executionContext) unmarshalNFuelConsumptionUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnit(ctx context.Context, v any) (usersettings.FuelConsumptionUnit, error) {
+	var res usersettings.FuelConsumptionUnit
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNFuelConsumptionUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnit(ctx context.Context, sel ast.SelectionSet, v profile.FuelConsumptionUnit) graphql.Marshaler {
+func (ec *executionContext) marshalNFuelConsumptionUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnit(ctx context.Context, sel ast.SelectionSet, v usersettings.FuelConsumptionUnit) graphql.Marshaler {
 	return v
 }
 
@@ -46384,13 +47265,13 @@ func (ec *executionContext) unmarshalNFuelUpWhereInput2ᚖgithubᚗcomᚋDan6erb
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNFuelVolumeUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnit(ctx context.Context, v any) (profile.FuelVolumeUnit, error) {
-	var res profile.FuelVolumeUnit
+func (ec *executionContext) unmarshalNFuelVolumeUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnit(ctx context.Context, v any) (usersettings.FuelVolumeUnit, error) {
+	var res usersettings.FuelVolumeUnit
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNFuelVolumeUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnit(ctx context.Context, sel ast.SelectionSet, v profile.FuelVolumeUnit) graphql.Marshaler {
+func (ec *executionContext) marshalNFuelVolumeUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnit(ctx context.Context, sel ast.SelectionSet, v usersettings.FuelVolumeUnit) graphql.Marshaler {
 	return v
 }
 
@@ -46632,13 +47513,13 @@ func (ec *executionContext) marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPag
 	return ec._PageInfo(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNPowerUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnit(ctx context.Context, v any) (profile.PowerUnit, error) {
-	var res profile.PowerUnit
+func (ec *executionContext) unmarshalNPowerUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnit(ctx context.Context, v any) (usersettings.PowerUnit, error) {
+	var res usersettings.PowerUnit
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNPowerUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnit(ctx context.Context, sel ast.SelectionSet, v profile.PowerUnit) graphql.Marshaler {
+func (ec *executionContext) marshalNPowerUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnit(ctx context.Context, sel ast.SelectionSet, v usersettings.PowerUnit) graphql.Marshaler {
 	return v
 }
 
@@ -46908,13 +47789,13 @@ func (ec *executionContext) unmarshalNTaskWhereInput2ᚖgithubᚗcomᚋDan6erbon
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNTemperatureUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnit(ctx context.Context, v any) (profile.TemperatureUnit, error) {
-	var res profile.TemperatureUnit
+func (ec *executionContext) unmarshalNTemperatureUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnit(ctx context.Context, v any) (usersettings.TemperatureUnit, error) {
+	var res usersettings.TemperatureUnit
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNTemperatureUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnit(ctx context.Context, sel ast.SelectionSet, v profile.TemperatureUnit) graphql.Marshaler {
+func (ec *executionContext) marshalNTemperatureUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnit(ctx context.Context, sel ast.SelectionSet, v usersettings.TemperatureUnit) graphql.Marshaler {
 	return v
 }
 
@@ -46933,13 +47814,13 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) unmarshalNTorqueUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnit(ctx context.Context, v any) (profile.TorqueUnit, error) {
-	var res profile.TorqueUnit
+func (ec *executionContext) unmarshalNTorqueUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnit(ctx context.Context, v any) (usersettings.TorqueUnit, error) {
+	var res usersettings.TorqueUnit
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNTorqueUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnit(ctx context.Context, sel ast.SelectionSet, v profile.TorqueUnit) graphql.Marshaler {
+func (ec *executionContext) marshalNTorqueUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnit(ctx context.Context, sel ast.SelectionSet, v usersettings.TorqueUnit) graphql.Marshaler {
 	return v
 }
 
@@ -47037,6 +47918,11 @@ func (ec *executionContext) unmarshalNUpdateTaskInput2githubᚗcomᚋDan6erbond�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNUpdateUserSettingsInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateUserSettingsInput(ctx context.Context, v any) (ent.UpdateUserSettingsInput, error) {
+	res, err := ec.unmarshalInputUpdateUserSettingsInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNUploadDocumentResult2githubᚗcomᚋDan6erbondᚋrevlineᚋgraphᚋmodelᚐUploadDocumentResult(ctx context.Context, sel ast.SelectionSet, v model.UploadDocumentResult) graphql.Marshaler {
 	return ec._UploadDocumentResult(ctx, sel, &v)
 }
@@ -47077,6 +47963,25 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋDan6erbondᚋrevline�
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNUserSettings2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserSettings(ctx context.Context, sel ast.SelectionSet, v ent.UserSettings) graphql.Marshaler {
+	return ec._UserSettings(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUserSettings2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserSettings(ctx context.Context, sel ast.SelectionSet, v *ent.UserSettings) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._UserSettings(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNUserSettingsWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserSettingsWhereInput(ctx context.Context, v any) (*ent.UserSettingsWhereInput, error) {
+	res, err := ec.unmarshalInputUserSettingsWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNUserWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserWhereInput(ctx context.Context, v any) (*ent.UserWhereInput, error) {
@@ -47691,17 +48596,17 @@ func (ec *executionContext) marshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCu
 	return v
 }
 
-func (ec *executionContext) unmarshalODistanceUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnitᚄ(ctx context.Context, v any) ([]profile.DistanceUnit, error) {
+func (ec *executionContext) unmarshalODistanceUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnitᚄ(ctx context.Context, v any) ([]usersettings.DistanceUnit, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]profile.DistanceUnit, len(vSlice))
+	res := make([]usersettings.DistanceUnit, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNDistanceUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnit(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNDistanceUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnit(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -47709,7 +48614,7 @@ func (ec *executionContext) unmarshalODistanceUnit2ᚕgithubᚗcomᚋDan6erbond�
 	return res, nil
 }
 
-func (ec *executionContext) marshalODistanceUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnitᚄ(ctx context.Context, sel ast.SelectionSet, v []profile.DistanceUnit) graphql.Marshaler {
+func (ec *executionContext) marshalODistanceUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnitᚄ(ctx context.Context, sel ast.SelectionSet, v []usersettings.DistanceUnit) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -47736,7 +48641,7 @@ func (ec *executionContext) marshalODistanceUnit2ᚕgithubᚗcomᚋDan6erbondᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNDistanceUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnit(ctx, sel, v[i])
+			ret[i] = ec.marshalNDistanceUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnit(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -47756,16 +48661,16 @@ func (ec *executionContext) marshalODistanceUnit2ᚕgithubᚗcomᚋDan6erbondᚋ
 	return ret
 }
 
-func (ec *executionContext) unmarshalODistanceUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnit(ctx context.Context, v any) (*profile.DistanceUnit, error) {
+func (ec *executionContext) unmarshalODistanceUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnit(ctx context.Context, v any) (*usersettings.DistanceUnit, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(profile.DistanceUnit)
+	var res = new(usersettings.DistanceUnit)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalODistanceUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐDistanceUnit(ctx context.Context, sel ast.SelectionSet, v *profile.DistanceUnit) graphql.Marshaler {
+func (ec *executionContext) marshalODistanceUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐDistanceUnit(ctx context.Context, sel ast.SelectionSet, v *usersettings.DistanceUnit) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -48533,17 +49438,17 @@ func (ec *executionContext) marshalOFuelCategory2ᚖgithubᚗcomᚋDan6erbondᚋ
 	return v
 }
 
-func (ec *executionContext) unmarshalOFuelConsumptionUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnitᚄ(ctx context.Context, v any) ([]profile.FuelConsumptionUnit, error) {
+func (ec *executionContext) unmarshalOFuelConsumptionUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnitᚄ(ctx context.Context, v any) ([]usersettings.FuelConsumptionUnit, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]profile.FuelConsumptionUnit, len(vSlice))
+	res := make([]usersettings.FuelConsumptionUnit, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNFuelConsumptionUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnit(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNFuelConsumptionUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnit(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -48551,7 +49456,7 @@ func (ec *executionContext) unmarshalOFuelConsumptionUnit2ᚕgithubᚗcomᚋDan6
 	return res, nil
 }
 
-func (ec *executionContext) marshalOFuelConsumptionUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnitᚄ(ctx context.Context, sel ast.SelectionSet, v []profile.FuelConsumptionUnit) graphql.Marshaler {
+func (ec *executionContext) marshalOFuelConsumptionUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnitᚄ(ctx context.Context, sel ast.SelectionSet, v []usersettings.FuelConsumptionUnit) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -48578,7 +49483,7 @@ func (ec *executionContext) marshalOFuelConsumptionUnit2ᚕgithubᚗcomᚋDan6er
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNFuelConsumptionUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnit(ctx, sel, v[i])
+			ret[i] = ec.marshalNFuelConsumptionUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnit(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -48598,16 +49503,16 @@ func (ec *executionContext) marshalOFuelConsumptionUnit2ᚕgithubᚗcomᚋDan6er
 	return ret
 }
 
-func (ec *executionContext) unmarshalOFuelConsumptionUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnit(ctx context.Context, v any) (*profile.FuelConsumptionUnit, error) {
+func (ec *executionContext) unmarshalOFuelConsumptionUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnit(ctx context.Context, v any) (*usersettings.FuelConsumptionUnit, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(profile.FuelConsumptionUnit)
+	var res = new(usersettings.FuelConsumptionUnit)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOFuelConsumptionUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelConsumptionUnit(ctx context.Context, sel ast.SelectionSet, v *profile.FuelConsumptionUnit) graphql.Marshaler {
+func (ec *executionContext) marshalOFuelConsumptionUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelConsumptionUnit(ctx context.Context, sel ast.SelectionSet, v *usersettings.FuelConsumptionUnit) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -48694,17 +49599,17 @@ func (ec *executionContext) unmarshalOFuelUpWhereInput2ᚖgithubᚗcomᚋDan6erb
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOFuelVolumeUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnitᚄ(ctx context.Context, v any) ([]profile.FuelVolumeUnit, error) {
+func (ec *executionContext) unmarshalOFuelVolumeUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnitᚄ(ctx context.Context, v any) ([]usersettings.FuelVolumeUnit, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]profile.FuelVolumeUnit, len(vSlice))
+	res := make([]usersettings.FuelVolumeUnit, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNFuelVolumeUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnit(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNFuelVolumeUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnit(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -48712,7 +49617,7 @@ func (ec *executionContext) unmarshalOFuelVolumeUnit2ᚕgithubᚗcomᚋDan6erbon
 	return res, nil
 }
 
-func (ec *executionContext) marshalOFuelVolumeUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnitᚄ(ctx context.Context, sel ast.SelectionSet, v []profile.FuelVolumeUnit) graphql.Marshaler {
+func (ec *executionContext) marshalOFuelVolumeUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnitᚄ(ctx context.Context, sel ast.SelectionSet, v []usersettings.FuelVolumeUnit) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -48739,7 +49644,7 @@ func (ec *executionContext) marshalOFuelVolumeUnit2ᚕgithubᚗcomᚋDan6erbond�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNFuelVolumeUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnit(ctx, sel, v[i])
+			ret[i] = ec.marshalNFuelVolumeUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnit(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -48759,16 +49664,16 @@ func (ec *executionContext) marshalOFuelVolumeUnit2ᚕgithubᚗcomᚋDan6erbond�
 	return ret
 }
 
-func (ec *executionContext) unmarshalOFuelVolumeUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnit(ctx context.Context, v any) (*profile.FuelVolumeUnit, error) {
+func (ec *executionContext) unmarshalOFuelVolumeUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnit(ctx context.Context, v any) (*usersettings.FuelVolumeUnit, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(profile.FuelVolumeUnit)
+	var res = new(usersettings.FuelVolumeUnit)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOFuelVolumeUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐFuelVolumeUnit(ctx context.Context, sel ast.SelectionSet, v *profile.FuelVolumeUnit) graphql.Marshaler {
+func (ec *executionContext) marshalOFuelVolumeUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐFuelVolumeUnit(ctx context.Context, sel ast.SelectionSet, v *usersettings.FuelVolumeUnit) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -48879,7 +49784,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]interface{}, error) {
+func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]any, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -48887,7 +49792,7 @@ func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[s
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
+func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -49370,17 +50275,17 @@ func (ec *executionContext) unmarshalOOdometerReadingWhereInput2ᚖgithubᚗcom�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOPowerUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnitᚄ(ctx context.Context, v any) ([]profile.PowerUnit, error) {
+func (ec *executionContext) unmarshalOPowerUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnitᚄ(ctx context.Context, v any) ([]usersettings.PowerUnit, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]profile.PowerUnit, len(vSlice))
+	res := make([]usersettings.PowerUnit, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNPowerUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnit(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNPowerUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnit(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -49388,7 +50293,7 @@ func (ec *executionContext) unmarshalOPowerUnit2ᚕgithubᚗcomᚋDan6erbondᚋr
 	return res, nil
 }
 
-func (ec *executionContext) marshalOPowerUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnitᚄ(ctx context.Context, sel ast.SelectionSet, v []profile.PowerUnit) graphql.Marshaler {
+func (ec *executionContext) marshalOPowerUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnitᚄ(ctx context.Context, sel ast.SelectionSet, v []usersettings.PowerUnit) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -49415,7 +50320,7 @@ func (ec *executionContext) marshalOPowerUnit2ᚕgithubᚗcomᚋDan6erbondᚋrev
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNPowerUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnit(ctx, sel, v[i])
+			ret[i] = ec.marshalNPowerUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnit(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -49435,16 +50340,16 @@ func (ec *executionContext) marshalOPowerUnit2ᚕgithubᚗcomᚋDan6erbondᚋrev
 	return ret
 }
 
-func (ec *executionContext) unmarshalOPowerUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnit(ctx context.Context, v any) (*profile.PowerUnit, error) {
+func (ec *executionContext) unmarshalOPowerUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnit(ctx context.Context, v any) (*usersettings.PowerUnit, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(profile.PowerUnit)
+	var res = new(usersettings.PowerUnit)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOPowerUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐPowerUnit(ctx context.Context, sel ast.SelectionSet, v *profile.PowerUnit) graphql.Marshaler {
+func (ec *executionContext) marshalOPowerUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐPowerUnit(ctx context.Context, sel ast.SelectionSet, v *usersettings.PowerUnit) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -50643,17 +51548,17 @@ func (ec *executionContext) unmarshalOTaskWhereInput2ᚖgithubᚗcomᚋDan6erbon
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOTemperatureUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnitᚄ(ctx context.Context, v any) ([]profile.TemperatureUnit, error) {
+func (ec *executionContext) unmarshalOTemperatureUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnitᚄ(ctx context.Context, v any) ([]usersettings.TemperatureUnit, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]profile.TemperatureUnit, len(vSlice))
+	res := make([]usersettings.TemperatureUnit, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNTemperatureUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnit(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNTemperatureUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnit(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -50661,7 +51566,7 @@ func (ec *executionContext) unmarshalOTemperatureUnit2ᚕgithubᚗcomᚋDan6erbo
 	return res, nil
 }
 
-func (ec *executionContext) marshalOTemperatureUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnitᚄ(ctx context.Context, sel ast.SelectionSet, v []profile.TemperatureUnit) graphql.Marshaler {
+func (ec *executionContext) marshalOTemperatureUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnitᚄ(ctx context.Context, sel ast.SelectionSet, v []usersettings.TemperatureUnit) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -50688,7 +51593,7 @@ func (ec *executionContext) marshalOTemperatureUnit2ᚕgithubᚗcomᚋDan6erbond
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTemperatureUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnit(ctx, sel, v[i])
+			ret[i] = ec.marshalNTemperatureUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnit(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -50708,16 +51613,16 @@ func (ec *executionContext) marshalOTemperatureUnit2ᚕgithubᚗcomᚋDan6erbond
 	return ret
 }
 
-func (ec *executionContext) unmarshalOTemperatureUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnit(ctx context.Context, v any) (*profile.TemperatureUnit, error) {
+func (ec *executionContext) unmarshalOTemperatureUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnit(ctx context.Context, v any) (*usersettings.TemperatureUnit, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(profile.TemperatureUnit)
+	var res = new(usersettings.TemperatureUnit)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOTemperatureUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTemperatureUnit(ctx context.Context, sel ast.SelectionSet, v *profile.TemperatureUnit) graphql.Marshaler {
+func (ec *executionContext) marshalOTemperatureUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTemperatureUnit(ctx context.Context, sel ast.SelectionSet, v *usersettings.TemperatureUnit) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -50786,17 +51691,17 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 	return res
 }
 
-func (ec *executionContext) unmarshalOTorqueUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnitᚄ(ctx context.Context, v any) ([]profile.TorqueUnit, error) {
+func (ec *executionContext) unmarshalOTorqueUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnitᚄ(ctx context.Context, v any) ([]usersettings.TorqueUnit, error) {
 	if v == nil {
 		return nil, nil
 	}
 	var vSlice []any
 	vSlice = graphql.CoerceList(v)
 	var err error
-	res := make([]profile.TorqueUnit, len(vSlice))
+	res := make([]usersettings.TorqueUnit, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNTorqueUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnit(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNTorqueUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnit(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -50804,7 +51709,7 @@ func (ec *executionContext) unmarshalOTorqueUnit2ᚕgithubᚗcomᚋDan6erbondᚋ
 	return res, nil
 }
 
-func (ec *executionContext) marshalOTorqueUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnitᚄ(ctx context.Context, sel ast.SelectionSet, v []profile.TorqueUnit) graphql.Marshaler {
+func (ec *executionContext) marshalOTorqueUnit2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnitᚄ(ctx context.Context, sel ast.SelectionSet, v []usersettings.TorqueUnit) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -50831,7 +51736,7 @@ func (ec *executionContext) marshalOTorqueUnit2ᚕgithubᚗcomᚋDan6erbondᚋre
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTorqueUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnit(ctx, sel, v[i])
+			ret[i] = ec.marshalNTorqueUnit2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnit(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -50851,16 +51756,16 @@ func (ec *executionContext) marshalOTorqueUnit2ᚕgithubᚗcomᚋDan6erbondᚋre
 	return ret
 }
 
-func (ec *executionContext) unmarshalOTorqueUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnit(ctx context.Context, v any) (*profile.TorqueUnit, error) {
+func (ec *executionContext) unmarshalOTorqueUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnit(ctx context.Context, v any) (*usersettings.TorqueUnit, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(profile.TorqueUnit)
+	var res = new(usersettings.TorqueUnit)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOTorqueUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋprofileᚐTorqueUnit(ctx context.Context, sel ast.SelectionSet, v *profile.TorqueUnit) graphql.Marshaler {
+func (ec *executionContext) marshalOTorqueUnit2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋusersettingsᚐTorqueUnit(ctx context.Context, sel ast.SelectionSet, v *usersettings.TorqueUnit) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -50896,6 +51801,39 @@ func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋDan6erbondᚋrevline�
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOUserSettings2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserSettings(ctx context.Context, sel ast.SelectionSet, v *ent.UserSettings) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._UserSettings(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOUserSettingsWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserSettingsWhereInputᚄ(ctx context.Context, v any) ([]*ent.UserSettingsWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*ent.UserSettingsWhereInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNUserSettingsWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserSettingsWhereInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOUserSettingsWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserSettingsWhereInput(ctx context.Context, v any) (*ent.UserSettingsWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputUserSettingsWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOUserWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserWhereInputᚄ(ctx context.Context, v any) ([]*ent.UserWhereInput, error) {

@@ -33,6 +33,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/ent/usersettings"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -114,6 +115,7 @@ func checkColumn(table, column string) error {
 			subscription.Table:     subscription.ValidColumn,
 			task.Table:             task.ValidColumn,
 			user.Table:             user.ValidColumn,
+			usersettings.Table:     usersettings.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

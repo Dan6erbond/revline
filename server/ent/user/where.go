@@ -342,6 +342,29 @@ func HasProfileWith(preds ...predicate.Profile) predicate.User {
 	})
 }
 
+// HasSettings applies the HasEdge predicate on the "settings" edge.
+func HasSettings() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, SettingsTable, SettingsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSettingsWith applies the HasEdge predicate on the "settings" edge with a given conditions (other predicates).
+func HasSettingsWith(preds ...predicate.UserSettings) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newSettingsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasSubscriptions applies the HasEdge predicate on the "subscriptions" edge.
 func HasSubscriptions() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

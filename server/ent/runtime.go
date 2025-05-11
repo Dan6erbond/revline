@@ -27,6 +27,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/ent/usersettings"
 	"github.com/google/uuid"
 )
 
@@ -473,4 +474,23 @@ func init() {
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
 	user.DefaultID = userDescID.Default.(func() uuid.UUID)
+	usersettingsMixin := schema.UserSettings{}.Mixin()
+	usersettingsMixinFields0 := usersettingsMixin[0].Fields()
+	_ = usersettingsMixinFields0
+	usersettingsFields := schema.UserSettings{}.Fields()
+	_ = usersettingsFields
+	// usersettingsDescCreateTime is the schema descriptor for create_time field.
+	usersettingsDescCreateTime := usersettingsMixinFields0[0].Descriptor()
+	// usersettings.DefaultCreateTime holds the default value on creation for the create_time field.
+	usersettings.DefaultCreateTime = usersettingsDescCreateTime.Default.(func() time.Time)
+	// usersettingsDescUpdateTime is the schema descriptor for update_time field.
+	usersettingsDescUpdateTime := usersettingsMixinFields0[1].Descriptor()
+	// usersettings.DefaultUpdateTime holds the default value on creation for the update_time field.
+	usersettings.DefaultUpdateTime = usersettingsDescUpdateTime.Default.(func() time.Time)
+	// usersettings.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	usersettings.UpdateDefaultUpdateTime = usersettingsDescUpdateTime.UpdateDefault.(func() time.Time)
+	// usersettingsDescID is the schema descriptor for id field.
+	usersettingsDescID := usersettingsFields[0].Descriptor()
+	// usersettings.DefaultID holds the default value on creation for the id field.
+	usersettings.DefaultID = usersettingsDescID.Default.(func() uuid.UUID)
 }
