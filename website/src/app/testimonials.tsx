@@ -1,6 +1,8 @@
+import { Button, cn } from "@heroui/react";
+
+import { ArrowRight } from "lucide-react";
 import { Marquee } from "@/components/ui/marquee";
 import { ReactNode } from "react";
-import { cn } from "@heroui/react";
 
 const reviews = [
   {
@@ -107,7 +109,13 @@ const ReviewCard = ({
     >
       <div className="flex flex-row items-center gap-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="rounded-full" width="32" height="32" alt={username} src={img} />
+        <img
+          className="rounded-full"
+          width="32"
+          height="32"
+          alt={username}
+          src={img}
+        />
         <div className="flex flex-col">
           <figcaption className="text-sm font-medium dark:text-white">
             {name ?? username}
@@ -126,7 +134,15 @@ const ReviewCard = ({
 
 export function Testimonials() {
   return (
-    <div className="relative flex w-full flex-col items-center justify-center overflow-hidden">
+    <section className="relative w-full flex flex-col items-center justify-center overflow-hidden py-20">
+      <div className="mb-10 text-center">
+        <h2 className="text-3xl sm:text-4xl font-bold text-content4-foreground">
+          What Enthusiasts Are Saying
+        </h2>
+        <p className="mt-2 text-lg text-default-500">
+          Early users share their thoughts about Revline 1
+        </p>
+      </div>
       <Marquee pauseOnHover className="[--duration:20s]">
         {firstRow.map((review) => (
           <ReviewCard key={review.username} {...review} />
@@ -139,6 +155,16 @@ export function Testimonials() {
       </Marquee>
       <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-background"></div>
       <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-background"></div>
-    </div>
+      <div className="mt-10">
+        <Button
+          size="lg"
+          as="a"
+          href="https://revline.one/app"
+          className="bg-white text-black hover:bg-gray-200 transition-colors flex items-center gap-2"
+        >
+          Go to App <ArrowRight className="w-4 h-4" />
+        </Button>
+      </div>
+    </section>
   );
 }
