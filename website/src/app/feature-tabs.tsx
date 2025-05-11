@@ -108,7 +108,7 @@ export default function FeatureTabs() {
               src="/images/servicing.png"
               alt="Service Log"
               classNames={{
-                wrapper: "w-full !max-w-full flex-1",
+                wrapper: "w-full !max-w-full flex-1 min-h-[300px]",
                 img: "object-contain",
               }}
               fill
@@ -134,7 +134,7 @@ export default function FeatureTabs() {
               src="/images/gallery-preview.png"
               alt="Gallery Preview"
               classNames={{
-                wrapper: "w-full !max-w-full flex-1",
+                wrapper: "w-full !max-w-full flex-1 min-h-[300px]",
                 img: "object-contain",
               }}
               fill
