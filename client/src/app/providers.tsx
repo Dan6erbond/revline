@@ -1,7 +1,8 @@
 "use client";
 
+import { HeroUIProvider, ToastProvider } from "@heroui/react";
+
 import AuthenticatedApolloNextAppProvider from "@/apollo-client/next-app-provider";
-import { HeroUIProvider } from "@heroui/react";
 import { Session } from "next-auth";
 import { useRouter } from "next/navigation";
 
@@ -16,7 +17,10 @@ export function Providers({
 
   return (
     <AuthenticatedApolloNextAppProvider session={session}>
-      <HeroUIProvider navigate={router.push}>{children}</HeroUIProvider>
+      <HeroUIProvider navigate={router.push}>
+        <ToastProvider />
+        {children}
+      </HeroUIProvider>
     </AuthenticatedApolloNextAppProvider>
   );
 }

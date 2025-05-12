@@ -7,6 +7,7 @@ import {
   CardHeader,
   Divider,
   Input,
+  addToast,
 } from "@heroui/react";
 import { providerMap, resolvedProviders } from "@/auth/providers";
 
@@ -36,6 +37,13 @@ export default function SignInForm({
 }) {
   useEffect(() => {
     if (Object.values(providerMap).length > 0) {
+      addToast({
+        title: "Redirecting...",
+        description:
+          "You will be redirected to our auth provider to sign in or sign up",
+        color: "success",
+        timeout: 10_000,
+      });
       signIn(Object.values(providerMap)[0].id, {
         redirectTo: callbackUrl ?? "",
       });
