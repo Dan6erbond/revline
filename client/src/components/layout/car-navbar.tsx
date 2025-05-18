@@ -27,6 +27,7 @@ export default function CarNavbar({
     name: string;
     href: string;
     active: boolean;
+    showOnTopNav?: boolean;
   }[];
 }) {
   const router = useRouter();
@@ -55,18 +56,20 @@ export default function CarNavbar({
         </NavbarBrand>
       </NavbarContent>
       <NavbarContent className="hidden sm:flex">
-        {menuItems.map(({ name, href, active }) => (
-          <NavbarItem key={name}>
-            <Link
-              as={NextLink}
-              aria-current={active ? "page" : false}
-              color={active ? "primary" : "foreground"}
-              href={href}
-            >
-              {name}
-            </Link>
-          </NavbarItem>
-        ))}
+        {menuItems
+          .filter(({ showOnTopNav }) => showOnTopNav !== false)
+          .map(({ name, href, active }) => (
+            <NavbarItem key={name}>
+              <Link
+                as={NextLink}
+                aria-current={active ? "page" : false}
+                color={active ? "primary" : "foreground"}
+                href={href}
+              >
+                {name}
+              </Link>
+            </NavbarItem>
+          ))}
       </NavbarContent>
       <NavbarContent as="div" justify="end">
         <Suspense fallback={<Spinner />}>

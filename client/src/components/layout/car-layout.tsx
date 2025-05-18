@@ -6,6 +6,7 @@ import {
   Gauge,
   GaugeCircle,
   Hammer,
+  Home,
   ImageUp,
   Images,
   Upload,
@@ -82,34 +83,41 @@ export default function CarLayout(props: ComponentProps<"main">) {
       showOnBottomNav: false,
     },
     {
+      name: "Home",
+      href: `/cars/${router.query.id}`,
+      active: ["/cars/[id]", "/cars/[id]/fuelups"].includes(router.pathname),
+      icon: <Home className="size-5" />,
+      showOnTopNav: false,
+    },
+    {
       name: "Maintenance",
       href: `/cars/${router.query.id}/maintenance`,
       active: router.pathname.startsWith("/cars/[id]/maintenance"),
-      icon: <Wrench />,
+      icon: <Wrench className="size-5" />,
     },
     {
       name: "Performance",
       href: `/cars/${router.query.id}/performance`,
       active: router.pathname.startsWith("/cars/[id]/performance"),
-      icon: <GaugeCircle />,
+      icon: <GaugeCircle className="size-5" />,
     },
     {
       name: "Project",
       href: `/cars/${router.query.id}/project`,
       active: router.pathname.startsWith("/cars/[id]/project"),
-      icon: <Hammer />,
+      icon: <Hammer className="size-5" />,
     },
     {
       name: "Gallery",
       href: `/cars/${router.query.id}/gallery`,
       active: router.pathname.startsWith("/cars/[id]/gallery"),
-      icon: <Images />,
+      icon: <Images className="size-5" />,
     },
     {
       name: "Documents",
       href: `/cars/${router.query.id}/documents`,
       active: router.pathname.startsWith("/cars/[id]/documents"),
-      icon: <FileText />,
+      icon: <FileText className="size-5" />,
     },
   ];
 
@@ -253,41 +261,43 @@ export default function CarLayout(props: ComponentProps<"main">) {
       <div className="h-16 block md:hidden"></div>
       <motion.div
         layout
-        className="md:hidden flex items-center justify-center gap-6 h-16 fixed bottom-0 w-full z-30"
+        className="md:hidden fixed bottom-0 left-0 w-full z-30 h-16 overflow-x-auto px-0"
         transition={{ layout: { duration: 0.4, ease: "easeInOut" } }}
       >
-        {menuItems
-          .filter(({ showOnBottomNav }) => showOnBottomNav !== false)
-          .map(({ name, href, icon, active }) => (
-            <MotionLink
-              key={name}
-              href={href}
-              layoutId={name}
-              /* onMouseEnter={() => setSelectedTab(tab.id)}
+        <div className="flex justify-center items-center gap-6 min-w-fit h-full px-4">
+          {menuItems
+            .filter(({ showOnBottomNav }) => showOnBottomNav !== false)
+            .map(({ name, href, icon, active }) => (
+              <MotionLink
+                key={name}
+                href={href}
+                layoutId={name}
+                /* onMouseEnter={() => setSelectedTab(tab.id)}
         onMouseLeave={() => setSelectedTab(null)} */
-              animate={{
-                width: active ? "auto" : 40,
-              }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="bg-[#232829] rounded-2xl px-2 py-2 text-[#d6dbdc] flex items-center gap-2 border border-[#3b4345] overflow-hidden"
-            >
-              {icon}
-              <AnimatePresence>
-                {active && (
-                  <motion.span
-                    key="label"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="whitespace-nowrap"
-                  >
-                    {name}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </MotionLink>
-          ))}
+                animate={{
+                  width: active ? "auto" : 40,
+                }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="bg-[#232829] rounded-2xl px-2 py-2 text-[#d6dbdc] flex shrink-0 items-center gap-2 border border-[#3b4345] overflow-hidden"
+              >
+                {icon}
+                <AnimatePresence>
+                  {active && (
+                    <motion.span
+                      key="label"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="whitespace-nowrap"
+                    >
+                      {name}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </MotionLink>
+            ))}
+        </div>
       </motion.div>
     </>
   );
