@@ -8,8 +8,8 @@ import {
   Spinner,
 } from "@heroui/react";
 
+import { ArrowLeft } from "lucide-react";
 import AuthButton from "./auth-button";
-import { Home } from "lucide-react";
 import NextLink from "next/link";
 import { Suspense } from "react";
 import Wordmark from "../wordmark";
@@ -45,7 +45,7 @@ export default function CarNavbar({
           variant="light"
           className="md:hidden px-0 min-w-0 w-6"
         >
-          <Home />
+          <ArrowLeft />
         </Button>
         <NavbarBrand
           as={NextLink}
