@@ -264,7 +264,7 @@ export default function CarLayout(props: ComponentProps<"main">) {
         className="md:hidden fixed bottom-0 left-0 w-full z-30 h-16 overflow-x-auto px-0"
         transition={{ layout: { duration: 0.4, ease: "easeInOut" } }}
       >
-        <div className="flex justify-center items-center gap-6 min-w-fit h-full px-4">
+        <div className="flex justify-center items-center gap-3 min-w-fit h-full px-4">
           {menuItems
             .filter(({ showOnBottomNav }) => showOnBottomNav !== false)
             .map(({ name, href, icon, active }) => (
