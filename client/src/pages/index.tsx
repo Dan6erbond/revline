@@ -100,6 +100,7 @@ export default function Home() {
                 onOpen();
               }
             }}
+            aria-label="Add Car"
           >
             Add Car
           </Button>

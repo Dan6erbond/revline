@@ -3,20 +3,42 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
 import { HeroUIProvider, ToastProvider } from "@heroui/react";
+import { SessionProvider, useSession } from "next-auth/react";
 
 import type { AppProps } from "next/app";
 import AuthenticatedApolloProvider from "@/apollo-client/provider";
 import Head from "next/head";
 import { Inter } from "next/font/google";
 import Script from "next/script";
-import { SessionProvider } from "next-auth/react";
+import { Session } from "next-auth";
 import { pdfjs } from "react-pdf";
+import { useEffect } from "react";
 import { useHref } from "@/utils/use-href";
 import { useRouter } from "next/router";
+import usertour from "usertour.js";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const inter = Inter({ subsets: ["latin"] });
+
+function UserTour() {
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_USERTOUR_TOKEN) {
+      usertour.init(process.env.NEXT_PUBLIC_USERTOUR_TOKEN);
+      const { user } = (session as Session) ?? {};
+      if (user) {
+        usertour.identify(user.id, {
+          ...user,
+          signed_up_at: user.createTime,
+        });
+      }
+    }
+  }, [session]);
+
+  return null;
+}
 
 export default function App({
   Component,
@@ -64,6 +86,7 @@ export default function App({
         basePath={router.basePath ? router.basePath + "/api/auth" : undefined}
       >
         <AuthenticatedApolloProvider>
+          <UserTour />
           <Component {...pageProps} />
         </AuthenticatedApolloProvider>
       </SessionProvider>

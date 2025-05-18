@@ -1,68 +1,57 @@
 import {
+  Button,
   Link,
   Navbar,
   NavbarBrand,
   NavbarContent,
   NavbarItem,
-  NavbarMenu,
-  NavbarMenuItem,
-  NavbarMenuToggle,
   Spinner,
 } from "@heroui/react";
-import { Suspense, useState } from "react";
 
 import AuthButton from "./auth-button";
+import { Home } from "lucide-react";
 import NextLink from "next/link";
+import { Suspense } from "react";
 import Wordmark from "../wordmark";
+import { getQueryParam } from "@/utils/router";
 import { useRouter } from "next/router";
 
-export default function CarNavbar() {
+export default function CarNavbar({
+  car,
+  menuItems,
+}: {
+  car?: {
+    name: string;
+  };
+  menuItems: {
+    name: string;
+    href: string;
+    active: boolean;
+  }[];
+}) {
   const router = useRouter();
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const menuItems = [
-    {
-      name: "Garage",
-      href: "/",
-      active: router.pathname === "/",
-    },
-    {
-      name: "Maintenance",
-      href: `/cars/${router.query.id}/maintenance`,
-      active: router.pathname.startsWith("/cars/[id]/maintenance"),
-    },
-    {
-      name: "Performance",
-      href: `/cars/${router.query.id}/performance`,
-      active: router.pathname.startsWith("/cars/[id]/performance"),
-    },
-    {
-      name: "Project",
-      href: `/cars/${router.query.id}/project`,
-      active: router.pathname.startsWith("/cars/[id]/project"),
-    },
-    {
-      name: "Gallery",
-      href: `/cars/${router.query.id}/gallery`,
-      active: router.pathname.startsWith("/cars/[id]/gallery"),
-    },
-    {
-      name: "Documents",
-      href: `/cars/${router.query.id}/documents`,
-      active: router.pathname.startsWith("/cars/[id]/documents"),
-    },
-  ];
-
   return (
-    <Navbar onMenuOpenChange={setIsMenuOpen} isMenuOpen={isMenuOpen}>
+    <Navbar>
       <NavbarContent>
-        <NavbarMenuToggle
-          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          className="sm:hidden"
-        />
-        <NavbarBrand as={NextLink} href="/">
+        <NavbarBrand as={NextLink} href="/" className="hidden md:flex">
           <Wordmark />
+        </NavbarBrand>
+        <Button
+          as={NextLink}
+          href="/"
+          isIconOnly
+          variant="light"
+          className="md:hidden px-0 min-w-0 w-6"
+        >
+          <Home />
+        </Button>
+        <NavbarBrand
+          as={NextLink}
+          href={`/cars/${getQueryParam(router.query.id)}`}
+          className="md:hidden text-2xl"
+        >
+          {car?.name}
         </NavbarBrand>
       </NavbarContent>
       <NavbarContent className="hidden sm:flex">
@@ -84,22 +73,6 @@ export default function CarNavbar() {
           <AuthButton path={router.asPath} />
         </Suspense>
       </NavbarContent>
-
-      <NavbarMenu className="pt-4">
-        {menuItems.map(({ name, active, href }) => (
-          <NavbarMenuItem key={name}>
-            <Link
-              as={NextLink}
-              className="w-full"
-              color={active ? "primary" : "foreground"}
-              href={href}
-              size="lg"
-            >
-              {name}
-            </Link>
-          </NavbarMenuItem>
-        ))}
-      </NavbarMenu>
     </Navbar>
   );
 }

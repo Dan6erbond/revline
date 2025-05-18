@@ -47,7 +47,8 @@
     "react-hook-form": "^7.55.0",
     "react-medium-image-zoom": "^5.2.14",
     "react-pdf": "^9.2.1",
-    "recharts": "^2.15.2"
+    "recharts": "^2.15.2",
+    "usertour.js": "^0.0.10"
   },
   "devDependencies": {
     "@0no-co/graphqlsp": "^1.12.16",

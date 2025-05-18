@@ -33,6 +33,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
               me {
                 id
                 email
+                createTime
               }
             }
           `),

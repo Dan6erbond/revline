@@ -247,6 +247,7 @@ export default function Car() {
                   onPress={onOpen}
                   startContent={<Plus />}
                   className="self-end"
+                  aria-label="Add Expense"
                 >
                   Add
                 </Button>
@@ -293,7 +294,7 @@ export default function Car() {
               </ResponsiveContainer>
             </div>
 
-            <Table isHeaderSticky>
+            <Table isHeaderSticky aria-label="Expenses">
               <TableHeader columns={columns}>
                 {(column) => (
                   <TableColumn key={column.key}>{column.label}</TableColumn>
@@ -357,9 +358,9 @@ export default function Car() {
                         />
                         <Select
                           label="Type"
-                          // endContent={<Fuel />}
                           {...register("type")}
                           variant="bordered"
+                          aria-label="Type"
                         >
                           {Object.entries(ExpenseType).map(([label, type]) => (
                             <SelectItem key={type}>{label}</SelectItem>
@@ -376,6 +377,7 @@ export default function Car() {
                               {...field}
                               onValueChange={onChange}
                               variant="bordered"
+                              aria-label="Amount"
                             />
                           )}
                         />
@@ -383,6 +385,7 @@ export default function Car() {
                           label="Notes"
                           {...register("notes")}
                           variant="bordered"
+                          aria-label="Notes"
                         />
                         <Controller
                           control={control}
