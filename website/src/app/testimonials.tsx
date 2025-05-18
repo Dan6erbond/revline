@@ -1,3 +1,5 @@
+"use client";
+
 import { Button, cn } from "@heroui/react";
 
 import { ArrowRight } from "lucide-react";

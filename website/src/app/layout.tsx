@@ -1,5 +1,6 @@
 import "./globals.css";
 
+import Footer from "./footer";
 import { Inter } from "next/font/google";
 import type { Metadata } from "next";
 import Navbar from "./navbar";
@@ -40,6 +41,7 @@ export default function RootLayout({
       <body className={`antialiased ${inter.className} dark`}>
         <Navbar />
         <Providers>{children}</Providers>
+        <Footer />
       </body>
     </html>
   );
