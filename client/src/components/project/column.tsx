@@ -187,19 +187,35 @@ export default function Column({
         )}
         {data.car.tasks.edges
           ?.filter((e) => !!e)
-          .map(
-            ({ node: task }) =>
-              task && (
-                <React.Fragment key={task.id}>
-                  {activeTask &&
-                    over?.id === task.id &&
-                    over.id !== activeTask.id && (
-                      <TaskCard task={activeTask} className="opacity-30" />
-                    )}
-                  <Task task={task} layoutId={task.id} />
-                </React.Fragment>
-              )
-          )}
+          .map(({ node: task }, idx) => {
+            if (!task) return;
+
+            let showActiveTaskCard =
+              activeTask && over?.id === task.id && activeTask.id !== over.id;
+
+            const activeTaskIdx =
+              data.car.tasks.edges?.findIndex(
+                (e) => e?.node?.id === activeTask?.id
+              ) ?? -1;
+
+            if (activeTaskIdx !== -1 && activeTaskIdx + 1 === idx) {
+              showActiveTaskCard = false;
+            }
+
+            return (
+              <React.Fragment key={task.id}>
+                {showActiveTaskCard && (
+                  <TaskCard task={activeTask!} className="opacity-30" />
+                )}
+                <Task
+                  task={task}
+                  layout="position"
+                  layoutId={task.id}
+                  initial={false}
+                />
+              </React.Fragment>
+            );
+          })}
         {over?.id === status && activeTask && (
           <TaskCard task={activeTask} className="opacity-30" />
         )}

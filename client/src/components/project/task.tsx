@@ -229,12 +229,14 @@ export const TaskCard = forwardRef<
 
 TaskCard.displayName = "TaskCard";
 
+const MotionTaskCard = motion(TaskCard);
+
 export default function Task({
   task,
   ...props
 }: {
   task: FragmentType<typeof TaskFields>;
-} & HTMLMotionProps<"div"> & {
+} & HTMLMotionProps<"button"> & {
     task: FragmentType<typeof TaskFields>;
   }) {
   const t = useFragment(TaskFields, task);
@@ -251,21 +253,22 @@ export default function Task({
   });
 
   return (
-    <motion.div {...props}>
-      <TaskCard
-        task={task}
-        ref={(node) => {
+    <MotionTaskCard
+      task={task}
+      ref={
+        ((node: HTMLButtonElement) => {
           setNodeRef(node);
           setDropRef(node);
-        }}
-        style={{
-          transform: CSS.Translate.toString(transform),
-        }}
-        {...listeners}
-        {...attributes}
-        className={cn(isDragging && "opacity-0 pointer-events-none")}
-        isPressable
-      />
-    </motion.div>
+        }) as any
+      }
+      style={{
+        transform: CSS.Translate.toString(transform),
+      }}
+      {...listeners}
+      {...attributes}
+      className={cn(isDragging && "invisible pointer-events-none")}
+      isPressable
+      {...(props as any)}
+    />
   );
 }

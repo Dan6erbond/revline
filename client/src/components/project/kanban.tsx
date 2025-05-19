@@ -1,4 +1,13 @@
+import { ApolloCache, DataProxy } from "@apollo/client/cache";
 import Column, { getTasksByRank } from "./column";
+import {
+  DefaultContext,
+  MutationUpdaterFunction,
+  Unmasked,
+  useApolloClient,
+  useMutation,
+  useQuery,
+} from "@apollo/client";
 import {
   DndContext,
   DragEndEvent,
@@ -15,16 +24,10 @@ import {
   TaskFieldsFragment,
   TaskStatus,
   UpdateTaskMutation,
+  UpdateTaskMutationVariables,
 } from "@/gql/graphql";
 import { TaskCard, TaskFields } from "./task";
-import {
-  Unmasked,
-  useApolloClient,
-  useMutation,
-  useQuery,
-} from "@apollo/client";
 
-import { DataProxy } from "@apollo/client/cache";
 import { Switch } from "@heroui/react";
 import { getQueryParam } from "@/utils/router";
 import { useRouter } from "next/router";
@@ -84,21 +87,19 @@ export default function Kanban() {
     let [prevRank, nextRank] = [0, 0];
     let status: TaskStatus;
     let data: GetTasksByRankQuery | null;
-    let getEdges: (
-      res: Unmasked<UpdateTaskMutation>["updateTask"],
-      edges: Required<GetTasksByRankQuery["car"]["tasks"]["edges"]>
-    ) => GetTasksByRankQuery["car"]["tasks"]["edges"];
-
-    let queryOptions: DataProxy.Query<
-      GetTasksByRankQueryVariables,
-      GetTasksByRankQuery
+    let update: MutationUpdaterFunction<
+      UpdateTaskMutation,
+      UpdateTaskMutationVariables,
+      DefaultContext,
+      ApolloCache<object>
     >;
 
     if (over.data.current?.task) {
       nextRank = over.data.current.task.rank;
       status = over.data.current.task.status;
+      const oldStatus = active.data.current?.task.status as TaskStatus;
 
-      queryOptions = {
+      let queryOptions = {
         query: getTasksByRank,
         variables: {
           id: getQueryParam(router.query.id) as string,
@@ -110,29 +111,72 @@ export default function Kanban() {
       };
       data = client.readQuery(queryOptions);
 
-      const newEdges = data?.car.tasks.edges?.filter((e) =>
-        e?.node?.id === active.id
-          ? e?.node?.rank !== active.data.current?.task.rank
-          : true
+      const newEdges = data?.car.tasks.edges?.filter(
+        (e) => e?.node?.id !== active.id
       );
 
       const overTaskIdx =
-        data?.car.tasks.edges?.findIndex((e) => e?.node?.id === over.id) ?? -1;
+        newEdges?.findIndex((e) => e?.node?.id === over.id) ?? -1;
 
-      if (data?.car.tasks.edges && overTaskIdx !== -1 && overTaskIdx > 0) {
-        prevRank =
-          data.car.tasks.edges[overTaskIdx - 1]?.node?.rank ?? prevRank;
+      if (newEdges && overTaskIdx > 0) {
+        prevRank = newEdges[overTaskIdx - 1]?.node?.rank ?? prevRank;
       }
 
-      getEdges = (res) =>
-        newEdges?.toSpliced(overTaskIdx, 0, {
-          node: res,
-          cursor: "",
-        });
-    } else if (over.id !== active.data.current?.task.status) {
-      status = over.id as TaskStatus;
+      update = (proxy, res) => {
+        if (!data?.car.tasks || !newEdges || !res.data?.updateTask) return;
 
-      queryOptions = {
+        if (status !== active.data.current?.task.status) {
+          const oldStatusQueryOptions = {
+            ...queryOptions,
+            variables: {
+              ...queryOptions.variables,
+              where: { ...queryOptions.variables.where, status: oldStatus },
+            },
+          };
+
+          const oldStatusData = proxy.readQuery(oldStatusQueryOptions);
+
+          if (oldStatusData) {
+            proxy.writeQuery({
+              ...oldStatusQueryOptions,
+              data: {
+                ...oldStatusData,
+                car: {
+                  ...oldStatusData.car,
+                  tasks: {
+                    ...oldStatusData.car.tasks,
+                    edges: (oldStatusData.car.tasks.edges ?? []).filter(
+                      (e) => e?.node?.id !== res.data?.updateTask.id
+                    ),
+                  },
+                },
+              },
+            });
+          }
+        }
+
+        proxy.writeQuery({
+          ...queryOptions,
+          data: {
+            car: {
+              ...data.car,
+              tasks: {
+                ...data.car.tasks,
+                edges: newEdges?.toSpliced(overTaskIdx, 0, {
+                  __typename: "TaskEdge",
+                  node: res.data.updateTask,
+                  cursor: "",
+                }),
+              },
+            },
+          },
+        });
+      };
+    } else if (Object.values(TaskStatus).includes(over.id as any)) {
+      status = over.id as TaskStatus;
+      const oldStatus = active.data.current?.task.status as TaskStatus;
+
+      let queryOptions = {
         query: getTasksByRank,
         variables: {
           id: getQueryParam(router.query.id) as string,
@@ -149,13 +193,61 @@ export default function Kanban() {
 
       nextRank = prevRank + 2000;
 
-      getEdges = (res, edges) => [
-        ...(edges ?? []),
-        {
-          node: res,
-          cursor: "",
-        },
-      ];
+      update = (proxy, res) => {
+        if (!data?.car.tasks.edges || !res.data?.updateTask) return;
+
+        if (oldStatus !== status) {
+          const oldStatusQueryOptions = {
+            ...queryOptions,
+            variables: {
+              ...queryOptions.variables,
+              where: { ...queryOptions.variables.where, status: oldStatus },
+            },
+          };
+
+          const oldStatusData = proxy.readQuery(oldStatusQueryOptions);
+
+          if (oldStatusData) {
+            proxy.writeQuery({
+              ...oldStatusQueryOptions,
+              data: {
+                ...oldStatusData,
+                car: {
+                  ...oldStatusData.car,
+                  tasks: {
+                    ...oldStatusData.car.tasks,
+                    edges: (oldStatusData.car.tasks.edges ?? []).filter(
+                      (e) => e?.node?.id !== res.data?.updateTask.id
+                    ),
+                  },
+                },
+              },
+            });
+          }
+        }
+
+        proxy.writeQuery({
+          ...queryOptions,
+          data: {
+            car: {
+              ...data.car,
+              tasks: {
+                ...data.car.tasks,
+                edges: [
+                  ...(data.car.tasks.edges ?? []).filter(
+                    (e) => e?.node?.id !== res.data?.updateTask.id
+                  ),
+                  {
+                    __typename: "TaskEdge",
+                    node: res.data.updateTask,
+                    cursor: "",
+                  },
+                ],
+              },
+            },
+          },
+        });
+      };
     } else {
       console.log("Unknown drop object:", event.over);
       return;
@@ -182,22 +274,7 @@ export default function Kanban() {
           rank,
         },
       },
-      update: (proxy, res) => {
-        if (!data?.car.tasks.edges || !res.data?.updateTask) return;
-
-        proxy.writeQuery({
-          ...queryOptions,
-          data: {
-            car: {
-              ...data.car,
-              tasks: {
-                ...data.car.tasks,
-                edges: getEdges(res.data.updateTask, data.car.tasks.edges),
-              },
-            },
-          },
-        });
-      },
+      update,
     });
 
     setActiveTask(null);
