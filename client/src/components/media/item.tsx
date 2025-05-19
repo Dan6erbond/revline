@@ -23,6 +23,7 @@ import { Key, useState } from "react";
 
 import { CollectionElement } from "@react-types/shared";
 import { MediaItemFields } from "./shared";
+import NextImage from "next/image";
 import useDebounce from "@/hooks/use-debounce";
 import { useHref } from "@/utils/use-href";
 import { useMutation } from "@apollo/client";
@@ -159,10 +160,13 @@ export default function MediaItem({
           </video>
         ) : (
           <Image
+            as={NextImage}
             src={m.url}
             alt={`Shared media ${m.id}`}
             className="object-cover h-full w-full"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             removeWrapper
+            fill
           />
         )}
       </Card>
