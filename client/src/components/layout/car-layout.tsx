@@ -260,7 +260,6 @@ export default function CarLayout(props: ComponentProps<"main">) {
       <main {...props} />
       <div className="h-16 block md:hidden"></div>
       <motion.div
-        layout
         className="md:hidden fixed bottom-0 left-0 w-full z-30 h-16 overflow-x-auto px-0"
         transition={{ layout: { duration: 0.4, ease: "easeInOut" } }}
       >
@@ -280,7 +279,7 @@ export default function CarLayout(props: ComponentProps<"main">) {
                 transition={{ duration: 0.4, ease: "easeInOut" }}
                 className="bg-[#232829] rounded-2xl px-2 py-2 text-[#d6dbdc] flex shrink-0 items-center gap-2 border border-[#3b4345] overflow-hidden"
               >
-                {icon}
+                <motion.div layout="position">{icon}</motion.div>
                 <AnimatePresence>
                   {active && (
                     <motion.span
