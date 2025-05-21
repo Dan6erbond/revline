@@ -11,6 +11,7 @@ import Head from "next/head";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import { Session } from "next-auth";
+import { getQueryParam } from "../utils/router";
 import { pdfjs } from "react-pdf";
 import { useEffect } from "react";
 import { useHref } from "@/utils/use-href";
@@ -46,6 +47,12 @@ export default function App({
 }: AppProps) {
   const router = useRouter();
   const href = useHref();
+
+  useEffect(() => {
+    if (getQueryParam(router.query.affiliate)) {
+      document.cookie = `affiliate=${router.query.affiliate}`;
+    }
+  }, [router.query]);
 
   return (
     <HeroUIProvider navigate={router.push} useHref={href}>

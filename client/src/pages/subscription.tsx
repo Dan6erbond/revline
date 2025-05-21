@@ -207,14 +207,23 @@ export default function Subscription() {
             isCurrent={data?.me.subscription?.tier === SubscriptionTier.Diy}
             onSubscribe={
               data?.me.subscription?.tier == null
-                ? () =>
+                ? () => {
+                    const decodedCookie = decodeURIComponent(document.cookie);
+                    const ca = decodedCookie.split(";");
+                    const affiliate = ca
+                      .find((c) => c.trim().startsWith("affiliate="))
+                      ?.substring(11);
+
                     mutate({
-                      variables: { input: { tier: SubscriptionTier.Diy } },
+                      variables: {
+                        input: { tier: SubscriptionTier.Diy, affiliate },
+                      },
                     }).then(
                       ({ data }) =>
                         data?.createCheckoutSession &&
                         (window.location.href = data?.createCheckoutSession)
-                    )
+                    );
+                  }
                 : undefined
             }
             onManage={
@@ -246,16 +255,23 @@ export default function Subscription() {
             }
             onSubscribe={
               data?.me.subscription?.tier == null
-                ? () =>
+                ? () => {
+                    const decodedCookie = decodeURIComponent(document.cookie);
+                    const ca = decodedCookie.split(";");
+                    const affiliate = ca
+                      .find((c) => c.trim().startsWith("affiliate="))
+                      ?.substring(11);
+
                     mutate({
                       variables: {
-                        input: { tier: SubscriptionTier.Enthusiast },
+                        input: { tier: SubscriptionTier.Enthusiast, affiliate },
                       },
                     }).then(
                       ({ data }) =>
                         data?.createCheckoutSession &&
                         (window.location.href = data?.createCheckoutSession)
-                    )
+                    );
+                  }
                 : undefined
             }
             onManage={
