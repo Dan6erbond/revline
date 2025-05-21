@@ -8,7 +8,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
-import { BadgeDollarSign, DoorOpen, Settings, User } from "lucide-react";
+import { BadgeDollarSign, DoorOpen, HandCoins, Settings, User } from "lucide-react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { skipToken, useSuspenseQuery } from "@apollo/client";
 
@@ -64,6 +64,13 @@ export default function AuthButton({ path }: { path?: string | null }) {
           startContent={<BadgeDollarSign className="size-5" />}
         >
           Manage Subscription
+        </DropdownItem>
+        <DropdownItem
+          key="affiliate"
+          href={"/affiliate"}
+          startContent={<HandCoins className="size-5" />}
+        >
+          Affiliate
         </DropdownItem>
         <DropdownItem
           key="settings"
