@@ -24,9 +24,10 @@ type Config struct {
 		Region          string
 	}
 	Stripe struct {
-		SecretKey     string
-		WebhookSecret string
-		Products      struct {
+		SecretKey            string
+		WebhookSecret        string
+		ConnectWebhookSecret string
+		Products             struct {
 			DIY        Product
 			Enthusiast Product
 		}

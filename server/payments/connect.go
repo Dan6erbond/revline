@@ -28,7 +28,7 @@ func ConnectWebhook(config internal.Config, entClient *ent.Client, logger *zap.L
 			return
 		}
 
-		event, err := webhook.ConstructEvent(body, r.Header.Get("Stripe-Signature"), config.Stripe.WebhookSecret)
+		event, err := webhook.ConstructEvent(body, r.Header.Get("Stripe-Signature"), config.Stripe.ConnectWebhookSecret)
 
 		if err != nil {
 			handleError("Error verifying webhook signature", http.StatusBadRequest, err)
