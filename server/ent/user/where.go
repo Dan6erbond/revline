@@ -386,6 +386,16 @@ func StripeAccountIDContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldStripeAccountID, v))
 }
 
+// StripeAccountCapabilitiesIsNil applies the IsNil predicate on the "stripe_account_capabilities" field.
+func StripeAccountCapabilitiesIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldStripeAccountCapabilities))
+}
+
+// StripeAccountCapabilitiesNotNil applies the NotNil predicate on the "stripe_account_capabilities" field.
+func StripeAccountCapabilitiesNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldStripeAccountCapabilities))
+}
+
 // Affiliate6moCodeEQ applies the EQ predicate on the "affiliate_6mo_code" field.
 func Affiliate6moCodeEQ(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAffiliate6moCode, v))

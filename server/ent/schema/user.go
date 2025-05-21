@@ -29,6 +29,11 @@ func (User) Fields() []ent.Field {
 			Optional().
 			Nillable().
 			Unique(),
+		field.JSON("stripe_account_capabilities", map[string]string{}).
+			Optional().
+			Annotations(
+				entgql.Type("Map"),
+			),
 		field.String("affiliate_6mo_code").
 			Optional().
 			Nillable().

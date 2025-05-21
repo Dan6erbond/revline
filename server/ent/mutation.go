@@ -19771,33 +19771,34 @@ func (m *TaskMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                       Op
-	typ                      string
-	id                       *uuid.UUID
-	create_time              *time.Time
-	update_time              *time.Time
-	email                    *string
-	stripe_customer_id       *string
-	stripe_account_id        *string
-	affiliate_6mo_code       *string
-	affiliate_12mo_code      *string
-	clearedFields            map[string]struct{}
-	cars                     map[uuid.UUID]struct{}
-	removedcars              map[uuid.UUID]struct{}
-	clearedcars              bool
-	profile                  *uuid.UUID
-	clearedprofile           bool
-	settings                 *uuid.UUID
-	clearedsettings          bool
-	subscriptions            map[uuid.UUID]struct{}
-	removedsubscriptions     map[uuid.UUID]struct{}
-	clearedsubscriptions     bool
-	checkout_sessions        map[uuid.UUID]struct{}
-	removedcheckout_sessions map[uuid.UUID]struct{}
-	clearedcheckout_sessions bool
-	done                     bool
-	oldValue                 func(context.Context) (*User, error)
-	predicates               []predicate.User
+	op                          Op
+	typ                         string
+	id                          *uuid.UUID
+	create_time                 *time.Time
+	update_time                 *time.Time
+	email                       *string
+	stripe_customer_id          *string
+	stripe_account_id           *string
+	stripe_account_capabilities *map[string]string
+	affiliate_6mo_code          *string
+	affiliate_12mo_code         *string
+	clearedFields               map[string]struct{}
+	cars                        map[uuid.UUID]struct{}
+	removedcars                 map[uuid.UUID]struct{}
+	clearedcars                 bool
+	profile                     *uuid.UUID
+	clearedprofile              bool
+	settings                    *uuid.UUID
+	clearedsettings             bool
+	subscriptions               map[uuid.UUID]struct{}
+	removedsubscriptions        map[uuid.UUID]struct{}
+	clearedsubscriptions        bool
+	checkout_sessions           map[uuid.UUID]struct{}
+	removedcheckout_sessions    map[uuid.UUID]struct{}
+	clearedcheckout_sessions    bool
+	done                        bool
+	oldValue                    func(context.Context) (*User, error)
+	predicates                  []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -20108,6 +20109,55 @@ func (m *UserMutation) StripeAccountIDCleared() bool {
 func (m *UserMutation) ResetStripeAccountID() {
 	m.stripe_account_id = nil
 	delete(m.clearedFields, user.FieldStripeAccountID)
+}
+
+// SetStripeAccountCapabilities sets the "stripe_account_capabilities" field.
+func (m *UserMutation) SetStripeAccountCapabilities(value map[string]string) {
+	m.stripe_account_capabilities = &value
+}
+
+// StripeAccountCapabilities returns the value of the "stripe_account_capabilities" field in the mutation.
+func (m *UserMutation) StripeAccountCapabilities() (r map[string]string, exists bool) {
+	v := m.stripe_account_capabilities
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStripeAccountCapabilities returns the old "stripe_account_capabilities" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldStripeAccountCapabilities(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStripeAccountCapabilities is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStripeAccountCapabilities requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStripeAccountCapabilities: %w", err)
+	}
+	return oldValue.StripeAccountCapabilities, nil
+}
+
+// ClearStripeAccountCapabilities clears the value of the "stripe_account_capabilities" field.
+func (m *UserMutation) ClearStripeAccountCapabilities() {
+	m.stripe_account_capabilities = nil
+	m.clearedFields[user.FieldStripeAccountCapabilities] = struct{}{}
+}
+
+// StripeAccountCapabilitiesCleared returns if the "stripe_account_capabilities" field was cleared in this mutation.
+func (m *UserMutation) StripeAccountCapabilitiesCleared() bool {
+	_, ok := m.clearedFields[user.FieldStripeAccountCapabilities]
+	return ok
+}
+
+// ResetStripeAccountCapabilities resets all changes to the "stripe_account_capabilities" field.
+func (m *UserMutation) ResetStripeAccountCapabilities() {
+	m.stripe_account_capabilities = nil
+	delete(m.clearedFields, user.FieldStripeAccountCapabilities)
 }
 
 // SetAffiliate6moCode sets the "affiliate_6mo_code" field.
@@ -20482,7 +20532,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.create_time != nil {
 		fields = append(fields, user.FieldCreateTime)
 	}
@@ -20497,6 +20547,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.stripe_account_id != nil {
 		fields = append(fields, user.FieldStripeAccountID)
+	}
+	if m.stripe_account_capabilities != nil {
+		fields = append(fields, user.FieldStripeAccountCapabilities)
 	}
 	if m.affiliate_6mo_code != nil {
 		fields = append(fields, user.FieldAffiliate6moCode)
@@ -20522,6 +20575,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.StripeCustomerID()
 	case user.FieldStripeAccountID:
 		return m.StripeAccountID()
+	case user.FieldStripeAccountCapabilities:
+		return m.StripeAccountCapabilities()
 	case user.FieldAffiliate6moCode:
 		return m.Affiliate6moCode()
 	case user.FieldAffiliate12moCode:
@@ -20545,6 +20600,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldStripeCustomerID(ctx)
 	case user.FieldStripeAccountID:
 		return m.OldStripeAccountID(ctx)
+	case user.FieldStripeAccountCapabilities:
+		return m.OldStripeAccountCapabilities(ctx)
 	case user.FieldAffiliate6moCode:
 		return m.OldAffiliate6moCode(ctx)
 	case user.FieldAffiliate12moCode:
@@ -20592,6 +20649,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStripeAccountID(v)
+		return nil
+	case user.FieldStripeAccountCapabilities:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStripeAccountCapabilities(v)
 		return nil
 	case user.FieldAffiliate6moCode:
 		v, ok := value.(string)
@@ -20643,6 +20707,9 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldStripeAccountID) {
 		fields = append(fields, user.FieldStripeAccountID)
 	}
+	if m.FieldCleared(user.FieldStripeAccountCapabilities) {
+		fields = append(fields, user.FieldStripeAccountCapabilities)
+	}
 	if m.FieldCleared(user.FieldAffiliate6moCode) {
 		fields = append(fields, user.FieldAffiliate6moCode)
 	}
@@ -20668,6 +20735,9 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldStripeAccountID:
 		m.ClearStripeAccountID()
+		return nil
+	case user.FieldStripeAccountCapabilities:
+		m.ClearStripeAccountCapabilities()
 		return nil
 	case user.FieldAffiliate6moCode:
 		m.ClearAffiliate6moCode()
@@ -20697,6 +20767,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldStripeAccountID:
 		m.ResetStripeAccountID()
+		return nil
+	case user.FieldStripeAccountCapabilities:
+		m.ResetStripeAccountCapabilities()
 		return nil
 	case user.FieldAffiliate6moCode:
 		m.ResetAffiliate6moCode()

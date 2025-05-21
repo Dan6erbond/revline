@@ -2437,18 +2437,19 @@ func (c *TaskUpdateOne) SetInput(i UpdateTaskInput) *TaskUpdateOne {
 
 // CreateUserInput represents a mutation input for creating users.
 type CreateUserInput struct {
-	CreateTime         *time.Time
-	UpdateTime         *time.Time
-	Email              string
-	StripeCustomerID   *string
-	StripeAccountID    *string
-	Affiliate6moCode   *string
-	Affiliate12moCode  *string
-	CarIDs             []uuid.UUID
-	ProfileID          *uuid.UUID
-	SettingsID         *uuid.UUID
-	SubscriptionIDs    []uuid.UUID
-	CheckoutSessionIDs []uuid.UUID
+	CreateTime                *time.Time
+	UpdateTime                *time.Time
+	Email                     string
+	StripeCustomerID          *string
+	StripeAccountID           *string
+	StripeAccountCapabilities map[string]string
+	Affiliate6moCode          *string
+	Affiliate12moCode         *string
+	CarIDs                    []uuid.UUID
+	ProfileID                 *uuid.UUID
+	SettingsID                *uuid.UUID
+	SubscriptionIDs           []uuid.UUID
+	CheckoutSessionIDs        []uuid.UUID
 }
 
 // Mutate applies the CreateUserInput on the UserMutation builder.
@@ -2465,6 +2466,9 @@ func (i *CreateUserInput) Mutate(m *UserMutation) {
 	}
 	if v := i.StripeAccountID; v != nil {
 		m.SetStripeAccountID(*v)
+	}
+	if v := i.StripeAccountCapabilities; v != nil {
+		m.SetStripeAccountCapabilities(v)
 	}
 	if v := i.Affiliate6moCode; v != nil {
 		m.SetAffiliate6moCode(*v)
@@ -2497,29 +2501,31 @@ func (c *UserCreate) SetInput(i CreateUserInput) *UserCreate {
 
 // UpdateUserInput represents a mutation input for updating users.
 type UpdateUserInput struct {
-	UpdateTime               *time.Time
-	Email                    *string
-	ClearStripeCustomerID    bool
-	StripeCustomerID         *string
-	ClearStripeAccountID     bool
-	StripeAccountID          *string
-	ClearAffiliate6moCode    bool
-	Affiliate6moCode         *string
-	ClearAffiliate12moCode   bool
-	Affiliate12moCode        *string
-	ClearCars                bool
-	AddCarIDs                []uuid.UUID
-	RemoveCarIDs             []uuid.UUID
-	ClearProfile             bool
-	ProfileID                *uuid.UUID
-	ClearSettings            bool
-	SettingsID               *uuid.UUID
-	ClearSubscriptions       bool
-	AddSubscriptionIDs       []uuid.UUID
-	RemoveSubscriptionIDs    []uuid.UUID
-	ClearCheckoutSessions    bool
-	AddCheckoutSessionIDs    []uuid.UUID
-	RemoveCheckoutSessionIDs []uuid.UUID
+	UpdateTime                     *time.Time
+	Email                          *string
+	ClearStripeCustomerID          bool
+	StripeCustomerID               *string
+	ClearStripeAccountID           bool
+	StripeAccountID                *string
+	ClearStripeAccountCapabilities bool
+	StripeAccountCapabilities      map[string]string
+	ClearAffiliate6moCode          bool
+	Affiliate6moCode               *string
+	ClearAffiliate12moCode         bool
+	Affiliate12moCode              *string
+	ClearCars                      bool
+	AddCarIDs                      []uuid.UUID
+	RemoveCarIDs                   []uuid.UUID
+	ClearProfile                   bool
+	ProfileID                      *uuid.UUID
+	ClearSettings                  bool
+	SettingsID                     *uuid.UUID
+	ClearSubscriptions             bool
+	AddSubscriptionIDs             []uuid.UUID
+	RemoveSubscriptionIDs          []uuid.UUID
+	ClearCheckoutSessions          bool
+	AddCheckoutSessionIDs          []uuid.UUID
+	RemoveCheckoutSessionIDs       []uuid.UUID
 }
 
 // Mutate applies the UpdateUserInput on the UserMutation builder.
@@ -2541,6 +2547,12 @@ func (i *UpdateUserInput) Mutate(m *UserMutation) {
 	}
 	if v := i.StripeAccountID; v != nil {
 		m.SetStripeAccountID(*v)
+	}
+	if i.ClearStripeAccountCapabilities {
+		m.ClearStripeAccountCapabilities()
+	}
+	if v := i.StripeAccountCapabilities; v != nil {
+		m.SetStripeAccountCapabilities(v)
 	}
 	if i.ClearAffiliate6moCode {
 		m.ClearAffiliate6moCode()

@@ -25,6 +25,8 @@ const (
 	FieldStripeCustomerID = "stripe_customer_id"
 	// FieldStripeAccountID holds the string denoting the stripe_account_id field in the database.
 	FieldStripeAccountID = "stripe_account_id"
+	// FieldStripeAccountCapabilities holds the string denoting the stripe_account_capabilities field in the database.
+	FieldStripeAccountCapabilities = "stripe_account_capabilities"
 	// FieldAffiliate6moCode holds the string denoting the affiliate_6mo_code field in the database.
 	FieldAffiliate6moCode = "affiliate_6mo_code"
 	// FieldAffiliate12moCode holds the string denoting the affiliate_12mo_code field in the database.
@@ -86,6 +88,7 @@ var Columns = []string{
 	FieldEmail,
 	FieldStripeCustomerID,
 	FieldStripeAccountID,
+	FieldStripeAccountCapabilities,
 	FieldAffiliate6moCode,
 	FieldAffiliate12moCode,
 }

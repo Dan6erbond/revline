@@ -441,13 +441,14 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "User",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			user.FieldCreateTime:        {Type: field.TypeTime, Column: user.FieldCreateTime},
-			user.FieldUpdateTime:        {Type: field.TypeTime, Column: user.FieldUpdateTime},
-			user.FieldEmail:             {Type: field.TypeString, Column: user.FieldEmail},
-			user.FieldStripeCustomerID:  {Type: field.TypeString, Column: user.FieldStripeCustomerID},
-			user.FieldStripeAccountID:   {Type: field.TypeString, Column: user.FieldStripeAccountID},
-			user.FieldAffiliate6moCode:  {Type: field.TypeString, Column: user.FieldAffiliate6moCode},
-			user.FieldAffiliate12moCode: {Type: field.TypeString, Column: user.FieldAffiliate12moCode},
+			user.FieldCreateTime:                {Type: field.TypeTime, Column: user.FieldCreateTime},
+			user.FieldUpdateTime:                {Type: field.TypeTime, Column: user.FieldUpdateTime},
+			user.FieldEmail:                     {Type: field.TypeString, Column: user.FieldEmail},
+			user.FieldStripeCustomerID:          {Type: field.TypeString, Column: user.FieldStripeCustomerID},
+			user.FieldStripeAccountID:           {Type: field.TypeString, Column: user.FieldStripeAccountID},
+			user.FieldStripeAccountCapabilities: {Type: field.TypeJSON, Column: user.FieldStripeAccountCapabilities},
+			user.FieldAffiliate6moCode:          {Type: field.TypeString, Column: user.FieldAffiliate6moCode},
+			user.FieldAffiliate12moCode:         {Type: field.TypeString, Column: user.FieldAffiliate12moCode},
 		},
 	}
 	graph.Nodes[21] = &sqlgraph.Node{
@@ -3880,6 +3881,11 @@ func (f *UserFilter) WhereStripeCustomerID(p entql.StringP) {
 // WhereStripeAccountID applies the entql string predicate on the stripe_account_id field.
 func (f *UserFilter) WhereStripeAccountID(p entql.StringP) {
 	f.Where(p.Field(user.FieldStripeAccountID))
+}
+
+// WhereStripeAccountCapabilities applies the entql json.RawMessage predicate on the stripe_account_capabilities field.
+func (f *UserFilter) WhereStripeAccountCapabilities(p entql.BytesP) {
+	f.Where(p.Field(user.FieldStripeAccountCapabilities))
 }
 
 // WhereAffiliate6moCode applies the entql string predicate on the affiliate_6mo_code field.

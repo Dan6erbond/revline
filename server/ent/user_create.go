@@ -88,6 +88,12 @@ func (uc *UserCreate) SetNillableStripeAccountID(s *string) *UserCreate {
 	return uc
 }
 
+// SetStripeAccountCapabilities sets the "stripe_account_capabilities" field.
+func (uc *UserCreate) SetStripeAccountCapabilities(m map[string]string) *UserCreate {
+	uc.mutation.SetStripeAccountCapabilities(m)
+	return uc
+}
+
 // SetAffiliate6moCode sets the "affiliate_6mo_code" field.
 func (uc *UserCreate) SetAffiliate6moCode(s string) *UserCreate {
 	uc.mutation.SetAffiliate6moCode(s)
@@ -327,6 +333,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.StripeAccountID(); ok {
 		_spec.SetField(user.FieldStripeAccountID, field.TypeString, value)
 		_node.StripeAccountID = &value
+	}
+	if value, ok := uc.mutation.StripeAccountCapabilities(); ok {
+		_spec.SetField(user.FieldStripeAccountCapabilities, field.TypeJSON, value)
+		_node.StripeAccountCapabilities = value
 	}
 	if value, ok := uc.mutation.Affiliate6moCode(); ok {
 		_spec.SetField(user.FieldAffiliate6moCode, field.TypeString, value)

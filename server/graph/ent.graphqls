@@ -816,6 +816,7 @@ input CreateUserInput {
   email: String!
   stripeCustomerID: String
   stripeAccountID: String
+  stripeAccountCapabilities: Map
   affiliate6moCode: String
   affiliate12moCode: String
   carIDs: [ID!]
@@ -3716,6 +3717,8 @@ input UpdateUserInput {
   clearStripeCustomerID: Boolean
   stripeAccountID: String
   clearStripeAccountID: Boolean
+  stripeAccountCapabilities: Map
+  clearStripeAccountCapabilities: Boolean
   affiliate6moCode: String
   clearAffiliate6moCode: Boolean
   affiliate12moCode: String
@@ -3763,6 +3766,7 @@ type User implements Node {
   email: String!
   stripeCustomerID: String
   stripeAccountID: String
+  stripeAccountCapabilities: Map
   affiliate6moCode: String
   affiliate12moCode: String
   cars: [Car!]

@@ -64,7 +64,9 @@ type ResolverRoot interface {
 	CreateFuelUpInput() CreateFuelUpInputResolver
 	CreateModProductOptionInput() CreateModProductOptionInputResolver
 	CreateServiceLogInput() CreateServiceLogInputResolver
+	CreateUserInput() CreateUserInputResolver
 	UpdateModProductOptionInput() UpdateModProductOptionInputResolver
+	UpdateUserInput() UpdateUserInputResolver
 }
 
 type DirectiveRoot struct {
@@ -459,20 +461,21 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		Affiliate12moCode func(childComplexity int) int
-		Affiliate6moCode  func(childComplexity int) int
-		Cars              func(childComplexity int) int
-		CheckoutSessions  func(childComplexity int) int
-		CreateTime        func(childComplexity int) int
-		Email             func(childComplexity int) int
-		ID                func(childComplexity int) int
-		Profile           func(childComplexity int) int
-		Settings          func(childComplexity int) int
-		StripeAccountID   func(childComplexity int) int
-		StripeCustomerID  func(childComplexity int) int
-		Subscription      func(childComplexity int) int
-		Subscriptions     func(childComplexity int) int
-		UpdateTime        func(childComplexity int) int
+		Affiliate12moCode         func(childComplexity int) int
+		Affiliate6moCode          func(childComplexity int) int
+		Cars                      func(childComplexity int) int
+		CheckoutSessions          func(childComplexity int) int
+		CreateTime                func(childComplexity int) int
+		Email                     func(childComplexity int) int
+		ID                        func(childComplexity int) int
+		Profile                   func(childComplexity int) int
+		Settings                  func(childComplexity int) int
+		StripeAccountCapabilities func(childComplexity int) int
+		StripeAccountID           func(childComplexity int) int
+		StripeCustomerID          func(childComplexity int) int
+		Subscription              func(childComplexity int) int
+		Subscriptions             func(childComplexity int) int
+		UpdateTime                func(childComplexity int) int
 	}
 
 	UserSettings struct {
@@ -561,6 +564,7 @@ type QueryResolver interface {
 	Me(ctx context.Context) (*ent.User, error)
 }
 type UserResolver interface {
+	StripeAccountCapabilities(ctx context.Context, obj *ent.User) (map[string]any, error)
 	Affiliate6moCode(ctx context.Context, obj *ent.User) (*string, error)
 	Affiliate12moCode(ctx context.Context, obj *ent.User) (*string, error)
 
@@ -578,8 +582,14 @@ type CreateServiceLogInputResolver interface {
 	Cost(ctx context.Context, obj *ent.CreateServiceLogInput, data *float64) error
 	OdometerKm(ctx context.Context, obj *ent.CreateServiceLogInput, data *float64) error
 }
+type CreateUserInputResolver interface {
+	StripeAccountCapabilities(ctx context.Context, obj *ent.CreateUserInput, data map[string]any) error
+}
 type UpdateModProductOptionInputResolver interface {
 	Specs(ctx context.Context, obj *ent.UpdateModProductOptionInput, data map[string]any) error
+}
+type UpdateUserInputResolver interface {
+	StripeAccountCapabilities(ctx context.Context, obj *ent.UpdateUserInput, data map[string]any) error
 }
 
 type executableSchema struct {
@@ -2967,6 +2977,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.User.Settings(childComplexity), true
 
+	case "User.stripeAccountCapabilities":
+		if e.complexity.User.StripeAccountCapabilities == nil {
+			break
+		}
+
+		return e.complexity.User.StripeAccountCapabilities(childComplexity), true
+
 	case "User.stripeAccountID":
 		if e.complexity.User.StripeAccountID == nil {
 			break
@@ -5345,6 +5362,8 @@ func (ec *executionContext) fieldContext_Car_owner(_ context.Context, field grap
 				return ec.fieldContext_User_stripeCustomerID(ctx, field)
 			case "stripeAccountID":
 				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "stripeAccountCapabilities":
+				return ec.fieldContext_User_stripeAccountCapabilities(ctx, field)
 			case "affiliate6moCode":
 				return ec.fieldContext_User_affiliate6moCode(ctx, field)
 			case "affiliate12moCode":
@@ -6920,6 +6939,8 @@ func (ec *executionContext) fieldContext_CheckoutSession_user(_ context.Context,
 				return ec.fieldContext_User_stripeCustomerID(ctx, field)
 			case "stripeAccountID":
 				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "stripeAccountCapabilities":
+				return ec.fieldContext_User_stripeAccountCapabilities(ctx, field)
 			case "affiliate6moCode":
 				return ec.fieldContext_User_affiliate6moCode(ctx, field)
 			case "affiliate12moCode":
@@ -12756,6 +12777,8 @@ func (ec *executionContext) fieldContext_Mutation_createConnectAccount(_ context
 				return ec.fieldContext_User_stripeCustomerID(ctx, field)
 			case "stripeAccountID":
 				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "stripeAccountCapabilities":
+				return ec.fieldContext_User_stripeAccountCapabilities(ctx, field)
 			case "affiliate6moCode":
 				return ec.fieldContext_User_affiliate6moCode(ctx, field)
 			case "affiliate12moCode":
@@ -16664,6 +16687,8 @@ func (ec *executionContext) fieldContext_Profile_user(_ context.Context, field g
 				return ec.fieldContext_User_stripeCustomerID(ctx, field)
 			case "stripeAccountID":
 				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "stripeAccountCapabilities":
+				return ec.fieldContext_User_stripeAccountCapabilities(ctx, field)
 			case "affiliate6moCode":
 				return ec.fieldContext_User_affiliate6moCode(ctx, field)
 			case "affiliate12moCode":
@@ -17564,6 +17589,8 @@ func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graph
 				return ec.fieldContext_User_stripeCustomerID(ctx, field)
 			case "stripeAccountID":
 				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "stripeAccountCapabilities":
+				return ec.fieldContext_User_stripeAccountCapabilities(ctx, field)
 			case "affiliate6moCode":
 				return ec.fieldContext_User_affiliate6moCode(ctx, field)
 			case "affiliate12moCode":
@@ -20212,6 +20239,8 @@ func (ec *executionContext) fieldContext_SubscriptionPlan_user(_ context.Context
 				return ec.fieldContext_User_stripeCustomerID(ctx, field)
 			case "stripeAccountID":
 				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "stripeAccountCapabilities":
+				return ec.fieldContext_User_stripeAccountCapabilities(ctx, field)
 			case "affiliate6moCode":
 				return ec.fieldContext_User_affiliate6moCode(ctx, field)
 			case "affiliate12moCode":
@@ -22165,6 +22194,47 @@ func (ec *executionContext) fieldContext_User_stripeAccountID(_ context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _User_stripeAccountCapabilities(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_stripeAccountCapabilities(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().StripeAccountCapabilities(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(map[string]any)
+	fc.Result = res
+	return ec.marshalOMap2map(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_stripeAccountCapabilities(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Map does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_affiliate6moCode(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_affiliate6moCode(ctx, field)
 	if err != nil {
@@ -23147,6 +23217,8 @@ func (ec *executionContext) fieldContext_UserSettings_user(_ context.Context, fi
 				return ec.fieldContext_User_stripeCustomerID(ctx, field)
 			case "stripeAccountID":
 				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "stripeAccountCapabilities":
+				return ec.fieldContext_User_stripeAccountCapabilities(ctx, field)
 			case "affiliate6moCode":
 				return ec.fieldContext_User_affiliate6moCode(ctx, field)
 			case "affiliate12moCode":
@@ -28896,7 +28968,7 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "email", "stripeCustomerID", "stripeAccountID", "affiliate6moCode", "affiliate12moCode", "carIDs", "profileID", "settingsID", "subscriptionIDs", "checkoutSessionIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "email", "stripeCustomerID", "stripeAccountID", "stripeAccountCapabilities", "affiliate6moCode", "affiliate12moCode", "carIDs", "profileID", "settingsID", "subscriptionIDs", "checkoutSessionIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -28938,6 +29010,15 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.StripeAccountID = data
+		case "stripeAccountCapabilities":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountCapabilities"))
+			data, err := ec.unmarshalOMap2map(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CreateUserInput().StripeAccountCapabilities(ctx, &it, data); err != nil {
+				return it, err
+			}
 		case "affiliate6moCode":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCode"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -41009,7 +41090,7 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "email", "stripeCustomerID", "clearStripeCustomerID", "stripeAccountID", "clearStripeAccountID", "affiliate6moCode", "clearAffiliate6moCode", "affiliate12moCode", "clearAffiliate12moCode", "addCarIDs", "removeCarIDs", "clearCars", "profileID", "clearProfile", "settingsID", "clearSettings", "addSubscriptionIDs", "removeSubscriptionIDs", "clearSubscriptions", "addCheckoutSessionIDs", "removeCheckoutSessionIDs", "clearCheckoutSessions"}
+	fieldsInOrder := [...]string{"updateTime", "email", "stripeCustomerID", "clearStripeCustomerID", "stripeAccountID", "clearStripeAccountID", "stripeAccountCapabilities", "clearStripeAccountCapabilities", "affiliate6moCode", "clearAffiliate6moCode", "affiliate12moCode", "clearAffiliate12moCode", "addCarIDs", "removeCarIDs", "clearCars", "profileID", "clearProfile", "settingsID", "clearSettings", "addSubscriptionIDs", "removeSubscriptionIDs", "clearSubscriptions", "addCheckoutSessionIDs", "removeCheckoutSessionIDs", "clearCheckoutSessions"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -41058,6 +41139,22 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.ClearStripeAccountID = data
+		case "stripeAccountCapabilities":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountCapabilities"))
+			data, err := ec.unmarshalOMap2map(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.UpdateUserInput().StripeAccountCapabilities(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "clearStripeAccountCapabilities":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearStripeAccountCapabilities"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearStripeAccountCapabilities = data
 		case "affiliate6moCode":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCode"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -47728,6 +47825,39 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_stripeCustomerID(ctx, field, obj)
 		case "stripeAccountID":
 			out.Values[i] = ec._User_stripeAccountID(ctx, field, obj)
+		case "stripeAccountCapabilities":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_stripeAccountCapabilities(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "affiliate6moCode":
 			field := field
 
@@ -51344,7 +51474,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]interface{}, error) {
+func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]any, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -51352,7 +51482,7 @@ func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[s
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
+func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

@@ -94,6 +94,18 @@ func (uu *UserUpdate) ClearStripeAccountID() *UserUpdate {
 	return uu
 }
 
+// SetStripeAccountCapabilities sets the "stripe_account_capabilities" field.
+func (uu *UserUpdate) SetStripeAccountCapabilities(m map[string]string) *UserUpdate {
+	uu.mutation.SetStripeAccountCapabilities(m)
+	return uu
+}
+
+// ClearStripeAccountCapabilities clears the value of the "stripe_account_capabilities" field.
+func (uu *UserUpdate) ClearStripeAccountCapabilities() *UserUpdate {
+	uu.mutation.ClearStripeAccountCapabilities()
+	return uu
+}
+
 // SetAffiliate6moCode sets the "affiliate_6mo_code" field.
 func (uu *UserUpdate) SetAffiliate6moCode(s string) *UserUpdate {
 	uu.mutation.SetAffiliate6moCode(s)
@@ -359,6 +371,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if uu.mutation.StripeAccountIDCleared() {
 		_spec.ClearField(user.FieldStripeAccountID, field.TypeString)
+	}
+	if value, ok := uu.mutation.StripeAccountCapabilities(); ok {
+		_spec.SetField(user.FieldStripeAccountCapabilities, field.TypeJSON, value)
+	}
+	if uu.mutation.StripeAccountCapabilitiesCleared() {
+		_spec.ClearField(user.FieldStripeAccountCapabilities, field.TypeJSON)
 	}
 	if value, ok := uu.mutation.Affiliate6moCode(); ok {
 		_spec.SetField(user.FieldAffiliate6moCode, field.TypeString, value)
@@ -642,6 +660,18 @@ func (uuo *UserUpdateOne) SetNillableStripeAccountID(s *string) *UserUpdateOne {
 // ClearStripeAccountID clears the value of the "stripe_account_id" field.
 func (uuo *UserUpdateOne) ClearStripeAccountID() *UserUpdateOne {
 	uuo.mutation.ClearStripeAccountID()
+	return uuo
+}
+
+// SetStripeAccountCapabilities sets the "stripe_account_capabilities" field.
+func (uuo *UserUpdateOne) SetStripeAccountCapabilities(m map[string]string) *UserUpdateOne {
+	uuo.mutation.SetStripeAccountCapabilities(m)
+	return uuo
+}
+
+// ClearStripeAccountCapabilities clears the value of the "stripe_account_capabilities" field.
+func (uuo *UserUpdateOne) ClearStripeAccountCapabilities() *UserUpdateOne {
+	uuo.mutation.ClearStripeAccountCapabilities()
 	return uuo
 }
 
@@ -940,6 +970,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if uuo.mutation.StripeAccountIDCleared() {
 		_spec.ClearField(user.FieldStripeAccountID, field.TypeString)
+	}
+	if value, ok := uuo.mutation.StripeAccountCapabilities(); ok {
+		_spec.SetField(user.FieldStripeAccountCapabilities, field.TypeJSON, value)
+	}
+	if uuo.mutation.StripeAccountCapabilitiesCleared() {
+		_spec.ClearField(user.FieldStripeAccountCapabilities, field.TypeJSON)
 	}
 	if value, ok := uuo.mutation.Affiliate6moCode(); ok {
 		_spec.SetField(user.FieldAffiliate6moCode, field.TypeString, value)

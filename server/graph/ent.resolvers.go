@@ -33,6 +33,16 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []string) ([]ent.Noder, e
 	panic(fmt.Errorf("not implemented: Nodes - nodes"))
 }
 
+// StripeAccountCapabilities is the resolver for the stripeAccountCapabilities field.
+func (r *userResolver) StripeAccountCapabilities(ctx context.Context, obj *ent.User) (map[string]any, error) {
+	converted := make(map[string]any, len(obj.StripeAccountCapabilities))
+	for k, v := range obj.StripeAccountCapabilities {
+		converted[k] = v
+	}
+
+	return converted, nil
+}
+
 // Affiliate6moCode is the resolver for the affiliate6moCode field.
 func (r *userResolver) Affiliate6moCode(ctx context.Context, obj *ent.User) (*string, error) {
 	if obj.StripeAccountID != nil && obj.Affiliate6moCode == nil {
@@ -65,6 +75,11 @@ func (r *createModProductOptionInputResolver) Specs(ctx context.Context, obj *en
 	return nil
 }
 
+// StripeAccountCapabilities is the resolver for the stripeAccountCapabilities field.
+func (r *createUserInputResolver) StripeAccountCapabilities(ctx context.Context, obj *ent.CreateUserInput, data map[string]any) error {
+	panic(fmt.Errorf("not implemented: StripeAccountCapabilities - stripeAccountCapabilities"))
+}
+
 // Specs is the resolver for the specs field.
 func (r *updateModProductOptionInputResolver) Specs(ctx context.Context, obj *ent.UpdateModProductOptionInput, data map[string]any) error {
 	converted := make(map[string]string, len(data))
@@ -72,6 +87,16 @@ func (r *updateModProductOptionInputResolver) Specs(ctx context.Context, obj *en
 		converted[k] = cast.ToString(v)
 	}
 	obj.Specs = converted
+	return nil
+}
+
+// StripeAccountCapabilities is the resolver for the stripeAccountCapabilities field.
+func (r *updateUserInputResolver) StripeAccountCapabilities(ctx context.Context, obj *ent.UpdateUserInput, data map[string]any) error {
+	converted := make(map[string]string, len(data))
+	for k, v := range data {
+		converted[k] = cast.ToString(v)
+	}
+	obj.StripeAccountCapabilities = converted
 	return nil
 }
 
@@ -111,10 +136,16 @@ func (r *Resolver) CreateServiceLogInput() CreateServiceLogInputResolver {
 	return &createServiceLogInputResolver{r}
 }
 
+// CreateUserInput returns CreateUserInputResolver implementation.
+func (r *Resolver) CreateUserInput() CreateUserInputResolver { return &createUserInputResolver{r} }
+
 // UpdateModProductOptionInput returns UpdateModProductOptionInputResolver implementation.
 func (r *Resolver) UpdateModProductOptionInput() UpdateModProductOptionInputResolver {
 	return &updateModProductOptionInputResolver{r}
 }
+
+// UpdateUserInput returns UpdateUserInputResolver implementation.
+func (r *Resolver) UpdateUserInput() UpdateUserInputResolver { return &updateUserInputResolver{r} }
 
 type carResolver struct{ *Resolver }
 type documentResolver struct{ *Resolver }
@@ -126,4 +157,6 @@ type userResolver struct{ *Resolver }
 type createFuelUpInputResolver struct{ *Resolver }
 type createModProductOptionInputResolver struct{ *Resolver }
 type createServiceLogInputResolver struct{ *Resolver }
+type createUserInputResolver struct{ *Resolver }
 type updateModProductOptionInputResolver struct{ *Resolver }
+type updateUserInputResolver struct{ *Resolver }

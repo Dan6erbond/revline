@@ -2972,6 +2972,11 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 				selectedFields = append(selectedFields, user.FieldStripeAccountID)
 				fieldSeen[user.FieldStripeAccountID] = struct{}{}
 			}
+		case "stripeAccountCapabilities":
+			if _, ok := fieldSeen[user.FieldStripeAccountCapabilities]; !ok {
+				selectedFields = append(selectedFields, user.FieldStripeAccountCapabilities)
+				fieldSeen[user.FieldStripeAccountCapabilities] = struct{}{}
+			}
 		case "affiliate6moCode":
 			if _, ok := fieldSeen[user.FieldAffiliate6moCode]; !ok {
 				selectedFields = append(selectedFields, user.FieldAffiliate6moCode)

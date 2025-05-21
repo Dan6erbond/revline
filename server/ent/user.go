@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -30,6 +31,8 @@ type User struct {
 	StripeCustomerID *string `json:"stripe_customer_id,omitempty"`
 	// StripeAccountID holds the value of the "stripe_account_id" field.
 	StripeAccountID *string `json:"stripe_account_id,omitempty"`
+	// StripeAccountCapabilities holds the value of the "stripe_account_capabilities" field.
+	StripeAccountCapabilities map[string]string `json:"stripe_account_capabilities,omitempty"`
 	// Affiliate6moCode holds the value of the "affiliate_6mo_code" field.
 	Affiliate6moCode *string `json:"affiliate_6mo_code,omitempty"`
 	// Affiliate12moCode holds the value of the "affiliate_12mo_code" field.
@@ -117,6 +120,8 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case user.FieldStripeAccountCapabilities:
+			values[i] = new([]byte)
 		case user.FieldEmail, user.FieldStripeCustomerID, user.FieldStripeAccountID, user.FieldAffiliate6moCode, user.FieldAffiliate12moCode:
 			values[i] = new(sql.NullString)
 		case user.FieldCreateTime, user.FieldUpdateTime:
@@ -175,6 +180,14 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.StripeAccountID = new(string)
 				*u.StripeAccountID = value.String
+			}
+		case user.FieldStripeAccountCapabilities:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field stripe_account_capabilities", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &u.StripeAccountCapabilities); err != nil {
+					return fmt.Errorf("unmarshal field stripe_account_capabilities: %w", err)
+				}
 			}
 		case user.FieldAffiliate6moCode:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -269,6 +282,9 @@ func (u *User) String() string {
 		builder.WriteString("stripe_account_id=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("stripe_account_capabilities=")
+	builder.WriteString(fmt.Sprintf("%v", u.StripeAccountCapabilities))
 	builder.WriteString(", ")
 	if v := u.Affiliate6moCode; v != nil {
 		builder.WriteString("affiliate_6mo_code=")

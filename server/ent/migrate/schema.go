@@ -621,6 +621,7 @@ var (
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "stripe_customer_id", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "stripe_account_id", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "stripe_account_capabilities", Type: field.TypeJSON, Nullable: true},
 		{Name: "affiliate_6mo_code", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "affiliate_12mo_code", Type: field.TypeString, Unique: true, Nullable: true},
 	}
