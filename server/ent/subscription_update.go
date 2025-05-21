@@ -139,6 +139,46 @@ func (su *SubscriptionUpdate) ClearTrialEnd() *SubscriptionUpdate {
 	return su
 }
 
+// SetAffiliate6moCode sets the "affiliate_6mo_code" field.
+func (su *SubscriptionUpdate) SetAffiliate6moCode(s string) *SubscriptionUpdate {
+	su.mutation.SetAffiliate6moCode(s)
+	return su
+}
+
+// SetNillableAffiliate6moCode sets the "affiliate_6mo_code" field if the given value is not nil.
+func (su *SubscriptionUpdate) SetNillableAffiliate6moCode(s *string) *SubscriptionUpdate {
+	if s != nil {
+		su.SetAffiliate6moCode(*s)
+	}
+	return su
+}
+
+// ClearAffiliate6moCode clears the value of the "affiliate_6mo_code" field.
+func (su *SubscriptionUpdate) ClearAffiliate6moCode() *SubscriptionUpdate {
+	su.mutation.ClearAffiliate6moCode()
+	return su
+}
+
+// SetAffiliate12moCode sets the "affiliate_12mo_code" field.
+func (su *SubscriptionUpdate) SetAffiliate12moCode(s string) *SubscriptionUpdate {
+	su.mutation.SetAffiliate12moCode(s)
+	return su
+}
+
+// SetNillableAffiliate12moCode sets the "affiliate_12mo_code" field if the given value is not nil.
+func (su *SubscriptionUpdate) SetNillableAffiliate12moCode(s *string) *SubscriptionUpdate {
+	if s != nil {
+		su.SetAffiliate12moCode(*s)
+	}
+	return su
+}
+
+// ClearAffiliate12moCode clears the value of the "affiliate_12mo_code" field.
+func (su *SubscriptionUpdate) ClearAffiliate12moCode() *SubscriptionUpdate {
+	su.mutation.ClearAffiliate12moCode()
+	return su
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (su *SubscriptionUpdate) SetUserID(id uuid.UUID) *SubscriptionUpdate {
 	su.mutation.SetUserID(id)
@@ -281,6 +321,18 @@ func (su *SubscriptionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if su.mutation.TrialEndCleared() {
 		_spec.ClearField(subscription.FieldTrialEnd, field.TypeTime)
+	}
+	if value, ok := su.mutation.Affiliate6moCode(); ok {
+		_spec.SetField(subscription.FieldAffiliate6moCode, field.TypeString, value)
+	}
+	if su.mutation.Affiliate6moCodeCleared() {
+		_spec.ClearField(subscription.FieldAffiliate6moCode, field.TypeString)
+	}
+	if value, ok := su.mutation.Affiliate12moCode(); ok {
+		_spec.SetField(subscription.FieldAffiliate12moCode, field.TypeString, value)
+	}
+	if su.mutation.Affiliate12moCodeCleared() {
+		_spec.ClearField(subscription.FieldAffiliate12moCode, field.TypeString)
 	}
 	if su.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -468,6 +520,46 @@ func (suo *SubscriptionUpdateOne) ClearTrialEnd() *SubscriptionUpdateOne {
 	return suo
 }
 
+// SetAffiliate6moCode sets the "affiliate_6mo_code" field.
+func (suo *SubscriptionUpdateOne) SetAffiliate6moCode(s string) *SubscriptionUpdateOne {
+	suo.mutation.SetAffiliate6moCode(s)
+	return suo
+}
+
+// SetNillableAffiliate6moCode sets the "affiliate_6mo_code" field if the given value is not nil.
+func (suo *SubscriptionUpdateOne) SetNillableAffiliate6moCode(s *string) *SubscriptionUpdateOne {
+	if s != nil {
+		suo.SetAffiliate6moCode(*s)
+	}
+	return suo
+}
+
+// ClearAffiliate6moCode clears the value of the "affiliate_6mo_code" field.
+func (suo *SubscriptionUpdateOne) ClearAffiliate6moCode() *SubscriptionUpdateOne {
+	suo.mutation.ClearAffiliate6moCode()
+	return suo
+}
+
+// SetAffiliate12moCode sets the "affiliate_12mo_code" field.
+func (suo *SubscriptionUpdateOne) SetAffiliate12moCode(s string) *SubscriptionUpdateOne {
+	suo.mutation.SetAffiliate12moCode(s)
+	return suo
+}
+
+// SetNillableAffiliate12moCode sets the "affiliate_12mo_code" field if the given value is not nil.
+func (suo *SubscriptionUpdateOne) SetNillableAffiliate12moCode(s *string) *SubscriptionUpdateOne {
+	if s != nil {
+		suo.SetAffiliate12moCode(*s)
+	}
+	return suo
+}
+
+// ClearAffiliate12moCode clears the value of the "affiliate_12mo_code" field.
+func (suo *SubscriptionUpdateOne) ClearAffiliate12moCode() *SubscriptionUpdateOne {
+	suo.mutation.ClearAffiliate12moCode()
+	return suo
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (suo *SubscriptionUpdateOne) SetUserID(id uuid.UUID) *SubscriptionUpdateOne {
 	suo.mutation.SetUserID(id)
@@ -640,6 +732,18 @@ func (suo *SubscriptionUpdateOne) sqlSave(ctx context.Context) (_node *Subscript
 	}
 	if suo.mutation.TrialEndCleared() {
 		_spec.ClearField(subscription.FieldTrialEnd, field.TypeTime)
+	}
+	if value, ok := suo.mutation.Affiliate6moCode(); ok {
+		_spec.SetField(subscription.FieldAffiliate6moCode, field.TypeString, value)
+	}
+	if suo.mutation.Affiliate6moCodeCleared() {
+		_spec.ClearField(subscription.FieldAffiliate6moCode, field.TypeString)
+	}
+	if value, ok := suo.mutation.Affiliate12moCode(); ok {
+		_spec.SetField(subscription.FieldAffiliate12moCode, field.TypeString, value)
+	}
+	if suo.mutation.Affiliate12moCodeCleared() {
+		_spec.ClearField(subscription.FieldAffiliate12moCode, field.TypeString)
 	}
 	if suo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

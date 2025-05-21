@@ -84,13 +84,15 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "CheckoutSession",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			checkoutsession.FieldCreateTime:      {Type: field.TypeTime, Column: checkoutsession.FieldCreateTime},
-			checkoutsession.FieldUpdateTime:      {Type: field.TypeTime, Column: checkoutsession.FieldUpdateTime},
-			checkoutsession.FieldStripeSessionID: {Type: field.TypeString, Column: checkoutsession.FieldStripeSessionID},
-			checkoutsession.FieldStripePriceID:   {Type: field.TypeString, Column: checkoutsession.FieldStripePriceID},
-			checkoutsession.FieldMode:            {Type: field.TypeEnum, Column: checkoutsession.FieldMode},
-			checkoutsession.FieldCompleted:       {Type: field.TypeBool, Column: checkoutsession.FieldCompleted},
-			checkoutsession.FieldCompletedAt:     {Type: field.TypeTime, Column: checkoutsession.FieldCompletedAt},
+			checkoutsession.FieldCreateTime:        {Type: field.TypeTime, Column: checkoutsession.FieldCreateTime},
+			checkoutsession.FieldUpdateTime:        {Type: field.TypeTime, Column: checkoutsession.FieldUpdateTime},
+			checkoutsession.FieldStripeSessionID:   {Type: field.TypeString, Column: checkoutsession.FieldStripeSessionID},
+			checkoutsession.FieldStripePriceID:     {Type: field.TypeString, Column: checkoutsession.FieldStripePriceID},
+			checkoutsession.FieldMode:              {Type: field.TypeEnum, Column: checkoutsession.FieldMode},
+			checkoutsession.FieldCompleted:         {Type: field.TypeBool, Column: checkoutsession.FieldCompleted},
+			checkoutsession.FieldCompletedAt:       {Type: field.TypeTime, Column: checkoutsession.FieldCompletedAt},
+			checkoutsession.FieldAffiliate6moCode:  {Type: field.TypeString, Column: checkoutsession.FieldAffiliate6moCode},
+			checkoutsession.FieldAffiliate12moCode: {Type: field.TypeString, Column: checkoutsession.FieldAffiliate12moCode},
 		},
 	}
 	graph.Nodes[3] = &sqlgraph.Node{
@@ -398,6 +400,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 			subscription.FieldCanceledAt:           {Type: field.TypeTime, Column: subscription.FieldCanceledAt},
 			subscription.FieldCancelAtPeriodEnd:    {Type: field.TypeBool, Column: subscription.FieldCancelAtPeriodEnd},
 			subscription.FieldTrialEnd:             {Type: field.TypeTime, Column: subscription.FieldTrialEnd},
+			subscription.FieldAffiliate6moCode:     {Type: field.TypeString, Column: subscription.FieldAffiliate6moCode},
+			subscription.FieldAffiliate12moCode:    {Type: field.TypeString, Column: subscription.FieldAffiliate12moCode},
 		},
 	}
 	graph.Nodes[19] = &sqlgraph.Node{
@@ -437,10 +441,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "User",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			user.FieldCreateTime:       {Type: field.TypeTime, Column: user.FieldCreateTime},
-			user.FieldUpdateTime:       {Type: field.TypeTime, Column: user.FieldUpdateTime},
-			user.FieldEmail:            {Type: field.TypeString, Column: user.FieldEmail},
-			user.FieldStripeCustomerID: {Type: field.TypeString, Column: user.FieldStripeCustomerID},
+			user.FieldCreateTime:        {Type: field.TypeTime, Column: user.FieldCreateTime},
+			user.FieldUpdateTime:        {Type: field.TypeTime, Column: user.FieldUpdateTime},
+			user.FieldEmail:             {Type: field.TypeString, Column: user.FieldEmail},
+			user.FieldStripeCustomerID:  {Type: field.TypeString, Column: user.FieldStripeCustomerID},
+			user.FieldStripeAccountID:   {Type: field.TypeString, Column: user.FieldStripeAccountID},
+			user.FieldAffiliate6moCode:  {Type: field.TypeString, Column: user.FieldAffiliate6moCode},
+			user.FieldAffiliate12moCode: {Type: field.TypeString, Column: user.FieldAffiliate12moCode},
 		},
 	}
 	graph.Nodes[21] = &sqlgraph.Node{
@@ -1820,6 +1827,16 @@ func (f *CheckoutSessionFilter) WhereCompleted(p entql.BoolP) {
 // WhereCompletedAt applies the entql time.Time predicate on the completed_at field.
 func (f *CheckoutSessionFilter) WhereCompletedAt(p entql.TimeP) {
 	f.Where(p.Field(checkoutsession.FieldCompletedAt))
+}
+
+// WhereAffiliate6moCode applies the entql string predicate on the affiliate_6mo_code field.
+func (f *CheckoutSessionFilter) WhereAffiliate6moCode(p entql.StringP) {
+	f.Where(p.Field(checkoutsession.FieldAffiliate6moCode))
+}
+
+// WhereAffiliate12moCode applies the entql string predicate on the affiliate_12mo_code field.
+func (f *CheckoutSessionFilter) WhereAffiliate12moCode(p entql.StringP) {
+	f.Where(p.Field(checkoutsession.FieldAffiliate12moCode))
 }
 
 // WhereHasUser applies a predicate to check if query has an edge user.
@@ -3601,6 +3618,16 @@ func (f *SubscriptionFilter) WhereTrialEnd(p entql.TimeP) {
 	f.Where(p.Field(subscription.FieldTrialEnd))
 }
 
+// WhereAffiliate6moCode applies the entql string predicate on the affiliate_6mo_code field.
+func (f *SubscriptionFilter) WhereAffiliate6moCode(p entql.StringP) {
+	f.Where(p.Field(subscription.FieldAffiliate6moCode))
+}
+
+// WhereAffiliate12moCode applies the entql string predicate on the affiliate_12mo_code field.
+func (f *SubscriptionFilter) WhereAffiliate12moCode(p entql.StringP) {
+	f.Where(p.Field(subscription.FieldAffiliate12moCode))
+}
+
 // WhereHasUser applies a predicate to check if query has an edge user.
 func (f *SubscriptionFilter) WhereHasUser() {
 	f.Where(entql.HasEdge("user"))
@@ -3848,6 +3875,21 @@ func (f *UserFilter) WhereEmail(p entql.StringP) {
 // WhereStripeCustomerID applies the entql string predicate on the stripe_customer_id field.
 func (f *UserFilter) WhereStripeCustomerID(p entql.StringP) {
 	f.Where(p.Field(user.FieldStripeCustomerID))
+}
+
+// WhereStripeAccountID applies the entql string predicate on the stripe_account_id field.
+func (f *UserFilter) WhereStripeAccountID(p entql.StringP) {
+	f.Where(p.Field(user.FieldStripeAccountID))
+}
+
+// WhereAffiliate6moCode applies the entql string predicate on the affiliate_6mo_code field.
+func (f *UserFilter) WhereAffiliate6moCode(p entql.StringP) {
+	f.Where(p.Field(user.FieldAffiliate6moCode))
+}
+
+// WhereAffiliate12moCode applies the entql string predicate on the affiliate_12mo_code field.
+func (f *UserFilter) WhereAffiliate12moCode(p entql.StringP) {
+	f.Where(p.Field(user.FieldAffiliate12moCode))
 }
 
 // WhereHasCars applies a predicate to check if query has an edge cars.

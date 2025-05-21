@@ -74,6 +74,8 @@ var (
 		{Name: "mode", Type: field.TypeEnum, Enums: []string{"subscription", "setup", "payment"}, Default: "subscription"},
 		{Name: "completed", Type: field.TypeBool, Default: false},
 		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "affiliate_6mo_code", Type: field.TypeString, Nullable: true},
+		{Name: "affiliate_12mo_code", Type: field.TypeString, Nullable: true},
 		{Name: "user_checkout_sessions", Type: field.TypeUUID},
 	}
 	// CheckoutSessionsTable holds the schema information for the "checkout_sessions" table.
@@ -84,7 +86,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "checkout_sessions_users_checkout_sessions",
-				Columns:    []*schema.Column{CheckoutSessionsColumns[8]},
+				Columns:    []*schema.Column{CheckoutSessionsColumns[10]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -547,6 +549,8 @@ var (
 		{Name: "canceled_at", Type: field.TypeTime, Nullable: true},
 		{Name: "cancel_at_period_end", Type: field.TypeBool, Default: false},
 		{Name: "trial_end", Type: field.TypeTime, Nullable: true},
+		{Name: "affiliate_6mo_code", Type: field.TypeString, Nullable: true},
+		{Name: "affiliate_12mo_code", Type: field.TypeString, Nullable: true},
 		{Name: "checkout_session_subscription", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "user_subscriptions", Type: field.TypeUUID},
 	}
@@ -558,13 +562,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "subscriptions_checkout_sessions_subscription",
-				Columns:    []*schema.Column{SubscriptionsColumns[9]},
+				Columns:    []*schema.Column{SubscriptionsColumns[11]},
 				RefColumns: []*schema.Column{CheckoutSessionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "subscriptions_users_subscriptions",
-				Columns:    []*schema.Column{SubscriptionsColumns[10]},
+				Columns:    []*schema.Column{SubscriptionsColumns[12]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -616,6 +620,9 @@ var (
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "stripe_customer_id", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "stripe_account_id", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "affiliate_6mo_code", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "affiliate_12mo_code", Type: field.TypeString, Unique: true, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{

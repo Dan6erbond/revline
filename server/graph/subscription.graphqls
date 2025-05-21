@@ -4,6 +4,7 @@ extend type User {
 
 input CreateCheckoutSessionInput {
   tier: SubscriptionTier!
+  affiliate: String
 }
 
 extend type Mutation {

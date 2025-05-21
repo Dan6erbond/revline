@@ -113,16 +113,18 @@ type ComplexityRoot struct {
 	}
 
 	CheckoutSession struct {
-		Completed       func(childComplexity int) int
-		CompletedAt     func(childComplexity int) int
-		CreateTime      func(childComplexity int) int
-		ID              func(childComplexity int) int
-		Mode            func(childComplexity int) int
-		StripePriceID   func(childComplexity int) int
-		StripeSessionID func(childComplexity int) int
-		Subscription    func(childComplexity int) int
-		UpdateTime      func(childComplexity int) int
-		User            func(childComplexity int) int
+		Affiliate12moCode func(childComplexity int) int
+		Affiliate6moCode  func(childComplexity int) int
+		Completed         func(childComplexity int) int
+		CompletedAt       func(childComplexity int) int
+		CreateTime        func(childComplexity int) int
+		ID                func(childComplexity int) int
+		Mode              func(childComplexity int) int
+		StripePriceID     func(childComplexity int) int
+		StripeSessionID   func(childComplexity int) int
+		Subscription      func(childComplexity int) int
+		UpdateTime        func(childComplexity int) int
+		User              func(childComplexity int) int
 	}
 
 	Document struct {
@@ -267,11 +269,13 @@ type ComplexityRoot struct {
 		CreateBillingPortalSession func(childComplexity int) int
 		CreateCar                  func(childComplexity int, input ent.CreateCarInput) int
 		CreateCheckoutSession      func(childComplexity int, input model.CreateCheckoutSessionInput) int
+		CreateConnectAccount       func(childComplexity int) int
 		CreateDragResult           func(childComplexity int, input ent.CreateDragResultInput) int
 		CreateDragSession          func(childComplexity int, input ent.CreateDragSessionInput) int
 		CreateDynoResult           func(childComplexity int, input ent.CreateDynoResultInput) int
 		CreateDynoSession          func(childComplexity int, input ent.CreateDynoSessionInput) int
 		CreateExpense              func(childComplexity int, input ent.CreateExpenseInput) int
+		CreateExpressLoginLink     func(childComplexity int) int
 		CreateFuelUp               func(childComplexity int, input ent.CreateFuelUpInput) int
 		CreateModIdea              func(childComplexity int, input ent.CreateModIdeaInput) int
 		CreateModProductOption     func(childComplexity int, input ent.CreateModProductOptionInput) int
@@ -282,6 +286,7 @@ type ComplexityRoot struct {
 		CreateTask                 func(childComplexity int, input ent.CreateTaskInput) int
 		DeleteDynoResult           func(childComplexity int, id string) int
 		DeleteDynoResults          func(childComplexity int, ids []string) int
+		LinkConnectAccount         func(childComplexity int) int
 		UpdateAlbum                func(childComplexity int, id string, input ent.UpdateAlbumInput) int
 		UpdateDragSession          func(childComplexity int, id string, input ent.UpdateDragSessionInput) int
 		UpdateDynoSession          func(childComplexity int, id string, input ent.UpdateDynoSessionInput) int
@@ -389,6 +394,8 @@ type ComplexityRoot struct {
 	}
 
 	SubscriptionPlan struct {
+		Affiliate12moCode    func(childComplexity int) int
+		Affiliate6moCode     func(childComplexity int) int
 		CancelAtPeriodEnd    func(childComplexity int) int
 		CanceledAt           func(childComplexity int) int
 		CheckoutSession      func(childComplexity int) int
@@ -452,17 +459,20 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		Cars             func(childComplexity int) int
-		CheckoutSessions func(childComplexity int) int
-		CreateTime       func(childComplexity int) int
-		Email            func(childComplexity int) int
-		ID               func(childComplexity int) int
-		Profile          func(childComplexity int) int
-		Settings         func(childComplexity int) int
-		StripeCustomerID func(childComplexity int) int
-		Subscription     func(childComplexity int) int
-		Subscriptions    func(childComplexity int) int
-		UpdateTime       func(childComplexity int) int
+		Affiliate12moCode func(childComplexity int) int
+		Affiliate6moCode  func(childComplexity int) int
+		Cars              func(childComplexity int) int
+		CheckoutSessions  func(childComplexity int) int
+		CreateTime        func(childComplexity int) int
+		Email             func(childComplexity int) int
+		ID                func(childComplexity int) int
+		Profile           func(childComplexity int) int
+		Settings          func(childComplexity int) int
+		StripeAccountID   func(childComplexity int) int
+		StripeCustomerID  func(childComplexity int) int
+		Subscription      func(childComplexity int) int
+		Subscriptions     func(childComplexity int) int
+		UpdateTime        func(childComplexity int) int
 	}
 
 	UserSettings struct {
@@ -501,6 +511,9 @@ type MutationResolver interface {
 	UpdateProfile(ctx context.Context, input ent.UpdateProfileInput) (*ent.Profile, error)
 	UploadProfilePicture(ctx context.Context, input *model.UploadProfilePictureInput) (*ent.Profile, error)
 	UpdateSettings(ctx context.Context, input ent.UpdateUserSettingsInput) (*ent.UserSettings, error)
+	CreateConnectAccount(ctx context.Context) (*ent.User, error)
+	LinkConnectAccount(ctx context.Context) (string, error)
+	CreateExpressLoginLink(ctx context.Context) (string, error)
 	CreateCar(ctx context.Context, input ent.CreateCarInput) (*ent.Car, error)
 	UploadBannerImage(ctx context.Context, input ent.CreateMediaInput) (*model.UploadMediaResult, error)
 	UploadMedia(ctx context.Context, input ent.CreateMediaInput) (*model.UploadMediaResult, error)
@@ -548,6 +561,9 @@ type QueryResolver interface {
 	Me(ctx context.Context) (*ent.User, error)
 }
 type UserResolver interface {
+	Affiliate6moCode(ctx context.Context, obj *ent.User) (*string, error)
+	Affiliate12moCode(ctx context.Context, obj *ent.User) (*string, error)
+
 	Subscription(ctx context.Context, obj *ent.User) (*ent.Subscription, error)
 }
 
@@ -827,6 +843,20 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Car.Year(childComplexity), true
+
+	case "CheckoutSession.affiliate12moCode":
+		if e.complexity.CheckoutSession.Affiliate12moCode == nil {
+			break
+		}
+
+		return e.complexity.CheckoutSession.Affiliate12moCode(childComplexity), true
+
+	case "CheckoutSession.affiliate6moCode":
+		if e.complexity.CheckoutSession.Affiliate6moCode == nil {
+			break
+		}
+
+		return e.complexity.CheckoutSession.Affiliate6moCode(childComplexity), true
 
 	case "CheckoutSession.completed":
 		if e.complexity.CheckoutSession.Completed == nil {
@@ -1669,6 +1699,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Mutation.CreateCheckoutSession(childComplexity, args["input"].(model.CreateCheckoutSessionInput)), true
 
+	case "Mutation.createConnectAccount":
+		if e.complexity.Mutation.CreateConnectAccount == nil {
+			break
+		}
+
+		return e.complexity.Mutation.CreateConnectAccount(childComplexity), true
+
 	case "Mutation.createDragResult":
 		if e.complexity.Mutation.CreateDragResult == nil {
 			break
@@ -1728,6 +1765,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.CreateExpense(childComplexity, args["input"].(ent.CreateExpenseInput)), true
+
+	case "Mutation.createExpressLoginLink":
+		if e.complexity.Mutation.CreateExpressLoginLink == nil {
+			break
+		}
+
+		return e.complexity.Mutation.CreateExpressLoginLink(childComplexity), true
 
 	case "Mutation.createFuelUp":
 		if e.complexity.Mutation.CreateFuelUp == nil {
@@ -1848,6 +1892,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.DeleteDynoResults(childComplexity, args["ids"].([]string)), true
+
+	case "Mutation.linkConnectAccount":
+		if e.complexity.Mutation.LinkConnectAccount == nil {
+			break
+		}
+
+		return e.complexity.Mutation.LinkConnectAccount(childComplexity), true
 
 	case "Mutation.updateAlbum":
 		if e.complexity.Mutation.UpdateAlbum == nil {
@@ -2545,6 +2596,20 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.ServiceSchedule.UpdateTime(childComplexity), true
 
+	case "SubscriptionPlan.affiliate12moCode":
+		if e.complexity.SubscriptionPlan.Affiliate12moCode == nil {
+			break
+		}
+
+		return e.complexity.SubscriptionPlan.Affiliate12moCode(childComplexity), true
+
+	case "SubscriptionPlan.affiliate6moCode":
+		if e.complexity.SubscriptionPlan.Affiliate6moCode == nil {
+			break
+		}
+
+		return e.complexity.SubscriptionPlan.Affiliate6moCode(childComplexity), true
+
 	case "SubscriptionPlan.cancelAtPeriodEnd":
 		if e.complexity.SubscriptionPlan.CancelAtPeriodEnd == nil {
 			break
@@ -2839,6 +2904,20 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.UploadMediaResult.UploadURL(childComplexity), true
 
+	case "User.affiliate12moCode":
+		if e.complexity.User.Affiliate12moCode == nil {
+			break
+		}
+
+		return e.complexity.User.Affiliate12moCode(childComplexity), true
+
+	case "User.affiliate6moCode":
+		if e.complexity.User.Affiliate6moCode == nil {
+			break
+		}
+
+		return e.complexity.User.Affiliate6moCode(childComplexity), true
+
 	case "User.cars":
 		if e.complexity.User.Cars == nil {
 			break
@@ -2887,6 +2966,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.User.Settings(childComplexity), true
+
+	case "User.stripeAccountID":
+		if e.complexity.User.StripeAccountID == nil {
+			break
+		}
+
+		return e.complexity.User.StripeAccountID(childComplexity), true
 
 	case "User.stripeCustomerID":
 		if e.complexity.User.StripeCustomerID == nil {
@@ -3162,7 +3248,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "car.graphqls" "ent.graphqls" "schema.graphqls" "subscription.graphqls"
+//go:embed "affiliate.graphqls" "car.graphqls" "ent.graphqls" "schema.graphqls" "subscription.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -3174,6 +3260,7 @@ func sourceData(filename string) string {
 }
 
 var sources = []*ast.Source{
+	{Name: "affiliate.graphqls", Input: sourceData("affiliate.graphqls"), BuiltIn: false},
 	{Name: "car.graphqls", Input: sourceData("car.graphqls"), BuiltIn: false},
 	{Name: "ent.graphqls", Input: sourceData("ent.graphqls"), BuiltIn: false},
 	{Name: "schema.graphqls", Input: sourceData("schema.graphqls"), BuiltIn: false},
@@ -5256,6 +5343,12 @@ func (ec *executionContext) fieldContext_Car_owner(_ context.Context, field grap
 				return ec.fieldContext_User_email(ctx, field)
 			case "stripeCustomerID":
 				return ec.fieldContext_User_stripeCustomerID(ctx, field)
+			case "stripeAccountID":
+				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "affiliate6moCode":
+				return ec.fieldContext_User_affiliate6moCode(ctx, field)
+			case "affiliate12moCode":
+				return ec.fieldContext_User_affiliate12moCode(ctx, field)
 			case "cars":
 				return ec.fieldContext_User_cars(ctx, field)
 			case "profile":
@@ -6694,6 +6787,88 @@ func (ec *executionContext) fieldContext_CheckoutSession_completedAt(_ context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _CheckoutSession_affiliate6moCode(ctx context.Context, field graphql.CollectedField, obj *ent.CheckoutSession) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckoutSession_affiliate6moCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Affiliate6moCode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckoutSession_affiliate6moCode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckoutSession",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CheckoutSession_affiliate12moCode(ctx context.Context, field graphql.CollectedField, obj *ent.CheckoutSession) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckoutSession_affiliate12moCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Affiliate12moCode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckoutSession_affiliate12moCode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckoutSession",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CheckoutSession_user(ctx context.Context, field graphql.CollectedField, obj *ent.CheckoutSession) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CheckoutSession_user(ctx, field)
 	if err != nil {
@@ -6743,6 +6918,12 @@ func (ec *executionContext) fieldContext_CheckoutSession_user(_ context.Context,
 				return ec.fieldContext_User_email(ctx, field)
 			case "stripeCustomerID":
 				return ec.fieldContext_User_stripeCustomerID(ctx, field)
+			case "stripeAccountID":
+				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "affiliate6moCode":
+				return ec.fieldContext_User_affiliate6moCode(ctx, field)
+			case "affiliate12moCode":
+				return ec.fieldContext_User_affiliate12moCode(ctx, field)
 			case "cars":
 				return ec.fieldContext_User_cars(ctx, field)
 			case "profile":
@@ -6816,6 +6997,10 @@ func (ec *executionContext) fieldContext_CheckoutSession_subscription(_ context.
 				return ec.fieldContext_SubscriptionPlan_cancelAtPeriodEnd(ctx, field)
 			case "trialEnd":
 				return ec.fieldContext_SubscriptionPlan_trialEnd(ctx, field)
+			case "affiliate6moCode":
+				return ec.fieldContext_SubscriptionPlan_affiliate6moCode(ctx, field)
+			case "affiliate12moCode":
+				return ec.fieldContext_SubscriptionPlan_affiliate12moCode(ctx, field)
 			case "user":
 				return ec.fieldContext_SubscriptionPlan_user(ctx, field)
 			case "checkoutSession":
@@ -12498,6 +12683,234 @@ func (ec *executionContext) fieldContext_Mutation_updateSettings(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createConnectAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createConnectAccount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CreateConnectAccount(rctx)
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			if ec.directives.LoggedIn == nil {
+				var zeroVal *ent.User
+				return zeroVal, errors.New("directive loggedIn is not implemented")
+			}
+			return ec.directives.LoggedIn(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*ent.User); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/Dan6erbond/revline/ent.User`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createConnectAccount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_User_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_User_updateTime(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "stripeCustomerID":
+				return ec.fieldContext_User_stripeCustomerID(ctx, field)
+			case "stripeAccountID":
+				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "affiliate6moCode":
+				return ec.fieldContext_User_affiliate6moCode(ctx, field)
+			case "affiliate12moCode":
+				return ec.fieldContext_User_affiliate12moCode(ctx, field)
+			case "cars":
+				return ec.fieldContext_User_cars(ctx, field)
+			case "profile":
+				return ec.fieldContext_User_profile(ctx, field)
+			case "settings":
+				return ec.fieldContext_User_settings(ctx, field)
+			case "subscriptions":
+				return ec.fieldContext_User_subscriptions(ctx, field)
+			case "checkoutSessions":
+				return ec.fieldContext_User_checkoutSessions(ctx, field)
+			case "subscription":
+				return ec.fieldContext_User_subscription(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_linkConnectAccount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_linkConnectAccount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().LinkConnectAccount(rctx)
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			if ec.directives.LoggedIn == nil {
+				var zeroVal string
+				return zeroVal, errors.New("directive loggedIn is not implemented")
+			}
+			return ec.directives.LoggedIn(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_linkConnectAccount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createExpressLoginLink(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createExpressLoginLink(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CreateExpressLoginLink(rctx)
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			if ec.directives.LoggedIn == nil {
+				var zeroVal string
+				return zeroVal, errors.New("directive loggedIn is not implemented")
+			}
+			return ec.directives.LoggedIn(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createExpressLoginLink(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createCar(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createCar(ctx, field)
 	if err != nil {
@@ -16249,6 +16662,12 @@ func (ec *executionContext) fieldContext_Profile_user(_ context.Context, field g
 				return ec.fieldContext_User_email(ctx, field)
 			case "stripeCustomerID":
 				return ec.fieldContext_User_stripeCustomerID(ctx, field)
+			case "stripeAccountID":
+				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "affiliate6moCode":
+				return ec.fieldContext_User_affiliate6moCode(ctx, field)
+			case "affiliate12moCode":
+				return ec.fieldContext_User_affiliate12moCode(ctx, field)
 			case "cars":
 				return ec.fieldContext_User_cars(ctx, field)
 			case "profile":
@@ -17143,6 +17562,12 @@ func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graph
 				return ec.fieldContext_User_email(ctx, field)
 			case "stripeCustomerID":
 				return ec.fieldContext_User_stripeCustomerID(ctx, field)
+			case "stripeAccountID":
+				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "affiliate6moCode":
+				return ec.fieldContext_User_affiliate6moCode(ctx, field)
+			case "affiliate12moCode":
+				return ec.fieldContext_User_affiliate12moCode(ctx, field)
 			case "cars":
 				return ec.fieldContext_User_cars(ctx, field)
 			case "profile":
@@ -19654,6 +20079,88 @@ func (ec *executionContext) fieldContext_SubscriptionPlan_trialEnd(_ context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _SubscriptionPlan_affiliate6moCode(ctx context.Context, field graphql.CollectedField, obj *ent.Subscription) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SubscriptionPlan_affiliate6moCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Affiliate6moCode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SubscriptionPlan_affiliate6moCode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SubscriptionPlan",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SubscriptionPlan_affiliate12moCode(ctx context.Context, field graphql.CollectedField, obj *ent.Subscription) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SubscriptionPlan_affiliate12moCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Affiliate12moCode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SubscriptionPlan_affiliate12moCode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SubscriptionPlan",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _SubscriptionPlan_user(ctx context.Context, field graphql.CollectedField, obj *ent.Subscription) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_SubscriptionPlan_user(ctx, field)
 	if err != nil {
@@ -19703,6 +20210,12 @@ func (ec *executionContext) fieldContext_SubscriptionPlan_user(_ context.Context
 				return ec.fieldContext_User_email(ctx, field)
 			case "stripeCustomerID":
 				return ec.fieldContext_User_stripeCustomerID(ctx, field)
+			case "stripeAccountID":
+				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "affiliate6moCode":
+				return ec.fieldContext_User_affiliate6moCode(ctx, field)
+			case "affiliate12moCode":
+				return ec.fieldContext_User_affiliate12moCode(ctx, field)
 			case "cars":
 				return ec.fieldContext_User_cars(ctx, field)
 			case "profile":
@@ -19774,6 +20287,10 @@ func (ec *executionContext) fieldContext_SubscriptionPlan_checkoutSession(_ cont
 				return ec.fieldContext_CheckoutSession_completed(ctx, field)
 			case "completedAt":
 				return ec.fieldContext_CheckoutSession_completedAt(ctx, field)
+			case "affiliate6moCode":
+				return ec.fieldContext_CheckoutSession_affiliate6moCode(ctx, field)
+			case "affiliate12moCode":
+				return ec.fieldContext_CheckoutSession_affiliate12moCode(ctx, field)
 			case "user":
 				return ec.fieldContext_CheckoutSession_user(ctx, field)
 			case "subscription":
@@ -21607,6 +22124,129 @@ func (ec *executionContext) fieldContext_User_stripeCustomerID(_ context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _User_stripeAccountID(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_stripeAccountID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.StripeAccountID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_stripeAccountID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_affiliate6moCode(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_affiliate6moCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().Affiliate6moCode(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_affiliate6moCode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_affiliate12moCode(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_affiliate12moCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().Affiliate12moCode(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_affiliate12moCode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_cars(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_cars(ctx, field)
 	if err != nil {
@@ -21886,6 +22526,10 @@ func (ec *executionContext) fieldContext_User_subscriptions(_ context.Context, f
 				return ec.fieldContext_SubscriptionPlan_cancelAtPeriodEnd(ctx, field)
 			case "trialEnd":
 				return ec.fieldContext_SubscriptionPlan_trialEnd(ctx, field)
+			case "affiliate6moCode":
+				return ec.fieldContext_SubscriptionPlan_affiliate6moCode(ctx, field)
+			case "affiliate12moCode":
+				return ec.fieldContext_SubscriptionPlan_affiliate12moCode(ctx, field)
 			case "user":
 				return ec.fieldContext_SubscriptionPlan_user(ctx, field)
 			case "checkoutSession":
@@ -21949,6 +22593,10 @@ func (ec *executionContext) fieldContext_User_checkoutSessions(_ context.Context
 				return ec.fieldContext_CheckoutSession_completed(ctx, field)
 			case "completedAt":
 				return ec.fieldContext_CheckoutSession_completedAt(ctx, field)
+			case "affiliate6moCode":
+				return ec.fieldContext_CheckoutSession_affiliate6moCode(ctx, field)
+			case "affiliate12moCode":
+				return ec.fieldContext_CheckoutSession_affiliate12moCode(ctx, field)
 			case "user":
 				return ec.fieldContext_CheckoutSession_user(ctx, field)
 			case "subscription":
@@ -22014,6 +22662,10 @@ func (ec *executionContext) fieldContext_User_subscription(_ context.Context, fi
 				return ec.fieldContext_SubscriptionPlan_cancelAtPeriodEnd(ctx, field)
 			case "trialEnd":
 				return ec.fieldContext_SubscriptionPlan_trialEnd(ctx, field)
+			case "affiliate6moCode":
+				return ec.fieldContext_SubscriptionPlan_affiliate6moCode(ctx, field)
+			case "affiliate12moCode":
+				return ec.fieldContext_SubscriptionPlan_affiliate12moCode(ctx, field)
 			case "user":
 				return ec.fieldContext_SubscriptionPlan_user(ctx, field)
 			case "checkoutSession":
@@ -22493,6 +23145,12 @@ func (ec *executionContext) fieldContext_UserSettings_user(_ context.Context, fi
 				return ec.fieldContext_User_email(ctx, field)
 			case "stripeCustomerID":
 				return ec.fieldContext_User_stripeCustomerID(ctx, field)
+			case "stripeAccountID":
+				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "affiliate6moCode":
+				return ec.fieldContext_User_affiliate6moCode(ctx, field)
+			case "affiliate12moCode":
+				return ec.fieldContext_User_affiliate12moCode(ctx, field)
 			case "cars":
 				return ec.fieldContext_User_cars(ctx, field)
 			case "profile":
@@ -25798,7 +26456,7 @@ func (ec *executionContext) unmarshalInputCheckoutSessionWhereInput(ctx context.
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "stripeSessionID", "stripeSessionIDNEQ", "stripeSessionIDIn", "stripeSessionIDNotIn", "stripeSessionIDGT", "stripeSessionIDGTE", "stripeSessionIDLT", "stripeSessionIDLTE", "stripeSessionIDContains", "stripeSessionIDHasPrefix", "stripeSessionIDHasSuffix", "stripeSessionIDIsNil", "stripeSessionIDNotNil", "stripeSessionIDEqualFold", "stripeSessionIDContainsFold", "stripePriceID", "stripePriceIDNEQ", "stripePriceIDIn", "stripePriceIDNotIn", "stripePriceIDGT", "stripePriceIDGTE", "stripePriceIDLT", "stripePriceIDLTE", "stripePriceIDContains", "stripePriceIDHasPrefix", "stripePriceIDHasSuffix", "stripePriceIDEqualFold", "stripePriceIDContainsFold", "mode", "modeNEQ", "modeIn", "modeNotIn", "completed", "completedNEQ", "completedAt", "completedAtNEQ", "completedAtIn", "completedAtNotIn", "completedAtGT", "completedAtGTE", "completedAtLT", "completedAtLTE", "completedAtIsNil", "completedAtNotNil", "hasUser", "hasUserWith", "hasSubscription", "hasSubscriptionWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "stripeSessionID", "stripeSessionIDNEQ", "stripeSessionIDIn", "stripeSessionIDNotIn", "stripeSessionIDGT", "stripeSessionIDGTE", "stripeSessionIDLT", "stripeSessionIDLTE", "stripeSessionIDContains", "stripeSessionIDHasPrefix", "stripeSessionIDHasSuffix", "stripeSessionIDIsNil", "stripeSessionIDNotNil", "stripeSessionIDEqualFold", "stripeSessionIDContainsFold", "stripePriceID", "stripePriceIDNEQ", "stripePriceIDIn", "stripePriceIDNotIn", "stripePriceIDGT", "stripePriceIDGTE", "stripePriceIDLT", "stripePriceIDLTE", "stripePriceIDContains", "stripePriceIDHasPrefix", "stripePriceIDHasSuffix", "stripePriceIDEqualFold", "stripePriceIDContainsFold", "mode", "modeNEQ", "modeIn", "modeNotIn", "completed", "completedNEQ", "completedAt", "completedAtNEQ", "completedAtIn", "completedAtNotIn", "completedAtGT", "completedAtGTE", "completedAtLT", "completedAtLTE", "completedAtIsNil", "completedAtNotNil", "affiliate6moCode", "affiliate6moCodeNEQ", "affiliate6moCodeIn", "affiliate6moCodeNotIn", "affiliate6moCodeGT", "affiliate6moCodeGTE", "affiliate6moCodeLT", "affiliate6moCodeLTE", "affiliate6moCodeContains", "affiliate6moCodeHasPrefix", "affiliate6moCodeHasSuffix", "affiliate6moCodeIsNil", "affiliate6moCodeNotNil", "affiliate6moCodeEqualFold", "affiliate6moCodeContainsFold", "affiliate12moCode", "affiliate12moCodeNEQ", "affiliate12moCodeIn", "affiliate12moCodeNotIn", "affiliate12moCodeGT", "affiliate12moCodeGTE", "affiliate12moCodeLT", "affiliate12moCodeLTE", "affiliate12moCodeContains", "affiliate12moCodeHasPrefix", "affiliate12moCodeHasSuffix", "affiliate12moCodeIsNil", "affiliate12moCodeNotNil", "affiliate12moCodeEqualFold", "affiliate12moCodeContainsFold", "hasUser", "hasUserWith", "hasSubscription", "hasSubscriptionWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -26302,6 +26960,216 @@ func (ec *executionContext) unmarshalInputCheckoutSessionWhereInput(ctx context.
 				return it, err
 			}
 			it.CompletedAtNotNil = data
+		case "affiliate6moCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCode = data
+		case "affiliate6moCodeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeNEQ = data
+		case "affiliate6moCodeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeIn = data
+		case "affiliate6moCodeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeNotIn = data
+		case "affiliate6moCodeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeGT = data
+		case "affiliate6moCodeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeGTE = data
+		case "affiliate6moCodeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeLT = data
+		case "affiliate6moCodeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeLTE = data
+		case "affiliate6moCodeContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeContains = data
+		case "affiliate6moCodeHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeHasPrefix = data
+		case "affiliate6moCodeHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeHasSuffix = data
+		case "affiliate6moCodeIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeIsNil = data
+		case "affiliate6moCodeNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeNotNil = data
+		case "affiliate6moCodeEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeEqualFold = data
+		case "affiliate6moCodeContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeContainsFold = data
+		case "affiliate12moCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCode = data
+		case "affiliate12moCodeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeNEQ = data
+		case "affiliate12moCodeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeIn = data
+		case "affiliate12moCodeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeNotIn = data
+		case "affiliate12moCodeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeGT = data
+		case "affiliate12moCodeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeGTE = data
+		case "affiliate12moCodeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeLT = data
+		case "affiliate12moCodeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeLTE = data
+		case "affiliate12moCodeContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeContains = data
+		case "affiliate12moCodeHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeHasPrefix = data
+		case "affiliate12moCodeHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeHasSuffix = data
+		case "affiliate12moCodeIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeIsNil = data
+		case "affiliate12moCodeNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeNotNil = data
+		case "affiliate12moCodeEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeEqualFold = data
+		case "affiliate12moCodeContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeContainsFold = data
 		case "hasUser":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUser"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -26579,7 +27447,7 @@ func (ec *executionContext) unmarshalInputCreateCheckoutSessionInput(ctx context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"tier"}
+	fieldsInOrder := [...]string{"tier", "affiliate"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -26593,6 +27461,13 @@ func (ec *executionContext) unmarshalInputCreateCheckoutSessionInput(ctx context
 				return it, err
 			}
 			it.Tier = data
+		case "affiliate":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate = data
 		}
 	}
 
@@ -28021,7 +28896,7 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "email", "stripeCustomerID", "carIDs", "profileID", "settingsID", "subscriptionIDs", "checkoutSessionIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "email", "stripeCustomerID", "stripeAccountID", "affiliate6moCode", "affiliate12moCode", "carIDs", "profileID", "settingsID", "subscriptionIDs", "checkoutSessionIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -28056,6 +28931,27 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.StripeCustomerID = data
+		case "stripeAccountID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountID"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountID = data
+		case "affiliate6moCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCode = data
+		case "affiliate12moCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCode = data
 		case "carIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("carIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
@@ -35942,7 +36838,7 @@ func (ec *executionContext) unmarshalInputSubscriptionPlanWhereInput(ctx context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "stripeSubscriptionID", "stripeSubscriptionIDNEQ", "stripeSubscriptionIDIn", "stripeSubscriptionIDNotIn", "stripeSubscriptionIDGT", "stripeSubscriptionIDGTE", "stripeSubscriptionIDLT", "stripeSubscriptionIDLTE", "stripeSubscriptionIDContains", "stripeSubscriptionIDHasPrefix", "stripeSubscriptionIDHasSuffix", "stripeSubscriptionIDIsNil", "stripeSubscriptionIDNotNil", "stripeSubscriptionIDEqualFold", "stripeSubscriptionIDContainsFold", "tier", "tierNEQ", "tierIn", "tierNotIn", "status", "statusNEQ", "statusIn", "statusNotIn", "canceledAt", "canceledAtNEQ", "canceledAtIn", "canceledAtNotIn", "canceledAtGT", "canceledAtGTE", "canceledAtLT", "canceledAtLTE", "canceledAtIsNil", "canceledAtNotNil", "cancelAtPeriodEnd", "cancelAtPeriodEndNEQ", "trialEnd", "trialEndNEQ", "trialEndIn", "trialEndNotIn", "trialEndGT", "trialEndGTE", "trialEndLT", "trialEndLTE", "trialEndIsNil", "trialEndNotNil", "hasUser", "hasUserWith", "hasCheckoutSession", "hasCheckoutSessionWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "stripeSubscriptionID", "stripeSubscriptionIDNEQ", "stripeSubscriptionIDIn", "stripeSubscriptionIDNotIn", "stripeSubscriptionIDGT", "stripeSubscriptionIDGTE", "stripeSubscriptionIDLT", "stripeSubscriptionIDLTE", "stripeSubscriptionIDContains", "stripeSubscriptionIDHasPrefix", "stripeSubscriptionIDHasSuffix", "stripeSubscriptionIDIsNil", "stripeSubscriptionIDNotNil", "stripeSubscriptionIDEqualFold", "stripeSubscriptionIDContainsFold", "tier", "tierNEQ", "tierIn", "tierNotIn", "status", "statusNEQ", "statusIn", "statusNotIn", "canceledAt", "canceledAtNEQ", "canceledAtIn", "canceledAtNotIn", "canceledAtGT", "canceledAtGTE", "canceledAtLT", "canceledAtLTE", "canceledAtIsNil", "canceledAtNotNil", "cancelAtPeriodEnd", "cancelAtPeriodEndNEQ", "trialEnd", "trialEndNEQ", "trialEndIn", "trialEndNotIn", "trialEndGT", "trialEndGTE", "trialEndLT", "trialEndLTE", "trialEndIsNil", "trialEndNotNil", "affiliate6moCode", "affiliate6moCodeNEQ", "affiliate6moCodeIn", "affiliate6moCodeNotIn", "affiliate6moCodeGT", "affiliate6moCodeGTE", "affiliate6moCodeLT", "affiliate6moCodeLTE", "affiliate6moCodeContains", "affiliate6moCodeHasPrefix", "affiliate6moCodeHasSuffix", "affiliate6moCodeIsNil", "affiliate6moCodeNotNil", "affiliate6moCodeEqualFold", "affiliate6moCodeContainsFold", "affiliate12moCode", "affiliate12moCodeNEQ", "affiliate12moCodeIn", "affiliate12moCodeNotIn", "affiliate12moCodeGT", "affiliate12moCodeGTE", "affiliate12moCodeLT", "affiliate12moCodeLTE", "affiliate12moCodeContains", "affiliate12moCodeHasPrefix", "affiliate12moCodeHasSuffix", "affiliate12moCodeIsNil", "affiliate12moCodeNotNil", "affiliate12moCodeEqualFold", "affiliate12moCodeContainsFold", "hasUser", "hasUserWith", "hasCheckoutSession", "hasCheckoutSessionWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -36453,6 +37349,216 @@ func (ec *executionContext) unmarshalInputSubscriptionPlanWhereInput(ctx context
 				return it, err
 			}
 			it.TrialEndNotNil = data
+		case "affiliate6moCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCode = data
+		case "affiliate6moCodeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeNEQ = data
+		case "affiliate6moCodeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeIn = data
+		case "affiliate6moCodeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeNotIn = data
+		case "affiliate6moCodeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeGT = data
+		case "affiliate6moCodeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeGTE = data
+		case "affiliate6moCodeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeLT = data
+		case "affiliate6moCodeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeLTE = data
+		case "affiliate6moCodeContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeContains = data
+		case "affiliate6moCodeHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeHasPrefix = data
+		case "affiliate6moCodeHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeHasSuffix = data
+		case "affiliate6moCodeIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeIsNil = data
+		case "affiliate6moCodeNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeNotNil = data
+		case "affiliate6moCodeEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeEqualFold = data
+		case "affiliate6moCodeContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeContainsFold = data
+		case "affiliate12moCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCode = data
+		case "affiliate12moCodeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeNEQ = data
+		case "affiliate12moCodeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeIn = data
+		case "affiliate12moCodeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeNotIn = data
+		case "affiliate12moCodeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeGT = data
+		case "affiliate12moCodeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeGTE = data
+		case "affiliate12moCodeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeLT = data
+		case "affiliate12moCodeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeLTE = data
+		case "affiliate12moCodeContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeContains = data
+		case "affiliate12moCodeHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeHasPrefix = data
+		case "affiliate12moCodeHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeHasSuffix = data
+		case "affiliate12moCodeIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeIsNil = data
+		case "affiliate12moCodeNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeNotNil = data
+		case "affiliate12moCodeEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeEqualFold = data
+		case "affiliate12moCodeContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeContainsFold = data
 		case "hasUser":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUser"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -39903,7 +41009,7 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "email", "stripeCustomerID", "clearStripeCustomerID", "addCarIDs", "removeCarIDs", "clearCars", "profileID", "clearProfile", "settingsID", "clearSettings", "addSubscriptionIDs", "removeSubscriptionIDs", "clearSubscriptions", "addCheckoutSessionIDs", "removeCheckoutSessionIDs", "clearCheckoutSessions"}
+	fieldsInOrder := [...]string{"updateTime", "email", "stripeCustomerID", "clearStripeCustomerID", "stripeAccountID", "clearStripeAccountID", "affiliate6moCode", "clearAffiliate6moCode", "affiliate12moCode", "clearAffiliate12moCode", "addCarIDs", "removeCarIDs", "clearCars", "profileID", "clearProfile", "settingsID", "clearSettings", "addSubscriptionIDs", "removeSubscriptionIDs", "clearSubscriptions", "addCheckoutSessionIDs", "removeCheckoutSessionIDs", "clearCheckoutSessions"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -39938,6 +41044,48 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.ClearStripeCustomerID = data
+		case "stripeAccountID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountID"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountID = data
+		case "clearStripeAccountID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearStripeAccountID"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearStripeAccountID = data
+		case "affiliate6moCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCode = data
+		case "clearAffiliate6moCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearAffiliate6moCode"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearAffiliate6moCode = data
+		case "affiliate12moCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCode = data
+		case "clearAffiliate12moCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearAffiliate12moCode"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearAffiliate12moCode = data
 		case "addCarIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addCarIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
@@ -40781,7 +41929,7 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "stripeCustomerID", "stripeCustomerIDNEQ", "stripeCustomerIDIn", "stripeCustomerIDNotIn", "stripeCustomerIDGT", "stripeCustomerIDGTE", "stripeCustomerIDLT", "stripeCustomerIDLTE", "stripeCustomerIDContains", "stripeCustomerIDHasPrefix", "stripeCustomerIDHasSuffix", "stripeCustomerIDIsNil", "stripeCustomerIDNotNil", "stripeCustomerIDEqualFold", "stripeCustomerIDContainsFold", "hasCars", "hasCarsWith", "hasProfile", "hasProfileWith", "hasSettings", "hasSettingsWith", "hasSubscriptions", "hasSubscriptionsWith", "hasCheckoutSessions", "hasCheckoutSessionsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "stripeCustomerID", "stripeCustomerIDNEQ", "stripeCustomerIDIn", "stripeCustomerIDNotIn", "stripeCustomerIDGT", "stripeCustomerIDGTE", "stripeCustomerIDLT", "stripeCustomerIDLTE", "stripeCustomerIDContains", "stripeCustomerIDHasPrefix", "stripeCustomerIDHasSuffix", "stripeCustomerIDIsNil", "stripeCustomerIDNotNil", "stripeCustomerIDEqualFold", "stripeCustomerIDContainsFold", "stripeAccountID", "stripeAccountIDNEQ", "stripeAccountIDIn", "stripeAccountIDNotIn", "stripeAccountIDGT", "stripeAccountIDGTE", "stripeAccountIDLT", "stripeAccountIDLTE", "stripeAccountIDContains", "stripeAccountIDHasPrefix", "stripeAccountIDHasSuffix", "stripeAccountIDIsNil", "stripeAccountIDNotNil", "stripeAccountIDEqualFold", "stripeAccountIDContainsFold", "affiliate6moCode", "affiliate6moCodeNEQ", "affiliate6moCodeIn", "affiliate6moCodeNotIn", "affiliate6moCodeGT", "affiliate6moCodeGTE", "affiliate6moCodeLT", "affiliate6moCodeLTE", "affiliate6moCodeContains", "affiliate6moCodeHasPrefix", "affiliate6moCodeHasSuffix", "affiliate6moCodeIsNil", "affiliate6moCodeNotNil", "affiliate6moCodeEqualFold", "affiliate6moCodeContainsFold", "affiliate12moCode", "affiliate12moCodeNEQ", "affiliate12moCodeIn", "affiliate12moCodeNotIn", "affiliate12moCodeGT", "affiliate12moCodeGTE", "affiliate12moCodeLT", "affiliate12moCodeLTE", "affiliate12moCodeContains", "affiliate12moCodeHasPrefix", "affiliate12moCodeHasSuffix", "affiliate12moCodeIsNil", "affiliate12moCodeNotNil", "affiliate12moCodeEqualFold", "affiliate12moCodeContainsFold", "hasCars", "hasCarsWith", "hasProfile", "hasProfileWith", "hasSettings", "hasSettingsWith", "hasSubscriptions", "hasSubscriptionsWith", "hasCheckoutSessions", "hasCheckoutSessionsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -41173,6 +42321,321 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.StripeCustomerIDContainsFold = data
+		case "stripeAccountID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountID"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountID = data
+		case "stripeAccountIDNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountIDNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountIDNEQ = data
+		case "stripeAccountIDIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountIDIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountIDIn = data
+		case "stripeAccountIDNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountIDNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountIDNotIn = data
+		case "stripeAccountIDGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountIDGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountIDGT = data
+		case "stripeAccountIDGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountIDGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountIDGTE = data
+		case "stripeAccountIDLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountIDLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountIDLT = data
+		case "stripeAccountIDLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountIDLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountIDLTE = data
+		case "stripeAccountIDContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountIDContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountIDContains = data
+		case "stripeAccountIDHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountIDHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountIDHasPrefix = data
+		case "stripeAccountIDHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountIDHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountIDHasSuffix = data
+		case "stripeAccountIDIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountIDIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountIDIsNil = data
+		case "stripeAccountIDNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountIDNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountIDNotNil = data
+		case "stripeAccountIDEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountIDEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountIDEqualFold = data
+		case "stripeAccountIDContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stripeAccountIDContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StripeAccountIDContainsFold = data
+		case "affiliate6moCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCode = data
+		case "affiliate6moCodeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeNEQ = data
+		case "affiliate6moCodeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeIn = data
+		case "affiliate6moCodeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeNotIn = data
+		case "affiliate6moCodeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeGT = data
+		case "affiliate6moCodeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeGTE = data
+		case "affiliate6moCodeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeLT = data
+		case "affiliate6moCodeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeLTE = data
+		case "affiliate6moCodeContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeContains = data
+		case "affiliate6moCodeHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeHasPrefix = data
+		case "affiliate6moCodeHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeHasSuffix = data
+		case "affiliate6moCodeIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeIsNil = data
+		case "affiliate6moCodeNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeNotNil = data
+		case "affiliate6moCodeEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeEqualFold = data
+		case "affiliate6moCodeContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate6moCodeContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate6moCodeContainsFold = data
+		case "affiliate12moCode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCode = data
+		case "affiliate12moCodeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeNEQ = data
+		case "affiliate12moCodeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeIn = data
+		case "affiliate12moCodeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeNotIn = data
+		case "affiliate12moCodeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeGT = data
+		case "affiliate12moCodeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeGTE = data
+		case "affiliate12moCodeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeLT = data
+		case "affiliate12moCodeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeLTE = data
+		case "affiliate12moCodeContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeContains = data
+		case "affiliate12moCodeHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeHasPrefix = data
+		case "affiliate12moCodeHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeHasSuffix = data
+		case "affiliate12moCodeIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeIsNil = data
+		case "affiliate12moCodeNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeNotNil = data
+		case "affiliate12moCodeEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeEqualFold = data
+		case "affiliate12moCodeContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("affiliate12moCodeContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Affiliate12moCodeContainsFold = data
 		case "hasCars":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCars"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -42247,6 +43710,10 @@ func (ec *executionContext) _CheckoutSession(ctx context.Context, sel ast.Select
 			}
 		case "completedAt":
 			out.Values[i] = ec._CheckoutSession_completedAt(ctx, field, obj)
+		case "affiliate6moCode":
+			out.Values[i] = ec._CheckoutSession_affiliate6moCode(ctx, field, obj)
+		case "affiliate12moCode":
+			out.Values[i] = ec._CheckoutSession_affiliate12moCode(ctx, field, obj)
 		case "user":
 			field := field
 
@@ -44170,6 +45637,27 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "createConnectAccount":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createConnectAccount(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "linkConnectAccount":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_linkConnectAccount(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createExpressLoginLink":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createExpressLoginLink(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createCar":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createCar(ctx, field)
@@ -45671,6 +47159,10 @@ func (ec *executionContext) _SubscriptionPlan(ctx context.Context, sel ast.Selec
 			}
 		case "trialEnd":
 			out.Values[i] = ec._SubscriptionPlan_trialEnd(ctx, field, obj)
+		case "affiliate6moCode":
+			out.Values[i] = ec._SubscriptionPlan_affiliate6moCode(ctx, field, obj)
+		case "affiliate12moCode":
+			out.Values[i] = ec._SubscriptionPlan_affiliate12moCode(ctx, field, obj)
 		case "user":
 			field := field
 
@@ -46234,6 +47726,74 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "stripeCustomerID":
 			out.Values[i] = ec._User_stripeCustomerID(ctx, field, obj)
+		case "stripeAccountID":
+			out.Values[i] = ec._User_stripeAccountID(ctx, field, obj)
+		case "affiliate6moCode":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_affiliate6moCode(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "affiliate12moCode":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_affiliate12moCode(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "cars":
 			field := field
 
@@ -49784,7 +51344,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]any, error) {
+func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]interface{}, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -49792,7 +51352,7 @@ func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[s
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
+func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

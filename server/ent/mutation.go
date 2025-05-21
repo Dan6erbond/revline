@@ -2727,6 +2727,8 @@ type CheckoutSessionMutation struct {
 	mode                *checkoutsession.Mode
 	completed           *bool
 	completed_at        *time.Time
+	affiliate_6mo_code  *string
+	affiliate_12mo_code *string
 	clearedFields       map[string]struct{}
 	user                *uuid.UUID
 	cleareduser         bool
@@ -3119,6 +3121,104 @@ func (m *CheckoutSessionMutation) ResetCompletedAt() {
 	delete(m.clearedFields, checkoutsession.FieldCompletedAt)
 }
 
+// SetAffiliate6moCode sets the "affiliate_6mo_code" field.
+func (m *CheckoutSessionMutation) SetAffiliate6moCode(s string) {
+	m.affiliate_6mo_code = &s
+}
+
+// Affiliate6moCode returns the value of the "affiliate_6mo_code" field in the mutation.
+func (m *CheckoutSessionMutation) Affiliate6moCode() (r string, exists bool) {
+	v := m.affiliate_6mo_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAffiliate6moCode returns the old "affiliate_6mo_code" field's value of the CheckoutSession entity.
+// If the CheckoutSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CheckoutSessionMutation) OldAffiliate6moCode(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAffiliate6moCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAffiliate6moCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAffiliate6moCode: %w", err)
+	}
+	return oldValue.Affiliate6moCode, nil
+}
+
+// ClearAffiliate6moCode clears the value of the "affiliate_6mo_code" field.
+func (m *CheckoutSessionMutation) ClearAffiliate6moCode() {
+	m.affiliate_6mo_code = nil
+	m.clearedFields[checkoutsession.FieldAffiliate6moCode] = struct{}{}
+}
+
+// Affiliate6moCodeCleared returns if the "affiliate_6mo_code" field was cleared in this mutation.
+func (m *CheckoutSessionMutation) Affiliate6moCodeCleared() bool {
+	_, ok := m.clearedFields[checkoutsession.FieldAffiliate6moCode]
+	return ok
+}
+
+// ResetAffiliate6moCode resets all changes to the "affiliate_6mo_code" field.
+func (m *CheckoutSessionMutation) ResetAffiliate6moCode() {
+	m.affiliate_6mo_code = nil
+	delete(m.clearedFields, checkoutsession.FieldAffiliate6moCode)
+}
+
+// SetAffiliate12moCode sets the "affiliate_12mo_code" field.
+func (m *CheckoutSessionMutation) SetAffiliate12moCode(s string) {
+	m.affiliate_12mo_code = &s
+}
+
+// Affiliate12moCode returns the value of the "affiliate_12mo_code" field in the mutation.
+func (m *CheckoutSessionMutation) Affiliate12moCode() (r string, exists bool) {
+	v := m.affiliate_12mo_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAffiliate12moCode returns the old "affiliate_12mo_code" field's value of the CheckoutSession entity.
+// If the CheckoutSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CheckoutSessionMutation) OldAffiliate12moCode(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAffiliate12moCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAffiliate12moCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAffiliate12moCode: %w", err)
+	}
+	return oldValue.Affiliate12moCode, nil
+}
+
+// ClearAffiliate12moCode clears the value of the "affiliate_12mo_code" field.
+func (m *CheckoutSessionMutation) ClearAffiliate12moCode() {
+	m.affiliate_12mo_code = nil
+	m.clearedFields[checkoutsession.FieldAffiliate12moCode] = struct{}{}
+}
+
+// Affiliate12moCodeCleared returns if the "affiliate_12mo_code" field was cleared in this mutation.
+func (m *CheckoutSessionMutation) Affiliate12moCodeCleared() bool {
+	_, ok := m.clearedFields[checkoutsession.FieldAffiliate12moCode]
+	return ok
+}
+
+// ResetAffiliate12moCode resets all changes to the "affiliate_12mo_code" field.
+func (m *CheckoutSessionMutation) ResetAffiliate12moCode() {
+	m.affiliate_12mo_code = nil
+	delete(m.clearedFields, checkoutsession.FieldAffiliate12moCode)
+}
+
 // SetUserID sets the "user" edge to the User entity by id.
 func (m *CheckoutSessionMutation) SetUserID(id uuid.UUID) {
 	m.user = &id
@@ -3231,7 +3331,7 @@ func (m *CheckoutSessionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CheckoutSessionMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 9)
 	if m.create_time != nil {
 		fields = append(fields, checkoutsession.FieldCreateTime)
 	}
@@ -3252,6 +3352,12 @@ func (m *CheckoutSessionMutation) Fields() []string {
 	}
 	if m.completed_at != nil {
 		fields = append(fields, checkoutsession.FieldCompletedAt)
+	}
+	if m.affiliate_6mo_code != nil {
+		fields = append(fields, checkoutsession.FieldAffiliate6moCode)
+	}
+	if m.affiliate_12mo_code != nil {
+		fields = append(fields, checkoutsession.FieldAffiliate12moCode)
 	}
 	return fields
 }
@@ -3275,6 +3381,10 @@ func (m *CheckoutSessionMutation) Field(name string) (ent.Value, bool) {
 		return m.Completed()
 	case checkoutsession.FieldCompletedAt:
 		return m.CompletedAt()
+	case checkoutsession.FieldAffiliate6moCode:
+		return m.Affiliate6moCode()
+	case checkoutsession.FieldAffiliate12moCode:
+		return m.Affiliate12moCode()
 	}
 	return nil, false
 }
@@ -3298,6 +3408,10 @@ func (m *CheckoutSessionMutation) OldField(ctx context.Context, name string) (en
 		return m.OldCompleted(ctx)
 	case checkoutsession.FieldCompletedAt:
 		return m.OldCompletedAt(ctx)
+	case checkoutsession.FieldAffiliate6moCode:
+		return m.OldAffiliate6moCode(ctx)
+	case checkoutsession.FieldAffiliate12moCode:
+		return m.OldAffiliate12moCode(ctx)
 	}
 	return nil, fmt.Errorf("unknown CheckoutSession field %s", name)
 }
@@ -3356,6 +3470,20 @@ func (m *CheckoutSessionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCompletedAt(v)
 		return nil
+	case checkoutsession.FieldAffiliate6moCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAffiliate6moCode(v)
+		return nil
+	case checkoutsession.FieldAffiliate12moCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAffiliate12moCode(v)
+		return nil
 	}
 	return fmt.Errorf("unknown CheckoutSession field %s", name)
 }
@@ -3392,6 +3520,12 @@ func (m *CheckoutSessionMutation) ClearedFields() []string {
 	if m.FieldCleared(checkoutsession.FieldCompletedAt) {
 		fields = append(fields, checkoutsession.FieldCompletedAt)
 	}
+	if m.FieldCleared(checkoutsession.FieldAffiliate6moCode) {
+		fields = append(fields, checkoutsession.FieldAffiliate6moCode)
+	}
+	if m.FieldCleared(checkoutsession.FieldAffiliate12moCode) {
+		fields = append(fields, checkoutsession.FieldAffiliate12moCode)
+	}
 	return fields
 }
 
@@ -3411,6 +3545,12 @@ func (m *CheckoutSessionMutation) ClearField(name string) error {
 		return nil
 	case checkoutsession.FieldCompletedAt:
 		m.ClearCompletedAt()
+		return nil
+	case checkoutsession.FieldAffiliate6moCode:
+		m.ClearAffiliate6moCode()
+		return nil
+	case checkoutsession.FieldAffiliate12moCode:
+		m.ClearAffiliate12moCode()
 		return nil
 	}
 	return fmt.Errorf("unknown CheckoutSession nullable field %s", name)
@@ -3440,6 +3580,12 @@ func (m *CheckoutSessionMutation) ResetField(name string) error {
 		return nil
 	case checkoutsession.FieldCompletedAt:
 		m.ResetCompletedAt()
+		return nil
+	case checkoutsession.FieldAffiliate6moCode:
+		m.ResetAffiliate6moCode()
+		return nil
+	case checkoutsession.FieldAffiliate12moCode:
+		m.ResetAffiliate12moCode()
 		return nil
 	}
 	return fmt.Errorf("unknown CheckoutSession field %s", name)
@@ -17061,6 +17207,8 @@ type SubscriptionMutation struct {
 	canceled_at             *time.Time
 	cancel_at_period_end    *bool
 	trial_end               *time.Time
+	affiliate_6mo_code      *string
+	affiliate_12mo_code     *string
 	clearedFields           map[string]struct{}
 	user                    *uuid.UUID
 	cleareduser             bool
@@ -17502,6 +17650,104 @@ func (m *SubscriptionMutation) ResetTrialEnd() {
 	delete(m.clearedFields, subscription.FieldTrialEnd)
 }
 
+// SetAffiliate6moCode sets the "affiliate_6mo_code" field.
+func (m *SubscriptionMutation) SetAffiliate6moCode(s string) {
+	m.affiliate_6mo_code = &s
+}
+
+// Affiliate6moCode returns the value of the "affiliate_6mo_code" field in the mutation.
+func (m *SubscriptionMutation) Affiliate6moCode() (r string, exists bool) {
+	v := m.affiliate_6mo_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAffiliate6moCode returns the old "affiliate_6mo_code" field's value of the Subscription entity.
+// If the Subscription object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SubscriptionMutation) OldAffiliate6moCode(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAffiliate6moCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAffiliate6moCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAffiliate6moCode: %w", err)
+	}
+	return oldValue.Affiliate6moCode, nil
+}
+
+// ClearAffiliate6moCode clears the value of the "affiliate_6mo_code" field.
+func (m *SubscriptionMutation) ClearAffiliate6moCode() {
+	m.affiliate_6mo_code = nil
+	m.clearedFields[subscription.FieldAffiliate6moCode] = struct{}{}
+}
+
+// Affiliate6moCodeCleared returns if the "affiliate_6mo_code" field was cleared in this mutation.
+func (m *SubscriptionMutation) Affiliate6moCodeCleared() bool {
+	_, ok := m.clearedFields[subscription.FieldAffiliate6moCode]
+	return ok
+}
+
+// ResetAffiliate6moCode resets all changes to the "affiliate_6mo_code" field.
+func (m *SubscriptionMutation) ResetAffiliate6moCode() {
+	m.affiliate_6mo_code = nil
+	delete(m.clearedFields, subscription.FieldAffiliate6moCode)
+}
+
+// SetAffiliate12moCode sets the "affiliate_12mo_code" field.
+func (m *SubscriptionMutation) SetAffiliate12moCode(s string) {
+	m.affiliate_12mo_code = &s
+}
+
+// Affiliate12moCode returns the value of the "affiliate_12mo_code" field in the mutation.
+func (m *SubscriptionMutation) Affiliate12moCode() (r string, exists bool) {
+	v := m.affiliate_12mo_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAffiliate12moCode returns the old "affiliate_12mo_code" field's value of the Subscription entity.
+// If the Subscription object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SubscriptionMutation) OldAffiliate12moCode(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAffiliate12moCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAffiliate12moCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAffiliate12moCode: %w", err)
+	}
+	return oldValue.Affiliate12moCode, nil
+}
+
+// ClearAffiliate12moCode clears the value of the "affiliate_12mo_code" field.
+func (m *SubscriptionMutation) ClearAffiliate12moCode() {
+	m.affiliate_12mo_code = nil
+	m.clearedFields[subscription.FieldAffiliate12moCode] = struct{}{}
+}
+
+// Affiliate12moCodeCleared returns if the "affiliate_12mo_code" field was cleared in this mutation.
+func (m *SubscriptionMutation) Affiliate12moCodeCleared() bool {
+	_, ok := m.clearedFields[subscription.FieldAffiliate12moCode]
+	return ok
+}
+
+// ResetAffiliate12moCode resets all changes to the "affiliate_12mo_code" field.
+func (m *SubscriptionMutation) ResetAffiliate12moCode() {
+	m.affiliate_12mo_code = nil
+	delete(m.clearedFields, subscription.FieldAffiliate12moCode)
+}
+
 // SetUserID sets the "user" edge to the User entity by id.
 func (m *SubscriptionMutation) SetUserID(id uuid.UUID) {
 	m.user = &id
@@ -17614,7 +17860,7 @@ func (m *SubscriptionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SubscriptionMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 10)
 	if m.create_time != nil {
 		fields = append(fields, subscription.FieldCreateTime)
 	}
@@ -17638,6 +17884,12 @@ func (m *SubscriptionMutation) Fields() []string {
 	}
 	if m.trial_end != nil {
 		fields = append(fields, subscription.FieldTrialEnd)
+	}
+	if m.affiliate_6mo_code != nil {
+		fields = append(fields, subscription.FieldAffiliate6moCode)
+	}
+	if m.affiliate_12mo_code != nil {
+		fields = append(fields, subscription.FieldAffiliate12moCode)
 	}
 	return fields
 }
@@ -17663,6 +17915,10 @@ func (m *SubscriptionMutation) Field(name string) (ent.Value, bool) {
 		return m.CancelAtPeriodEnd()
 	case subscription.FieldTrialEnd:
 		return m.TrialEnd()
+	case subscription.FieldAffiliate6moCode:
+		return m.Affiliate6moCode()
+	case subscription.FieldAffiliate12moCode:
+		return m.Affiliate12moCode()
 	}
 	return nil, false
 }
@@ -17688,6 +17944,10 @@ func (m *SubscriptionMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldCancelAtPeriodEnd(ctx)
 	case subscription.FieldTrialEnd:
 		return m.OldTrialEnd(ctx)
+	case subscription.FieldAffiliate6moCode:
+		return m.OldAffiliate6moCode(ctx)
+	case subscription.FieldAffiliate12moCode:
+		return m.OldAffiliate12moCode(ctx)
 	}
 	return nil, fmt.Errorf("unknown Subscription field %s", name)
 }
@@ -17753,6 +18013,20 @@ func (m *SubscriptionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTrialEnd(v)
 		return nil
+	case subscription.FieldAffiliate6moCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAffiliate6moCode(v)
+		return nil
+	case subscription.FieldAffiliate12moCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAffiliate12moCode(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Subscription field %s", name)
 }
@@ -17792,6 +18066,12 @@ func (m *SubscriptionMutation) ClearedFields() []string {
 	if m.FieldCleared(subscription.FieldTrialEnd) {
 		fields = append(fields, subscription.FieldTrialEnd)
 	}
+	if m.FieldCleared(subscription.FieldAffiliate6moCode) {
+		fields = append(fields, subscription.FieldAffiliate6moCode)
+	}
+	if m.FieldCleared(subscription.FieldAffiliate12moCode) {
+		fields = append(fields, subscription.FieldAffiliate12moCode)
+	}
 	return fields
 }
 
@@ -17814,6 +18094,12 @@ func (m *SubscriptionMutation) ClearField(name string) error {
 		return nil
 	case subscription.FieldTrialEnd:
 		m.ClearTrialEnd()
+		return nil
+	case subscription.FieldAffiliate6moCode:
+		m.ClearAffiliate6moCode()
+		return nil
+	case subscription.FieldAffiliate12moCode:
+		m.ClearAffiliate12moCode()
 		return nil
 	}
 	return fmt.Errorf("unknown Subscription nullable field %s", name)
@@ -17846,6 +18132,12 @@ func (m *SubscriptionMutation) ResetField(name string) error {
 		return nil
 	case subscription.FieldTrialEnd:
 		m.ResetTrialEnd()
+		return nil
+	case subscription.FieldAffiliate6moCode:
+		m.ResetAffiliate6moCode()
+		return nil
+	case subscription.FieldAffiliate12moCode:
+		m.ResetAffiliate12moCode()
 		return nil
 	}
 	return fmt.Errorf("unknown Subscription field %s", name)
@@ -19486,6 +19778,9 @@ type UserMutation struct {
 	update_time              *time.Time
 	email                    *string
 	stripe_customer_id       *string
+	stripe_account_id        *string
+	affiliate_6mo_code       *string
+	affiliate_12mo_code      *string
 	clearedFields            map[string]struct{}
 	cars                     map[uuid.UUID]struct{}
 	removedcars              map[uuid.UUID]struct{}
@@ -19766,6 +20061,153 @@ func (m *UserMutation) ResetStripeCustomerID() {
 	delete(m.clearedFields, user.FieldStripeCustomerID)
 }
 
+// SetStripeAccountID sets the "stripe_account_id" field.
+func (m *UserMutation) SetStripeAccountID(s string) {
+	m.stripe_account_id = &s
+}
+
+// StripeAccountID returns the value of the "stripe_account_id" field in the mutation.
+func (m *UserMutation) StripeAccountID() (r string, exists bool) {
+	v := m.stripe_account_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStripeAccountID returns the old "stripe_account_id" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldStripeAccountID(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStripeAccountID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStripeAccountID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStripeAccountID: %w", err)
+	}
+	return oldValue.StripeAccountID, nil
+}
+
+// ClearStripeAccountID clears the value of the "stripe_account_id" field.
+func (m *UserMutation) ClearStripeAccountID() {
+	m.stripe_account_id = nil
+	m.clearedFields[user.FieldStripeAccountID] = struct{}{}
+}
+
+// StripeAccountIDCleared returns if the "stripe_account_id" field was cleared in this mutation.
+func (m *UserMutation) StripeAccountIDCleared() bool {
+	_, ok := m.clearedFields[user.FieldStripeAccountID]
+	return ok
+}
+
+// ResetStripeAccountID resets all changes to the "stripe_account_id" field.
+func (m *UserMutation) ResetStripeAccountID() {
+	m.stripe_account_id = nil
+	delete(m.clearedFields, user.FieldStripeAccountID)
+}
+
+// SetAffiliate6moCode sets the "affiliate_6mo_code" field.
+func (m *UserMutation) SetAffiliate6moCode(s string) {
+	m.affiliate_6mo_code = &s
+}
+
+// Affiliate6moCode returns the value of the "affiliate_6mo_code" field in the mutation.
+func (m *UserMutation) Affiliate6moCode() (r string, exists bool) {
+	v := m.affiliate_6mo_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAffiliate6moCode returns the old "affiliate_6mo_code" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldAffiliate6moCode(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAffiliate6moCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAffiliate6moCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAffiliate6moCode: %w", err)
+	}
+	return oldValue.Affiliate6moCode, nil
+}
+
+// ClearAffiliate6moCode clears the value of the "affiliate_6mo_code" field.
+func (m *UserMutation) ClearAffiliate6moCode() {
+	m.affiliate_6mo_code = nil
+	m.clearedFields[user.FieldAffiliate6moCode] = struct{}{}
+}
+
+// Affiliate6moCodeCleared returns if the "affiliate_6mo_code" field was cleared in this mutation.
+func (m *UserMutation) Affiliate6moCodeCleared() bool {
+	_, ok := m.clearedFields[user.FieldAffiliate6moCode]
+	return ok
+}
+
+// ResetAffiliate6moCode resets all changes to the "affiliate_6mo_code" field.
+func (m *UserMutation) ResetAffiliate6moCode() {
+	m.affiliate_6mo_code = nil
+	delete(m.clearedFields, user.FieldAffiliate6moCode)
+}
+
+// SetAffiliate12moCode sets the "affiliate_12mo_code" field.
+func (m *UserMutation) SetAffiliate12moCode(s string) {
+	m.affiliate_12mo_code = &s
+}
+
+// Affiliate12moCode returns the value of the "affiliate_12mo_code" field in the mutation.
+func (m *UserMutation) Affiliate12moCode() (r string, exists bool) {
+	v := m.affiliate_12mo_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAffiliate12moCode returns the old "affiliate_12mo_code" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldAffiliate12moCode(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAffiliate12moCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAffiliate12moCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAffiliate12moCode: %w", err)
+	}
+	return oldValue.Affiliate12moCode, nil
+}
+
+// ClearAffiliate12moCode clears the value of the "affiliate_12mo_code" field.
+func (m *UserMutation) ClearAffiliate12moCode() {
+	m.affiliate_12mo_code = nil
+	m.clearedFields[user.FieldAffiliate12moCode] = struct{}{}
+}
+
+// Affiliate12moCodeCleared returns if the "affiliate_12mo_code" field was cleared in this mutation.
+func (m *UserMutation) Affiliate12moCodeCleared() bool {
+	_, ok := m.clearedFields[user.FieldAffiliate12moCode]
+	return ok
+}
+
+// ResetAffiliate12moCode resets all changes to the "affiliate_12mo_code" field.
+func (m *UserMutation) ResetAffiliate12moCode() {
+	m.affiliate_12mo_code = nil
+	delete(m.clearedFields, user.FieldAffiliate12moCode)
+}
+
 // AddCarIDs adds the "cars" edge to the Car entity by ids.
 func (m *UserMutation) AddCarIDs(ids ...uuid.UUID) {
 	if m.cars == nil {
@@ -20040,7 +20482,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 7)
 	if m.create_time != nil {
 		fields = append(fields, user.FieldCreateTime)
 	}
@@ -20052,6 +20494,15 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.stripe_customer_id != nil {
 		fields = append(fields, user.FieldStripeCustomerID)
+	}
+	if m.stripe_account_id != nil {
+		fields = append(fields, user.FieldStripeAccountID)
+	}
+	if m.affiliate_6mo_code != nil {
+		fields = append(fields, user.FieldAffiliate6moCode)
+	}
+	if m.affiliate_12mo_code != nil {
+		fields = append(fields, user.FieldAffiliate12moCode)
 	}
 	return fields
 }
@@ -20069,6 +20520,12 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Email()
 	case user.FieldStripeCustomerID:
 		return m.StripeCustomerID()
+	case user.FieldStripeAccountID:
+		return m.StripeAccountID()
+	case user.FieldAffiliate6moCode:
+		return m.Affiliate6moCode()
+	case user.FieldAffiliate12moCode:
+		return m.Affiliate12moCode()
 	}
 	return nil, false
 }
@@ -20086,6 +20543,12 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldEmail(ctx)
 	case user.FieldStripeCustomerID:
 		return m.OldStripeCustomerID(ctx)
+	case user.FieldStripeAccountID:
+		return m.OldStripeAccountID(ctx)
+	case user.FieldAffiliate6moCode:
+		return m.OldAffiliate6moCode(ctx)
+	case user.FieldAffiliate12moCode:
+		return m.OldAffiliate12moCode(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -20123,6 +20586,27 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetStripeCustomerID(v)
 		return nil
+	case user.FieldStripeAccountID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStripeAccountID(v)
+		return nil
+	case user.FieldAffiliate6moCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAffiliate6moCode(v)
+		return nil
+	case user.FieldAffiliate12moCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAffiliate12moCode(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
@@ -20156,6 +20640,15 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldStripeCustomerID) {
 		fields = append(fields, user.FieldStripeCustomerID)
 	}
+	if m.FieldCleared(user.FieldStripeAccountID) {
+		fields = append(fields, user.FieldStripeAccountID)
+	}
+	if m.FieldCleared(user.FieldAffiliate6moCode) {
+		fields = append(fields, user.FieldAffiliate6moCode)
+	}
+	if m.FieldCleared(user.FieldAffiliate12moCode) {
+		fields = append(fields, user.FieldAffiliate12moCode)
+	}
 	return fields
 }
 
@@ -20172,6 +20665,15 @@ func (m *UserMutation) ClearField(name string) error {
 	switch name {
 	case user.FieldStripeCustomerID:
 		m.ClearStripeCustomerID()
+		return nil
+	case user.FieldStripeAccountID:
+		m.ClearStripeAccountID()
+		return nil
+	case user.FieldAffiliate6moCode:
+		m.ClearAffiliate6moCode()
+		return nil
+	case user.FieldAffiliate12moCode:
+		m.ClearAffiliate12moCode()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -20192,6 +20694,15 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldStripeCustomerID:
 		m.ResetStripeCustomerID()
+		return nil
+	case user.FieldStripeAccountID:
+		m.ResetStripeAccountID()
+		return nil
+	case user.FieldAffiliate6moCode:
+		m.ResetAffiliate6moCode()
+		return nil
+	case user.FieldAffiliate12moCode:
+		m.ResetAffiliate12moCode()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

@@ -25,6 +25,18 @@ func (User) Fields() []ent.Field {
 			Optional().
 			Nillable().
 			Unique(),
+		field.String("stripe_account_id").
+			Optional().
+			Nillable().
+			Unique(),
+		field.String("affiliate_6mo_code").
+			Optional().
+			Nillable().
+			Unique(),
+		field.String("affiliate_12mo_code").
+			Optional().
+			Nillable().
+			Unique(),
 	}
 }
 

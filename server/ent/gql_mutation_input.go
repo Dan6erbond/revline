@@ -2441,6 +2441,9 @@ type CreateUserInput struct {
 	UpdateTime         *time.Time
 	Email              string
 	StripeCustomerID   *string
+	StripeAccountID    *string
+	Affiliate6moCode   *string
+	Affiliate12moCode  *string
 	CarIDs             []uuid.UUID
 	ProfileID          *uuid.UUID
 	SettingsID         *uuid.UUID
@@ -2459,6 +2462,15 @@ func (i *CreateUserInput) Mutate(m *UserMutation) {
 	m.SetEmail(i.Email)
 	if v := i.StripeCustomerID; v != nil {
 		m.SetStripeCustomerID(*v)
+	}
+	if v := i.StripeAccountID; v != nil {
+		m.SetStripeAccountID(*v)
+	}
+	if v := i.Affiliate6moCode; v != nil {
+		m.SetAffiliate6moCode(*v)
+	}
+	if v := i.Affiliate12moCode; v != nil {
+		m.SetAffiliate12moCode(*v)
 	}
 	if v := i.CarIDs; len(v) > 0 {
 		m.AddCarIDs(v...)
@@ -2489,6 +2501,12 @@ type UpdateUserInput struct {
 	Email                    *string
 	ClearStripeCustomerID    bool
 	StripeCustomerID         *string
+	ClearStripeAccountID     bool
+	StripeAccountID          *string
+	ClearAffiliate6moCode    bool
+	Affiliate6moCode         *string
+	ClearAffiliate12moCode   bool
+	Affiliate12moCode        *string
 	ClearCars                bool
 	AddCarIDs                []uuid.UUID
 	RemoveCarIDs             []uuid.UUID
@@ -2517,6 +2535,24 @@ func (i *UpdateUserInput) Mutate(m *UserMutation) {
 	}
 	if v := i.StripeCustomerID; v != nil {
 		m.SetStripeCustomerID(*v)
+	}
+	if i.ClearStripeAccountID {
+		m.ClearStripeAccountID()
+	}
+	if v := i.StripeAccountID; v != nil {
+		m.SetStripeAccountID(*v)
+	}
+	if i.ClearAffiliate6moCode {
+		m.ClearAffiliate6moCode()
+	}
+	if v := i.Affiliate6moCode; v != nil {
+		m.SetAffiliate6moCode(*v)
+	}
+	if i.ClearAffiliate12moCode {
+		m.ClearAffiliate12moCode()
+	}
+	if v := i.Affiliate12moCode; v != nil {
+		m.SetAffiliate12moCode(*v)
 	}
 	if i.ClearCars {
 		m.ClearCars()

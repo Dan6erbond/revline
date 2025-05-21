@@ -28,6 +28,12 @@ type User struct {
 	Email string `json:"email,omitempty"`
 	// StripeCustomerID holds the value of the "stripe_customer_id" field.
 	StripeCustomerID *string `json:"stripe_customer_id,omitempty"`
+	// StripeAccountID holds the value of the "stripe_account_id" field.
+	StripeAccountID *string `json:"stripe_account_id,omitempty"`
+	// Affiliate6moCode holds the value of the "affiliate_6mo_code" field.
+	Affiliate6moCode *string `json:"affiliate_6mo_code,omitempty"`
+	// Affiliate12moCode holds the value of the "affiliate_12mo_code" field.
+	Affiliate12moCode *string `json:"affiliate_12mo_code,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -111,7 +117,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldEmail, user.FieldStripeCustomerID:
+		case user.FieldEmail, user.FieldStripeCustomerID, user.FieldStripeAccountID, user.FieldAffiliate6moCode, user.FieldAffiliate12moCode:
 			values[i] = new(sql.NullString)
 		case user.FieldCreateTime, user.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
@@ -162,6 +168,27 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.StripeCustomerID = new(string)
 				*u.StripeCustomerID = value.String
+			}
+		case user.FieldStripeAccountID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field stripe_account_id", values[i])
+			} else if value.Valid {
+				u.StripeAccountID = new(string)
+				*u.StripeAccountID = value.String
+			}
+		case user.FieldAffiliate6moCode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field affiliate_6mo_code", values[i])
+			} else if value.Valid {
+				u.Affiliate6moCode = new(string)
+				*u.Affiliate6moCode = value.String
+			}
+		case user.FieldAffiliate12moCode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field affiliate_12mo_code", values[i])
+			} else if value.Valid {
+				u.Affiliate12moCode = new(string)
+				*u.Affiliate12moCode = value.String
 			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
@@ -235,6 +262,21 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	if v := u.StripeCustomerID; v != nil {
 		builder.WriteString("stripe_customer_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := u.StripeAccountID; v != nil {
+		builder.WriteString("stripe_account_id=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := u.Affiliate6moCode; v != nil {
+		builder.WriteString("affiliate_6mo_code=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := u.Affiliate12moCode; v != nil {
+		builder.WriteString("affiliate_12mo_code=")
 		builder.WriteString(*v)
 	}
 	builder.WriteByte(')')

@@ -127,6 +127,34 @@ func (sc *SubscriptionCreate) SetNillableTrialEnd(t *time.Time) *SubscriptionCre
 	return sc
 }
 
+// SetAffiliate6moCode sets the "affiliate_6mo_code" field.
+func (sc *SubscriptionCreate) SetAffiliate6moCode(s string) *SubscriptionCreate {
+	sc.mutation.SetAffiliate6moCode(s)
+	return sc
+}
+
+// SetNillableAffiliate6moCode sets the "affiliate_6mo_code" field if the given value is not nil.
+func (sc *SubscriptionCreate) SetNillableAffiliate6moCode(s *string) *SubscriptionCreate {
+	if s != nil {
+		sc.SetAffiliate6moCode(*s)
+	}
+	return sc
+}
+
+// SetAffiliate12moCode sets the "affiliate_12mo_code" field.
+func (sc *SubscriptionCreate) SetAffiliate12moCode(s string) *SubscriptionCreate {
+	sc.mutation.SetAffiliate12moCode(s)
+	return sc
+}
+
+// SetNillableAffiliate12moCode sets the "affiliate_12mo_code" field if the given value is not nil.
+func (sc *SubscriptionCreate) SetNillableAffiliate12moCode(s *string) *SubscriptionCreate {
+	if s != nil {
+		sc.SetAffiliate12moCode(*s)
+	}
+	return sc
+}
+
 // SetID sets the "id" field.
 func (sc *SubscriptionCreate) SetID(u uuid.UUID) *SubscriptionCreate {
 	sc.mutation.SetID(u)
@@ -324,6 +352,14 @@ func (sc *SubscriptionCreate) createSpec() (*Subscription, *sqlgraph.CreateSpec)
 	if value, ok := sc.mutation.TrialEnd(); ok {
 		_spec.SetField(subscription.FieldTrialEnd, field.TypeTime, value)
 		_node.TrialEnd = &value
+	}
+	if value, ok := sc.mutation.Affiliate6moCode(); ok {
+		_spec.SetField(subscription.FieldAffiliate6moCode, field.TypeString, value)
+		_node.Affiliate6moCode = &value
+	}
+	if value, ok := sc.mutation.Affiliate12moCode(); ok {
+		_spec.SetField(subscription.FieldAffiliate12moCode, field.TypeString, value)
+		_node.Affiliate12moCode = &value
 	}
 	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

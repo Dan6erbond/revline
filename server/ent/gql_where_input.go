@@ -1280,6 +1280,40 @@ type CheckoutSessionWhereInput struct {
 	CompletedAtIsNil  bool        `json:"completedAtIsNil,omitempty"`
 	CompletedAtNotNil bool        `json:"completedAtNotNil,omitempty"`
 
+	// "affiliate_6mo_code" field predicates.
+	Affiliate6moCode             *string  `json:"affiliate6moCode,omitempty"`
+	Affiliate6moCodeNEQ          *string  `json:"affiliate6moCodeNEQ,omitempty"`
+	Affiliate6moCodeIn           []string `json:"affiliate6moCodeIn,omitempty"`
+	Affiliate6moCodeNotIn        []string `json:"affiliate6moCodeNotIn,omitempty"`
+	Affiliate6moCodeGT           *string  `json:"affiliate6moCodeGT,omitempty"`
+	Affiliate6moCodeGTE          *string  `json:"affiliate6moCodeGTE,omitempty"`
+	Affiliate6moCodeLT           *string  `json:"affiliate6moCodeLT,omitempty"`
+	Affiliate6moCodeLTE          *string  `json:"affiliate6moCodeLTE,omitempty"`
+	Affiliate6moCodeContains     *string  `json:"affiliate6moCodeContains,omitempty"`
+	Affiliate6moCodeHasPrefix    *string  `json:"affiliate6moCodeHasPrefix,omitempty"`
+	Affiliate6moCodeHasSuffix    *string  `json:"affiliate6moCodeHasSuffix,omitempty"`
+	Affiliate6moCodeIsNil        bool     `json:"affiliate6moCodeIsNil,omitempty"`
+	Affiliate6moCodeNotNil       bool     `json:"affiliate6moCodeNotNil,omitempty"`
+	Affiliate6moCodeEqualFold    *string  `json:"affiliate6moCodeEqualFold,omitempty"`
+	Affiliate6moCodeContainsFold *string  `json:"affiliate6moCodeContainsFold,omitempty"`
+
+	// "affiliate_12mo_code" field predicates.
+	Affiliate12moCode             *string  `json:"affiliate12moCode,omitempty"`
+	Affiliate12moCodeNEQ          *string  `json:"affiliate12moCodeNEQ,omitempty"`
+	Affiliate12moCodeIn           []string `json:"affiliate12moCodeIn,omitempty"`
+	Affiliate12moCodeNotIn        []string `json:"affiliate12moCodeNotIn,omitempty"`
+	Affiliate12moCodeGT           *string  `json:"affiliate12moCodeGT,omitempty"`
+	Affiliate12moCodeGTE          *string  `json:"affiliate12moCodeGTE,omitempty"`
+	Affiliate12moCodeLT           *string  `json:"affiliate12moCodeLT,omitempty"`
+	Affiliate12moCodeLTE          *string  `json:"affiliate12moCodeLTE,omitempty"`
+	Affiliate12moCodeContains     *string  `json:"affiliate12moCodeContains,omitempty"`
+	Affiliate12moCodeHasPrefix    *string  `json:"affiliate12moCodeHasPrefix,omitempty"`
+	Affiliate12moCodeHasSuffix    *string  `json:"affiliate12moCodeHasSuffix,omitempty"`
+	Affiliate12moCodeIsNil        bool     `json:"affiliate12moCodeIsNil,omitempty"`
+	Affiliate12moCodeNotNil       bool     `json:"affiliate12moCodeNotNil,omitempty"`
+	Affiliate12moCodeEqualFold    *string  `json:"affiliate12moCodeEqualFold,omitempty"`
+	Affiliate12moCodeContainsFold *string  `json:"affiliate12moCodeContainsFold,omitempty"`
+
 	// "user" edge predicates.
 	HasUser     *bool             `json:"hasUser,omitempty"`
 	HasUserWith []*UserWhereInput `json:"hasUserWith,omitempty"`
@@ -1563,6 +1597,96 @@ func (i *CheckoutSessionWhereInput) P() (predicate.CheckoutSession, error) {
 	}
 	if i.CompletedAtNotNil {
 		predicates = append(predicates, checkoutsession.CompletedAtNotNil())
+	}
+	if i.Affiliate6moCode != nil {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeEQ(*i.Affiliate6moCode))
+	}
+	if i.Affiliate6moCodeNEQ != nil {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeNEQ(*i.Affiliate6moCodeNEQ))
+	}
+	if len(i.Affiliate6moCodeIn) > 0 {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeIn(i.Affiliate6moCodeIn...))
+	}
+	if len(i.Affiliate6moCodeNotIn) > 0 {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeNotIn(i.Affiliate6moCodeNotIn...))
+	}
+	if i.Affiliate6moCodeGT != nil {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeGT(*i.Affiliate6moCodeGT))
+	}
+	if i.Affiliate6moCodeGTE != nil {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeGTE(*i.Affiliate6moCodeGTE))
+	}
+	if i.Affiliate6moCodeLT != nil {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeLT(*i.Affiliate6moCodeLT))
+	}
+	if i.Affiliate6moCodeLTE != nil {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeLTE(*i.Affiliate6moCodeLTE))
+	}
+	if i.Affiliate6moCodeContains != nil {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeContains(*i.Affiliate6moCodeContains))
+	}
+	if i.Affiliate6moCodeHasPrefix != nil {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeHasPrefix(*i.Affiliate6moCodeHasPrefix))
+	}
+	if i.Affiliate6moCodeHasSuffix != nil {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeHasSuffix(*i.Affiliate6moCodeHasSuffix))
+	}
+	if i.Affiliate6moCodeIsNil {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeIsNil())
+	}
+	if i.Affiliate6moCodeNotNil {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeNotNil())
+	}
+	if i.Affiliate6moCodeEqualFold != nil {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeEqualFold(*i.Affiliate6moCodeEqualFold))
+	}
+	if i.Affiliate6moCodeContainsFold != nil {
+		predicates = append(predicates, checkoutsession.Affiliate6moCodeContainsFold(*i.Affiliate6moCodeContainsFold))
+	}
+	if i.Affiliate12moCode != nil {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeEQ(*i.Affiliate12moCode))
+	}
+	if i.Affiliate12moCodeNEQ != nil {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeNEQ(*i.Affiliate12moCodeNEQ))
+	}
+	if len(i.Affiliate12moCodeIn) > 0 {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeIn(i.Affiliate12moCodeIn...))
+	}
+	if len(i.Affiliate12moCodeNotIn) > 0 {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeNotIn(i.Affiliate12moCodeNotIn...))
+	}
+	if i.Affiliate12moCodeGT != nil {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeGT(*i.Affiliate12moCodeGT))
+	}
+	if i.Affiliate12moCodeGTE != nil {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeGTE(*i.Affiliate12moCodeGTE))
+	}
+	if i.Affiliate12moCodeLT != nil {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeLT(*i.Affiliate12moCodeLT))
+	}
+	if i.Affiliate12moCodeLTE != nil {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeLTE(*i.Affiliate12moCodeLTE))
+	}
+	if i.Affiliate12moCodeContains != nil {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeContains(*i.Affiliate12moCodeContains))
+	}
+	if i.Affiliate12moCodeHasPrefix != nil {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeHasPrefix(*i.Affiliate12moCodeHasPrefix))
+	}
+	if i.Affiliate12moCodeHasSuffix != nil {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeHasSuffix(*i.Affiliate12moCodeHasSuffix))
+	}
+	if i.Affiliate12moCodeIsNil {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeIsNil())
+	}
+	if i.Affiliate12moCodeNotNil {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeNotNil())
+	}
+	if i.Affiliate12moCodeEqualFold != nil {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeEqualFold(*i.Affiliate12moCodeEqualFold))
+	}
+	if i.Affiliate12moCodeContainsFold != nil {
+		predicates = append(predicates, checkoutsession.Affiliate12moCodeContainsFold(*i.Affiliate12moCodeContainsFold))
 	}
 
 	if i.HasUser != nil {
@@ -7943,6 +8067,40 @@ type SubscriptionPlanWhereInput struct {
 	TrialEndIsNil  bool        `json:"trialEndIsNil,omitempty"`
 	TrialEndNotNil bool        `json:"trialEndNotNil,omitempty"`
 
+	// "affiliate_6mo_code" field predicates.
+	Affiliate6moCode             *string  `json:"affiliate6moCode,omitempty"`
+	Affiliate6moCodeNEQ          *string  `json:"affiliate6moCodeNEQ,omitempty"`
+	Affiliate6moCodeIn           []string `json:"affiliate6moCodeIn,omitempty"`
+	Affiliate6moCodeNotIn        []string `json:"affiliate6moCodeNotIn,omitempty"`
+	Affiliate6moCodeGT           *string  `json:"affiliate6moCodeGT,omitempty"`
+	Affiliate6moCodeGTE          *string  `json:"affiliate6moCodeGTE,omitempty"`
+	Affiliate6moCodeLT           *string  `json:"affiliate6moCodeLT,omitempty"`
+	Affiliate6moCodeLTE          *string  `json:"affiliate6moCodeLTE,omitempty"`
+	Affiliate6moCodeContains     *string  `json:"affiliate6moCodeContains,omitempty"`
+	Affiliate6moCodeHasPrefix    *string  `json:"affiliate6moCodeHasPrefix,omitempty"`
+	Affiliate6moCodeHasSuffix    *string  `json:"affiliate6moCodeHasSuffix,omitempty"`
+	Affiliate6moCodeIsNil        bool     `json:"affiliate6moCodeIsNil,omitempty"`
+	Affiliate6moCodeNotNil       bool     `json:"affiliate6moCodeNotNil,omitempty"`
+	Affiliate6moCodeEqualFold    *string  `json:"affiliate6moCodeEqualFold,omitempty"`
+	Affiliate6moCodeContainsFold *string  `json:"affiliate6moCodeContainsFold,omitempty"`
+
+	// "affiliate_12mo_code" field predicates.
+	Affiliate12moCode             *string  `json:"affiliate12moCode,omitempty"`
+	Affiliate12moCodeNEQ          *string  `json:"affiliate12moCodeNEQ,omitempty"`
+	Affiliate12moCodeIn           []string `json:"affiliate12moCodeIn,omitempty"`
+	Affiliate12moCodeNotIn        []string `json:"affiliate12moCodeNotIn,omitempty"`
+	Affiliate12moCodeGT           *string  `json:"affiliate12moCodeGT,omitempty"`
+	Affiliate12moCodeGTE          *string  `json:"affiliate12moCodeGTE,omitempty"`
+	Affiliate12moCodeLT           *string  `json:"affiliate12moCodeLT,omitempty"`
+	Affiliate12moCodeLTE          *string  `json:"affiliate12moCodeLTE,omitempty"`
+	Affiliate12moCodeContains     *string  `json:"affiliate12moCodeContains,omitempty"`
+	Affiliate12moCodeHasPrefix    *string  `json:"affiliate12moCodeHasPrefix,omitempty"`
+	Affiliate12moCodeHasSuffix    *string  `json:"affiliate12moCodeHasSuffix,omitempty"`
+	Affiliate12moCodeIsNil        bool     `json:"affiliate12moCodeIsNil,omitempty"`
+	Affiliate12moCodeNotNil       bool     `json:"affiliate12moCodeNotNil,omitempty"`
+	Affiliate12moCodeEqualFold    *string  `json:"affiliate12moCodeEqualFold,omitempty"`
+	Affiliate12moCodeContainsFold *string  `json:"affiliate12moCodeContainsFold,omitempty"`
+
 	// "user" edge predicates.
 	HasUser     *bool             `json:"hasUser,omitempty"`
 	HasUserWith []*UserWhereInput `json:"hasUserWith,omitempty"`
@@ -8229,6 +8387,96 @@ func (i *SubscriptionPlanWhereInput) P() (predicate.Subscription, error) {
 	}
 	if i.TrialEndNotNil {
 		predicates = append(predicates, subscription.TrialEndNotNil())
+	}
+	if i.Affiliate6moCode != nil {
+		predicates = append(predicates, subscription.Affiliate6moCodeEQ(*i.Affiliate6moCode))
+	}
+	if i.Affiliate6moCodeNEQ != nil {
+		predicates = append(predicates, subscription.Affiliate6moCodeNEQ(*i.Affiliate6moCodeNEQ))
+	}
+	if len(i.Affiliate6moCodeIn) > 0 {
+		predicates = append(predicates, subscription.Affiliate6moCodeIn(i.Affiliate6moCodeIn...))
+	}
+	if len(i.Affiliate6moCodeNotIn) > 0 {
+		predicates = append(predicates, subscription.Affiliate6moCodeNotIn(i.Affiliate6moCodeNotIn...))
+	}
+	if i.Affiliate6moCodeGT != nil {
+		predicates = append(predicates, subscription.Affiliate6moCodeGT(*i.Affiliate6moCodeGT))
+	}
+	if i.Affiliate6moCodeGTE != nil {
+		predicates = append(predicates, subscription.Affiliate6moCodeGTE(*i.Affiliate6moCodeGTE))
+	}
+	if i.Affiliate6moCodeLT != nil {
+		predicates = append(predicates, subscription.Affiliate6moCodeLT(*i.Affiliate6moCodeLT))
+	}
+	if i.Affiliate6moCodeLTE != nil {
+		predicates = append(predicates, subscription.Affiliate6moCodeLTE(*i.Affiliate6moCodeLTE))
+	}
+	if i.Affiliate6moCodeContains != nil {
+		predicates = append(predicates, subscription.Affiliate6moCodeContains(*i.Affiliate6moCodeContains))
+	}
+	if i.Affiliate6moCodeHasPrefix != nil {
+		predicates = append(predicates, subscription.Affiliate6moCodeHasPrefix(*i.Affiliate6moCodeHasPrefix))
+	}
+	if i.Affiliate6moCodeHasSuffix != nil {
+		predicates = append(predicates, subscription.Affiliate6moCodeHasSuffix(*i.Affiliate6moCodeHasSuffix))
+	}
+	if i.Affiliate6moCodeIsNil {
+		predicates = append(predicates, subscription.Affiliate6moCodeIsNil())
+	}
+	if i.Affiliate6moCodeNotNil {
+		predicates = append(predicates, subscription.Affiliate6moCodeNotNil())
+	}
+	if i.Affiliate6moCodeEqualFold != nil {
+		predicates = append(predicates, subscription.Affiliate6moCodeEqualFold(*i.Affiliate6moCodeEqualFold))
+	}
+	if i.Affiliate6moCodeContainsFold != nil {
+		predicates = append(predicates, subscription.Affiliate6moCodeContainsFold(*i.Affiliate6moCodeContainsFold))
+	}
+	if i.Affiliate12moCode != nil {
+		predicates = append(predicates, subscription.Affiliate12moCodeEQ(*i.Affiliate12moCode))
+	}
+	if i.Affiliate12moCodeNEQ != nil {
+		predicates = append(predicates, subscription.Affiliate12moCodeNEQ(*i.Affiliate12moCodeNEQ))
+	}
+	if len(i.Affiliate12moCodeIn) > 0 {
+		predicates = append(predicates, subscription.Affiliate12moCodeIn(i.Affiliate12moCodeIn...))
+	}
+	if len(i.Affiliate12moCodeNotIn) > 0 {
+		predicates = append(predicates, subscription.Affiliate12moCodeNotIn(i.Affiliate12moCodeNotIn...))
+	}
+	if i.Affiliate12moCodeGT != nil {
+		predicates = append(predicates, subscription.Affiliate12moCodeGT(*i.Affiliate12moCodeGT))
+	}
+	if i.Affiliate12moCodeGTE != nil {
+		predicates = append(predicates, subscription.Affiliate12moCodeGTE(*i.Affiliate12moCodeGTE))
+	}
+	if i.Affiliate12moCodeLT != nil {
+		predicates = append(predicates, subscription.Affiliate12moCodeLT(*i.Affiliate12moCodeLT))
+	}
+	if i.Affiliate12moCodeLTE != nil {
+		predicates = append(predicates, subscription.Affiliate12moCodeLTE(*i.Affiliate12moCodeLTE))
+	}
+	if i.Affiliate12moCodeContains != nil {
+		predicates = append(predicates, subscription.Affiliate12moCodeContains(*i.Affiliate12moCodeContains))
+	}
+	if i.Affiliate12moCodeHasPrefix != nil {
+		predicates = append(predicates, subscription.Affiliate12moCodeHasPrefix(*i.Affiliate12moCodeHasPrefix))
+	}
+	if i.Affiliate12moCodeHasSuffix != nil {
+		predicates = append(predicates, subscription.Affiliate12moCodeHasSuffix(*i.Affiliate12moCodeHasSuffix))
+	}
+	if i.Affiliate12moCodeIsNil {
+		predicates = append(predicates, subscription.Affiliate12moCodeIsNil())
+	}
+	if i.Affiliate12moCodeNotNil {
+		predicates = append(predicates, subscription.Affiliate12moCodeNotNil())
+	}
+	if i.Affiliate12moCodeEqualFold != nil {
+		predicates = append(predicates, subscription.Affiliate12moCodeEqualFold(*i.Affiliate12moCodeEqualFold))
+	}
+	if i.Affiliate12moCodeContainsFold != nil {
+		predicates = append(predicates, subscription.Affiliate12moCodeContainsFold(*i.Affiliate12moCodeContainsFold))
 	}
 
 	if i.HasUser != nil {
@@ -9044,6 +9292,57 @@ type UserWhereInput struct {
 	StripeCustomerIDEqualFold    *string  `json:"stripeCustomerIDEqualFold,omitempty"`
 	StripeCustomerIDContainsFold *string  `json:"stripeCustomerIDContainsFold,omitempty"`
 
+	// "stripe_account_id" field predicates.
+	StripeAccountID             *string  `json:"stripeAccountID,omitempty"`
+	StripeAccountIDNEQ          *string  `json:"stripeAccountIDNEQ,omitempty"`
+	StripeAccountIDIn           []string `json:"stripeAccountIDIn,omitempty"`
+	StripeAccountIDNotIn        []string `json:"stripeAccountIDNotIn,omitempty"`
+	StripeAccountIDGT           *string  `json:"stripeAccountIDGT,omitempty"`
+	StripeAccountIDGTE          *string  `json:"stripeAccountIDGTE,omitempty"`
+	StripeAccountIDLT           *string  `json:"stripeAccountIDLT,omitempty"`
+	StripeAccountIDLTE          *string  `json:"stripeAccountIDLTE,omitempty"`
+	StripeAccountIDContains     *string  `json:"stripeAccountIDContains,omitempty"`
+	StripeAccountIDHasPrefix    *string  `json:"stripeAccountIDHasPrefix,omitempty"`
+	StripeAccountIDHasSuffix    *string  `json:"stripeAccountIDHasSuffix,omitempty"`
+	StripeAccountIDIsNil        bool     `json:"stripeAccountIDIsNil,omitempty"`
+	StripeAccountIDNotNil       bool     `json:"stripeAccountIDNotNil,omitempty"`
+	StripeAccountIDEqualFold    *string  `json:"stripeAccountIDEqualFold,omitempty"`
+	StripeAccountIDContainsFold *string  `json:"stripeAccountIDContainsFold,omitempty"`
+
+	// "affiliate_6mo_code" field predicates.
+	Affiliate6moCode             *string  `json:"affiliate6moCode,omitempty"`
+	Affiliate6moCodeNEQ          *string  `json:"affiliate6moCodeNEQ,omitempty"`
+	Affiliate6moCodeIn           []string `json:"affiliate6moCodeIn,omitempty"`
+	Affiliate6moCodeNotIn        []string `json:"affiliate6moCodeNotIn,omitempty"`
+	Affiliate6moCodeGT           *string  `json:"affiliate6moCodeGT,omitempty"`
+	Affiliate6moCodeGTE          *string  `json:"affiliate6moCodeGTE,omitempty"`
+	Affiliate6moCodeLT           *string  `json:"affiliate6moCodeLT,omitempty"`
+	Affiliate6moCodeLTE          *string  `json:"affiliate6moCodeLTE,omitempty"`
+	Affiliate6moCodeContains     *string  `json:"affiliate6moCodeContains,omitempty"`
+	Affiliate6moCodeHasPrefix    *string  `json:"affiliate6moCodeHasPrefix,omitempty"`
+	Affiliate6moCodeHasSuffix    *string  `json:"affiliate6moCodeHasSuffix,omitempty"`
+	Affiliate6moCodeIsNil        bool     `json:"affiliate6moCodeIsNil,omitempty"`
+	Affiliate6moCodeNotNil       bool     `json:"affiliate6moCodeNotNil,omitempty"`
+	Affiliate6moCodeEqualFold    *string  `json:"affiliate6moCodeEqualFold,omitempty"`
+	Affiliate6moCodeContainsFold *string  `json:"affiliate6moCodeContainsFold,omitempty"`
+
+	// "affiliate_12mo_code" field predicates.
+	Affiliate12moCode             *string  `json:"affiliate12moCode,omitempty"`
+	Affiliate12moCodeNEQ          *string  `json:"affiliate12moCodeNEQ,omitempty"`
+	Affiliate12moCodeIn           []string `json:"affiliate12moCodeIn,omitempty"`
+	Affiliate12moCodeNotIn        []string `json:"affiliate12moCodeNotIn,omitempty"`
+	Affiliate12moCodeGT           *string  `json:"affiliate12moCodeGT,omitempty"`
+	Affiliate12moCodeGTE          *string  `json:"affiliate12moCodeGTE,omitempty"`
+	Affiliate12moCodeLT           *string  `json:"affiliate12moCodeLT,omitempty"`
+	Affiliate12moCodeLTE          *string  `json:"affiliate12moCodeLTE,omitempty"`
+	Affiliate12moCodeContains     *string  `json:"affiliate12moCodeContains,omitempty"`
+	Affiliate12moCodeHasPrefix    *string  `json:"affiliate12moCodeHasPrefix,omitempty"`
+	Affiliate12moCodeHasSuffix    *string  `json:"affiliate12moCodeHasSuffix,omitempty"`
+	Affiliate12moCodeIsNil        bool     `json:"affiliate12moCodeIsNil,omitempty"`
+	Affiliate12moCodeNotNil       bool     `json:"affiliate12moCodeNotNil,omitempty"`
+	Affiliate12moCodeEqualFold    *string  `json:"affiliate12moCodeEqualFold,omitempty"`
+	Affiliate12moCodeContainsFold *string  `json:"affiliate12moCodeContainsFold,omitempty"`
+
 	// "cars" edge predicates.
 	HasCars     *bool            `json:"hasCars,omitempty"`
 	HasCarsWith []*CarWhereInput `json:"hasCarsWith,omitempty"`
@@ -9291,6 +9590,141 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 	}
 	if i.StripeCustomerIDContainsFold != nil {
 		predicates = append(predicates, user.StripeCustomerIDContainsFold(*i.StripeCustomerIDContainsFold))
+	}
+	if i.StripeAccountID != nil {
+		predicates = append(predicates, user.StripeAccountIDEQ(*i.StripeAccountID))
+	}
+	if i.StripeAccountIDNEQ != nil {
+		predicates = append(predicates, user.StripeAccountIDNEQ(*i.StripeAccountIDNEQ))
+	}
+	if len(i.StripeAccountIDIn) > 0 {
+		predicates = append(predicates, user.StripeAccountIDIn(i.StripeAccountIDIn...))
+	}
+	if len(i.StripeAccountIDNotIn) > 0 {
+		predicates = append(predicates, user.StripeAccountIDNotIn(i.StripeAccountIDNotIn...))
+	}
+	if i.StripeAccountIDGT != nil {
+		predicates = append(predicates, user.StripeAccountIDGT(*i.StripeAccountIDGT))
+	}
+	if i.StripeAccountIDGTE != nil {
+		predicates = append(predicates, user.StripeAccountIDGTE(*i.StripeAccountIDGTE))
+	}
+	if i.StripeAccountIDLT != nil {
+		predicates = append(predicates, user.StripeAccountIDLT(*i.StripeAccountIDLT))
+	}
+	if i.StripeAccountIDLTE != nil {
+		predicates = append(predicates, user.StripeAccountIDLTE(*i.StripeAccountIDLTE))
+	}
+	if i.StripeAccountIDContains != nil {
+		predicates = append(predicates, user.StripeAccountIDContains(*i.StripeAccountIDContains))
+	}
+	if i.StripeAccountIDHasPrefix != nil {
+		predicates = append(predicates, user.StripeAccountIDHasPrefix(*i.StripeAccountIDHasPrefix))
+	}
+	if i.StripeAccountIDHasSuffix != nil {
+		predicates = append(predicates, user.StripeAccountIDHasSuffix(*i.StripeAccountIDHasSuffix))
+	}
+	if i.StripeAccountIDIsNil {
+		predicates = append(predicates, user.StripeAccountIDIsNil())
+	}
+	if i.StripeAccountIDNotNil {
+		predicates = append(predicates, user.StripeAccountIDNotNil())
+	}
+	if i.StripeAccountIDEqualFold != nil {
+		predicates = append(predicates, user.StripeAccountIDEqualFold(*i.StripeAccountIDEqualFold))
+	}
+	if i.StripeAccountIDContainsFold != nil {
+		predicates = append(predicates, user.StripeAccountIDContainsFold(*i.StripeAccountIDContainsFold))
+	}
+	if i.Affiliate6moCode != nil {
+		predicates = append(predicates, user.Affiliate6moCodeEQ(*i.Affiliate6moCode))
+	}
+	if i.Affiliate6moCodeNEQ != nil {
+		predicates = append(predicates, user.Affiliate6moCodeNEQ(*i.Affiliate6moCodeNEQ))
+	}
+	if len(i.Affiliate6moCodeIn) > 0 {
+		predicates = append(predicates, user.Affiliate6moCodeIn(i.Affiliate6moCodeIn...))
+	}
+	if len(i.Affiliate6moCodeNotIn) > 0 {
+		predicates = append(predicates, user.Affiliate6moCodeNotIn(i.Affiliate6moCodeNotIn...))
+	}
+	if i.Affiliate6moCodeGT != nil {
+		predicates = append(predicates, user.Affiliate6moCodeGT(*i.Affiliate6moCodeGT))
+	}
+	if i.Affiliate6moCodeGTE != nil {
+		predicates = append(predicates, user.Affiliate6moCodeGTE(*i.Affiliate6moCodeGTE))
+	}
+	if i.Affiliate6moCodeLT != nil {
+		predicates = append(predicates, user.Affiliate6moCodeLT(*i.Affiliate6moCodeLT))
+	}
+	if i.Affiliate6moCodeLTE != nil {
+		predicates = append(predicates, user.Affiliate6moCodeLTE(*i.Affiliate6moCodeLTE))
+	}
+	if i.Affiliate6moCodeContains != nil {
+		predicates = append(predicates, user.Affiliate6moCodeContains(*i.Affiliate6moCodeContains))
+	}
+	if i.Affiliate6moCodeHasPrefix != nil {
+		predicates = append(predicates, user.Affiliate6moCodeHasPrefix(*i.Affiliate6moCodeHasPrefix))
+	}
+	if i.Affiliate6moCodeHasSuffix != nil {
+		predicates = append(predicates, user.Affiliate6moCodeHasSuffix(*i.Affiliate6moCodeHasSuffix))
+	}
+	if i.Affiliate6moCodeIsNil {
+		predicates = append(predicates, user.Affiliate6moCodeIsNil())
+	}
+	if i.Affiliate6moCodeNotNil {
+		predicates = append(predicates, user.Affiliate6moCodeNotNil())
+	}
+	if i.Affiliate6moCodeEqualFold != nil {
+		predicates = append(predicates, user.Affiliate6moCodeEqualFold(*i.Affiliate6moCodeEqualFold))
+	}
+	if i.Affiliate6moCodeContainsFold != nil {
+		predicates = append(predicates, user.Affiliate6moCodeContainsFold(*i.Affiliate6moCodeContainsFold))
+	}
+	if i.Affiliate12moCode != nil {
+		predicates = append(predicates, user.Affiliate12moCodeEQ(*i.Affiliate12moCode))
+	}
+	if i.Affiliate12moCodeNEQ != nil {
+		predicates = append(predicates, user.Affiliate12moCodeNEQ(*i.Affiliate12moCodeNEQ))
+	}
+	if len(i.Affiliate12moCodeIn) > 0 {
+		predicates = append(predicates, user.Affiliate12moCodeIn(i.Affiliate12moCodeIn...))
+	}
+	if len(i.Affiliate12moCodeNotIn) > 0 {
+		predicates = append(predicates, user.Affiliate12moCodeNotIn(i.Affiliate12moCodeNotIn...))
+	}
+	if i.Affiliate12moCodeGT != nil {
+		predicates = append(predicates, user.Affiliate12moCodeGT(*i.Affiliate12moCodeGT))
+	}
+	if i.Affiliate12moCodeGTE != nil {
+		predicates = append(predicates, user.Affiliate12moCodeGTE(*i.Affiliate12moCodeGTE))
+	}
+	if i.Affiliate12moCodeLT != nil {
+		predicates = append(predicates, user.Affiliate12moCodeLT(*i.Affiliate12moCodeLT))
+	}
+	if i.Affiliate12moCodeLTE != nil {
+		predicates = append(predicates, user.Affiliate12moCodeLTE(*i.Affiliate12moCodeLTE))
+	}
+	if i.Affiliate12moCodeContains != nil {
+		predicates = append(predicates, user.Affiliate12moCodeContains(*i.Affiliate12moCodeContains))
+	}
+	if i.Affiliate12moCodeHasPrefix != nil {
+		predicates = append(predicates, user.Affiliate12moCodeHasPrefix(*i.Affiliate12moCodeHasPrefix))
+	}
+	if i.Affiliate12moCodeHasSuffix != nil {
+		predicates = append(predicates, user.Affiliate12moCodeHasSuffix(*i.Affiliate12moCodeHasSuffix))
+	}
+	if i.Affiliate12moCodeIsNil {
+		predicates = append(predicates, user.Affiliate12moCodeIsNil())
+	}
+	if i.Affiliate12moCodeNotNil {
+		predicates = append(predicates, user.Affiliate12moCodeNotNil())
+	}
+	if i.Affiliate12moCodeEqualFold != nil {
+		predicates = append(predicates, user.Affiliate12moCodeEqualFold(*i.Affiliate12moCodeEqualFold))
+	}
+	if i.Affiliate12moCodeContainsFold != nil {
+		predicates = append(predicates, user.Affiliate12moCodeContainsFold(*i.Affiliate12moCodeContainsFold))
 	}
 
 	if i.HasCars != nil {

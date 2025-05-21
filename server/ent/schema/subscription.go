@@ -31,6 +31,12 @@ func (Subscription) Fields() []ent.Field {
 		field.Time("canceled_at").Optional().Nillable(),
 		field.Bool("cancel_at_period_end").Default(false),
 		field.Time("trial_end").Optional().Nillable(),
+		field.String("affiliate_6mo_code").
+			Optional().
+			Nillable(),
+		field.String("affiliate_12mo_code").
+			Optional().
+			Nillable(),
 	}
 }
 

@@ -36,6 +36,10 @@ type Subscription struct {
 	CancelAtPeriodEnd bool `json:"cancel_at_period_end,omitempty"`
 	// TrialEnd holds the value of the "trial_end" field.
 	TrialEnd *time.Time `json:"trial_end,omitempty"`
+	// Affiliate6moCode holds the value of the "affiliate_6mo_code" field.
+	Affiliate6moCode *string `json:"affiliate_6mo_code,omitempty"`
+	// Affiliate12moCode holds the value of the "affiliate_12mo_code" field.
+	Affiliate12moCode *string `json:"affiliate_12mo_code,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SubscriptionQuery when eager-loading is set.
 	Edges                         SubscriptionEdges `json:"edges"`
@@ -86,7 +90,7 @@ func (*Subscription) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case subscription.FieldCancelAtPeriodEnd:
 			values[i] = new(sql.NullBool)
-		case subscription.FieldStripeSubscriptionID, subscription.FieldTier, subscription.FieldStatus:
+		case subscription.FieldStripeSubscriptionID, subscription.FieldTier, subscription.FieldStatus, subscription.FieldAffiliate6moCode, subscription.FieldAffiliate12moCode:
 			values[i] = new(sql.NullString)
 		case subscription.FieldCreateTime, subscription.FieldUpdateTime, subscription.FieldCanceledAt, subscription.FieldTrialEnd:
 			values[i] = new(sql.NullTime)
@@ -167,6 +171,20 @@ func (s *Subscription) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.TrialEnd = new(time.Time)
 				*s.TrialEnd = value.Time
+			}
+		case subscription.FieldAffiliate6moCode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field affiliate_6mo_code", values[i])
+			} else if value.Valid {
+				s.Affiliate6moCode = new(string)
+				*s.Affiliate6moCode = value.String
+			}
+		case subscription.FieldAffiliate12moCode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field affiliate_12mo_code", values[i])
+			} else if value.Valid {
+				s.Affiliate12moCode = new(string)
+				*s.Affiliate12moCode = value.String
 			}
 		case subscription.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -256,6 +274,16 @@ func (s *Subscription) String() string {
 	if v := s.TrialEnd; v != nil {
 		builder.WriteString("trial_end=")
 		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := s.Affiliate6moCode; v != nil {
+		builder.WriteString("affiliate_6mo_code=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := s.Affiliate12moCode; v != nil {
+		builder.WriteString("affiliate_12mo_code=")
+		builder.WriteString(*v)
 	}
 	builder.WriteByte(')')
 	return builder.String()

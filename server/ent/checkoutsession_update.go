@@ -119,6 +119,46 @@ func (csu *CheckoutSessionUpdate) ClearCompletedAt() *CheckoutSessionUpdate {
 	return csu
 }
 
+// SetAffiliate6moCode sets the "affiliate_6mo_code" field.
+func (csu *CheckoutSessionUpdate) SetAffiliate6moCode(s string) *CheckoutSessionUpdate {
+	csu.mutation.SetAffiliate6moCode(s)
+	return csu
+}
+
+// SetNillableAffiliate6moCode sets the "affiliate_6mo_code" field if the given value is not nil.
+func (csu *CheckoutSessionUpdate) SetNillableAffiliate6moCode(s *string) *CheckoutSessionUpdate {
+	if s != nil {
+		csu.SetAffiliate6moCode(*s)
+	}
+	return csu
+}
+
+// ClearAffiliate6moCode clears the value of the "affiliate_6mo_code" field.
+func (csu *CheckoutSessionUpdate) ClearAffiliate6moCode() *CheckoutSessionUpdate {
+	csu.mutation.ClearAffiliate6moCode()
+	return csu
+}
+
+// SetAffiliate12moCode sets the "affiliate_12mo_code" field.
+func (csu *CheckoutSessionUpdate) SetAffiliate12moCode(s string) *CheckoutSessionUpdate {
+	csu.mutation.SetAffiliate12moCode(s)
+	return csu
+}
+
+// SetNillableAffiliate12moCode sets the "affiliate_12mo_code" field if the given value is not nil.
+func (csu *CheckoutSessionUpdate) SetNillableAffiliate12moCode(s *string) *CheckoutSessionUpdate {
+	if s != nil {
+		csu.SetAffiliate12moCode(*s)
+	}
+	return csu
+}
+
+// ClearAffiliate12moCode clears the value of the "affiliate_12mo_code" field.
+func (csu *CheckoutSessionUpdate) ClearAffiliate12moCode() *CheckoutSessionUpdate {
+	csu.mutation.ClearAffiliate12moCode()
+	return csu
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (csu *CheckoutSessionUpdate) SetUserID(id uuid.UUID) *CheckoutSessionUpdate {
 	csu.mutation.SetUserID(id)
@@ -255,6 +295,18 @@ func (csu *CheckoutSessionUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if csu.mutation.CompletedAtCleared() {
 		_spec.ClearField(checkoutsession.FieldCompletedAt, field.TypeTime)
+	}
+	if value, ok := csu.mutation.Affiliate6moCode(); ok {
+		_spec.SetField(checkoutsession.FieldAffiliate6moCode, field.TypeString, value)
+	}
+	if csu.mutation.Affiliate6moCodeCleared() {
+		_spec.ClearField(checkoutsession.FieldAffiliate6moCode, field.TypeString)
+	}
+	if value, ok := csu.mutation.Affiliate12moCode(); ok {
+		_spec.SetField(checkoutsession.FieldAffiliate12moCode, field.TypeString, value)
+	}
+	if csu.mutation.Affiliate12moCodeCleared() {
+		_spec.ClearField(checkoutsession.FieldAffiliate12moCode, field.TypeString)
 	}
 	if csu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -419,6 +471,46 @@ func (csuo *CheckoutSessionUpdateOne) SetNillableCompletedAt(t *time.Time) *Chec
 // ClearCompletedAt clears the value of the "completed_at" field.
 func (csuo *CheckoutSessionUpdateOne) ClearCompletedAt() *CheckoutSessionUpdateOne {
 	csuo.mutation.ClearCompletedAt()
+	return csuo
+}
+
+// SetAffiliate6moCode sets the "affiliate_6mo_code" field.
+func (csuo *CheckoutSessionUpdateOne) SetAffiliate6moCode(s string) *CheckoutSessionUpdateOne {
+	csuo.mutation.SetAffiliate6moCode(s)
+	return csuo
+}
+
+// SetNillableAffiliate6moCode sets the "affiliate_6mo_code" field if the given value is not nil.
+func (csuo *CheckoutSessionUpdateOne) SetNillableAffiliate6moCode(s *string) *CheckoutSessionUpdateOne {
+	if s != nil {
+		csuo.SetAffiliate6moCode(*s)
+	}
+	return csuo
+}
+
+// ClearAffiliate6moCode clears the value of the "affiliate_6mo_code" field.
+func (csuo *CheckoutSessionUpdateOne) ClearAffiliate6moCode() *CheckoutSessionUpdateOne {
+	csuo.mutation.ClearAffiliate6moCode()
+	return csuo
+}
+
+// SetAffiliate12moCode sets the "affiliate_12mo_code" field.
+func (csuo *CheckoutSessionUpdateOne) SetAffiliate12moCode(s string) *CheckoutSessionUpdateOne {
+	csuo.mutation.SetAffiliate12moCode(s)
+	return csuo
+}
+
+// SetNillableAffiliate12moCode sets the "affiliate_12mo_code" field if the given value is not nil.
+func (csuo *CheckoutSessionUpdateOne) SetNillableAffiliate12moCode(s *string) *CheckoutSessionUpdateOne {
+	if s != nil {
+		csuo.SetAffiliate12moCode(*s)
+	}
+	return csuo
+}
+
+// ClearAffiliate12moCode clears the value of the "affiliate_12mo_code" field.
+func (csuo *CheckoutSessionUpdateOne) ClearAffiliate12moCode() *CheckoutSessionUpdateOne {
+	csuo.mutation.ClearAffiliate12moCode()
 	return csuo
 }
 
@@ -588,6 +680,18 @@ func (csuo *CheckoutSessionUpdateOne) sqlSave(ctx context.Context) (_node *Check
 	}
 	if csuo.mutation.CompletedAtCleared() {
 		_spec.ClearField(checkoutsession.FieldCompletedAt, field.TypeTime)
+	}
+	if value, ok := csuo.mutation.Affiliate6moCode(); ok {
+		_spec.SetField(checkoutsession.FieldAffiliate6moCode, field.TypeString, value)
+	}
+	if csuo.mutation.Affiliate6moCodeCleared() {
+		_spec.ClearField(checkoutsession.FieldAffiliate6moCode, field.TypeString)
+	}
+	if value, ok := csuo.mutation.Affiliate12moCode(); ok {
+		_spec.SetField(checkoutsession.FieldAffiliate12moCode, field.TypeString, value)
+	}
+	if csuo.mutation.Affiliate12moCodeCleared() {
+		_spec.ClearField(checkoutsession.FieldAffiliate12moCode, field.TypeString)
 	}
 	if csuo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

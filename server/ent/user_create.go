@@ -74,6 +74,48 @@ func (uc *UserCreate) SetNillableStripeCustomerID(s *string) *UserCreate {
 	return uc
 }
 
+// SetStripeAccountID sets the "stripe_account_id" field.
+func (uc *UserCreate) SetStripeAccountID(s string) *UserCreate {
+	uc.mutation.SetStripeAccountID(s)
+	return uc
+}
+
+// SetNillableStripeAccountID sets the "stripe_account_id" field if the given value is not nil.
+func (uc *UserCreate) SetNillableStripeAccountID(s *string) *UserCreate {
+	if s != nil {
+		uc.SetStripeAccountID(*s)
+	}
+	return uc
+}
+
+// SetAffiliate6moCode sets the "affiliate_6mo_code" field.
+func (uc *UserCreate) SetAffiliate6moCode(s string) *UserCreate {
+	uc.mutation.SetAffiliate6moCode(s)
+	return uc
+}
+
+// SetNillableAffiliate6moCode sets the "affiliate_6mo_code" field if the given value is not nil.
+func (uc *UserCreate) SetNillableAffiliate6moCode(s *string) *UserCreate {
+	if s != nil {
+		uc.SetAffiliate6moCode(*s)
+	}
+	return uc
+}
+
+// SetAffiliate12moCode sets the "affiliate_12mo_code" field.
+func (uc *UserCreate) SetAffiliate12moCode(s string) *UserCreate {
+	uc.mutation.SetAffiliate12moCode(s)
+	return uc
+}
+
+// SetNillableAffiliate12moCode sets the "affiliate_12mo_code" field if the given value is not nil.
+func (uc *UserCreate) SetNillableAffiliate12moCode(s *string) *UserCreate {
+	if s != nil {
+		uc.SetAffiliate12moCode(*s)
+	}
+	return uc
+}
+
 // SetID sets the "id" field.
 func (uc *UserCreate) SetID(u uuid.UUID) *UserCreate {
 	uc.mutation.SetID(u)
@@ -281,6 +323,18 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.StripeCustomerID(); ok {
 		_spec.SetField(user.FieldStripeCustomerID, field.TypeString, value)
 		_node.StripeCustomerID = &value
+	}
+	if value, ok := uc.mutation.StripeAccountID(); ok {
+		_spec.SetField(user.FieldStripeAccountID, field.TypeString, value)
+		_node.StripeAccountID = &value
+	}
+	if value, ok := uc.mutation.Affiliate6moCode(); ok {
+		_spec.SetField(user.FieldAffiliate6moCode, field.TypeString, value)
+		_node.Affiliate6moCode = &value
+	}
+	if value, ok := uc.mutation.Affiliate12moCode(); ok {
+		_spec.SetField(user.FieldAffiliate12moCode, field.TypeString, value)
+		_node.Affiliate12moCode = &value
 	}
 	if nodes := uc.mutation.CarsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

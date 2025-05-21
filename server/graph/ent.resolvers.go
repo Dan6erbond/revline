@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/Dan6erbond/revline/ent"
+	"github.com/dustinkirkland/golang-petname"
 	"github.com/spf13/cast"
 )
 
@@ -30,6 +31,28 @@ func (r *queryResolver) Node(ctx context.Context, id string) (ent.Noder, error) 
 // Nodes is the resolver for the nodes field.
 func (r *queryResolver) Nodes(ctx context.Context, ids []string) ([]ent.Noder, error) {
 	panic(fmt.Errorf("not implemented: Nodes - nodes"))
+}
+
+// Affiliate6moCode is the resolver for the affiliate6moCode field.
+func (r *userResolver) Affiliate6moCode(ctx context.Context, obj *ent.User) (*string, error) {
+	if obj.StripeAccountID != nil && obj.Affiliate6moCode == nil {
+		if _, err := obj.Update().SetAffiliate6moCode(petname.Generate(3, "-")).Save(ctx); err != nil {
+			return nil, err
+		}
+	}
+
+	return obj.Affiliate6moCode, nil
+}
+
+// Affiliate12moCode is the resolver for the affiliate12moCode field.
+func (r *userResolver) Affiliate12moCode(ctx context.Context, obj *ent.User) (*string, error) {
+	if obj.StripeAccountID != nil && obj.Affiliate12moCode == nil {
+		if _, err := obj.Update().SetAffiliate12moCode(petname.Generate(3, "-")).Save(ctx); err != nil {
+			return nil, err
+		}
+	}
+
+	return obj.Affiliate12moCode, nil
 }
 
 // Specs is the resolver for the specs field.

@@ -28,6 +28,12 @@ func (CheckoutSession) Fields() []ent.Field {
 			Default("subscription"),
 		field.Bool("completed").Default(false),
 		field.Time("completed_at").Optional().Nillable(),
+		field.String("affiliate_6mo_code").
+			Optional().
+			Nillable(),
+		field.String("affiliate_12mo_code").
+			Optional().
+			Nillable(),
 	}
 }
 

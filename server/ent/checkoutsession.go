@@ -34,6 +34,10 @@ type CheckoutSession struct {
 	Completed bool `json:"completed,omitempty"`
 	// CompletedAt holds the value of the "completed_at" field.
 	CompletedAt *time.Time `json:"completed_at,omitempty"`
+	// Affiliate6moCode holds the value of the "affiliate_6mo_code" field.
+	Affiliate6moCode *string `json:"affiliate_6mo_code,omitempty"`
+	// Affiliate12moCode holds the value of the "affiliate_12mo_code" field.
+	Affiliate12moCode *string `json:"affiliate_12mo_code,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CheckoutSessionQuery when eager-loading is set.
 	Edges                  CheckoutSessionEdges `json:"edges"`
@@ -83,7 +87,7 @@ func (*CheckoutSession) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case checkoutsession.FieldCompleted:
 			values[i] = new(sql.NullBool)
-		case checkoutsession.FieldStripeSessionID, checkoutsession.FieldStripePriceID, checkoutsession.FieldMode:
+		case checkoutsession.FieldStripeSessionID, checkoutsession.FieldStripePriceID, checkoutsession.FieldMode, checkoutsession.FieldAffiliate6moCode, checkoutsession.FieldAffiliate12moCode:
 			values[i] = new(sql.NullString)
 		case checkoutsession.FieldCreateTime, checkoutsession.FieldUpdateTime, checkoutsession.FieldCompletedAt:
 			values[i] = new(sql.NullTime)
@@ -155,6 +159,20 @@ func (cs *CheckoutSession) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				cs.CompletedAt = new(time.Time)
 				*cs.CompletedAt = value.Time
+			}
+		case checkoutsession.FieldAffiliate6moCode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field affiliate_6mo_code", values[i])
+			} else if value.Valid {
+				cs.Affiliate6moCode = new(string)
+				*cs.Affiliate6moCode = value.String
+			}
+		case checkoutsession.FieldAffiliate12moCode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field affiliate_12mo_code", values[i])
+			} else if value.Valid {
+				cs.Affiliate12moCode = new(string)
+				*cs.Affiliate12moCode = value.String
 			}
 		case checkoutsession.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -232,6 +250,16 @@ func (cs *CheckoutSession) String() string {
 	if v := cs.CompletedAt; v != nil {
 		builder.WriteString("completed_at=")
 		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := cs.Affiliate6moCode; v != nil {
+		builder.WriteString("affiliate_6mo_code=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := cs.Affiliate12moCode; v != nil {
+		builder.WriteString("affiliate_12mo_code=")
+		builder.WriteString(*v)
 	}
 	builder.WriteByte(')')
 	return builder.String()

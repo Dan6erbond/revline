@@ -11,7 +11,8 @@ import (
 )
 
 type CreateCheckoutSessionInput struct {
-	Tier subscription.Tier `json:"tier"`
+	Tier      subscription.Tier `json:"tier"`
+	Affiliate *string           `json:"affiliate,omitempty"`
 }
 
 type UpcomingService struct {

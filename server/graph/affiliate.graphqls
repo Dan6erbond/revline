@@ -1,0 +1,5 @@
+extend type Mutation {
+  createConnectAccount: User! @loggedIn
+  linkConnectAccount: String! @loggedIn
+  createExpressLoginLink: String! @loggedIn
+}

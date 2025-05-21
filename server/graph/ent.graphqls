@@ -359,6 +359,8 @@ type CheckoutSession implements Node {
   mode: CheckoutSessionMode!
   completed: Boolean!
   completedAt: Time
+  affiliate6moCode: String
+  affiliate12moCode: String
   user: User!
   subscription: SubscriptionPlan
 }
@@ -470,6 +472,42 @@ input CheckoutSessionWhereInput {
   completedAtLTE: Time
   completedAtIsNil: Boolean
   completedAtNotNil: Boolean
+  """
+  affiliate_6mo_code field predicates
+  """
+  affiliate6moCode: String
+  affiliate6moCodeNEQ: String
+  affiliate6moCodeIn: [String!]
+  affiliate6moCodeNotIn: [String!]
+  affiliate6moCodeGT: String
+  affiliate6moCodeGTE: String
+  affiliate6moCodeLT: String
+  affiliate6moCodeLTE: String
+  affiliate6moCodeContains: String
+  affiliate6moCodeHasPrefix: String
+  affiliate6moCodeHasSuffix: String
+  affiliate6moCodeIsNil: Boolean
+  affiliate6moCodeNotNil: Boolean
+  affiliate6moCodeEqualFold: String
+  affiliate6moCodeContainsFold: String
+  """
+  affiliate_12mo_code field predicates
+  """
+  affiliate12moCode: String
+  affiliate12moCodeNEQ: String
+  affiliate12moCodeIn: [String!]
+  affiliate12moCodeNotIn: [String!]
+  affiliate12moCodeGT: String
+  affiliate12moCodeGTE: String
+  affiliate12moCodeLT: String
+  affiliate12moCodeLTE: String
+  affiliate12moCodeContains: String
+  affiliate12moCodeHasPrefix: String
+  affiliate12moCodeHasSuffix: String
+  affiliate12moCodeIsNil: Boolean
+  affiliate12moCodeNotNil: Boolean
+  affiliate12moCodeEqualFold: String
+  affiliate12moCodeContainsFold: String
   """
   user edge predicates
   """
@@ -777,6 +815,9 @@ input CreateUserInput {
   updateTime: Time
   email: String!
   stripeCustomerID: String
+  stripeAccountID: String
+  affiliate6moCode: String
+  affiliate12moCode: String
   carIDs: [ID!]
   profileID: ID
   settingsID: ID
@@ -2739,6 +2780,8 @@ type SubscriptionPlan implements Node @goModel(model: "github.com/Dan6erbond/rev
   canceledAt: Time
   cancelAtPeriodEnd: Boolean!
   trialEnd: Time
+  affiliate6moCode: String
+  affiliate12moCode: String
   user: User!
   checkoutSession: CheckoutSession
 }
@@ -2846,6 +2889,42 @@ input SubscriptionPlanWhereInput {
   trialEndLTE: Time
   trialEndIsNil: Boolean
   trialEndNotNil: Boolean
+  """
+  affiliate_6mo_code field predicates
+  """
+  affiliate6moCode: String
+  affiliate6moCodeNEQ: String
+  affiliate6moCodeIn: [String!]
+  affiliate6moCodeNotIn: [String!]
+  affiliate6moCodeGT: String
+  affiliate6moCodeGTE: String
+  affiliate6moCodeLT: String
+  affiliate6moCodeLTE: String
+  affiliate6moCodeContains: String
+  affiliate6moCodeHasPrefix: String
+  affiliate6moCodeHasSuffix: String
+  affiliate6moCodeIsNil: Boolean
+  affiliate6moCodeNotNil: Boolean
+  affiliate6moCodeEqualFold: String
+  affiliate6moCodeContainsFold: String
+  """
+  affiliate_12mo_code field predicates
+  """
+  affiliate12moCode: String
+  affiliate12moCodeNEQ: String
+  affiliate12moCodeIn: [String!]
+  affiliate12moCodeNotIn: [String!]
+  affiliate12moCodeGT: String
+  affiliate12moCodeGTE: String
+  affiliate12moCodeLT: String
+  affiliate12moCodeLTE: String
+  affiliate12moCodeContains: String
+  affiliate12moCodeHasPrefix: String
+  affiliate12moCodeHasSuffix: String
+  affiliate12moCodeIsNil: Boolean
+  affiliate12moCodeNotNil: Boolean
+  affiliate12moCodeEqualFold: String
+  affiliate12moCodeContainsFold: String
   """
   user edge predicates
   """
@@ -3635,6 +3714,12 @@ input UpdateUserInput {
   email: String
   stripeCustomerID: String
   clearStripeCustomerID: Boolean
+  stripeAccountID: String
+  clearStripeAccountID: Boolean
+  affiliate6moCode: String
+  clearAffiliate6moCode: Boolean
+  affiliate12moCode: String
+  clearAffiliate12moCode: Boolean
   addCarIDs: [ID!]
   removeCarIDs: [ID!]
   clearCars: Boolean
@@ -3677,6 +3762,9 @@ type User implements Node {
   updateTime: Time!
   email: String!
   stripeCustomerID: String
+  stripeAccountID: String
+  affiliate6moCode: String
+  affiliate12moCode: String
   cars: [Car!]
   profile: Profile
   settings: UserSettings
@@ -3890,6 +3978,60 @@ input UserWhereInput {
   stripeCustomerIDNotNil: Boolean
   stripeCustomerIDEqualFold: String
   stripeCustomerIDContainsFold: String
+  """
+  stripe_account_id field predicates
+  """
+  stripeAccountID: String
+  stripeAccountIDNEQ: String
+  stripeAccountIDIn: [String!]
+  stripeAccountIDNotIn: [String!]
+  stripeAccountIDGT: String
+  stripeAccountIDGTE: String
+  stripeAccountIDLT: String
+  stripeAccountIDLTE: String
+  stripeAccountIDContains: String
+  stripeAccountIDHasPrefix: String
+  stripeAccountIDHasSuffix: String
+  stripeAccountIDIsNil: Boolean
+  stripeAccountIDNotNil: Boolean
+  stripeAccountIDEqualFold: String
+  stripeAccountIDContainsFold: String
+  """
+  affiliate_6mo_code field predicates
+  """
+  affiliate6moCode: String
+  affiliate6moCodeNEQ: String
+  affiliate6moCodeIn: [String!]
+  affiliate6moCodeNotIn: [String!]
+  affiliate6moCodeGT: String
+  affiliate6moCodeGTE: String
+  affiliate6moCodeLT: String
+  affiliate6moCodeLTE: String
+  affiliate6moCodeContains: String
+  affiliate6moCodeHasPrefix: String
+  affiliate6moCodeHasSuffix: String
+  affiliate6moCodeIsNil: Boolean
+  affiliate6moCodeNotNil: Boolean
+  affiliate6moCodeEqualFold: String
+  affiliate6moCodeContainsFold: String
+  """
+  affiliate_12mo_code field predicates
+  """
+  affiliate12moCode: String
+  affiliate12moCodeNEQ: String
+  affiliate12moCodeIn: [String!]
+  affiliate12moCodeNotIn: [String!]
+  affiliate12moCodeGT: String
+  affiliate12moCodeGTE: String
+  affiliate12moCodeLT: String
+  affiliate12moCodeLTE: String
+  affiliate12moCodeContains: String
+  affiliate12moCodeHasPrefix: String
+  affiliate12moCodeHasSuffix: String
+  affiliate12moCodeIsNil: Boolean
+  affiliate12moCodeNotNil: Boolean
+  affiliate12moCodeEqualFold: String
+  affiliate12moCodeContainsFold: String
   """
   cars edge predicates
   """

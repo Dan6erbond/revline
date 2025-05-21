@@ -76,6 +76,21 @@ func StripeCustomerID(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldStripeCustomerID, v))
 }
 
+// StripeAccountID applies equality check predicate on the "stripe_account_id" field. It's identical to StripeAccountIDEQ.
+func StripeAccountID(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldStripeAccountID, v))
+}
+
+// Affiliate6moCode applies equality check predicate on the "affiliate_6mo_code" field. It's identical to Affiliate6moCodeEQ.
+func Affiliate6moCode(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAffiliate6moCode, v))
+}
+
+// Affiliate12moCode applies equality check predicate on the "affiliate_12mo_code" field. It's identical to Affiliate12moCodeEQ.
+func Affiliate12moCode(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAffiliate12moCode, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreateTime, v))
@@ -294,6 +309,231 @@ func StripeCustomerIDEqualFold(v string) predicate.User {
 // StripeCustomerIDContainsFold applies the ContainsFold predicate on the "stripe_customer_id" field.
 func StripeCustomerIDContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldStripeCustomerID, v))
+}
+
+// StripeAccountIDEQ applies the EQ predicate on the "stripe_account_id" field.
+func StripeAccountIDEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldStripeAccountID, v))
+}
+
+// StripeAccountIDNEQ applies the NEQ predicate on the "stripe_account_id" field.
+func StripeAccountIDNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldStripeAccountID, v))
+}
+
+// StripeAccountIDIn applies the In predicate on the "stripe_account_id" field.
+func StripeAccountIDIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldStripeAccountID, vs...))
+}
+
+// StripeAccountIDNotIn applies the NotIn predicate on the "stripe_account_id" field.
+func StripeAccountIDNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldStripeAccountID, vs...))
+}
+
+// StripeAccountIDGT applies the GT predicate on the "stripe_account_id" field.
+func StripeAccountIDGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldStripeAccountID, v))
+}
+
+// StripeAccountIDGTE applies the GTE predicate on the "stripe_account_id" field.
+func StripeAccountIDGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldStripeAccountID, v))
+}
+
+// StripeAccountIDLT applies the LT predicate on the "stripe_account_id" field.
+func StripeAccountIDLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldStripeAccountID, v))
+}
+
+// StripeAccountIDLTE applies the LTE predicate on the "stripe_account_id" field.
+func StripeAccountIDLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldStripeAccountID, v))
+}
+
+// StripeAccountIDContains applies the Contains predicate on the "stripe_account_id" field.
+func StripeAccountIDContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldStripeAccountID, v))
+}
+
+// StripeAccountIDHasPrefix applies the HasPrefix predicate on the "stripe_account_id" field.
+func StripeAccountIDHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldStripeAccountID, v))
+}
+
+// StripeAccountIDHasSuffix applies the HasSuffix predicate on the "stripe_account_id" field.
+func StripeAccountIDHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldStripeAccountID, v))
+}
+
+// StripeAccountIDIsNil applies the IsNil predicate on the "stripe_account_id" field.
+func StripeAccountIDIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldStripeAccountID))
+}
+
+// StripeAccountIDNotNil applies the NotNil predicate on the "stripe_account_id" field.
+func StripeAccountIDNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldStripeAccountID))
+}
+
+// StripeAccountIDEqualFold applies the EqualFold predicate on the "stripe_account_id" field.
+func StripeAccountIDEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldStripeAccountID, v))
+}
+
+// StripeAccountIDContainsFold applies the ContainsFold predicate on the "stripe_account_id" field.
+func StripeAccountIDContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldStripeAccountID, v))
+}
+
+// Affiliate6moCodeEQ applies the EQ predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeNEQ applies the NEQ predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeIn applies the In predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldAffiliate6moCode, vs...))
+}
+
+// Affiliate6moCodeNotIn applies the NotIn predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldAffiliate6moCode, vs...))
+}
+
+// Affiliate6moCodeGT applies the GT predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeGTE applies the GTE predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeLT applies the LT predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeLTE applies the LTE predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeContains applies the Contains predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeHasPrefix applies the HasPrefix predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeHasSuffix applies the HasSuffix predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeIsNil applies the IsNil predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldAffiliate6moCode))
+}
+
+// Affiliate6moCodeNotNil applies the NotNil predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldAffiliate6moCode))
+}
+
+// Affiliate6moCodeEqualFold applies the EqualFold predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeContainsFold applies the ContainsFold predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldAffiliate6moCode, v))
+}
+
+// Affiliate12moCodeEQ applies the EQ predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeNEQ applies the NEQ predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeIn applies the In predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldAffiliate12moCode, vs...))
+}
+
+// Affiliate12moCodeNotIn applies the NotIn predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldAffiliate12moCode, vs...))
+}
+
+// Affiliate12moCodeGT applies the GT predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeGTE applies the GTE predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeLT applies the LT predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeLTE applies the LTE predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeContains applies the Contains predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeHasPrefix applies the HasPrefix predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeHasSuffix applies the HasSuffix predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeIsNil applies the IsNil predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldAffiliate12moCode))
+}
+
+// Affiliate12moCodeNotNil applies the NotNil predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldAffiliate12moCode))
+}
+
+// Affiliate12moCodeEqualFold applies the EqualFold predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeContainsFold applies the ContainsFold predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldAffiliate12moCode, v))
 }
 
 // HasCars applies the HasEdge predicate on the "cars" edge.

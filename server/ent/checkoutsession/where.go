@@ -86,6 +86,16 @@ func CompletedAt(v time.Time) predicate.CheckoutSession {
 	return predicate.CheckoutSession(sql.FieldEQ(FieldCompletedAt, v))
 }
 
+// Affiliate6moCode applies equality check predicate on the "affiliate_6mo_code" field. It's identical to Affiliate6moCodeEQ.
+func Affiliate6moCode(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldEQ(FieldAffiliate6moCode, v))
+}
+
+// Affiliate12moCode applies equality check predicate on the "affiliate_12mo_code" field. It's identical to Affiliate12moCodeEQ.
+func Affiliate12moCode(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldEQ(FieldAffiliate12moCode, v))
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.CheckoutSession {
 	return predicate.CheckoutSession(sql.FieldEQ(FieldCreateTime, v))
@@ -384,6 +394,156 @@ func CompletedAtIsNil() predicate.CheckoutSession {
 // CompletedAtNotNil applies the NotNil predicate on the "completed_at" field.
 func CompletedAtNotNil() predicate.CheckoutSession {
 	return predicate.CheckoutSession(sql.FieldNotNull(FieldCompletedAt))
+}
+
+// Affiliate6moCodeEQ applies the EQ predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeEQ(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldEQ(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeNEQ applies the NEQ predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeNEQ(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldNEQ(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeIn applies the In predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeIn(vs ...string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldIn(FieldAffiliate6moCode, vs...))
+}
+
+// Affiliate6moCodeNotIn applies the NotIn predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeNotIn(vs ...string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldNotIn(FieldAffiliate6moCode, vs...))
+}
+
+// Affiliate6moCodeGT applies the GT predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeGT(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldGT(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeGTE applies the GTE predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeGTE(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldGTE(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeLT applies the LT predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeLT(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldLT(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeLTE applies the LTE predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeLTE(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldLTE(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeContains applies the Contains predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeContains(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldContains(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeHasPrefix applies the HasPrefix predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeHasPrefix(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldHasPrefix(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeHasSuffix applies the HasSuffix predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeHasSuffix(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldHasSuffix(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeIsNil applies the IsNil predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeIsNil() predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldIsNull(FieldAffiliate6moCode))
+}
+
+// Affiliate6moCodeNotNil applies the NotNil predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeNotNil() predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldNotNull(FieldAffiliate6moCode))
+}
+
+// Affiliate6moCodeEqualFold applies the EqualFold predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeEqualFold(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldEqualFold(FieldAffiliate6moCode, v))
+}
+
+// Affiliate6moCodeContainsFold applies the ContainsFold predicate on the "affiliate_6mo_code" field.
+func Affiliate6moCodeContainsFold(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldContainsFold(FieldAffiliate6moCode, v))
+}
+
+// Affiliate12moCodeEQ applies the EQ predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeEQ(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldEQ(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeNEQ applies the NEQ predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeNEQ(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldNEQ(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeIn applies the In predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeIn(vs ...string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldIn(FieldAffiliate12moCode, vs...))
+}
+
+// Affiliate12moCodeNotIn applies the NotIn predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeNotIn(vs ...string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldNotIn(FieldAffiliate12moCode, vs...))
+}
+
+// Affiliate12moCodeGT applies the GT predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeGT(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldGT(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeGTE applies the GTE predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeGTE(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldGTE(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeLT applies the LT predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeLT(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldLT(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeLTE applies the LTE predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeLTE(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldLTE(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeContains applies the Contains predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeContains(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldContains(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeHasPrefix applies the HasPrefix predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeHasPrefix(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldHasPrefix(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeHasSuffix applies the HasSuffix predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeHasSuffix(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldHasSuffix(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeIsNil applies the IsNil predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeIsNil() predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldIsNull(FieldAffiliate12moCode))
+}
+
+// Affiliate12moCodeNotNil applies the NotNil predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeNotNil() predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldNotNull(FieldAffiliate12moCode))
+}
+
+// Affiliate12moCodeEqualFold applies the EqualFold predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeEqualFold(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldEqualFold(FieldAffiliate12moCode, v))
+}
+
+// Affiliate12moCodeContainsFold applies the ContainsFold predicate on the "affiliate_12mo_code" field.
+func Affiliate12moCodeContainsFold(v string) predicate.CheckoutSession {
+	return predicate.CheckoutSession(sql.FieldContainsFold(FieldAffiliate12moCode, v))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

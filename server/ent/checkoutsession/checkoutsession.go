@@ -32,6 +32,10 @@ const (
 	FieldCompleted = "completed"
 	// FieldCompletedAt holds the string denoting the completed_at field in the database.
 	FieldCompletedAt = "completed_at"
+	// FieldAffiliate6moCode holds the string denoting the affiliate_6mo_code field in the database.
+	FieldAffiliate6moCode = "affiliate_6mo_code"
+	// FieldAffiliate12moCode holds the string denoting the affiliate_12mo_code field in the database.
+	FieldAffiliate12moCode = "affiliate_12mo_code"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// EdgeSubscription holds the string denoting the subscription edge name in mutations.
@@ -64,6 +68,8 @@ var Columns = []string{
 	FieldMode,
 	FieldCompleted,
 	FieldCompletedAt,
+	FieldAffiliate6moCode,
+	FieldAffiliate12moCode,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "checkout_sessions"
@@ -170,6 +176,16 @@ func ByCompleted(opts ...sql.OrderTermOption) OrderOption {
 // ByCompletedAt orders the results by the completed_at field.
 func ByCompletedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCompletedAt, opts...).ToFunc()
+}
+
+// ByAffiliate6moCode orders the results by the affiliate_6mo_code field.
+func ByAffiliate6moCode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAffiliate6moCode, opts...).ToFunc()
+}
+
+// ByAffiliate12moCode orders the results by the affiliate_12mo_code field.
+func ByAffiliate12moCode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAffiliate12moCode, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

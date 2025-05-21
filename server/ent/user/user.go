@@ -23,6 +23,12 @@ const (
 	FieldEmail = "email"
 	// FieldStripeCustomerID holds the string denoting the stripe_customer_id field in the database.
 	FieldStripeCustomerID = "stripe_customer_id"
+	// FieldStripeAccountID holds the string denoting the stripe_account_id field in the database.
+	FieldStripeAccountID = "stripe_account_id"
+	// FieldAffiliate6moCode holds the string denoting the affiliate_6mo_code field in the database.
+	FieldAffiliate6moCode = "affiliate_6mo_code"
+	// FieldAffiliate12moCode holds the string denoting the affiliate_12mo_code field in the database.
+	FieldAffiliate12moCode = "affiliate_12mo_code"
 	// EdgeCars holds the string denoting the cars edge name in mutations.
 	EdgeCars = "cars"
 	// EdgeProfile holds the string denoting the profile edge name in mutations.
@@ -79,6 +85,9 @@ var Columns = []string{
 	FieldUpdateTime,
 	FieldEmail,
 	FieldStripeCustomerID,
+	FieldStripeAccountID,
+	FieldAffiliate6moCode,
+	FieldAffiliate12moCode,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -128,6 +137,21 @@ func ByEmail(opts ...sql.OrderTermOption) OrderOption {
 // ByStripeCustomerID orders the results by the stripe_customer_id field.
 func ByStripeCustomerID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStripeCustomerID, opts...).ToFunc()
+}
+
+// ByStripeAccountID orders the results by the stripe_account_id field.
+func ByStripeAccountID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStripeAccountID, opts...).ToFunc()
+}
+
+// ByAffiliate6moCode orders the results by the affiliate_6mo_code field.
+func ByAffiliate6moCode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAffiliate6moCode, opts...).ToFunc()
+}
+
+// ByAffiliate12moCode orders the results by the affiliate_12mo_code field.
+func ByAffiliate12moCode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAffiliate12moCode, opts...).ToFunc()
 }
 
 // ByCarsCount orders the results by cars count.

@@ -11,6 +11,7 @@ import (
 	"github.com/Dan6erbond/revline/auth"
 	"github.com/Dan6erbond/revline/ent"
 	"github.com/Dan6erbond/revline/ent/subscription"
+	entUser "github.com/Dan6erbond/revline/ent/user"
 	"github.com/Dan6erbond/revline/graph/model"
 	stripe "github.com/stripe/stripe-go/v82"
 	portalsession "github.com/stripe/stripe-go/v82/billingportal/session"
@@ -43,10 +44,34 @@ func (r *mutationResolver) CreateCheckoutSession(ctx context.Context, input mode
 		price = &r.config.Stripe.Products.Enthusiast.Prices.Monthly.ID
 	}
 
-	checkoutSession, err := r.entClient.CheckoutSession.Create().
+	checkoutSessionCreate := r.entClient.CheckoutSession.Create().
 		SetUser(user).
-		SetStripePriceID(*price).
-		Save(ctx)
+		SetStripePriceID(*price)
+
+	var (
+		affiliatePartner *ent.User
+	)
+
+	if input.Affiliate != nil {
+		affiliatePartner, err = r.entClient.User.Query().Where(
+			entUser.Or(
+				entUser.Affiliate6moCodeEQ(*input.Affiliate),
+				entUser.Affiliate12moCodeEQ(*input.Affiliate),
+			),
+		).First(ctx)
+
+		if err != nil {
+			return "", err
+		}
+
+		if *affiliatePartner.Affiliate6moCode == *input.Affiliate {
+			checkoutSessionCreate.SetAffiliate6moCode(*affiliatePartner.Affiliate6moCode)
+		} else if *affiliatePartner.Affiliate12moCode == *input.Affiliate {
+			checkoutSessionCreate.SetAffiliate12moCode(*affiliatePartner.Affiliate12moCode)
+		}
+	}
+
+	checkoutSession, err := checkoutSessionCreate.Save(ctx)
 
 	if err != nil {
 		return "", err
@@ -60,15 +85,16 @@ func (r *mutationResolver) CreateCheckoutSession(ctx context.Context, input mode
 			Price:    price,
 			Quantity: stripe.Int64(1),
 		}},
-		SubscriptionData: &stripe.CheckoutSessionSubscriptionDataParams{
+		/* SubscriptionData: &stripe.CheckoutSessionSubscriptionDataParams{
 			TrialSettings: &stripe.CheckoutSessionSubscriptionDataTrialSettingsParams{
 				EndBehavior: &stripe.CheckoutSessionSubscriptionDataTrialSettingsEndBehaviorParams{
 					MissingPaymentMethod: stripe.String("cancel"),
 				},
 			},
 			TrialPeriodDays: stripe.Int64(7),
-		},
+		}, */
 		ClientReferenceID: stripe.String(checkoutSession.ID.String()),
+		CustomerEmail:     &user.Email,
 	}
 
 	s, err := session.New(params)

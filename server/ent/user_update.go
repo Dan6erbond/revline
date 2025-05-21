@@ -74,6 +74,66 @@ func (uu *UserUpdate) ClearStripeCustomerID() *UserUpdate {
 	return uu
 }
 
+// SetStripeAccountID sets the "stripe_account_id" field.
+func (uu *UserUpdate) SetStripeAccountID(s string) *UserUpdate {
+	uu.mutation.SetStripeAccountID(s)
+	return uu
+}
+
+// SetNillableStripeAccountID sets the "stripe_account_id" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableStripeAccountID(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetStripeAccountID(*s)
+	}
+	return uu
+}
+
+// ClearStripeAccountID clears the value of the "stripe_account_id" field.
+func (uu *UserUpdate) ClearStripeAccountID() *UserUpdate {
+	uu.mutation.ClearStripeAccountID()
+	return uu
+}
+
+// SetAffiliate6moCode sets the "affiliate_6mo_code" field.
+func (uu *UserUpdate) SetAffiliate6moCode(s string) *UserUpdate {
+	uu.mutation.SetAffiliate6moCode(s)
+	return uu
+}
+
+// SetNillableAffiliate6moCode sets the "affiliate_6mo_code" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableAffiliate6moCode(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetAffiliate6moCode(*s)
+	}
+	return uu
+}
+
+// ClearAffiliate6moCode clears the value of the "affiliate_6mo_code" field.
+func (uu *UserUpdate) ClearAffiliate6moCode() *UserUpdate {
+	uu.mutation.ClearAffiliate6moCode()
+	return uu
+}
+
+// SetAffiliate12moCode sets the "affiliate_12mo_code" field.
+func (uu *UserUpdate) SetAffiliate12moCode(s string) *UserUpdate {
+	uu.mutation.SetAffiliate12moCode(s)
+	return uu
+}
+
+// SetNillableAffiliate12moCode sets the "affiliate_12mo_code" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableAffiliate12moCode(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetAffiliate12moCode(*s)
+	}
+	return uu
+}
+
+// ClearAffiliate12moCode clears the value of the "affiliate_12mo_code" field.
+func (uu *UserUpdate) ClearAffiliate12moCode() *UserUpdate {
+	uu.mutation.ClearAffiliate12moCode()
+	return uu
+}
+
 // AddCarIDs adds the "cars" edge to the Car entity by IDs.
 func (uu *UserUpdate) AddCarIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddCarIDs(ids...)
@@ -293,6 +353,24 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if uu.mutation.StripeCustomerIDCleared() {
 		_spec.ClearField(user.FieldStripeCustomerID, field.TypeString)
+	}
+	if value, ok := uu.mutation.StripeAccountID(); ok {
+		_spec.SetField(user.FieldStripeAccountID, field.TypeString, value)
+	}
+	if uu.mutation.StripeAccountIDCleared() {
+		_spec.ClearField(user.FieldStripeAccountID, field.TypeString)
+	}
+	if value, ok := uu.mutation.Affiliate6moCode(); ok {
+		_spec.SetField(user.FieldAffiliate6moCode, field.TypeString, value)
+	}
+	if uu.mutation.Affiliate6moCodeCleared() {
+		_spec.ClearField(user.FieldAffiliate6moCode, field.TypeString)
+	}
+	if value, ok := uu.mutation.Affiliate12moCode(); ok {
+		_spec.SetField(user.FieldAffiliate12moCode, field.TypeString, value)
+	}
+	if uu.mutation.Affiliate12moCodeCleared() {
+		_spec.ClearField(user.FieldAffiliate12moCode, field.TypeString)
 	}
 	if uu.mutation.CarsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -547,6 +625,66 @@ func (uuo *UserUpdateOne) ClearStripeCustomerID() *UserUpdateOne {
 	return uuo
 }
 
+// SetStripeAccountID sets the "stripe_account_id" field.
+func (uuo *UserUpdateOne) SetStripeAccountID(s string) *UserUpdateOne {
+	uuo.mutation.SetStripeAccountID(s)
+	return uuo
+}
+
+// SetNillableStripeAccountID sets the "stripe_account_id" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableStripeAccountID(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetStripeAccountID(*s)
+	}
+	return uuo
+}
+
+// ClearStripeAccountID clears the value of the "stripe_account_id" field.
+func (uuo *UserUpdateOne) ClearStripeAccountID() *UserUpdateOne {
+	uuo.mutation.ClearStripeAccountID()
+	return uuo
+}
+
+// SetAffiliate6moCode sets the "affiliate_6mo_code" field.
+func (uuo *UserUpdateOne) SetAffiliate6moCode(s string) *UserUpdateOne {
+	uuo.mutation.SetAffiliate6moCode(s)
+	return uuo
+}
+
+// SetNillableAffiliate6moCode sets the "affiliate_6mo_code" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableAffiliate6moCode(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetAffiliate6moCode(*s)
+	}
+	return uuo
+}
+
+// ClearAffiliate6moCode clears the value of the "affiliate_6mo_code" field.
+func (uuo *UserUpdateOne) ClearAffiliate6moCode() *UserUpdateOne {
+	uuo.mutation.ClearAffiliate6moCode()
+	return uuo
+}
+
+// SetAffiliate12moCode sets the "affiliate_12mo_code" field.
+func (uuo *UserUpdateOne) SetAffiliate12moCode(s string) *UserUpdateOne {
+	uuo.mutation.SetAffiliate12moCode(s)
+	return uuo
+}
+
+// SetNillableAffiliate12moCode sets the "affiliate_12mo_code" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableAffiliate12moCode(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetAffiliate12moCode(*s)
+	}
+	return uuo
+}
+
+// ClearAffiliate12moCode clears the value of the "affiliate_12mo_code" field.
+func (uuo *UserUpdateOne) ClearAffiliate12moCode() *UserUpdateOne {
+	uuo.mutation.ClearAffiliate12moCode()
+	return uuo
+}
+
 // AddCarIDs adds the "cars" edge to the Car entity by IDs.
 func (uuo *UserUpdateOne) AddCarIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddCarIDs(ids...)
@@ -796,6 +934,24 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if uuo.mutation.StripeCustomerIDCleared() {
 		_spec.ClearField(user.FieldStripeCustomerID, field.TypeString)
+	}
+	if value, ok := uuo.mutation.StripeAccountID(); ok {
+		_spec.SetField(user.FieldStripeAccountID, field.TypeString, value)
+	}
+	if uuo.mutation.StripeAccountIDCleared() {
+		_spec.ClearField(user.FieldStripeAccountID, field.TypeString)
+	}
+	if value, ok := uuo.mutation.Affiliate6moCode(); ok {
+		_spec.SetField(user.FieldAffiliate6moCode, field.TypeString, value)
+	}
+	if uuo.mutation.Affiliate6moCodeCleared() {
+		_spec.ClearField(user.FieldAffiliate6moCode, field.TypeString)
+	}
+	if value, ok := uuo.mutation.Affiliate12moCode(); ok {
+		_spec.SetField(user.FieldAffiliate12moCode, field.TypeString, value)
+	}
+	if uuo.mutation.Affiliate12moCodeCleared() {
+		_spec.ClearField(user.FieldAffiliate12moCode, field.TypeString)
 	}
 	if uuo.mutation.CarsCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -583,6 +583,16 @@ func (cs *CheckoutSessionQuery) collectField(ctx context.Context, oneNode bool, 
 				selectedFields = append(selectedFields, checkoutsession.FieldCompletedAt)
 				fieldSeen[checkoutsession.FieldCompletedAt] = struct{}{}
 			}
+		case "affiliate6moCode":
+			if _, ok := fieldSeen[checkoutsession.FieldAffiliate6moCode]; !ok {
+				selectedFields = append(selectedFields, checkoutsession.FieldAffiliate6moCode)
+				fieldSeen[checkoutsession.FieldAffiliate6moCode] = struct{}{}
+			}
+		case "affiliate12moCode":
+			if _, ok := fieldSeen[checkoutsession.FieldAffiliate12moCode]; !ok {
+				selectedFields = append(selectedFields, checkoutsession.FieldAffiliate12moCode)
+				fieldSeen[checkoutsession.FieldAffiliate12moCode] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:
@@ -2601,6 +2611,16 @@ func (s *SubscriptionQuery) collectField(ctx context.Context, oneNode bool, opCt
 				selectedFields = append(selectedFields, subscription.FieldTrialEnd)
 				fieldSeen[subscription.FieldTrialEnd] = struct{}{}
 			}
+		case "affiliate6moCode":
+			if _, ok := fieldSeen[subscription.FieldAffiliate6moCode]; !ok {
+				selectedFields = append(selectedFields, subscription.FieldAffiliate6moCode)
+				fieldSeen[subscription.FieldAffiliate6moCode] = struct{}{}
+			}
+		case "affiliate12moCode":
+			if _, ok := fieldSeen[subscription.FieldAffiliate12moCode]; !ok {
+				selectedFields = append(selectedFields, subscription.FieldAffiliate12moCode)
+				fieldSeen[subscription.FieldAffiliate12moCode] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:
@@ -2946,6 +2966,21 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 			if _, ok := fieldSeen[user.FieldStripeCustomerID]; !ok {
 				selectedFields = append(selectedFields, user.FieldStripeCustomerID)
 				fieldSeen[user.FieldStripeCustomerID] = struct{}{}
+			}
+		case "stripeAccountID":
+			if _, ok := fieldSeen[user.FieldStripeAccountID]; !ok {
+				selectedFields = append(selectedFields, user.FieldStripeAccountID)
+				fieldSeen[user.FieldStripeAccountID] = struct{}{}
+			}
+		case "affiliate6moCode":
+			if _, ok := fieldSeen[user.FieldAffiliate6moCode]; !ok {
+				selectedFields = append(selectedFields, user.FieldAffiliate6moCode)
+				fieldSeen[user.FieldAffiliate6moCode] = struct{}{}
+			}
+		case "affiliate12moCode":
+			if _, ok := fieldSeen[user.FieldAffiliate12moCode]; !ok {
+				selectedFields = append(selectedFields, user.FieldAffiliate12moCode)
+				fieldSeen[user.FieldAffiliate12moCode] = struct{}{}
 			}
 		case "id":
 		case "__typename":

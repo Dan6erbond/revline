@@ -113,6 +113,34 @@ func (csc *CheckoutSessionCreate) SetNillableCompletedAt(t *time.Time) *Checkout
 	return csc
 }
 
+// SetAffiliate6moCode sets the "affiliate_6mo_code" field.
+func (csc *CheckoutSessionCreate) SetAffiliate6moCode(s string) *CheckoutSessionCreate {
+	csc.mutation.SetAffiliate6moCode(s)
+	return csc
+}
+
+// SetNillableAffiliate6moCode sets the "affiliate_6mo_code" field if the given value is not nil.
+func (csc *CheckoutSessionCreate) SetNillableAffiliate6moCode(s *string) *CheckoutSessionCreate {
+	if s != nil {
+		csc.SetAffiliate6moCode(*s)
+	}
+	return csc
+}
+
+// SetAffiliate12moCode sets the "affiliate_12mo_code" field.
+func (csc *CheckoutSessionCreate) SetAffiliate12moCode(s string) *CheckoutSessionCreate {
+	csc.mutation.SetAffiliate12moCode(s)
+	return csc
+}
+
+// SetNillableAffiliate12moCode sets the "affiliate_12mo_code" field if the given value is not nil.
+func (csc *CheckoutSessionCreate) SetNillableAffiliate12moCode(s *string) *CheckoutSessionCreate {
+	if s != nil {
+		csc.SetAffiliate12moCode(*s)
+	}
+	return csc
+}
+
 // SetID sets the "id" field.
 func (csc *CheckoutSessionCreate) SetID(u uuid.UUID) *CheckoutSessionCreate {
 	csc.mutation.SetID(u)
@@ -306,6 +334,14 @@ func (csc *CheckoutSessionCreate) createSpec() (*CheckoutSession, *sqlgraph.Crea
 	if value, ok := csc.mutation.CompletedAt(); ok {
 		_spec.SetField(checkoutsession.FieldCompletedAt, field.TypeTime, value)
 		_node.CompletedAt = &value
+	}
+	if value, ok := csc.mutation.Affiliate6moCode(); ok {
+		_spec.SetField(checkoutsession.FieldAffiliate6moCode, field.TypeString, value)
+		_node.Affiliate6moCode = &value
+	}
+	if value, ok := csc.mutation.Affiliate12moCode(); ok {
+		_spec.SetField(checkoutsession.FieldAffiliate12moCode, field.TypeString, value)
+		_node.Affiliate12moCode = &value
 	}
 	if nodes := csc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
