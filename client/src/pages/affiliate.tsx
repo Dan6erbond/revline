@@ -1,9 +1,10 @@
-import { Button, Snippet } from "@heroui/react";
+import { Button, Snippet, addToast } from "@heroui/react";
 import { HandCoins, Link, Link2, LogIn, UsersRound } from "lucide-react";
+import React, { useEffect } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 
-import React from "react";
 import RootNavbar from "@/components/layout/root-navbar";
+import { getQueryParam } from "../utils/router";
 import { graphql } from "../gql";
 import { useHref } from "../utils/use-href";
 import { useRouter } from "next/router";
@@ -13,6 +14,7 @@ const getConnectAccountId = graphql(`
     me {
       id
       stripeAccountID
+      stripeAccountCapabilities
       affiliate6moCode
       affiliate12moCode
     }
@@ -24,6 +26,7 @@ const createConnectAccount = graphql(`
     createConnectAccount {
       id
       stripeAccountID
+      stripeAccountCapabilities
       affiliate6moCode
       affiliate12moCode
     }
@@ -44,8 +47,28 @@ const createExpressLoginLink = graphql(`
 
 export default function Affiliate() {
   const router = useRouter();
+  const success = getQueryParam(router.query.success);
+  const canceled = getQueryParam(router.query.canceled);
 
   const href = useHref();
+
+  useEffect(() => {
+    if (success) {
+      addToast({
+        title: "Onboarding complete",
+        description:
+          "Your payout account has been successfully linked. You're now ready to receive payments and manage transfers.",
+        color: "success",
+      });
+    } else if (canceled) {
+      addToast({
+        title: "Onboarding canceled",
+        description:
+          "You didn't finish setting up your payout account. Without a connected account, you won’t be able to receive payments. Try again when you're ready.",
+        color: "warning",
+      });
+    }
+  }, [canceled, success]);
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
@@ -94,7 +117,8 @@ export default function Affiliate() {
             <span>Partner with us and grow together</span>
           </div>
         </div>
-        {data?.me.stripeAccountID ? (
+        {data?.me.stripeAccountID &&
+        data.me.stripeAccountCapabilities.transfers === "active" ? (
           <div className="flex flex-col gap-4 md:gap-6">
             <div>
               <h2 className="text-lg font-semibold text-content1-foreground mb-2">
@@ -137,7 +161,9 @@ export default function Affiliate() {
                   </p>
                   <Snippet
                     color="default"
-                    codeString={`${origin}/subscription?affiliate=${data.me.affiliate6moCode}`}
+                    codeString={`${origin}${href(
+                      "/subscription?affiliate=" + data.me.affiliate6moCode
+                    )}`}
                     symbol={<Link2 className="inline-block size-5 mr-2" />}
                   >
                     {data.me.affiliate6moCode}
@@ -149,7 +175,9 @@ export default function Affiliate() {
                   </p>
                   <Snippet
                     color="default"
-                    codeString={`${origin}/subscription?affiliate=${data.me.affiliate12moCode}`}
+                    codeString={`${origin}${href(
+                      "/subscription?affiliate=" + data.me.affiliate12moCode
+                    )}`}
                     symbol={<Link2 className="inline-block size-5 mr-2" />}
                   >
                     {data.me.affiliate12moCode}
