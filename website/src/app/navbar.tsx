@@ -21,7 +21,7 @@ export default function Navbar() {
     <HeroNavbar>
       <NavbarContent>
         <NavbarBrand as={NextLink} href="/">
-          <Wordmark />
+          <Wordmark className="w-24 md:w-32" />
         </NavbarBrand>
       </NavbarContent>
       <NavbarContent>
