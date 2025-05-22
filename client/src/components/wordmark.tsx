@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function Wordmark() {
+export default function Wordmark(props: React.ComponentProps<"svg">) {
   return (
     <svg
       width="139"

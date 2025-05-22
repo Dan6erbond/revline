@@ -36,7 +36,7 @@ export default function CarNavbar({
     <Navbar>
       <NavbarContent>
         <NavbarBrand as={NextLink} href="/" className="hidden md:flex">
-          <Wordmark />
+          <Wordmark className="w-24 md:w-32" />
         </NavbarBrand>
         <Button
           as={NextLink}

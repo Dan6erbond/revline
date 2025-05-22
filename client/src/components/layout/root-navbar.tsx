@@ -39,7 +39,7 @@ export default function RootNavbar({
           className="sm:hidden"
         />
         <NavbarBrand as={Link} href={"/"}>
-          <Wordmark />
+          <Wordmark className="w-24 md:w-32" />
         </NavbarBrand>
       </NavbarContent>
       <NavbarContent className="hidden sm:flex">
