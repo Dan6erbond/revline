@@ -88,7 +88,7 @@ export default function Affiliate() {
   return (
     <>
       <RootNavbar pathname={router.pathname} path={router.asPath} />
-      <main className="container mx-auto p-4 md:p-8 flex flex-col gap-4 md:gap-6">
+      <main className="container mx-auto p-6 md:p-8 flex flex-col gap-4 md:gap-6">
         <div className="bg-default shadow-sm rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="bg-primary/20 text-primary p-3 rounded-full">
@@ -112,7 +112,7 @@ export default function Affiliate() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-content3">
+          <div className="flex items-center gap-2 text-sm text-content3-foreground">
             <UsersRound className="size-4" />
             <span>Partner with us and grow together</span>
           </div>
@@ -154,7 +154,7 @@ export default function Affiliate() {
                 preferred commission model. Each user who signs up using your
                 link will be tracked automatically.
               </p>
-              <div className="flex">
+              <div className="flex flex-wrap gap-4 md:gap-6">
                 <div className="flex-1">
                   <p className="mb-1 font-medium text-content2-foreground">
                     6-month / 30% commission:
