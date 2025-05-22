@@ -218,30 +218,30 @@ func Webhook(config internal.Config, entClient *ent.Client, logger *zap.Logger) 
 				return
 			}
 
-			expandedInvoice, err := stripeInvoice.Get(invoice.ID, &stripe.InvoiceParams{
-				Expand: stripe.StringSlice([]string{"payments.data.payment.payment_intent"}),
-			})
-
-			if err != nil {
-				handleError("Error retrieving expanded invoice", http.StatusInternalServerError, err)
-				return
-			}
-
-			paymentIntent, err := paymentintent.Get(expandedInvoice.Payments.Data[0].Payment.PaymentIntent.ID, &stripe.PaymentIntentParams{
-				Expand: stripe.StringSlice([]string{"latest_charge"}),
-			})
-
-			if err != nil {
-				handleError("Error retrieving expanded payment intent", http.StatusInternalServerError, err)
-				return
-			}
-
-			var (
-				affiliatePartner *ent.User
-				amount           int64
-			)
-
 			if sub.Affiliate6moCode != nil || sub.Affiliate12moCode != nil {
+				expandedInvoice, err := stripeInvoice.Get(invoice.ID, &stripe.InvoiceParams{
+					Expand: stripe.StringSlice([]string{"payments.data.payment.payment_intent"}),
+				})
+
+				if err != nil {
+					handleError("Error retrieving expanded invoice", http.StatusInternalServerError, err)
+					return
+				}
+
+				paymentIntent, err := paymentintent.Get(expandedInvoice.Payments.Data[0].Payment.PaymentIntent.ID, &stripe.PaymentIntentParams{
+					Expand: stripe.StringSlice([]string{"latest_charge"}),
+				})
+
+				if err != nil {
+					handleError("Error retrieving expanded payment intent", http.StatusInternalServerError, err)
+					return
+				}
+
+				var (
+					affiliatePartner *ent.User
+					amount           int64
+				)
+
 				if sub.Affiliate6moCode != nil {
 					if time.Unix(invoice.Created, 0).After(sub.CreateTime.AddDate(0, 7, 0)) {
 						w.WriteHeader(http.StatusOK)

@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/Dan6erbond/revline/ent"
-	"github.com/dustinkirkland/golang-petname"
+	petname "github.com/dustinkirkland/golang-petname"
 	"github.com/spf13/cast"
 )
 
@@ -92,12 +92,7 @@ func (r *updateModProductOptionInputResolver) Specs(ctx context.Context, obj *en
 
 // StripeAccountCapabilities is the resolver for the stripeAccountCapabilities field.
 func (r *updateUserInputResolver) StripeAccountCapabilities(ctx context.Context, obj *ent.UpdateUserInput, data map[string]any) error {
-	converted := make(map[string]string, len(data))
-	for k, v := range data {
-		converted[k] = cast.ToString(v)
-	}
-	obj.StripeAccountCapabilities = converted
-	return nil
+	panic(fmt.Errorf("not implemented: StripeAccountCapabilities - stripeAccountCapabilities"))
 }
 
 // Car returns CarResolver implementation.
