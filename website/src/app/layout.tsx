@@ -33,11 +33,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <Script
-          defer
-          src="https://cloud.umami.is/script.js"
-          data-website-id="64bc9887-3516-4a18-b0a9-bfff4281cb0b"
-        />
+        {process.env.NODE_ENV !== "development" && (
+          <Script
+            defer
+            src="https://cloud.umami.is/script.js"
+            data-website-id="64bc9887-3516-4a18-b0a9-bfff4281cb0b"
+          />
+        )}
         <meta name="apple-mobile-web-app-title" content="Revline 1" />
       </head>
       <body className={`antialiased ${inter.className} dark`}>
