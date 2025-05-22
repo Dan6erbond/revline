@@ -10,7 +10,7 @@ export default function VeloMeet() {
       <div className="bg-primary-900/10 text-white rounded-2xl p-4 md:p-6 flex items-center gap-4 shadow-md container mx-auto mt-8">
         <Image
           as={NextImage}
-          src="/vm-logo-prv.png"
+          src="/vm-transparent.png"
           alt="VeloMeet Logo"
           width={128}
           height={64}
