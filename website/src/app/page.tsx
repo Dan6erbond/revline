@@ -5,6 +5,7 @@ import FeaturesSection from "./features";
 import Hero from "./hero";
 import Pricing from "./pricing";
 import { Testimonials } from "./testimonials";
+import VeloMeet from "./velomeet";
 
 export default function Home() {
   return (
@@ -18,6 +19,8 @@ export default function Home() {
       <FeatureTabs />
 
       <FeaturesSection />
+
+      <VeloMeet />
 
       <Pricing />
 

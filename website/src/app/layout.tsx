@@ -1,5 +1,6 @@
 import "./globals.css";
 
+import AffiliateCookie from "./affiliate";
 import Footer from "./footer";
 import { Inter } from "next/font/google";
 import type { Metadata } from "next";
@@ -40,7 +41,10 @@ export default function RootLayout({
       </head>
       <body className={`antialiased ${inter.className} dark`}>
         <Navbar />
-        <Providers>{children}</Providers>
+        <Providers>
+          <AffiliateCookie />
+          {children}
+        </Providers>
         <Footer />
       </body>
     </html>

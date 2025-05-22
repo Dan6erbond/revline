@@ -1,0 +1,441 @@
+---
+title: "Implementing an Affiliate Program with Go, GraphQL & Next.js using Stripe Connect"
+publishedAt: "2025 05 22"
+summary: "Learn how to implement a simple in-app affiliate program using Stripe Connect to incentivize users to share your app."
+---
+
+When I started building Revline 1, my passion project for car enthusiasts and DIY mechanics to track builds, log maintenance, and boost performance, I knew growth had to come from the community. Not just any community, but people who live and breathe cars like I do.
+
+So I built an affiliate program myself instead of using an expensive third-party tool.
+
+Why? Because I needed control. I wanted to offer 20% commission for the first 12 months of a subscription and explore future ideas like in-app credit, exclusive perks, or tiered bonuses.
+
+In this post, I'll walk you through exactly how I built the affiliate system from scratch using Go, GraphQL, Next.js, and Stripe Connect.
+
+# What is Stripe Connect?
+
+Stripe Connect empowers SaaS developers and marketplace creators to build platforms that facilitate seamless money transfers between parties. It's the backbone for services like Squarespace, enabling businesses to set up their own online stores and sell directly to customers, and platforms like Airbnb, connecting homeowners with potential guests.
+
+Given that Stripe Connect allows us to trigger payouts to connected accounts, it's an ideal solution for managing affiliate kickbacks. The best part? It doesn't incur additional fees or monthly rates, making it a perfect fit for our cost-effective car enthusiast SaaS!
+
+# Connecting Accounts
+
+The first thing we must do to build our affiliate program is allow users to create and connect their Stripe accounts with Revline 1, so we can transfer a cut from a subscription when the invoice is paid.
+
+Since I'm using GraphQL, the mutations we need look like this:
+
+```graphql
+extend type Mutation {
+  createConnectAccount: User! @loggedIn
+  linkConnectAccount: String! @loggedIn
+  createExpressLoginLink: String! @loggedIn
+}
+```
+
+To begin, we need to create a Connect account for our users. The most straightforward approach is to require your affiliates to create an account on your SaaS platform. This allows you to store the Stripe account ID as part of the user object in your database. Since I'm using Ent, here's what my `createConnectAccount` mutation looks like:
+
+```go
+// CreateConnectAccount is the resolver for the createConnectAccount field.
+func (r *mutationResolver) CreateConnectAccount(ctx context.Context) (*ent.User, error) {
+	user := auth.ForContext(ctx)
+
+	account, err := account.New(&stripe.AccountParams{
+		Controller: &stripe.AccountControllerParams{
+			StripeDashboard: &stripe.AccountControllerStripeDashboardParams{
+				Type: stripe.String("express"),
+			},
+			Fees: &stripe.AccountControllerFeesParams{
+				Payer: stripe.String("application"),
+			},
+			Losses: &stripe.AccountControllerLossesParams{
+				Payments: stripe.String("application"),
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := user.Update().
+		SetStripeAccountID(account.ID).
+		SetAffiliate6moCode(petname.Generate(3, "-")).
+		SetAffiliate12moCode(petname.Generate(3, "-")).
+		Save(ctx); err != nil {
+		return nil, err
+	}
+
+	return user, err
+}
+```
+
+In addition, we promptly generate affiliate codes using the [`golang-petname`](https://github.com/dustinkirkland/golang-petname) This ensures a vast array of unique combinations of adjectives and nouns, resulting in distinctive yet user-friendly affiliate codes.
+
+The account ID can then be used in the second mutation `linkConnectAccount` to redirect the user to Stripe's account onboarding page:
+
+```go
+// LinkConnectAccount is the resolver for the linkConnectAccount field.
+func (r *mutationResolver) LinkConnectAccount(ctx context.Context) (string, error) {
+	user := auth.ForContext(ctx)
+
+	baseURL, err := url.Parse(r.config.PublicURL)
+
+	if err != nil {
+		return "", err
+	}
+
+	var (
+		successURL = baseURL.JoinPath("/affiliate")
+		cancelURL  = baseURL.JoinPath("/affiliate")
+	)
+
+	successURL.RawQuery = "success=true"
+	cancelURL.RawQuery = "canceled=true"
+
+	accountLink, err := accountlink.New(&stripe.AccountLinkParams{
+		Account:    user.StripeAccountID,
+		ReturnURL:  stripe.String(successURL.String()),
+		RefreshURL: stripe.String(cancelURL.String()),
+		Type:       stripe.String("account_onboarding"),
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return accountLink.URL, err
+}
+```
+
+Our frontend will utilize these mutations to first create a Connect account. Using the account ID, we'll then redirect users to the onboarding process.
+
+If the linking process fails, we should notify the user and prompt them to attempt the onboarding again. However, if the user closes the tab or returns to the app using the back button, we won't receive the `canceled` query parameter. This is where Stripe's Connect webhooks become essential.
+
+# Connect Webhooks & Account Capabilities
+
+Just like with regular Stripe events, Connect can send updates to a specified webhook endpoint, notifying you when the account is updated and ready to receive affiliate transfers. We'll implement a webhook route at `/stripe/webhook/connect` to handle the `account.updated` event:
+
+```go
+mux.Post("/stripe/webhook/connect", ConnectWebhook(config, entClient, logger))
+
+func ConnectWebhook(config internal.Config, entClient *ent.Client, logger *zap.Logger) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handleError := func(message string, code int, err error) {
+			http.Error(w, err.Error(), code)
+			logger.Warn(message, zap.Error(err))
+		}
+
+		const MaxBodyBytes = int64(65536)
+		r.Body = http.MaxBytesReader(w, r.Body, MaxBodyBytes)
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			handleError("Error reading request body", http.StatusBadRequest, err)
+			return
+		}
+
+		event, err := webhook.ConstructEvent(body, r.Header.Get("Stripe-Signature"), config.Stripe.ConnectWebhookSecret)
+
+		if err != nil {
+			handleError("Error verifying webhook signature", http.StatusBadRequest, err)
+			return
+		}
+
+		if event.Type == "account.updated" {
+			var account stripe.Account
+			if err := json.Unmarshal(event.Data.Raw, &account); err != nil {
+				handleError("Error unmarshaling event data", http.StatusBadRequest, err)
+				return
+			}
+
+			user, err := entClient.User.Query().Where(
+				user.StripeAccountID(account.ID),
+			).First(r.Context())
+
+			if err != nil {
+				handleError("Error retrieving user by Stripe account ID", http.StatusInternalServerError, err)
+				return
+			}
+
+			var capabilities map[string]string
+
+			capabilitiesJSON, err := json.Marshal(account.Capabilities)
+
+			if err != nil {
+				handleError("Failed to marshal account capabilities", http.StatusInternalServerError, err)
+				return
+			}
+
+			if err := json.Unmarshal(capabilitiesJSON, &capabilities); err != nil {
+				handleError("Failed to unmarshal account capabilities", http.StatusInternalServerError, err)
+				return
+			}
+
+			if _, err := user.Update().SetStripeAccountCapabilities(capabilities).Save(r.Context()); err != nil {
+				handleError("Failed to update user Stripe account capabilities", http.StatusInternalServerError, err)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusOK)
+	})
+}
+```
+
+In this webhook, we store the account's capabilities alongside the account's ID in our database. This setup allows us to check in the frontend if the `transfers` capability is set to true. If it is, we can display the affiliate's unique code, which they can share with other car enthusiasts. Otherwise, we'll continue to show them the onboarding button, which will call the same `linkConnectAccount` mutation to complete the onboarding process.
+
+# Using the Affiliate Code during Checkout
+
+When users receive an affiliate link, we need to store it so that, during checkout, if the user purchases a license, we can associate the affiliate with that user. This allows us to pay out their rewards using Stripe Connect Direct Transfers. To achieve this, we'll create a component that checks the search parameters for the `affiliate` value. If it exists, we'll store it in the document's cookie, ensuring that we maintain the affiliate connection until the user signs up and, hopefully, purchases a subscription.
+
+```tsx
+"use client";
+
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+
+export default function AffiliateCookie() {
+  const query = useSearchParams();
+
+  useEffect(() => {
+    if (query?.get("affiliate")) {
+      document.cookie = `affiliate=${query.get("affiliate")}`;
+    }
+  }, [query]);
+
+  return null;
+}
+```
+
+The `AffiliateCookie` component should be used in a high-level `layout.tsx` so it runs on any page the user first visits.
+
+For those of us still on the Pages Router, which Revline 1's core app is, we can do the same at the top-level `_app.tsx`.
+
+```tsx
+  const router = useRouter();
+  const href = useHref();
+
+  useEffect(() => {
+    if (getQueryParam(router.query.affiliate)) {
+      document.cookie = `affiliate=${router.query.affiliate}`;
+    }
+  }, [router.query]);
+```
+
+Then, during checkout, we'll check if the `document.cookie` is populated with an affiliate code and include that in our checkout request:
+
+```tsx
+const checkout = () => {
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const ca = decodedCookie.split(";");
+  const affiliate = ca
+    .find((c) => c.trim().startsWith("affiliate="))
+    ?.substring(11);
+
+  mutate({
+    variables: {
+      input: { tier: SubscriptionTier.Diy, affiliate },
+    },
+  }).then(
+    ({ data }) =>
+      data?.createCheckoutSession &&
+      (window.location.href = data?.createCheckoutSession)
+  );
+}
+```
+
+In the backend we'll check if an affiliate code was included in the request and store it alongside the checkout session after validating it's a valid affiliate code:
+
+```go
+	if input.Affiliate != nil {
+		affiliatePartner, err = r.entClient.User.Query().Where(
+			userq.Or(
+				userq.Affiliate6moCodeEQ(*input.Affiliate),
+				userq.Affiliate12moCodeEQ(*input.Affiliate),
+			),
+		).First(ctx)
+
+		if err != nil {
+			return "", err
+		}
+
+		if *affiliatePartner.Affiliate6moCode == *input.Affiliate {
+			checkoutSessionCreate.SetAffiliate6moCode(*affiliatePartner.Affiliate6moCode)
+		} else if *affiliatePartner.Affiliate12moCode == *input.Affiliate {
+			checkoutSessionCreate.SetAffiliate12moCode(*affiliatePartner.Affiliate12moCode)
+		}
+	}
+```
+
+Once the user completes the checkout process and pays for their subscription, we'll need to create or update the subscription in our database. We'll also store the affiliate code there. This setup ensures that when we receive the `invoice.paid` event, we can immediately transfer the payout.
+
+```go
+func Webhook(config internal.Config, entClient *ent.Client, logger *zap.Logger) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    // Parse and validate webhook payload
+
+    switch event.Type {
+    case "checkout.session.completed":
+      tx, err := entClient.Tx(r.Context())
+
+      var session stripe.CheckoutSession
+
+      if err := json.Unmarshal(event.Data.Raw, &session); err != nil {
+        rollback(tx, "Error unmarshaling event data", http.StatusBadRequest, err)
+        return
+      }
+
+      if _, err := tx.ExecContext(r.Context(), "LOCK TABLE subscriptions IN ACCESS EXCLUSIVE MODE"); err != nil {
+        rollback(tx, "Error locking subscriptions table", http.StatusBadRequest, err)
+        return
+      }
+
+      uid, err := uuid.Parse(session.ClientReferenceID)
+
+      if err != nil {
+        rollback(tx, "Error parsing checkout session reference UUID", http.StatusInternalServerError, err)
+        return
+      }
+
+      checkoutSession, err := tx.CheckoutSession.Query().
+        Where(checkoutsession.Or(
+          checkoutsession.IDEQ(uid),
+          checkoutsession.StripeSessionIDEQ(session.ID),
+        )).
+        WithUser().
+        First(r.Context())
+
+      if err != nil {
+        rollback(tx, "Error finding checkout session", http.StatusInternalServerError, err)
+        return
+      }
+
+      var tier = subscriptionq.TierDiy
+
+      if checkoutSession.StripePriceID == config.Stripe.Products.Enthusiast.Prices.Monthly.ID {
+        tier = subscriptionq.TierEnthusiast
+      }
+
+      if _, err = tx.Subscription.Create().
+        SetCheckoutSession(checkoutSession).
+        SetStripeSubscriptionID(session.Subscription.ID).
+        SetStatus(subscriptionq.StatusActive).
+        SetTier(tier).
+        SetUser(checkoutSession.Edges.User).
+        SetNillableAffiliate6moCode(checkoutSession.Affiliate6moCode).
+        SetNillableAffiliate12moCode(checkoutSession.Affiliate12moCode).
+        Save(r.Context()); err != nil {
+        rollback(tx, "Error saving subscription", http.StatusInternalServerError, err)
+        return
+      }
+
+      // Handle other logic here
+
+      tx.Commit()
+      // Handle other webhook event types here
+    }
+
+    w.WriteHeader(http.StatusOK)
+  })
+}
+```
+
+# Paying Out Affiliate Rewards
+
+With all the setup complete, our database should now include affiliate codes alongside active subscriptions. This allows us to determine the amount we need to pay in affiliate rewards and the duration for which these payments are required. We achieve this by storing the 6-month and 12-month codes in separate columns. When the `invoice.paid` event is triggered, we can transfer the funds from our account to a Connect account using the `SourceTransaction` feature. This ensures that we do not incur a negative balance.
+
+```go
+var invoice stripe.Invoice
+
+if err := json.Unmarshal(event.Data.Raw, &invoice); err != nil {
+	handleError("Error unmarshaling event data", http.StatusBadRequest, err)
+	return
+}
+
+id := invoice.Lines.Data[0].Parent.SubscriptionItemDetails.Subscription
+
+sub, err := entClient.Subscription.Query().
+	Where(subscriptionq.StripeSubscriptionID(id)).
+	First(r.Context())
+
+if err != nil {
+	handleError("Error retrieving subscription by Stripe ID", http.StatusInternalServerError, err)
+	return
+}
+
+expandedInvoice, err := stripeInvoice.Get(invoice.ID, &stripe.InvoiceParams{
+	Expand: stripe.StringSlice([]string{"payments.data.payment.payment_intent"}),
+})
+
+if err != nil {
+	handleError("Error retrieving expanded invoice", http.StatusInternalServerError, err)
+	return
+}
+
+paymentIntent, err := paymentintent.Get(expandedInvoice.Payments.Data[0].Payment.PaymentIntent.ID, &stripe.PaymentIntentParams{
+	Expand: stripe.StringSlice([]string{"latest_charge"}),
+})
+
+if err != nil {
+	handleError("Error retrieving expanded payment intent", http.StatusInternalServerError, err)
+	return
+}
+
+var (
+	affiliatePartner *ent.User
+	amount           int64
+)
+
+if sub.Affiliate6moCode != nil || sub.Affiliate12moCode != nil {
+	if sub.Affiliate6moCode != nil {
+		if time.Unix(invoice.Created, 0).After(sub.CreateTime.AddDate(0, 7, 0)) {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		affiliatePartner, err = entClient.User.Query().Where(
+			userq.Affiliate6moCodeEQ(*sub.Affiliate6moCode),
+		).First(r.Context())
+
+		amount = int64(float64(expandedInvoice.Lines.Data[0].Amount) * 0.2)
+	} else {
+		if time.Unix(invoice.Created, 0).After(sub.CreateTime.AddDate(0, 13, 0)) {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		affiliatePartner, err = entClient.User.Query().Where(
+			userq.Affiliate12moCodeEQ(*sub.Affiliate12moCode),
+		).First(r.Context())
+
+		amount = int64(float64(expandedInvoice.Lines.Data[0].Amount) * 0.3)
+	}
+
+	if err != nil {
+		handleError("Error finding affiliate partner", http.StatusInternalServerError, err)
+		return
+	}
+
+	params := &stripe.TransferParams{
+		Amount:            stripe.Int64(amount),
+		Currency:          stripe.String(expandedInvoice.Lines.Data[0].Currency),
+		Destination:       affiliatePartner.StripeAccountID,
+		SourceTransaction: &paymentIntent.LatestCharge.ID,
+	}
+
+	if _, err := transfer.New(params); err != nil {
+		handleError("Failed to transfer affiliate payout", http.StatusInternalServerError, err)
+		return
+	}
+}
+```
+
+By setting the source transaction to the payment received from our subscription user, we ensure that the affiliate payouts are funded directly from that incoming transfer. This approach is crucial because it means that the affiliate rewards are paid out from the specific transaction where the revenue was generated, rather than from our overall account balance. This method helps maintain a clear and direct flow of funds, ensuring that we only pay out affiliate rewards when we have received the corresponding payment from the customer. It also helps in keeping our account balance stable and prevents any potential negative balance issues.
+
+# Conclusion
+Building an affiliate program from scratch using Go, GraphQL, Next.js, and Stripe Connect has empowered Revline 1 to offer a tailored, cost-effective solution for car enthusiasts. This approach ensures seamless payouts and fosters community growth through unique, user-friendly affiliate codes.
+
+By leveraging Stripe Connect and golang-petname, we've created a robust system that aligns with our vision and business model. This setup not only facilitates basic affiliate rewards but also allows us to implement custom functionalities like in-app branding for affiliates and a powerful dashboard. This dashboard can show partners their active subscription rewards, upcoming rewards, and the number of users they've onboarded to Revline 1, enhancing their engagement and experience.
+
+This journey highlights the potential for innovation in affiliate programs, encouraging others to explore and expand their own systems.
+
+Thank you for joining me, and I look forward to seeing your creative implementations!
