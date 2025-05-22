@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import Navbar from "./navbar";
 import { Providers } from "./providers";
 import Script from "next/script";
+import { Suspense } from "react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -42,7 +43,9 @@ export default function RootLayout({
       <body className={`antialiased ${inter.className} dark`}>
         <Navbar />
         <Providers>
-          <AffiliateCookie />
+          <Suspense>
+            <AffiliateCookie />
+          </Suspense>
           {children}
         </Providers>
         <Footer />
