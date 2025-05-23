@@ -116,17 +116,25 @@ Our frontend will utilize these mutations to first create a Connect account. Usi
   className="self-center"
   endContent={<Link className="size-5" />}
   onPress={() => {
-    mutateCreateConnectAccount()
-      .then(({ data }) => {
+    let promise: Promise<
+      FetchResult<LinkConnectAccountMutation> | undefined
+    >;
+
+    if (data?.me.stripeAccountID) {
+      promise = mutateLinkConnectAccount();
+    } else {
+      promise = mutateCreateConnectAccount().then(({ data }) => {
         if (!data?.createConnectAccount) return;
 
         return mutateLinkConnectAccount();
-      })
-      .then((res) => {
-        if (!res?.data?.linkConnectAccount) return;
-
-        window.location.href = res.data.linkConnectAccount;
       });
+    }
+
+    promise.then((res) => {
+      if (!res?.data?.linkConnectAccount) return;
+
+      window.location.href = res.data.linkConnectAccount;
+    });
   }}
   isLoading={isCreatingConnectAccount || isLinkingConnectAccount}
 >
