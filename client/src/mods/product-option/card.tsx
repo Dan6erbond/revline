@@ -47,7 +47,13 @@ export function ProductOptionCard({
           </div>
         )}
         {o.link && (
-          <Link href={o.link} isExternal color="secondary" size="sm">
+          <Link
+            href={o.link}
+            target="_blank"
+            rel="noopener"
+            color="secondary"
+            size="sm"
+          >
             View Product
           </Link>
         )}
