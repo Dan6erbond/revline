@@ -23,7 +23,7 @@ export default function VeloMeet() {
             <span className="font-semibold text-white">VeloMeet</span>. Connect
             with local enthusiasts and never miss a car meet again.
           </p>
-          <Link href="https://www.velomeet.app" isExternal>
+          <Link href="https://www.velomeet.app" target="_blank" rel="noopener">
             Explore VeloMeet &rarr;
           </Link>
         </div>
