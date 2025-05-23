@@ -228,15 +228,6 @@ func Webhook(config internal.Config, entClient *ent.Client, logger *zap.Logger) 
 					return
 				}
 
-				paymentIntent, err := paymentintent.Get(expandedInvoice.Payments.Data[0].Payment.PaymentIntent.ID, &stripe.PaymentIntentParams{
-					Expand: stripe.StringSlice([]string{"latest_charge"}),
-				})
-
-				if err != nil {
-					handleError("Error retrieving expanded payment intent", http.StatusInternalServerError, err)
-					return
-				}
-
 				var (
 					affiliatePartner *ent.User
 					amount           int64
@@ -268,6 +259,15 @@ func Webhook(config internal.Config, entClient *ent.Client, logger *zap.Logger) 
 
 				if err != nil {
 					handleError("Error finding affiliate partner", http.StatusInternalServerError, err)
+					return
+				}
+
+				paymentIntent, err := paymentintent.Get(expandedInvoice.Payments.Data[0].Payment.PaymentIntent.ID, &stripe.PaymentIntentParams{
+					Expand: stripe.StringSlice([]string{"latest_charge"}),
+				})
+
+				if err != nil {
+					handleError("Error retrieving expanded payment intent", http.StatusInternalServerError, err)
 					return
 				}
 
