@@ -1,11 +1,12 @@
 import { Button, Snippet, addToast } from "@heroui/react";
+import { FetchResult, useMutation, useQuery } from "@apollo/client";
 import { HandCoins, Link, Link2, LogIn, UsersRound } from "lucide-react";
-import React, { useEffect } from "react";
-import { useMutation, useQuery } from "@apollo/client";
 
+import { LinkConnectAccountMutation } from "../gql/graphql";
 import RootNavbar from "@/components/layout/root-navbar";
 import { getQueryParam } from "../utils/router";
 import { graphql } from "../gql";
+import { useEffect } from "react";
 import { useHref } from "../utils/use-href";
 import { useRouter } from "next/router";
 
@@ -202,17 +203,25 @@ export default function Affiliate() {
               className="self-center"
               endContent={<Link className="size-5" />}
               onPress={() => {
-                mutateCreateConnectAccount()
-                  .then(({ data }) => {
+                let promise: Promise<
+                  FetchResult<LinkConnectAccountMutation> | undefined
+                >;
+
+                if (data?.me.stripeAccountID) {
+                  promise = mutateLinkConnectAccount();
+                } else {
+                  promise = mutateCreateConnectAccount().then(({ data }) => {
                     if (!data?.createConnectAccount) return;
 
                     return mutateLinkConnectAccount();
-                  })
-                  .then((res) => {
-                    if (!res?.data?.linkConnectAccount) return;
-
-                    window.location.href = res.data.linkConnectAccount;
                   });
+                }
+
+                promise.then((res) => {
+                  if (!res?.data?.linkConnectAccount) return;
+
+                  window.location.href = res.data.linkConnectAccount;
+                });
               }}
               isLoading={isCreatingConnectAccount || isLinkingConnectAccount}
             >
