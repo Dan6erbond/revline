@@ -34,7 +34,30 @@
         "database": "revline",
         "username": "postgres",
         "group": "revline"
+      },
+      {
+        "pgOptions": {
+          "ssl": {
+            "rejectUnauthorized": false,
+            "ca": "",
+            "requestCert": true
+          }
+        },
+        "previewLimit": 50,
+        "server": "revline.one",
+        "port": 5432,
+        "driver": "PostgreSQL",
+        "name": "revline-prod",
+        "group": "revline",
+        "database": "revline",
+        "username": "postgres"
       }
+    ],
+    "conventionalCommits.scopes": [
+      "blog",
+      "client",
+      "server",
+      "website",
     ]
   }
 }
