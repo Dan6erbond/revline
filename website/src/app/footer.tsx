@@ -1,9 +1,9 @@
 "use client";
 
-import { ArrowRight, ExternalLink } from "lucide-react";
 import { Button, Link } from "@heroui/react";
-import { SiInstagram, SiX } from "@icons-pack/react-simple-icons";
+import { SiInstagram, SiReddit, SiX } from "@icons-pack/react-simple-icons";
 
+import { ArrowRight } from "lucide-react";
 import NextLink from "next/link";
 import Wordmark from "./wordmark";
 
@@ -30,7 +30,7 @@ export default function Footer() {
               isExternal
               className="hover:text-gray-400 transition-colors"
             >
-              <ExternalLink className="w-5 h-5" />
+              <SiReddit className="w-5 h-5" />
             </Link>
             <Link
               href="https://twitter.com/revlineone"
