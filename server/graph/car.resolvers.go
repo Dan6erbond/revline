@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math"
 	"slices"
+	"strings"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -295,13 +296,43 @@ func (r *documentResolver) Metadata(ctx context.Context, obj *ent.Document) (*mi
 
 // URL is the resolver for the url field.
 func (r *mediaResolver) URL(ctx context.Context, obj *ent.Media) (string, error) {
-	baseURL, err := r.config.GetServerPublicURL()
+	car, err := obj.QueryCar().WithOwner().First(ctx)
 
 	if err != nil {
 		return "", err
 	}
 
-	return baseURL.JoinPath("/media/" + obj.ID.String()).String(), nil
+	objectName := fmt.Sprintf("users/%s/cars/%s/media/%s", car.Edges.Owner.ID, car.ID, obj.ID)
+
+	object, err := r.s3Client.GetObject(ctx, r.config.S3.Bucket, objectName, minio.GetObjectOptions{})
+
+	if err != nil {
+		return "", err
+	}
+
+	info, err := object.Stat()
+
+	if err != nil {
+		return "", err
+	}
+
+	if strings.HasPrefix(info.ContentType, "image/") {
+		baseURL, err := r.config.GetServerPublicURL()
+
+		if err != nil {
+			return "", err
+		}
+
+		return baseURL.JoinPath("/media/" + obj.ID.String()).String(), nil
+	}
+
+	url, err := r.s3Client.PresignedGetObject(ctx, r.config.S3.Bucket, objectName, time.Hour, nil)
+
+	if err != nil {
+		return "", err
+	}
+
+	return url.String(), err
 }
 
 // Metadata is the resolver for the metadata field.

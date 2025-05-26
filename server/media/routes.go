@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Dan6erbond/revline/ent"
+	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/httpfx"
 	"github.com/Dan6erbond/revline/internal"
 	"github.com/go-chi/chi"
@@ -38,28 +39,19 @@ func NewMediaHandler(entClient *ent.Client, s3Client *minio.Client, config inter
 			return
 		}
 
-		media, err := entClient.Media.Get(r.Context(), uid)
+		media, err := entClient.Media.Query().
+			Where(media.ID(uid)).
+			WithCar(func(cq *ent.CarQuery) {
+				cq.WithOwner()
+			}).
+			First(r.Context())
 
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
-		car, err := media.Car(r.Context())
-
-		if err != nil {
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-
-		owner, err := car.Owner(r.Context())
-
-		if err != nil {
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-
-		objectName := fmt.Sprintf("users/%s/cars/%s/media/%s", owner.ID, car.ID, media.ID)
+		objectName := fmt.Sprintf("users/%s/cars/%s/media/%s", media.Edges.Car.Edges.Owner.ID, media.Edges.Car.ID, media.ID)
 
 		obj, err := s3Client.GetObject(r.Context(), config.S3.Bucket, objectName, minio.GetObjectOptions{})
 
