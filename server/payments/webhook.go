@@ -11,6 +11,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	subscriptionq "github.com/Dan6erbond/revline/ent/subscription"
 	userq "github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/httpfx"
 	"github.com/Dan6erbond/revline/internal"
 	"github.com/google/uuid"
 	"github.com/stripe/stripe-go/v82"
@@ -21,8 +22,22 @@ import (
 	"go.uber.org/zap"
 )
 
-func Webhook(config internal.Config, entClient *ent.Client, logger *zap.Logger) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+type StripeWebhookFunc func(http.ResponseWriter, *http.Request)
+
+func (f StripeWebhookFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f(w, r)
+}
+
+func (f StripeWebhookFunc) Pattern() string {
+	return "/stripe/webhook"
+}
+
+func (f StripeWebhookFunc) Methods() []string {
+	return []string{"POST"}
+}
+
+func Webhook(config internal.Config, entClient *ent.Client, logger *zap.Logger) httpfx.Route {
+	return StripeWebhookFunc(func(w http.ResponseWriter, r *http.Request) {
 		handleError := func(message string, code int, err error) {
 			http.Error(w, err.Error(), code)
 			logger.Warn(message, zap.Error(err))

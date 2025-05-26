@@ -7,14 +7,29 @@ import (
 
 	"github.com/Dan6erbond/revline/ent"
 	"github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/httpfx"
 	"github.com/Dan6erbond/revline/internal"
 	"github.com/stripe/stripe-go/v82"
 	"github.com/stripe/stripe-go/v82/webhook"
 	"go.uber.org/zap"
 )
 
-func ConnectWebhook(config internal.Config, entClient *ent.Client, logger *zap.Logger) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+type ConnectWebhookFunc func(http.ResponseWriter, *http.Request)
+
+func (f ConnectWebhookFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f(w, r)
+}
+
+func (f ConnectWebhookFunc) Pattern() string {
+	return "/stripe/webhook/connect"
+}
+
+func (f ConnectWebhookFunc) Methods() []string {
+	return []string{"POST"}
+}
+
+func ConnectWebhook(config internal.Config, entClient *ent.Client, logger *zap.Logger) httpfx.Route {
+	return ConnectWebhookFunc(func(w http.ResponseWriter, r *http.Request) {
 		handleError := func(message string, code int, err error) {
 			http.Error(w, err.Error(), code)
 			logger.Warn(message, zap.Error(err))

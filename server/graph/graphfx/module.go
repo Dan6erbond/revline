@@ -10,7 +10,4 @@ var Module = fx.Module("graph",
 		graph.NewResolver,
 		NewServer,
 	),
-	fx.Invoke(
-		RegisterRoutes,
-	),
 )
