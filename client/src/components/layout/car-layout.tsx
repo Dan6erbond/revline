@@ -14,13 +14,12 @@ import {
 } from "lucide-react";
 import {
   Button,
-  Image,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  useDisclosure,
+  useDisclosure
 } from "@heroui/react";
 import { ComponentProps, useCallback, useState } from "react";
 import { DistanceUnit, FuelConsumptionUnit } from "@/gql/graphql";
@@ -29,8 +28,8 @@ import { useMutation, useQuery } from "@apollo/client";
 
 import CarNavbar from "./car-navbar";
 import Dropzone from "../dropzone";
+import Image from "next/image";
 import Link from "next/link";
-import NextImage from "next/image";
 import { getDistance } from "@/utils/distance";
 import { getFuelConsumption } from "@/utils/fuel-consumption";
 import { getQueryParam } from "@/utils/router";
@@ -170,12 +169,10 @@ export default function CarLayout(props: ComponentProps<"main">) {
       <CarNavbar car={data?.car} menuItems={menuItems} />
       <div className="h-[30vh] relative">
         <Image
-          as={NextImage}
           className="h-full w-full rounded-none object-cover"
           src={data?.car?.bannerImageUrl ?? href("/placeholder.png")}
-          alt={data?.car?.name}
+          alt={data?.car?.name ?? "Car banner"}
           fill
-          removeWrapper
         />
       </div>
       <Button

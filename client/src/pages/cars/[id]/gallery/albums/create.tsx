@@ -3,6 +3,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@apollo/client";
 
 import CarLayout from "@/components/layout/car-layout";
+import FileIcon from "@/components/file-icon";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
@@ -16,6 +17,9 @@ const getGallery = graphql(`
         id
         url
         createTime
+        metadata {
+          contentType
+        }
       }
     }
   }
@@ -120,16 +124,23 @@ export default function Create() {
                 selectedKeys={value}
                 onSelectionChange={onChange}
               >
-                {({ id, url, createTime }) => (
+                {({ id, url, createTime, metadata }) => (
                   <SelectItem textValue={id}>
                     <div className="flex gap-2 items-center">
-                      <Image
-                        alt={id}
-                        className="flex-shrink-0 object-cover"
-                        height={50}
-                        width={50}
-                        src={url}
-                      />
+                      {metadata?.contentType.startsWith("image/") ? (
+                        <Image
+                          alt={id}
+                          className="flex-shrink-0 object-cover"
+                          height={50}
+                          width={50}
+                          src={url}
+                        />
+                      ) : (
+                        <FileIcon
+                          className="size-12"
+                          contentType={metadata?.contentType}
+                        />
+                      )}
                       <div className="flex flex-col">
                         <span className="text-small">{id}</span>
                         <span className="text-tiny text-default-400">

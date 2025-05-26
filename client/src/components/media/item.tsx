@@ -163,13 +163,11 @@ export default function MediaItem({
             <source src={m.url} type="video/mp4" />
           </video>
         ) : (
-          <Image
-            as={NextImage}
+          <NextImage
             src={m.url}
             alt={`Shared media ${m.id}`}
             className="object-cover h-full w-full"
             sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 20vw"
-            removeWrapper
             fill
           />
         )}

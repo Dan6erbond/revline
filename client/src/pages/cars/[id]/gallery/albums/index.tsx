@@ -3,16 +3,15 @@ import {
   Button,
   Card,
   CardBody,
-  Image,
   Tab,
   Tabs,
   Tooltip,
-  addToast,
+  addToast
 } from "@heroui/react";
 
 import CarLayout from "@/components/layout/car-layout";
+import Image from "next/image";
 import Link from "next/link";
-import NextImage from "next/image";
 import SubscriptionOverlay from "@/components/subscription-overlay";
 import { SubscriptionTier } from "@/gql/graphql";
 import { getQueryParam } from "@/utils/router";
@@ -110,12 +109,10 @@ export default function Albums() {
                     <div className="bg-secondary h-48 md:h-56 lg:h-64 xl:h-96 relative">
                       {cover ? (
                         <Image
-                          as={NextImage}
                           src={cover.url}
                           alt={album.title}
                           className="object-cover rounded-none"
                           fill
-                          removeWrapper
                         />
                       ) : (
                         <div className="flex h-full items-center justify-center text-content1-foreground p-4 md:p-8">

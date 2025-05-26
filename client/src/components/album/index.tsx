@@ -1,5 +1,4 @@
 import {
-  Chip,
   DropdownItem,
   Image,
   Input,
@@ -10,8 +9,8 @@ import {
 import { Key, useState } from "react";
 import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
 
+import FileIcon from "@/components/file-icon";
 import MediaItem from "@/components/media/item";
-import NextImage from "next/image";
 import { Trash } from "lucide-react";
 import { getAlbum } from "@/components/album/shared";
 import { getQueryParam } from "@/utils/router";
@@ -40,6 +39,9 @@ const getGallery = graphql(`
         id
         url
         createTime
+        metadata {
+          contentType
+        }
       }
     }
   }
@@ -137,28 +139,6 @@ export default function AlbumView({ id }: { id: string }) {
             (m) => data?.album.media?.findIndex((_m) => _m.id === m.id) === -1
           ) ?? []
         }
-        renderValue={(items) => (
-          <div className="flex flex-wrap gap-2">
-            {items.map((item) => (
-              <Chip
-                key={item.key}
-                startContent={
-                  <Image
-                    as={NextImage}
-                    alt={item.data?.id}
-                    className="flex-shrink-0 object-cover"
-                    height={25}
-                    width={25}
-                    src={item.data?.url}
-                    removeWrapper
-                  />
-                }
-              >
-                {item.data?.id}
-              </Chip>
-            ))}
-          </div>
-        )}
         onSelectionChange={(value) => {
           if (!value.currentKey) return;
 
@@ -172,16 +152,23 @@ export default function AlbumView({ id }: { id: string }) {
           });
         }}
       >
-        {({ id, url, createTime }) => (
+        {({ id, url, createTime, metadata }) => (
           <SelectItem textValue={id}>
             <div className="flex gap-2 items-center">
-              <Image
-                alt={id}
-                className="flex-shrink-0 object-cover"
-                height={50}
-                width={50}
-                src={url}
-              />
+              {metadata?.contentType.startsWith("image/") ? (
+                <Image
+                  alt={id}
+                  className="flex-shrink-0 object-cover"
+                  height={50}
+                  width={50}
+                  src={url}
+                />
+              ) : (
+                <FileIcon
+                  className="size-12"
+                  contentType={metadata?.contentType}
+                />
+              )}
               <div className="flex flex-col">
                 <span className="text-small">{id}</span>
                 <span className="text-tiny text-default-400">
