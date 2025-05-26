@@ -145,7 +145,7 @@ export default function Gallery() {
               ))}
               {uploadProgress.map((m) => (
                 <div
-                  className="p-4 h-[200px] lg:h-[250px] flex flex-col gap-2"
+                  className="p-4 h-[150px] md:h-[200px] lg:h-[250px] flex flex-col gap-2"
                   key={m.id}
                 >
                   <Progress value={m.progress} />

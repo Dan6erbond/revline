@@ -133,7 +133,7 @@ export default function MediaItem({
   return (
     <>
       <Card
-        className="relative h-[200px] lg:h-[250px]"
+        className="relative h-[150px] md:h-[200px] lg:h-[250px]"
         isPressable
         onPress={onOpen}
       >
