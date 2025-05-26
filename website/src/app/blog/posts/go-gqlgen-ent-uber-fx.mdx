@@ -1,0 +1,460 @@
+---
+title: "Build Fast Think Less with Go, GQLGen, Ent and FX"
+publishedAt: "2025 05 26"
+summary: "See how I leveraged Go, GQLGen, Ent, and Uber FX to build Revline 1 fast, securely, and with minimal boilerplate—so I can focus on features that matter."
+---
+
+For Revline 1, my app for car enthusiasts and DIY mechanics, I needed to build quickly without sacrificing performance, security, or maintainability. Go provides the solid foundation, but pairing it with GQLGen, Ent, and Uber FX delivers real development velocity.
+
+This stack eliminates boilerplate and makes building a modular, production-grade GraphQL API almost effortless. Ent handles pagination, filtering, and schema-first models that plug right into GQLGen. FX handles dependency injection cleanly so I can swap out services and keep things testable and secure.
+
+This post covers how I use this setup in Revline 1 to ship features quickly and confidently, while staying focused on what matters most: building something I love.
+
+## Dependency injection with Uber/FX
+
+At the core of Revline 1 is Uber's FX, a dependency injection framework that makes wiring up services automatic and painless. It leverages Go's interfaces to keep components modular and swappable, whether it is something low-level like the HTTP router or an environment-specific implementation like a `NotificationService` that sends push notifications in production and logs them in development.
+
+FX also provides built-in lifecycle hooks to cleanly start workers at boot and handle graceful shutdowns. Combined with Zap for structured logging, it gives clear visibility into how and when dependencies are initialized or torn down.
+
+To initialize our module with FX, we first have to initialize our Go module:
+
+```sh
+go mod init github.com/dan6erbond/revline
+```
+
+Then we'll write a simple `main.go` that creates the FX app and starts it:
+
+```go
+import "go.uber.org/fx"
+
+func main() {
+  fx.New().Run()
+}
+```
+
+### Providing app configuration
+
+An important part of any backend application is providing secure configuration values that can change based on environment. Since we don't want to include those in our repository, and ideally want to use environment variables or a configuration file, we'll use Viper to provide a type-safe configuration object that can be read from environment variables or a YAML file using a simple FX provider.
+
+In our `internal` package we'll create a `Config` struct describing the shape of our configuration:
+
+```go
+package internal
+
+import "github.com/spf13/viper"
+
+type Config struct {
+	DatabaseURL string
+	Host        string
+	Port        uint
+	Environment string
+	// Other configuration variables
+}
+
+func SetDefaults() {
+	viper.SetDefault("host", "localhost")
+	viper.SetDefault("port", 4000)
+	viper.SetDefault("environment", "development")
+}
+```
+
+Then, in our `main.go` we'll instruct Viper to read the `config.yaml` at the current path, as well as automatically bind any environment variables it finds. With `fx.Supply` we'll include the `config` in our DI container:
+
+```go
+func main() {
+	var config internal.Config
+
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+
+	viper.AutomaticEnv()
+
+	internal.SetDefaults()
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatalf("fatal error config file: %v", err)
+	}
+
+	if err = viper.Unmarshal(&config); err != nil {
+		log.Fatalf("unable to decode into struct, %v", err)
+	}
+
+	fx.New(
+    fx.Supply(config),
+  ).Run()
+}
+```
+
+We can now provide configuration via a `config.yaml` file that looks like this:
+
+```yml
+environment: development
+# Other configuration variables
+```
+
+## Configuring the HTTP server
+
+In order to provide HTTP endpoints, we need to configure an HTTP server. I chose to use Chi, but the benefit of Go's HTTP ecosystem is that they all use similar patterns revolving around the http.Handler interface. Chi also provides some useful middleware in the [github.com/go-chi/chi/middleware](https://github.com/go-chi/chi/middleware) package, such as `RequestID`, `RealIP`, and a CORS implementation from [github.com/go-chi/cors](https://github.com/go-chi/cors).
+
+We'll write an FX provider function that takes our route handlers and registers them to the router after applying middleware. Since we wrote our own Route interface, our handlers don't need to know anything about the underlying router library we're using. We could even switch to `net/http`'s `ServeMux` without touching the rest of the app:
+
+```go
+package httpfx
+
+import (
+	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/Dan6erbond/revline/internal"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/cors"
+	"go.uber.org/fx"
+	"go.uber.org/zap"
+)
+
+var NewRouterParamTags = fx.ParamTags("", "", "", `group:"routes"`, `group:"middlewares"`)
+
+type Route interface {
+	http.Handler
+	Pattern() string
+	Methods() []string
+}
+
+func NewRouter(lc fx.Lifecycle, logger *zap.Logger, config internal.Config, routes []Route, mws []func(http.Handler) http.Handler) *chi.Mux {
+	router := chi.NewRouter()
+
+	router.Use(middleware.RequestID)
+	router.Use(middleware.RealIP)
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.Timeout(60 * time.Second))
+
+	router.Use(cors.Handler(cors.Options{
+		AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "Content-Length", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300,
+		Debug:            config.Environment == "development",
+	}))
+
+	router.Use(mws...)
+
+	router.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("ok"))
+	})
+
+	for _, route := range routes {
+		if len(route.Methods()) == 0 {
+			router.Handle(route.Pattern(), route)
+			continue
+		}
+
+		for _, m := range route.Methods() {
+			switch m {
+			case "GET":
+				router.Get(route.Pattern(), route.ServeHTTP)
+			case "POST":
+				router.Post(route.Pattern(), route.ServeHTTP)
+			case "PUT":
+				router.Put(route.Pattern(), route.ServeHTTP)
+			case "DELETE":
+				router.Delete(route.Pattern(), route.ServeHTTP)
+			case "PATCH":
+				router.Patch(route.Pattern(), route.ServeHTTP)
+			case "OPTIONS":
+				router.Options(route.Pattern(), route.ServeHTTP)
+			case "HEAD":
+				router.Head(route.Pattern(), route.ServeHTTP)
+			default:
+				logger.Warn("Unsupported method for route", zap.String("method", m))
+			}
+		}
+	}
+
+	lc.Append(fx.StartHook(func() {
+		go http.ListenAndServe(fmt.Sprintf("%s:%d", config.Host, config.Port), router)
+	}))
+
+	return router
+}
+```
+
+We'll provide the router as part of its own module so we can isolate the implementation from our main application:
+
+```go
+package httpfx
+
+import (
+	"github.com/go-chi/chi"
+	"go.uber.org/fx"
+)
+
+var Module = fx.Module("http",
+	fx.Provide(
+		fx.Annotate(
+			NewRouter,
+			NewRouterParamTags,
+		),
+	),
+	fx.Invoke(func(router *chi.Mux) {}),
+)
+```
+
+We use `fx.Invoke` with an empty function that takes the router as a parameter. This ensures FX runs the `NewRouter` provider, since it only constructs dependencies that are explicitly referenced in the dependency graph.
+
+Finally, we register the HTTP module in `main.go`, allowing FX to wire everything together in the right order and run the `fx.StartHook` to boot the HTTP server:
+
+```go
+fx.New(
+  httpfx.Module,
+).Run()
+```
+
+## Setting up GQLGen
+
+The next step toward building our modular, type-safe backend framework is integrating GQLGen. A library that uses code generation to scaffold Go resolver files based on our GraphQL schema and bind GraphQL types to our Go models. This gives us a strongly typed, idiomatic way to implement our API while avoiding the runtime overhead and ambiguity of reflection-based solutions.
+
+We start by initializing the root resolver, following the [GQLGen Quick start guide](https://gqlgen.com/). After that, we wire up the `/graphql` endpoint and the GraphQL Playground by attaching their handlers to our `routes` group:
+
+```go
+type NewServerResult struct {
+	fx.Out
+	Routes []httpfx.Route `group:"routes,flatten"`
+}
+
+type PlaygroundHandlerFunc func(http.ResponseWriter, *http.Request)
+
+func (f PlaygroundHandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	f(w, r)
+}
+
+func (h PlaygroundHandlerFunc) Pattern() string {
+	return "/playground"
+}
+
+func (h PlaygroundHandlerFunc) Methods() []string {
+	return []string{"GET"}
+}
+
+type GraphqlHandlerFunc struct{ *handler.Server }
+
+func (h GraphqlHandlerFunc) Pattern() string {
+	return "/graphql"
+}
+
+func (h GraphqlHandlerFunc) Methods() []string {
+	return []string{}
+}
+
+func NewServer(resolver *graph.Resolver, entClient *ent.Client) NewServerResult {
+	srv := handler.New(graph.NewExecutableSchema(graph.Config{
+		Resolvers: resolver,
+		Directives: graph.DirectiveRoot{
+			LoggedIn: directives.LoggedIn(),
+		},
+	}))
+
+  srv.Use(entgql.Transactioner{TxOpener: entClient})
+
+	return NewServerResult{Routes: []httpfx.Route{
+		PlaygroundHandlerFunc(playground.Handler("Revline", "/graphql")),
+		GraphqlHandlerFunc{srv},
+	}}
+}
+```
+
+As you can see, we stick to the familiar `http.HandlerFunc` pattern to wrap our handlers and implement the `Pattern()` and `Methods()` methods. This lets our custom HTTP server from earlier register the routes cleanly and consistently.
+
+Now we just have to create the `graphfx` module:
+
+```go
+package graphfx
+
+import (
+	"github.com/Dan6erbond/revline/graph"
+	"go.uber.org/fx"
+)
+
+var Module = fx.Module("graph",
+	fx.Provide(
+		graph.NewResolver,
+		NewServer,
+	),
+)
+```
+
+And then use it in our app as we did with the `httpfx` module.
+
+That wraps up the GQLGen setup. Next, we'll move on to configuring Ent and defining our schema. Ent takes care of the heavy lifting when it comes to CRUD operations and managing relational fields, letting us focus on modeling rather than boilerplate.
+
+## Building our schema
+
+To get started with Ent, we follow their [Quick introduction](https://entgo.io/docs/getting-started) to initialize the `ent` package and create our first schema. Once that's in place, we enable GraphQL integration to automatically generate the GraphQL schema for nodes and edges, along with Query and Mutation resolvers.
+
+This integration also gives us out-of-the-box support for cursor-based pagination (Relay-compliant), transactional mutations for consistency on failure, and a schema that stays in sync with our data model—all with minimal manual work.
+
+Instead of using Ent's default code generation command, we'll write a custom `entc.go` file and configure the `entgql` extension:
+
+```go
+package main
+
+import (
+	"log"
+
+	"entgo.io/contrib/entgql"
+	"entgo.io/ent/entc"
+	"entgo.io/ent/entc/gen"
+)
+
+func main() {
+	ex, err := entgql.NewExtension(
+		entgql.WithSchemaGenerator(),
+		entgql.WithSchemaPath("../graph/ent.graphqls"),
+		entgql.WithWhereInputs(true),
+		entgql.WithRelaySpec(true),
+		// entgql.WithNodeDescriptor(false),
+	)
+
+	if err != nil {
+		log.Fatalf("creating entgql extension: %v", err)
+	}
+
+	if err := entc.Generate("./schema", &gen.Config{}, entc.Extensions(ex), entc.FeatureNames("entql", "privacy", "schema/snapshot", "sql/execquery")); err != nil {
+		log.Fatalf("running ent codegen: %v", err)
+	}
+}
+```
+
+Then we replace the default generate directive in `ent/generate.go` to run our custom setup:
+
+```go
+package ent
+
+//go:generate go run -mod=mod entc.go
+```
+
+This lets us fine-tune the code generation process and ensure the GraphQL schema stays aligned with our Ent models.
+
+### Implementing queries
+
+Thanks to the `entgql` extension, to implement queries all we have to do is add them to our schema files and all the nested fields such as relations will be handled by Ent:
+
+```gql
+extend type Query {
+  car(id: ID!): Car!
+}
+```
+
+```go
+// Car is the resolver for the car field.
+func (r *queryResolver) Car(ctx context.Context, id string) (*ent.Car, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.Car.Get(ctx, uid)
+}
+```
+
+### Implementing mutations
+
+Mutations are just as simple, since `entgql` generates `Create` and `Update` inputs for us, we can extend our `Mutation` type and implement its resolver:
+
+```gql
+extend type Mutation {
+  createCar(input: CreateCarInput!): Car! @loggedIn
+}
+```
+
+```go
+// CreateCar is the resolver for the createCar field.
+func (r *mutationResolver) CreateCar(ctx context.Context, input ent.CreateCarInput) (*ent.Car, error) {
+	user := auth.ForContext(ctx)
+
+	input.OwnerID = &user.ID
+
+	return r.entClient.Car.Create().SetInput(input).Save(ctx)
+}
+```
+
+### Adding fields
+
+If we want to add a field to our GraphQL types, such as the average fuel consumption calculated at runtime, we can do so using the `extend` keyword:
+
+```gql
+extend type Car {
+  averageConsumptionLitersPerKm: Float!
+}
+```
+
+Then, after re-generating our resolvers, we'll be able to fill out the resolver function:
+
+```go
+// AverageConsumptionLitersPerKm is the resolver for the averageConsumptionLitersPerKm field.
+func (r *carResolver) AverageConsumptionLitersPerKm(ctx context.Context, obj *ent.Car) (float64, error) {
+  panic("Not implemented: Car - averageConsumptionLitersPerKm")
+}
+```
+
+### Extending mutation inputs
+
+If we want to let our user create/update related entities in CRUD operations, we can do so by extending the Ent generated input types. By adding the value we want to receive, we can immediately create the related entity and attach its ID to the main `input` object:
+
+```gql
+extend input CreateFuelUpInput {
+  odometerKm: Float
+}
+```
+
+We'll use `ent.FromContext(ctx)` to enable transactional mutations, ensuring that the whole operation either succeeds or fails:
+
+```go
+// OdometerKm is the resolver for the odometerKm field.
+func (r *createFuelUpInputResolver) OdometerKm(ctx context.Context, obj *ent.CreateFuelUpInput, data *float64) error {
+	if data != nil {
+		c := ent.FromContext(ctx)
+
+		or, err := c.OdometerReading.Create().
+			SetCarID(obj.CarID).
+			SetReadingKm(*data).
+			SetReadingTime(obj.OccurredAt).
+			SetNotes("Created by fuel-up").
+			Save(ctx)
+
+		if err != nil {
+			return err
+		}
+
+		obj.OdometerReadingID = &or.ID
+
+		return err
+	}
+
+	return nil
+}
+```
+
+We also have to make sure to use the transactional `ent.Client` in our main `CreateFuelUp()` resolver function:
+
+```go
+// CreateFuelUp is the resolver for the createFuelUp field.
+func (r *mutationResolver) CreateFuelUp(ctx context.Context, input ent.CreateFuelUpInput) (*ent.FuelUp, error) {
+	c := ent.FromContext(ctx)
+
+	return c.FuelUp.Create().SetInput(input).Save(ctx)
+}
+```
+
+## Wrapping up
+
+To sum up, leveraging Ent to handle the heavy lifting of CRUD operations, combining it with GQLGen for a fully type-safe GraphQL API, and using Uber FX for lifecycle management and dependency injection allowed me to build Revline 1 quickly and reliably.
+
+There's plenty more to explore—like implementing JWT authentication middleware with Zitadel, which we use in production—but that's material for another post. For now, this walkthrough demonstrates how you can build a solid, modular backend framework with minimal boilerplate, embracing 12-factor configuration, automatic dependency wiring, and the powerful synergy between Ent and GQLGen to accelerate development.
