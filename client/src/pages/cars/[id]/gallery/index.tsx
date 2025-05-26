@@ -139,12 +139,15 @@ export default function Gallery() {
             }
             href={`/cars/${router.query.id}/gallery`}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {data?.car?.media?.map((m) => (
                 <MediaItem item={m} key={m.id} />
               ))}
               {uploadProgress.map((m) => (
-                <div className="p-4 h-[400px] flex flex-col gap-2" key={m.id}>
+                <div
+                  className="p-4 h-[200px] lg:h-[250px] flex flex-col gap-2"
+                  key={m.id}
+                >
                   <Progress value={m.progress} />
                   <Skeleton className="rounded-xl h-full w-full" />
                 </div>

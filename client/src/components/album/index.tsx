@@ -11,9 +11,10 @@ import { Key, useState } from "react";
 import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
 
 import MediaItem from "@/components/media/item";
+import NextImage from "next/image";
 import { Trash } from "lucide-react";
 import { getAlbum } from "@/components/album/shared";
-import { getQueryParam } from "../../utils/router";
+import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import useDebounce from "@/hooks/use-debounce";
 import { useRouter } from "next/router";
@@ -107,7 +108,7 @@ export default function AlbumView({ id }: { id: string }) {
         size="lg"
         endContent={loading && <Spinner />}
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {data?.album.media?.map((m) => (
           <MediaItem
             item={m}
@@ -143,11 +144,13 @@ export default function AlbumView({ id }: { id: string }) {
                 key={item.key}
                 startContent={
                   <Image
+                    as={NextImage}
                     alt={item.data?.id}
                     className="flex-shrink-0 object-cover"
                     height={25}
                     width={25}
                     src={item.data?.url}
+                    removeWrapper
                   />
                 }
               >

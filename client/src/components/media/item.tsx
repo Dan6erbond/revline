@@ -132,7 +132,11 @@ export default function MediaItem({
 
   return (
     <>
-      <Card className="relative h-[400px]" isPressable onPress={onOpen}>
+      <Card
+        className="relative h-[200px] lg:h-[250px]"
+        isPressable
+        onPress={onOpen}
+      >
         <div className="absolute top-6 right-6 z-20">
           <Dropdown onClick={(e) => e.stopPropagation()}>
             <DropdownTrigger asChild>
@@ -164,7 +168,7 @@ export default function MediaItem({
             src={m.url}
             alt={`Shared media ${m.id}`}
             className="object-cover h-full w-full"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 20vw"
             removeWrapper
             fill
           />
@@ -176,8 +180,8 @@ export default function MediaItem({
         isOpen={isOpen}
         onClose={onClose}
         classNames={{ base: "bg-transparent shadow-none" }}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        size={"" as any}
+        size="5xl"
+        scrollBehavior="inside"
       >
         <ModalContent>
           {() => (
@@ -202,7 +206,7 @@ export default function MediaItem({
                   <Image
                     src={m.url}
                     alt={`Shared media ${m.id}`}
-                    className="object-cover h-full w-full"
+                    className="object-contain h-full w-full"
                     removeWrapper
                   />
                 )}

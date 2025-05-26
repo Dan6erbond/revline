@@ -99,7 +99,13 @@ export default function Albums() {
               {data?.car.albums?.map((album) => {
                 const cover = album.media?.[0];
                 return (
-                  <Card key={album.id} className="shadow-sm">
+                  <Card
+                    key={album.id}
+                    className="shadow-sm"
+                    isPressable
+                    as={Link}
+                    href={`/cars/${router.query.id}/gallery/albums/${album.id}`}
+                  >
                     <div className="bg-secondary">
                       {cover ? (
                         <Image
@@ -115,22 +121,15 @@ export default function Albums() {
                       )}
                     </div>
                     <CardBody className="p-4">
-                      <h3 className="text-lg font-semibold text-content1-foreground truncate">
-                        {album.title}
-                      </h3>
-                      <div className="flex mt-2 gap-4">
-                        <Button
-                          as={Link}
-                          href={`/cars/${router.query.id}/gallery/albums/${album.id}`}
-                          className="w-full flex-1 text-primary border-primary hover:bg-primary/10"
-                          variant="bordered"
-                        >
-                          View Album
-                        </Button>
+                      <div className="flex justify-between items-center mt-2 gap-4">
+                        <h3 className="text-lg font-semibold text-content1-foreground truncate">
+                          {album.title}
+                        </h3>
                         <Tooltip content="Copy share link">
                           <Button
                             isIconOnly
                             variant="light"
+                            onClick={(e) => e.preventDefault()}
                             onPress={() => {
                               const shareUrl = new URL(
                                 href(`/share/a/${album.id}`),
