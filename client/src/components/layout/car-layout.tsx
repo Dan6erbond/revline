@@ -30,6 +30,7 @@ import { useMutation, useQuery } from "@apollo/client";
 import CarNavbar from "./car-navbar";
 import Dropzone from "../dropzone";
 import Link from "next/link";
+import NextImage from "next/image";
 import { getDistance } from "@/utils/distance";
 import { getFuelConsumption } from "@/utils/fuel-consumption";
 import { getQueryParam } from "@/utils/router";
@@ -169,10 +170,12 @@ export default function CarLayout(props: ComponentProps<"main">) {
       <CarNavbar car={data?.car} menuItems={menuItems} />
       <div className="h-[30vh] relative">
         <Image
-          className="absolute h-full w-full top-0 left-0 rounded-none object-cover"
-          removeWrapper
+          as={NextImage}
+          className="h-full w-full rounded-none object-cover"
           src={data?.car?.bannerImageUrl ?? href("/placeholder.png")}
           alt={data?.car?.name}
+          fill
+          removeWrapper
         />
       </div>
       <Button

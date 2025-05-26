@@ -12,6 +12,7 @@ import {
 
 import CarLayout from "@/components/layout/car-layout";
 import Link from "next/link";
+import NextImage from "next/image";
 import SubscriptionOverlay from "@/components/subscription-overlay";
 import { SubscriptionTier } from "@/gql/graphql";
 import { getQueryParam } from "@/utils/router";
@@ -106,12 +107,14 @@ export default function Albums() {
                     as={Link}
                     href={`/cars/${router.query.id}/gallery/albums/${album.id}`}
                   >
-                    <div className="bg-secondary">
+                    <div className="bg-secondary h-48 md:h-56 lg:h-64 xl:h-96 relative">
                       {cover ? (
                         <Image
+                          as={NextImage}
                           src={cover.url}
                           alt={album.title}
-                          className="object-cover h-48 md:h-56 lg:h-64 xl:h-96 w-full rounded-none"
+                          className="object-cover rounded-none"
+                          fill
                           removeWrapper
                         />
                       ) : (
