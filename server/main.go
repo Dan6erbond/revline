@@ -8,6 +8,7 @@ import (
 	"github.com/Dan6erbond/revline/graph/graphfx"
 	"github.com/Dan6erbond/revline/httpfx"
 	"github.com/Dan6erbond/revline/internal"
+	"github.com/Dan6erbond/revline/media"
 	"github.com/Dan6erbond/revline/payments"
 	"github.com/Dan6erbond/revline/storage"
 	"github.com/spf13/viper"
@@ -56,5 +57,6 @@ func main() {
 		httpfx.Module,
 		entfx.Module,
 		payments.Module,
+		media.Module,
 	).Run()
 }

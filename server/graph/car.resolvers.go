@@ -295,27 +295,13 @@ func (r *documentResolver) Metadata(ctx context.Context, obj *ent.Document) (*mi
 
 // URL is the resolver for the url field.
 func (r *mediaResolver) URL(ctx context.Context, obj *ent.Media) (string, error) {
-	car, err := obj.Car(ctx)
+	baseURL, err := r.config.GetServerPublicURL()
 
 	if err != nil {
 		return "", err
 	}
 
-	owner, err := car.Owner(ctx)
-
-	if err != nil {
-		return "", err
-	}
-
-	objectName := fmt.Sprintf("users/%s/cars/%s/media/%s", owner.ID, car.ID, obj.ID)
-
-	url, err := r.s3Client.PresignedGetObject(ctx, r.config.S3.Bucket, objectName, time.Hour, nil)
-
-	if err != nil {
-		return "", err
-	}
-
-	return url.String(), err
+	return baseURL.JoinPath("/media/" + obj.ID.String()).String(), nil
 }
 
 // Metadata is the resolver for the metadata field.

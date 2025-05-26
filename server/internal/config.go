@@ -1,11 +1,14 @@
 package internal
 
-import "github.com/spf13/viper"
+import (
+	"fmt"
+	"net/url"
+
+	"github.com/spf13/viper"
+)
 
 type Config struct {
 	DatabaseURL string
-	Host        string
-	Port        uint
 	Environment string
 	Auth        struct {
 		Providers []struct {
@@ -32,7 +35,20 @@ type Config struct {
 			Enthusiast Product
 		}
 	}
+	Server struct {
+		Host      string
+		Port      uint
+		PublicURL string
+	}
 	PublicURL string
+}
+
+func (c Config) GetServerPublicURL() (u *url.URL, err error) {
+	if c.Server.PublicURL == "" {
+		return url.Parse(fmt.Sprintf("http://%s:%d", c.Server.Host, c.Server.Port))
+	}
+
+	return url.Parse(c.Server.PublicURL)
 }
 
 type Product struct {
@@ -47,7 +63,7 @@ type Price struct {
 }
 
 func SetDefaults() {
-	viper.SetDefault("host", "localhost")
-	viper.SetDefault("port", 4000)
+	viper.SetDefault("server.host", "localhost")
+	viper.SetDefault("server.port", 4000)
 	viper.SetDefault("environment", "development")
 }
