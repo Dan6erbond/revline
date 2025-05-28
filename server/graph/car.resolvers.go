@@ -252,6 +252,9 @@ func (r *documentResolver) URL(ctx context.Context, obj *ent.Document) (string, 
 	url, err := r.s3Client.PresignedGetObject(ctx, r.config.S3.Bucket, objectName, time.Hour, nil)
 
 	if err != nil {
+		if err, ok := err.(minio.ErrorResponse); ok && (err.Code == "NoSuchKey") {
+			return "", nil
+		}
 		return "", err
 	}
 
@@ -313,6 +316,9 @@ func (r *mediaResolver) URL(ctx context.Context, obj *ent.Media) (string, error)
 	info, err := object.Stat()
 
 	if err != nil {
+		if err, ok := err.(minio.ErrorResponse); ok && (err.Code == "NoSuchKey") {
+			return "", nil
+		}
 		return "", err
 	}
 
@@ -329,6 +335,9 @@ func (r *mediaResolver) URL(ctx context.Context, obj *ent.Media) (string, error)
 	url, err := r.s3Client.PresignedGetObject(ctx, r.config.S3.Bucket, objectName, time.Hour, nil)
 
 	if err != nil {
+		if err, ok := err.(minio.ErrorResponse); ok && (err.Code == "NoSuchKey") {
+			return "", nil
+		}
 		return "", err
 	}
 
