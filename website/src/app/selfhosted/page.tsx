@@ -104,6 +104,7 @@ export default async function Selfhosted() {
     useSsl: false
     region: local
   server:
+    host: 0.0.0.0
     publicUrl: https://api.revline.yourdomain.com
   publicUrl: https://revline.yourdomain.com
   licenseKey: <your-license-jwt>`;
