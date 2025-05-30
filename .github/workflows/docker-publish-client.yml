@@ -1,4 +1,4 @@
-name: Build server Docker image
+name: Build client Docker image
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -17,7 +17,7 @@ env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
-  IMAGE_NAME: dan6erbond/revline-server
+  IMAGE_NAME: dan6erbond/revline-client
 
 jobs:
   build:
@@ -78,6 +78,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            SERVER_URL: https://api.revline.one
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
