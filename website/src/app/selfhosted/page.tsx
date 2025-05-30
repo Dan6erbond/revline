@@ -1,4 +1,5 @@
 import { CopyButton } from "./copy-button";
+import DockerCompose from "./docker-compose";
 import FAQ from "./faq";
 import type { Metadata } from "next";
 import React from "react";
@@ -16,8 +17,6 @@ declare module "react" {
     }
   }
 }
-
-
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -104,6 +103,8 @@ export default async function Selfhosted() {
     secretAccessKey: <your-minio-secret-key>
     useSsl: false
     region: local
+  server:
+    publicUrl: https://api.revline.yourdomain.com
   publicUrl: https://revline.yourdomain.com
   licenseKey: <your-license-jwt>`;
 
@@ -148,6 +149,14 @@ export default async function Selfhosted() {
           your Revline backend (e.g.{" "}
           <code className="text-white">https://api.revline.yourdomain.com</code>
           ).
+        </li>
+        <li>
+          <code className="text-white">INTERNAL_SERVER_URL</code>: Used in
+          environments without a reverse proxy. This should point to the backend
+          service’s internal hostname and port (e.g.,{" "}
+          <code className="text-white">http://server:4000</code>) so the
+          frontend can communicate with the backend directly within the same
+          Docker network.
         </li>
         <li>
           <code className="text-white">AUTH_PROVIDERS</code>: A JSON array
@@ -206,6 +215,8 @@ export default async function Selfhosted() {
         </pre>
         <CopyButton className="absolute top-2 right-2" code={configYamlRaw} />
       </div>
+
+      <DockerCompose />
 
       <h2 className="text-2xl font-semibold mt-6 mb-2">Pricing</h2>
       <p className="mb-4 text-gray-400">
