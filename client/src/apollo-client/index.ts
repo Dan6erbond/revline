@@ -77,7 +77,7 @@ export const buildClient = ({
   cache?: ApolloCache<unknown>;
 }) => {
   const httpLink = createUploadLink({
-    uri: new URL("/graphql", url).toString(),
+    uri: new URL("/graphql", process.env.INTERNAL_SERVER_URL ?? url).toString(),
   });
 
   return new ApolloClient({
