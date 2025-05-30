@@ -32,7 +32,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (!user.id) {
         const { data } = await buildClient({
           accessToken: token.accessToken,
-          url: process.env.SERVER_URL!,
+          url: process.env.INTERNAL_SERVER_URL ?? process.env.SERVER_URL!,
         }).query({
           query: graphql(`
             query GetMe {
