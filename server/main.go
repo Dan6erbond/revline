@@ -11,36 +11,22 @@ import (
 	"github.com/Dan6erbond/revline/media"
 	"github.com/Dan6erbond/revline/payments"
 	"github.com/Dan6erbond/revline/storage"
-	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
 )
 
 func main() {
-	var config internal.Config
+	cfg, err := internal.ParseConfig()
 
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-
-	viper.AutomaticEnv()
-
-	internal.SetDefaults()
-
-	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatalf("fatal error config file: %v", err)
-	}
-
-	if err = viper.Unmarshal(&config); err != nil {
-		log.Fatalf("unable to decode into struct, %v", err)
+		log.Fatalf("unable to parse config, %v", err)
 	}
 
 	fx.New(
 		fx.Provide(
-			func() (*zap.Logger, error) {
-				if config.Environment == "development" {
+			func(cfg internal.Config) (*zap.Logger, error) {
+				if cfg.Environment == "development" {
 					return zap.NewDevelopment()
 				}
 
@@ -51,7 +37,7 @@ func main() {
 		fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
 			return &fxevent.ZapLogger{Logger: log}
 		}),
-		fx.Supply(config),
+		fx.Supply(cfg),
 		auth.Module,
 		graphfx.Module,
 		httpfx.Module,

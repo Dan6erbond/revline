@@ -2,11 +2,17 @@ package auth
 
 import (
 	"context"
+	"crypto/rsa"
+	"crypto/x509"
+	_ "embed"
 	"encoding/json"
+	"encoding/pem"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/Dan6erbond/revline/ent"
+	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/Dan6erbond/revline/internal"
 	goJwt "github.com/golang-jwt/jwt/v5"
@@ -15,6 +21,9 @@ import (
 )
 
 var userCtxKey = &contextKey{"user"}
+
+//go:embed public.pem
+var keyData []byte
 
 type contextKey struct {
 	name string
@@ -166,6 +175,10 @@ func Middleware(entClient *ent.Client, config internal.Config, logger *zap.Logge
 					}
 				}
 
+				if err := assignSubscription(r.Context(), config, entClient, user); err != nil {
+					logger.Warn("Error assigning subscription", zap.Error(err))
+				}
+
 				ctx := context.WithValue(r.Context(), userCtxKey, user)
 				r = r.WithContext(ctx)
 			}
@@ -173,6 +186,70 @@ func Middleware(entClient *ent.Client, config internal.Config, logger *zap.Logge
 			next.ServeHTTP(w, r)
 		})
 	}, nil
+}
+
+func assignSubscription(ctx context.Context, config internal.Config, entClient *ent.Client, user *ent.User) error {
+	if config.LicenseKey != "" {
+		block, _ := pem.Decode(keyData)
+		if block == nil || block.Type != "PUBLIC KEY" {
+			return fmt.Errorf("invalid PEM block type: expected PUBLIC KEY")
+		}
+
+		pubInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
+		if err != nil {
+			return fmt.Errorf("parsing public key: %w", err)
+		}
+
+		pubKey, ok := pubInterface.(*rsa.PublicKey)
+		if !ok {
+			return fmt.Errorf("not an RSA public key")
+		}
+
+		token, err := goJwt.ParseWithClaims(config.LicenseKey, &internal.LicenseClaims{}, func(token *goJwt.Token) (interface{}, error) {
+			return pubKey, nil
+		})
+		if err != nil {
+			return err
+		}
+
+		claims, ok := token.Claims.(*internal.LicenseClaims)
+
+		if !ok || !token.Valid {
+			return fmt.Errorf("invalid token")
+		}
+
+		sub, err := user.QuerySubscriptions().
+			Where(
+				subscription.StatusIn("active", "trialing"),
+			).
+			First(ctx)
+
+		if err != nil {
+			if ent.IsNotFound(err) {
+				_, err := entClient.Subscription.Create().
+					SetTier(claims.Tier).
+					SetStatus(subscription.StatusActive).
+					Save(ctx)
+
+				if err != nil {
+					return err
+				}
+
+				return nil
+			}
+
+			return err
+		}
+
+		if _, err := sub.Update().
+			SetStatus(subscription.StatusActive).
+			SetTier(claims.Tier).
+			Save(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func ForContext(ctx context.Context) *ent.User {

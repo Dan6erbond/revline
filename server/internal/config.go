@@ -40,7 +40,8 @@ type Config struct {
 		Port      uint
 		PublicURL string
 	}
-	PublicURL string
+	PublicURL  string
+	LicenseKey string
 }
 
 func (c Config) GetServerPublicURL() (u *url.URL, err error) {
@@ -62,8 +63,28 @@ type Price struct {
 	ID string
 }
 
-func SetDefaults() {
+func setDefaults() {
 	viper.SetDefault("server.host", "localhost")
 	viper.SetDefault("server.port", 4000)
 	viper.SetDefault("environment", "development")
+}
+
+func ParseConfig() (config Config, err error) {
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+
+	viper.AutomaticEnv()
+
+	setDefaults()
+
+	if err = viper.ReadInConfig(); err != nil {
+		return
+	}
+
+	if err = viper.Unmarshal(&config); err != nil {
+		return
+	}
+
+	return
 }
