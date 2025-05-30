@@ -25,6 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "Revline is the ultimate app for car enthusiasts and DIY mechanics—track maintenance, log upgrades, and connect with your ride like never before.",
   };
 }
+
 export default function RootLayout({
   children,
 }: Readonly<{

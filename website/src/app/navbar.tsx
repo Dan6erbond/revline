@@ -35,6 +35,18 @@ export default function Navbar() {
             Blog
           </Link>
         </NavbarItem>
+        <NavbarItem>
+          <Link
+            as={NextLink}
+            aria-current={pathname.startsWith("/selfhosted") ? "page" : false}
+            color={
+              pathname.startsWith("/selfhosted") ? "primary" : "foreground"
+            }
+            href={"/selfhosted"}
+          >
+            Selfhosted
+          </Link>
+        </NavbarItem>
       </NavbarContent>
       <NavbarContent justify="end">
         <Button
