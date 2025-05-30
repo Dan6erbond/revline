@@ -18,7 +18,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(
       new URL(
-        (process.env.COOLIFY_URL ?? "http://localhost:3001").split(",")[0]
+        (
+          process.env.COOLIFY_URL ??
+          process.env.BASE_URL ??
+          "http://localhost:3001"
+        ).split(",")[0]
       ).origin
     ),
     title: "Revline 1",
@@ -63,7 +67,11 @@ export default async function RootLayout({
           session={session}
           basePath={basePath ? basePath + "/api/auth" : undefined}
         >
-          <Providers session={session}>
+          <Providers
+            session={session}
+            serverUrl={process.env.SERVER_URL!}
+            basePath={process.env.BASE_PATH ?? ""}
+          >
             <AppNavbar />
             {children}
           </Providers>

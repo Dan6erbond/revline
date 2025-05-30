@@ -1,32 +1,42 @@
 "use client";
 
-import {
-  ApolloClient,
-  ApolloNextAppProvider,
-  InMemoryCache,
-} from "@apollo/client-integration-nextjs";
-import { ReactNode, RefObject, useCallback, useEffect, useRef } from "react";
-import { authLink, cacheConfig, httpLink } from ".";
+import { ApolloClient, InMemoryCache } from "@apollo/client-integration-nextjs";
+import { ReactNode, useCallback, useEffect, useRef } from "react";
+import { authLink, cacheConfig } from ".";
 
+import { ApolloNextAppProvider } from "@apollo/client-integration-nextjs";
+import { RefObject } from "react";
 import { Session } from "next-auth";
+import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 import { useSession } from "next-auth/react";
 import { useWithResolvers } from "@/utils/with-resolvers";
 
-export const buildClient = (props: {
+export const buildClient = ({
+  url,
+  ...props
+}: {
   accessToken?: string;
   getSessionRef?: RefObject<() => Promise<Session | null>>;
-}) =>
-  new ApolloClient({
+  url: string;
+}) => {
+  const httpLink = createUploadLink({
+    uri: new URL("/graphql", url).toString(),
+  });
+
+  return new ApolloClient({
     link: authLink(props).concat(httpLink),
     cache: new InMemoryCache(cacheConfig),
   });
+};
 
 const AuthenticatedApolloNextAppProvider = ({
   children,
   session = null,
+  url,
 }: {
   children: ReactNode;
   session?: Session | null;
+  url: string;
 }) => {
   const { data, status } = useSession();
 
@@ -43,7 +53,8 @@ const AuthenticatedApolloNextAppProvider = ({
   }, [data, status, resolve]);
 
   const makeClient = useCallback(
-    () => buildClient({ getSessionRef, accessToken: session?.accessToken }),
+    () =>
+      buildClient({ getSessionRef, accessToken: session?.accessToken, url }),
     [getSessionRef, session]
   );
 

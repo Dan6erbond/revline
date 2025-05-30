@@ -1,4 +1,5 @@
 import {
+  ApolloCache,
   ApolloClient,
   InMemoryCache,
   InMemoryCacheConfig,
@@ -6,17 +7,13 @@ import {
   ReactiveVar,
 } from "@apollo/client";
 
+import { StrictTypedTypePolicies } from "@/gql/apollo-helpers";
+import { possibleTypes } from "@/gql/possibleTypes.json";
 import { setContext } from "@apollo/client/link/context";
 import { relayStylePagination } from "@apollo/client/utilities";
 import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 import { Session } from "next-auth";
 import { RefObject } from "react";
-import { StrictTypedTypePolicies } from "@/gql/apollo-helpers";
-import { possibleTypes } from "@/gql/possibleTypes.json";
-
-export const httpLink = createUploadLink({
-  uri: process.env.NEXT_PUBLIC_GRAPHQL_URL,
-});
 
 export const authLink = ({
   accessToken,
@@ -69,11 +66,22 @@ export const cacheConfig = {
   possibleTypes,
 } satisfies InMemoryCacheConfig;
 
-export const buildClient = (props: {
+export const buildClient = ({
+  url,
+  cache = new InMemoryCache(cacheConfig),
+  ...props
+}: {
   accessToken?: string;
   getSessionRef?: RefObject<() => Promise<Session | null>>;
-}) =>
-  new ApolloClient({
-    cache: new InMemoryCache(cacheConfig),
+  url: string;
+  cache?: ApolloCache<unknown>;
+}) => {
+  const httpLink = createUploadLink({
+    uri: new URL("/graphql", url).toString(),
+  });
+
+  return new ApolloClient({
+    cache,
     link: authLink(props).concat(httpLink),
   });
+};

@@ -1,28 +1,51 @@
-import { Provider } from "next-auth/providers";
+import { OAuth2Config, OIDCConfig, Provider } from "next-auth/providers";
+
+import { Profile } from "next-auth";
 import ZITADEL from "next-auth/providers/zitadel";
 
 export const providers: Provider[] = [
-  ZITADEL({
-    issuer: process.env.AUTH_ZITADEL_ISSUER,
-  }),
+  ...(process.env.AUTH_ZITADEL_ISSUER
+    ? [
+        ZITADEL({
+          issuer: process.env.AUTH_ZITADEL_ISSUER,
+        }),
+      ]
+    : []),
+  ...JSON.parse(process.env.AUTH_PROVIDERS ?? `[]`).map(
+    ({
+      id,
+      name,
+      type = "oidc",
+      issuer,
+      clientId,
+      clientSecret,
+      useIdToken,
+    }: (OIDCConfig<Profile> | OAuth2Config<Profile>) & {
+      useIdToken?: boolean;
+    }) => ({
+      id,
+      name,
+      type,
+      issuer,
+      clientId,
+      clientSecret,
+      useIdToken,
+    })
+  ),
 ];
 
 export const resolvedProviders = providers.map((provider) => {
-  if (typeof provider === "function") {
-    const providerData = provider();
-    return { id: providerData.id, name: providerData.name };
-  } else {
-    return { id: provider.id, name: provider.name };
-  }
-});
+  let providerData: Exclude<Provider, Function> & { useIdToken?: boolean };
 
-export const providerMap = providers
-  .map((provider) => {
-    if (typeof provider === "function") {
-      const providerData = provider();
-      return { id: providerData.id, name: providerData.name };
-    } else {
-      return { id: provider.id, name: provider.name };
-    }
-  })
-  .filter((provider) => provider.id !== "credentials");
+  if (typeof provider === "function") {
+    providerData = provider();
+  } else {
+    providerData = provider;
+  }
+
+  return {
+    id: providerData.id,
+    name: providerData.name,
+    useIdToken: providerData.id === "zitadel" || providerData.useIdToken,
+  };
+});

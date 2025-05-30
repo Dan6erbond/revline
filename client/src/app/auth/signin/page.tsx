@@ -1,6 +1,7 @@
 import { AuthError } from "next-auth";
 import SignInForm from "./form";
 import { redirect } from "next/navigation";
+import { resolvedProviders } from "@/auth/providers";
 import { signIn } from "@/auth";
 
 const SIGNIN_ERROR_URL = "/auth/signin";
@@ -47,5 +48,11 @@ export default async function SignInPage({
 
   const { callbackUrl } = await searchParams;
 
-  return <SignInForm callbackUrl={callbackUrl} signIn={signInAction} />;
+  return (
+    <SignInForm
+      callbackUrl={callbackUrl}
+      signIn={signInAction}
+      providers={resolvedProviders}
+    />
+  );
 }

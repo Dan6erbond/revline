@@ -9,13 +9,13 @@ import {
   Input,
   addToast,
 } from "@heroui/react";
-import { providerMap, resolvedProviders } from "@/auth/providers";
 
 import { useEffect } from "react";
 
 export default function SignInForm({
   callbackUrl,
   signIn,
+  providers,
 }: {
   callbackUrl?: string;
   signIn: (
@@ -34,9 +34,16 @@ export default function SignInForm({
       | string
       | URLSearchParams
   ) => void;
+  providers: {
+    id: string;
+    name: string;
+    useIdToken: boolean | undefined;
+  }[];
 }) {
   useEffect(() => {
-    if (Object.values(providerMap).length > 0) {
+    if (
+      providers.filter((provider) => provider.id !== "credentials").length === 1
+    ) {
       addToast({
         title: "Redirecting...",
         description:
@@ -44,7 +51,7 @@ export default function SignInForm({
         color: "success",
         timeout: 10_000,
       });
-      signIn(Object.values(providerMap)[0].id, {
+      signIn(providers[0].id, {
         redirectTo: callbackUrl ?? "",
       });
     }
@@ -62,9 +69,8 @@ export default function SignInForm({
           </p>
         </CardHeader>
         <CardBody className="px-6 flex flex-col gap-6">
-          {resolvedProviders.findIndex(
-            (provider) => provider.id === "credentials"
-          ) !== -1 && (
+          {providers.findIndex((provider) => provider.id === "credentials") !==
+            -1 && (
             <form
               action={async (formData) => {
                 await signIn("credentials", formData);
@@ -94,20 +100,22 @@ export default function SignInForm({
           )}
           <Divider />
           <div className="flex flex-col gap-2">
-            {Object.values(providerMap).map((provider) => (
-              <Button
-                color="secondary"
-                className="w-full"
-                onPress={() =>
-                  signIn(provider.id, {
-                    redirectTo: callbackUrl ?? "",
-                  })
-                }
-                key={provider.id}
-              >
-                Sign in with {provider.name}
-              </Button>
-            ))}
+            {providers
+              .filter((provider) => provider.id !== "credentials")
+              .map((provider) => (
+                <Button
+                  color="secondary"
+                  className="w-full"
+                  onPress={() =>
+                    signIn(provider.id, {
+                      redirectTo: callbackUrl ?? "",
+                    })
+                  }
+                  key={provider.id}
+                >
+                  Sign in with {provider.name}
+                </Button>
+              ))}
           </div>
         </CardBody>
       </Card>

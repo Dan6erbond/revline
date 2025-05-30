@@ -8,12 +8,19 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
-import { BadgeDollarSign, DoorOpen, HandCoins, Settings, User } from "lucide-react";
+import {
+  BadgeDollarSign,
+  DoorOpen,
+  HandCoins,
+  Settings,
+  User,
+} from "lucide-react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { skipToken, useSuspenseQuery } from "@apollo/client";
+import { useEffect, useState } from "react";
 
 import { graphql } from "@/gql";
-import { providerMap } from "@/auth/providers";
+import { useConfig } from "@/contexts/config";
 
 const getMe = graphql(`
   query GetMeNavbar {
@@ -32,6 +39,17 @@ const getMe = graphql(`
 export default function AuthButton({ path }: { path?: string | null }) {
   const { data: session } = useSession();
   const { data } = useSuspenseQuery(getMe, session ? {} : skipToken);
+  const { basePath } = useConfig();
+
+  const [providers, setProviders] = useState<{
+    [key: string]: { id: string };
+  }>({});
+
+  useEffect(() => {
+    fetch(basePath + "/api/auth/providers")
+      .then((res) => res.json())
+      .then((providers) => setProviders(providers));
+  }, [setProviders]);
 
   return data?.me ? (
     <Dropdown placement="bottom-end">
@@ -93,8 +111,9 @@ export default function AuthButton({ path }: { path?: string | null }) {
     <Button
       onPress={() =>
         signIn(
-          Object.values(providerMap).length > 0
-            ? Object.values(providerMap)[0].id
+          Object.values(providers).length === 1 &&
+            Object.values(providers)[0].id !== "credentials"
+            ? Object.values(providers)[0].id
             : undefined,
           {
             redirectTo: path ?? "",

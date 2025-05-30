@@ -1,7 +1,8 @@
+import { providers, resolvedProviders } from "./providers";
+
 import NextAuth from "next-auth";
 import { buildClient } from "@/apollo-client";
 import { graphql } from "@/gql";
-import { providers } from "./providers";
 
 const basePath = process.env.BASE_PATH ?? "";
 
@@ -11,13 +12,17 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   callbacks: {
     jwt: ({ token, account }) => {
       if (account) {
-        if (account.provider === "zitadel") {
+        if (
+          resolvedProviders.find((p) => p.id === account.provider)?.useIdToken
+        ) {
           token.accessToken = account.id_token;
         } else {
           token.accessToken = account.access_token;
         }
         token.refreshToken = account.refresh_token;
       }
+
+      // TODO: implement token refresh
 
       return token;
     },
@@ -27,6 +32,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (!user.id) {
         const { data } = await buildClient({
           accessToken: token.accessToken,
+          url: process.env.SERVER_URL!,
         }).query({
           query: graphql(`
             query GetMe {

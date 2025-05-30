@@ -2,11 +2,13 @@ import "@/styles/globals.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
+import type { AppContext, AppInitialProps, AppProps } from "next/app";
 import { HeroUIProvider, ToastProvider } from "@heroui/react";
 import { SessionProvider, useSession } from "next-auth/react";
 
-import type { AppProps } from "next/app";
+import App from "next/app";
 import AuthenticatedApolloProvider from "@/apollo-client/provider";
+import ConfigProvider from "@/contexts/config";
 import Head from "next/head";
 import { Inter } from "next/font/google";
 import Script from "next/script";
@@ -41,10 +43,15 @@ function UserTour() {
   return null;
 }
 
-export default function App({
+type CustomAppProps = {
+  serverUrl: string;
+};
+
+export default function CustomApp({
   Component,
   pageProps: { session, ...pageProps },
-}: AppProps) {
+  serverUrl,
+}: CustomAppProps & AppProps) {
   const router = useRouter();
   const href = useHref();
 
@@ -92,11 +99,24 @@ export default function App({
         session={session}
         basePath={router.basePath ? router.basePath + "/api/auth" : undefined}
       >
-        <AuthenticatedApolloProvider>
-          <UserTour />
-          <Component {...pageProps} />
-        </AuthenticatedApolloProvider>
+        <ConfigProvider basePath={router.basePath}>
+          <AuthenticatedApolloProvider url={serverUrl}>
+            <UserTour />
+            <Component {...pageProps} />
+          </AuthenticatedApolloProvider>
+        </ConfigProvider>
       </SessionProvider>
     </HeroUIProvider>
   );
 }
+
+CustomApp.getInitialProps = async (
+  context: AppContext
+): Promise<CustomAppProps & AppInitialProps> => {
+  const ctx = await App.getInitialProps(context);
+
+  return {
+    ...ctx,
+    serverUrl: process.env.SERVER_URL!,
+  };
+};

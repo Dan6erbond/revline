@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import { RemotePattern } from "next/dist/shared/lib/image-config";
 
 const s3Url = new URL("/**", process.env.S3_URL!);
-const apiUrl = new URL("/**", process.env.NEXT_PUBLIC_GRAPHQL_URL!);
+const apiUrl = new URL("/**", process.env.SERVER_URL!);
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
