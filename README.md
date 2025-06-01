@@ -27,7 +27,7 @@ Revline helps car enthusiasts take control of every aspect of their automotive j
 
 🧑‍💻 Repository Structure
 
-```
+```bash
 revline/
 ├── client/ # Next.js frontend with Apollo Client
 ├── server/ # Go backend using Fx, gqlgen, ent

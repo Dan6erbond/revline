@@ -1,40 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 🧩 Revline Frontend
 
-## Getting Started
+This is the frontend of **Revline**, a Next.js-based web app for car enthusiasts and DIY mechanics. It powers the UI for both the hosted SaaS version and self-hosted installations.
 
-First, run the development server:
+## 🧑‍🎨 Tech Stack
+
+* **[Next.js](https://nextjs.org/)** – React framework for server-rendered apps
+* **[Tailwind CSS](https://tailwindcss.com/)** – Utility-first styling
+* **[HeroUI](https://heroui.dev/)** – Component toolkit used throughout
+* **[Apollo Client](https://www.apollographql.com/docs/react/)** – GraphQL queries and caching
+* **[GraphQL Code Generator](https://www.graphql-code-generator.com/)** – Type-safe queries/mutations
+* **[TipTap](https://tiptap.dev/)** – Rich-text editor, powered by [`shadcn-minimal-tiptap`](https://shadcn-minimal-tiptap.vercel.app/)
+* **[apollo-upload-client](https://github.com/jaydenseric/apollo-upload-client)** – Uploads via GraphQL mutations (e.g., profile pictures)
+* **[Auth.js](https://authjs.dev/)** - Authentication and session handling
+
+## 📁 Folder Layout
+
+```bash
+client/
+├── assets/                 # Used in OG images and API routes
+├── public/                 # Logos, static placeholders, etc.
+└── src/
+    ├── apollo-client/      # Apollo setup, auth handling, upload link
+    ├── app/                # App Router - used for public/marketing pages
+    ├── auth/               # Auth.js configuration
+    ├── components/         # Reusable UI components
+    ├── contexts/           # React contexts
+    ├── gql/                # Auto-generated GraphQL types
+    ├── hooks/              # Custom hooks
+    ├── literals/           # UI literals & constants
+    ├── pages/              # Pages Router - main CSR app shell
+    ├── styles/             # Global styles
+    ├── utils/              # Helpers and utility functions
+    └── middleware.ts       # Auth protection for non-public routes
+```
+
+---
+
+## 🧪 Development Setup
+
+### 1. Install Dependencies
+
+```bash
+cd client
+npm install
+```
+
+### 2. Configure Environment
+
+Create your `.env.local` file:
+
+```bash
+cp .env.example .env.local
+```
+
+Configure the GraphQL endpoint and your auth providers.
+
+### 3. Generate GraphQL Types
+
+```bash
+npm run codegen
+```
+
+This uses the GraphQL schema from the running backend to generate fully typed `TypedDocumentNodes`.
+
+### 4. Start the Dev Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app will be available at: [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## 📡 Notes
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+* Uploads like **profile images** go through the GraphQL API using `apollo-upload-client`
+* All large uploads (e.g., build media) use **S3 presigned URLs** via backend GraphQL resolvers
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+## 🤝 Contributing
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+We welcome UI/UX, accessibility, and component-level improvements. PRs welcome!
 
-## Learn More
+## ⚖️ License
 
-To learn more about Next.js, take a look at the following resources:
+AGPLv3 License — see [LICENSE](../LICENSE)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+Made with ❤️ and TypeScript
