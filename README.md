@@ -42,7 +42,7 @@ revline/
 
 - Docker + Docker Compose
 - Node.js (v18+)
-- Go (v1.21+)
+- Go (v1.24+)
 
 ### 1. Clone the Repository
 
