@@ -147,6 +147,7 @@ export default function Albums() {
                                   });
                                 });
                             }}
+                            className="hidden md:flex"
                           >
                             <LinkIcon />
                           </Button>

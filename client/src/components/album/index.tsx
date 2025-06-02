@@ -1,21 +1,27 @@
 import {
+  Button,
+  Dropdown,
   DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   Image,
   Input,
   Select,
   SelectItem,
   Spinner,
+  addToast,
 } from "@heroui/react";
+import { Copy, MoreHorizontal, Trash } from "lucide-react";
 import { Key, useState } from "react";
 import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
 
 import FileIcon from "@/components/file-icon";
 import MediaItem from "@/components/media/item";
-import { Trash } from "lucide-react";
 import { getAlbum } from "@/components/album/shared";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import useDebounce from "@/hooks/use-debounce";
+import { useHref } from "@/utils/use-href";
 import { useRouter } from "next/router";
 
 const updateAlbum = graphql(`
@@ -49,6 +55,7 @@ const getGallery = graphql(`
 
 export default function AlbumView({ id }: { id: string }) {
   const router = useRouter();
+  const href = useHref();
 
   const { data } = useSuspenseQuery(getAlbum, {
     variables: { id },
@@ -84,7 +91,27 @@ export default function AlbumView({ id }: { id: string }) {
     },
   });
 
-  const onAction = (mediaId: string) => (key: Key) => {
+  const onAction = (key: Key) => {
+    switch (key) {
+      case "copy":
+        const shareUrl = new URL(
+          href(`/share/a/${data?.album.id}`),
+          window.location.origin
+        );
+
+        navigator.clipboard.writeText(shareUrl.toString()).then(() => {
+          addToast({
+            title: "Link copied",
+            description: "The share link is now in your clipboard.",
+            color: "success",
+          });
+        });
+
+        break;
+    }
+  };
+
+  const onMediaAction = (mediaId: string) => (key: Key) => {
     switch (key) {
       case "remove":
         mutate({
@@ -100,22 +127,41 @@ export default function AlbumView({ id }: { id: string }) {
   };
 
   return (
-    <div className="p-4 flex flex-col gap-4 container mx-auto">
-      <Input
-        label="Title"
-        variant="underlined"
-        className="border-b mr-10"
-        value={title}
-        onValueChange={handleTitleChange}
-        size="lg"
-        endContent={loading && <Spinner />}
-      />
+    <div className="p-4 flex flex-col gap-4 md:gap-6 container mx-auto">
+      <div className="flex items-end justify-between gap-10">
+        <Input
+          label="Title"
+          variant="underlined"
+          className="border-b"
+          value={title}
+          onValueChange={handleTitleChange}
+          size="lg"
+          endContent={loading && <Spinner />}
+        />
+        <Dropdown onClick={(e) => e.stopPropagation()}>
+          <DropdownTrigger asChild>
+            <Button
+              size="sm"
+              isIconOnly
+              className="text-content-3-foreground hover:text-primary"
+              variant="ghost"
+            >
+              <MoreHorizontal className="h-5 w-5" />
+            </Button>
+          </DropdownTrigger>
+          <DropdownMenu className="w-48" onAction={onAction}>
+            <DropdownItem key="copy" startContent={<Copy />}>
+              Copy Share Link
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+      </div>
       <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {data?.album.media?.map((m) => (
           <MediaItem
             item={m}
             key={m.id}
-            onAction={onAction(m.id)}
+            onAction={onMediaAction(m.id)}
             dropdownMenuChildren={
               <DropdownItem
                 key="remove"
