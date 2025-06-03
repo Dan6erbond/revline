@@ -14,7 +14,9 @@ import (
 	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/predicate"
+	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -77,6 +79,25 @@ func (mu *MediaUpdate) ClearDescription() *MediaUpdate {
 	return mu
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (mu *MediaUpdate) SetUserID(id uuid.UUID) *MediaUpdate {
+	mu.mutation.SetUserID(id)
+	return mu
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (mu *MediaUpdate) SetNillableUserID(id *uuid.UUID) *MediaUpdate {
+	if id != nil {
+		mu = mu.SetUserID(*id)
+	}
+	return mu
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (mu *MediaUpdate) SetUser(u *User) *MediaUpdate {
+	return mu.SetUserID(u.ID)
+}
+
 // SetCarID sets the "car" edge to the Car entity by ID.
 func (mu *MediaUpdate) SetCarID(id uuid.UUID) *MediaUpdate {
 	mu.mutation.SetCarID(id)
@@ -94,6 +115,25 @@ func (mu *MediaUpdate) SetNillableCarID(id *uuid.UUID) *MediaUpdate {
 // SetCar sets the "car" edge to the Car entity.
 func (mu *MediaUpdate) SetCar(c *Car) *MediaUpdate {
 	return mu.SetCarID(c.ID)
+}
+
+// SetModProductOptionID sets the "mod_product_option" edge to the ModProductOption entity by ID.
+func (mu *MediaUpdate) SetModProductOptionID(id uuid.UUID) *MediaUpdate {
+	mu.mutation.SetModProductOptionID(id)
+	return mu
+}
+
+// SetNillableModProductOptionID sets the "mod_product_option" edge to the ModProductOption entity by ID if the given value is not nil.
+func (mu *MediaUpdate) SetNillableModProductOptionID(id *uuid.UUID) *MediaUpdate {
+	if id != nil {
+		mu = mu.SetModProductOptionID(*id)
+	}
+	return mu
+}
+
+// SetModProductOption sets the "mod_product_option" edge to the ModProductOption entity.
+func (mu *MediaUpdate) SetModProductOption(m *ModProductOption) *MediaUpdate {
+	return mu.SetModProductOptionID(m.ID)
 }
 
 // AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
@@ -116,9 +156,21 @@ func (mu *MediaUpdate) Mutation() *MediaMutation {
 	return mu.mutation
 }
 
+// ClearUser clears the "user" edge to the User entity.
+func (mu *MediaUpdate) ClearUser() *MediaUpdate {
+	mu.mutation.ClearUser()
+	return mu
+}
+
 // ClearCar clears the "car" edge to the Car entity.
 func (mu *MediaUpdate) ClearCar() *MediaUpdate {
 	mu.mutation.ClearCar()
+	return mu
+}
+
+// ClearModProductOption clears the "mod_product_option" edge to the ModProductOption entity.
+func (mu *MediaUpdate) ClearModProductOption() *MediaUpdate {
+	mu.mutation.ClearModProductOption()
 	return mu
 }
 
@@ -203,6 +255,35 @@ func (mu *MediaUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if mu.mutation.DescriptionCleared() {
 		_spec.ClearField(media.FieldDescription, field.TypeString)
 	}
+	if mu.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.UserTable,
+			Columns: []string{media.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.UserTable,
+			Columns: []string{media.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if mu.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -225,6 +306,35 @@ func (mu *MediaUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if mu.mutation.ModProductOptionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.ModProductOptionTable,
+			Columns: []string{media.ModProductOptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modproductoption.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.ModProductOptionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.ModProductOptionTable,
+			Columns: []string{media.ModProductOptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modproductoption.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -343,6 +453,25 @@ func (muo *MediaUpdateOne) ClearDescription() *MediaUpdateOne {
 	return muo
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (muo *MediaUpdateOne) SetUserID(id uuid.UUID) *MediaUpdateOne {
+	muo.mutation.SetUserID(id)
+	return muo
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (muo *MediaUpdateOne) SetNillableUserID(id *uuid.UUID) *MediaUpdateOne {
+	if id != nil {
+		muo = muo.SetUserID(*id)
+	}
+	return muo
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (muo *MediaUpdateOne) SetUser(u *User) *MediaUpdateOne {
+	return muo.SetUserID(u.ID)
+}
+
 // SetCarID sets the "car" edge to the Car entity by ID.
 func (muo *MediaUpdateOne) SetCarID(id uuid.UUID) *MediaUpdateOne {
 	muo.mutation.SetCarID(id)
@@ -360,6 +489,25 @@ func (muo *MediaUpdateOne) SetNillableCarID(id *uuid.UUID) *MediaUpdateOne {
 // SetCar sets the "car" edge to the Car entity.
 func (muo *MediaUpdateOne) SetCar(c *Car) *MediaUpdateOne {
 	return muo.SetCarID(c.ID)
+}
+
+// SetModProductOptionID sets the "mod_product_option" edge to the ModProductOption entity by ID.
+func (muo *MediaUpdateOne) SetModProductOptionID(id uuid.UUID) *MediaUpdateOne {
+	muo.mutation.SetModProductOptionID(id)
+	return muo
+}
+
+// SetNillableModProductOptionID sets the "mod_product_option" edge to the ModProductOption entity by ID if the given value is not nil.
+func (muo *MediaUpdateOne) SetNillableModProductOptionID(id *uuid.UUID) *MediaUpdateOne {
+	if id != nil {
+		muo = muo.SetModProductOptionID(*id)
+	}
+	return muo
+}
+
+// SetModProductOption sets the "mod_product_option" edge to the ModProductOption entity.
+func (muo *MediaUpdateOne) SetModProductOption(m *ModProductOption) *MediaUpdateOne {
+	return muo.SetModProductOptionID(m.ID)
 }
 
 // AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
@@ -382,9 +530,21 @@ func (muo *MediaUpdateOne) Mutation() *MediaMutation {
 	return muo.mutation
 }
 
+// ClearUser clears the "user" edge to the User entity.
+func (muo *MediaUpdateOne) ClearUser() *MediaUpdateOne {
+	muo.mutation.ClearUser()
+	return muo
+}
+
 // ClearCar clears the "car" edge to the Car entity.
 func (muo *MediaUpdateOne) ClearCar() *MediaUpdateOne {
 	muo.mutation.ClearCar()
+	return muo
+}
+
+// ClearModProductOption clears the "mod_product_option" edge to the ModProductOption entity.
+func (muo *MediaUpdateOne) ClearModProductOption() *MediaUpdateOne {
+	muo.mutation.ClearModProductOption()
 	return muo
 }
 
@@ -499,6 +659,35 @@ func (muo *MediaUpdateOne) sqlSave(ctx context.Context) (_node *Media, err error
 	if muo.mutation.DescriptionCleared() {
 		_spec.ClearField(media.FieldDescription, field.TypeString)
 	}
+	if muo.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.UserTable,
+			Columns: []string{media.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.UserTable,
+			Columns: []string{media.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if muo.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -521,6 +710,35 @@ func (muo *MediaUpdateOne) sqlSave(ctx context.Context) (_node *Media, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if muo.mutation.ModProductOptionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.ModProductOptionTable,
+			Columns: []string{media.ModProductOptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modproductoption.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.ModProductOptionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.ModProductOptionTable,
+			Columns: []string{media.ModProductOptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modproductoption.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

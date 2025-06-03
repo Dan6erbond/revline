@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
+	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/subscription"
@@ -34,11 +35,13 @@ type UserQuery struct {
 	withSettings              *UserSettingsQuery
 	withSubscriptions         *SubscriptionQuery
 	withCheckoutSessions      *CheckoutSessionQuery
+	withMedia                 *MediaQuery
 	modifiers                 []func(*sql.Selector)
 	loadTotal                 []func(context.Context, []*User) error
 	withNamedCars             map[string]*CarQuery
 	withNamedSubscriptions    map[string]*SubscriptionQuery
 	withNamedCheckoutSessions map[string]*CheckoutSessionQuery
+	withNamedMedia            map[string]*MediaQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -178,6 +181,28 @@ func (uq *UserQuery) QueryCheckoutSessions() *CheckoutSessionQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(checkoutsession.Table, checkoutsession.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.CheckoutSessionsTable, user.CheckoutSessionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMedia chains the current query on the "media" edge.
+func (uq *UserQuery) QueryMedia() *MediaQuery {
+	query := (&MediaClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(media.Table, media.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.MediaTable, user.MediaColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -382,6 +407,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		withSettings:         uq.withSettings.Clone(),
 		withSubscriptions:    uq.withSubscriptions.Clone(),
 		withCheckoutSessions: uq.withCheckoutSessions.Clone(),
+		withMedia:            uq.withMedia.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -440,6 +466,17 @@ func (uq *UserQuery) WithCheckoutSessions(opts ...func(*CheckoutSessionQuery)) *
 		opt(query)
 	}
 	uq.withCheckoutSessions = query
+	return uq
+}
+
+// WithMedia tells the query-builder to eager-load the nodes that are connected to
+// the "media" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithMedia(opts ...func(*MediaQuery)) *UserQuery {
+	query := (&MediaClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withMedia = query
 	return uq
 }
 
@@ -521,12 +558,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			uq.withCars != nil,
 			uq.withProfile != nil,
 			uq.withSettings != nil,
 			uq.withSubscriptions != nil,
 			uq.withCheckoutSessions != nil,
+			uq.withMedia != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -583,6 +621,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
+	if query := uq.withMedia; query != nil {
+		if err := uq.loadMedia(ctx, query, nodes,
+			func(n *User) { n.Edges.Media = []*Media{} },
+			func(n *User, e *Media) { n.Edges.Media = append(n.Edges.Media, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range uq.withNamedCars {
 		if err := uq.loadCars(ctx, query, nodes,
 			func(n *User) { n.appendNamedCars(name) },
@@ -601,6 +646,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadCheckoutSessions(ctx, query, nodes,
 			func(n *User) { n.appendNamedCheckoutSessions(name) },
 			func(n *User, e *CheckoutSession) { n.appendNamedCheckoutSessions(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range uq.withNamedMedia {
+		if err := uq.loadMedia(ctx, query, nodes,
+			func(n *User) { n.appendNamedMedia(name) },
+			func(n *User, e *Media) { n.appendNamedMedia(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -761,6 +813,37 @@ func (uq *UserQuery) loadCheckoutSessions(ctx context.Context, query *CheckoutSe
 	}
 	return nil
 }
+func (uq *UserQuery) loadMedia(ctx context.Context, query *MediaQuery, nodes []*User, init func(*User), assign func(*User, *Media)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Media(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.MediaColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_media
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_media" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_media" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (uq *UserQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := uq.querySpec()
@@ -885,6 +968,20 @@ func (uq *UserQuery) WithNamedCheckoutSessions(name string, opts ...func(*Checko
 		uq.withNamedCheckoutSessions = make(map[string]*CheckoutSessionQuery)
 	}
 	uq.withNamedCheckoutSessions[name] = query
+	return uq
+}
+
+// WithNamedMedia tells the query-builder to eager-load the nodes that are connected to the "media"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithNamedMedia(name string, opts ...func(*MediaQuery)) *UserQuery {
+	query := (&MediaClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if uq.withNamedMedia == nil {
+		uq.withNamedMedia = make(map[string]*MediaQuery)
+	}
+	uq.withNamedMedia[name] = query
 	return uq
 }
 

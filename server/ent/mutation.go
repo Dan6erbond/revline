@@ -22,7 +22,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -57,7 +57,7 @@ const (
 	TypeExpense          = "Expense"
 	TypeFuelUp           = "FuelUp"
 	TypeMedia            = "Media"
-	TypeModIdea          = "ModIdea"
+	TypeMod              = "Mod"
 	TypeModProductOption = "ModProductOption"
 	TypeOdometerReading  = "OdometerReading"
 	TypeProfile          = "Profile"
@@ -718,9 +718,9 @@ type CarMutation struct {
 	tasks                    map[uuid.UUID]struct{}
 	removedtasks             map[uuid.UUID]struct{}
 	clearedtasks             bool
-	mod_ideas                map[uuid.UUID]struct{}
-	removedmod_ideas         map[uuid.UUID]struct{}
-	clearedmod_ideas         bool
+	mods                     map[uuid.UUID]struct{}
+	removedmods              map[uuid.UUID]struct{}
+	clearedmods              bool
 	done                     bool
 	oldValue                 func(context.Context) (*Car, error)
 	predicates               []predicate.Car
@@ -1930,58 +1930,58 @@ func (m *CarMutation) ResetTasks() {
 	m.removedtasks = nil
 }
 
-// AddModIdeaIDs adds the "mod_ideas" edge to the ModIdea entity by ids.
-func (m *CarMutation) AddModIdeaIDs(ids ...uuid.UUID) {
-	if m.mod_ideas == nil {
-		m.mod_ideas = make(map[uuid.UUID]struct{})
+// AddModIDs adds the "mods" edge to the Mod entity by ids.
+func (m *CarMutation) AddModIDs(ids ...uuid.UUID) {
+	if m.mods == nil {
+		m.mods = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.mod_ideas[ids[i]] = struct{}{}
+		m.mods[ids[i]] = struct{}{}
 	}
 }
 
-// ClearModIdeas clears the "mod_ideas" edge to the ModIdea entity.
-func (m *CarMutation) ClearModIdeas() {
-	m.clearedmod_ideas = true
+// ClearMods clears the "mods" edge to the Mod entity.
+func (m *CarMutation) ClearMods() {
+	m.clearedmods = true
 }
 
-// ModIdeasCleared reports if the "mod_ideas" edge to the ModIdea entity was cleared.
-func (m *CarMutation) ModIdeasCleared() bool {
-	return m.clearedmod_ideas
+// ModsCleared reports if the "mods" edge to the Mod entity was cleared.
+func (m *CarMutation) ModsCleared() bool {
+	return m.clearedmods
 }
 
-// RemoveModIdeaIDs removes the "mod_ideas" edge to the ModIdea entity by IDs.
-func (m *CarMutation) RemoveModIdeaIDs(ids ...uuid.UUID) {
-	if m.removedmod_ideas == nil {
-		m.removedmod_ideas = make(map[uuid.UUID]struct{})
+// RemoveModIDs removes the "mods" edge to the Mod entity by IDs.
+func (m *CarMutation) RemoveModIDs(ids ...uuid.UUID) {
+	if m.removedmods == nil {
+		m.removedmods = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.mod_ideas, ids[i])
-		m.removedmod_ideas[ids[i]] = struct{}{}
+		delete(m.mods, ids[i])
+		m.removedmods[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedModIdeas returns the removed IDs of the "mod_ideas" edge to the ModIdea entity.
-func (m *CarMutation) RemovedModIdeasIDs() (ids []uuid.UUID) {
-	for id := range m.removedmod_ideas {
+// RemovedMods returns the removed IDs of the "mods" edge to the Mod entity.
+func (m *CarMutation) RemovedModsIDs() (ids []uuid.UUID) {
+	for id := range m.removedmods {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ModIdeasIDs returns the "mod_ideas" edge IDs in the mutation.
-func (m *CarMutation) ModIdeasIDs() (ids []uuid.UUID) {
-	for id := range m.mod_ideas {
+// ModsIDs returns the "mods" edge IDs in the mutation.
+func (m *CarMutation) ModsIDs() (ids []uuid.UUID) {
+	for id := range m.mods {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetModIdeas resets all changes to the "mod_ideas" edge.
-func (m *CarMutation) ResetModIdeas() {
-	m.mod_ideas = nil
-	m.clearedmod_ideas = false
-	m.removedmod_ideas = nil
+// ResetMods resets all changes to the "mods" edge.
+func (m *CarMutation) ResetMods() {
+	m.mods = nil
+	m.clearedmods = false
+	m.removedmods = nil
 }
 
 // Where appends a list predicates to the CarMutation builder.
@@ -2327,8 +2327,8 @@ func (m *CarMutation) AddedEdges() []string {
 	if m.tasks != nil {
 		edges = append(edges, car.EdgeTasks)
 	}
-	if m.mod_ideas != nil {
-		edges = append(edges, car.EdgeModIdeas)
+	if m.mods != nil {
+		edges = append(edges, car.EdgeMods)
 	}
 	return edges
 }
@@ -2417,9 +2417,9 @@ func (m *CarMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case car.EdgeModIdeas:
-		ids := make([]ent.Value, 0, len(m.mod_ideas))
-		for id := range m.mod_ideas {
+	case car.EdgeMods:
+		ids := make([]ent.Value, 0, len(m.mods))
+		for id := range m.mods {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2466,8 +2466,8 @@ func (m *CarMutation) RemovedEdges() []string {
 	if m.removedtasks != nil {
 		edges = append(edges, car.EdgeTasks)
 	}
-	if m.removedmod_ideas != nil {
-		edges = append(edges, car.EdgeModIdeas)
+	if m.removedmods != nil {
+		edges = append(edges, car.EdgeMods)
 	}
 	return edges
 }
@@ -2548,9 +2548,9 @@ func (m *CarMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case car.EdgeModIdeas:
-		ids := make([]ent.Value, 0, len(m.removedmod_ideas))
-		for id := range m.removedmod_ideas {
+	case car.EdgeMods:
+		ids := make([]ent.Value, 0, len(m.removedmods))
+		for id := range m.removedmods {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2603,8 +2603,8 @@ func (m *CarMutation) ClearedEdges() []string {
 	if m.clearedtasks {
 		edges = append(edges, car.EdgeTasks)
 	}
-	if m.clearedmod_ideas {
-		edges = append(edges, car.EdgeModIdeas)
+	if m.clearedmods {
+		edges = append(edges, car.EdgeMods)
 	}
 	return edges
 }
@@ -2641,8 +2641,8 @@ func (m *CarMutation) EdgeCleared(name string) bool {
 		return m.clearedbanner_image
 	case car.EdgeTasks:
 		return m.clearedtasks
-	case car.EdgeModIdeas:
-		return m.clearedmod_ideas
+	case car.EdgeMods:
+		return m.clearedmods
 	}
 	return false
 }
@@ -2707,8 +2707,8 @@ func (m *CarMutation) ResetEdge(name string) error {
 	case car.EdgeTasks:
 		m.ResetTasks()
 		return nil
-	case car.EdgeModIdeas:
-		m.ResetModIdeas()
+	case car.EdgeMods:
+		m.ResetMods()
 		return nil
 	}
 	return fmt.Errorf("unknown Car edge %s", name)
@@ -9545,22 +9545,26 @@ func (m *FuelUpMutation) ResetEdge(name string) error {
 // MediaMutation represents an operation that mutates the Media nodes in the graph.
 type MediaMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	create_time   *time.Time
-	update_time   *time.Time
-	title         *string
-	description   *string
-	clearedFields map[string]struct{}
-	car           *uuid.UUID
-	clearedcar    bool
-	albums        map[uuid.UUID]struct{}
-	removedalbums map[uuid.UUID]struct{}
-	clearedalbums bool
-	done          bool
-	oldValue      func(context.Context) (*Media, error)
-	predicates    []predicate.Media
+	op                        Op
+	typ                       string
+	id                        *uuid.UUID
+	create_time               *time.Time
+	update_time               *time.Time
+	title                     *string
+	description               *string
+	clearedFields             map[string]struct{}
+	user                      *uuid.UUID
+	cleareduser               bool
+	car                       *uuid.UUID
+	clearedcar                bool
+	mod_product_option        *uuid.UUID
+	clearedmod_product_option bool
+	albums                    map[uuid.UUID]struct{}
+	removedalbums             map[uuid.UUID]struct{}
+	clearedalbums             bool
+	done                      bool
+	oldValue                  func(context.Context) (*Media, error)
+	predicates                []predicate.Media
 }
 
 var _ ent.Mutation = (*MediaMutation)(nil)
@@ -9837,6 +9841,45 @@ func (m *MediaMutation) ResetDescription() {
 	delete(m.clearedFields, media.FieldDescription)
 }
 
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *MediaMutation) SetUserID(id uuid.UUID) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *MediaMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *MediaMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *MediaMutation) UserID() (id uuid.UUID, exists bool) {
+	if m.user != nil {
+		return *m.user, true
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *MediaMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *MediaMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
 // SetCarID sets the "car" edge to the Car entity by id.
 func (m *MediaMutation) SetCarID(id uuid.UUID) {
 	m.car = &id
@@ -9874,6 +9917,45 @@ func (m *MediaMutation) CarIDs() (ids []uuid.UUID) {
 func (m *MediaMutation) ResetCar() {
 	m.car = nil
 	m.clearedcar = false
+}
+
+// SetModProductOptionID sets the "mod_product_option" edge to the ModProductOption entity by id.
+func (m *MediaMutation) SetModProductOptionID(id uuid.UUID) {
+	m.mod_product_option = &id
+}
+
+// ClearModProductOption clears the "mod_product_option" edge to the ModProductOption entity.
+func (m *MediaMutation) ClearModProductOption() {
+	m.clearedmod_product_option = true
+}
+
+// ModProductOptionCleared reports if the "mod_product_option" edge to the ModProductOption entity was cleared.
+func (m *MediaMutation) ModProductOptionCleared() bool {
+	return m.clearedmod_product_option
+}
+
+// ModProductOptionID returns the "mod_product_option" edge ID in the mutation.
+func (m *MediaMutation) ModProductOptionID() (id uuid.UUID, exists bool) {
+	if m.mod_product_option != nil {
+		return *m.mod_product_option, true
+	}
+	return
+}
+
+// ModProductOptionIDs returns the "mod_product_option" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ModProductOptionID instead. It exists only for internal usage by the builders.
+func (m *MediaMutation) ModProductOptionIDs() (ids []uuid.UUID) {
+	if id := m.mod_product_option; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetModProductOption resets all changes to the "mod_product_option" edge.
+func (m *MediaMutation) ResetModProductOption() {
+	m.mod_product_option = nil
+	m.clearedmod_product_option = false
 }
 
 // AddAlbumIDs adds the "albums" edge to the Album entity by ids.
@@ -10129,9 +10211,15 @@ func (m *MediaMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *MediaMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 4)
+	if m.user != nil {
+		edges = append(edges, media.EdgeUser)
+	}
 	if m.car != nil {
 		edges = append(edges, media.EdgeCar)
+	}
+	if m.mod_product_option != nil {
+		edges = append(edges, media.EdgeModProductOption)
 	}
 	if m.albums != nil {
 		edges = append(edges, media.EdgeAlbums)
@@ -10143,8 +10231,16 @@ func (m *MediaMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *MediaMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case media.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
 	case media.EdgeCar:
 		if id := m.car; id != nil {
+			return []ent.Value{*id}
+		}
+	case media.EdgeModProductOption:
+		if id := m.mod_product_option; id != nil {
 			return []ent.Value{*id}
 		}
 	case media.EdgeAlbums:
@@ -10159,7 +10255,7 @@ func (m *MediaMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *MediaMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 4)
 	if m.removedalbums != nil {
 		edges = append(edges, media.EdgeAlbums)
 	}
@@ -10182,9 +10278,15 @@ func (m *MediaMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *MediaMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 4)
+	if m.cleareduser {
+		edges = append(edges, media.EdgeUser)
+	}
 	if m.clearedcar {
 		edges = append(edges, media.EdgeCar)
+	}
+	if m.clearedmod_product_option {
+		edges = append(edges, media.EdgeModProductOption)
 	}
 	if m.clearedalbums {
 		edges = append(edges, media.EdgeAlbums)
@@ -10196,8 +10298,12 @@ func (m *MediaMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *MediaMutation) EdgeCleared(name string) bool {
 	switch name {
+	case media.EdgeUser:
+		return m.cleareduser
 	case media.EdgeCar:
 		return m.clearedcar
+	case media.EdgeModProductOption:
+		return m.clearedmod_product_option
 	case media.EdgeAlbums:
 		return m.clearedalbums
 	}
@@ -10208,8 +10314,14 @@ func (m *MediaMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *MediaMutation) ClearEdge(name string) error {
 	switch name {
+	case media.EdgeUser:
+		m.ClearUser()
+		return nil
 	case media.EdgeCar:
 		m.ClearCar()
+		return nil
+	case media.EdgeModProductOption:
+		m.ClearModProductOption()
 		return nil
 	}
 	return fmt.Errorf("unknown Media unique edge %s", name)
@@ -10219,8 +10331,14 @@ func (m *MediaMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *MediaMutation) ResetEdge(name string) error {
 	switch name {
+	case media.EdgeUser:
+		m.ResetUser()
+		return nil
 	case media.EdgeCar:
 		m.ResetCar()
+		return nil
+	case media.EdgeModProductOption:
+		m.ResetModProductOption()
 		return nil
 	case media.EdgeAlbums:
 		m.ResetAlbums()
@@ -10229,8 +10347,8 @@ func (m *MediaMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Media edge %s", name)
 }
 
-// ModIdeaMutation represents an operation that mutates the ModIdea nodes in the graph.
-type ModIdeaMutation struct {
+// ModMutation represents an operation that mutates the Mod nodes in the graph.
+type ModMutation struct {
 	config
 	op                     Op
 	typ                    string
@@ -10238,7 +10356,8 @@ type ModIdeaMutation struct {
 	create_time            *time.Time
 	update_time            *time.Time
 	title                  *string
-	category               *modidea.Category
+	category               *mod.Category
+	status                 *mod.Status
 	description            *string
 	stage                  *string
 	clearedFields          map[string]struct{}
@@ -10251,21 +10370,21 @@ type ModIdeaMutation struct {
 	removedproduct_options map[uuid.UUID]struct{}
 	clearedproduct_options bool
 	done                   bool
-	oldValue               func(context.Context) (*ModIdea, error)
-	predicates             []predicate.ModIdea
+	oldValue               func(context.Context) (*Mod, error)
+	predicates             []predicate.Mod
 }
 
-var _ ent.Mutation = (*ModIdeaMutation)(nil)
+var _ ent.Mutation = (*ModMutation)(nil)
 
-// modideaOption allows management of the mutation configuration using functional options.
-type modideaOption func(*ModIdeaMutation)
+// modOption allows management of the mutation configuration using functional options.
+type modOption func(*ModMutation)
 
-// newModIdeaMutation creates new mutation for the ModIdea entity.
-func newModIdeaMutation(c config, op Op, opts ...modideaOption) *ModIdeaMutation {
-	m := &ModIdeaMutation{
+// newModMutation creates new mutation for the Mod entity.
+func newModMutation(c config, op Op, opts ...modOption) *ModMutation {
+	m := &ModMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeModIdea,
+		typ:           TypeMod,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -10274,20 +10393,20 @@ func newModIdeaMutation(c config, op Op, opts ...modideaOption) *ModIdeaMutation
 	return m
 }
 
-// withModIdeaID sets the ID field of the mutation.
-func withModIdeaID(id uuid.UUID) modideaOption {
-	return func(m *ModIdeaMutation) {
+// withModID sets the ID field of the mutation.
+func withModID(id uuid.UUID) modOption {
+	return func(m *ModMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *ModIdea
+			value *Mod
 		)
-		m.oldValue = func(ctx context.Context) (*ModIdea, error) {
+		m.oldValue = func(ctx context.Context) (*Mod, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().ModIdea.Get(ctx, id)
+					value, err = m.Client().Mod.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -10296,10 +10415,10 @@ func withModIdeaID(id uuid.UUID) modideaOption {
 	}
 }
 
-// withModIdea sets the old ModIdea of the mutation.
-func withModIdea(node *ModIdea) modideaOption {
-	return func(m *ModIdeaMutation) {
-		m.oldValue = func(context.Context) (*ModIdea, error) {
+// withMod sets the old Mod of the mutation.
+func withMod(node *Mod) modOption {
+	return func(m *ModMutation) {
+		m.oldValue = func(context.Context) (*Mod, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -10308,7 +10427,7 @@ func withModIdea(node *ModIdea) modideaOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ModIdeaMutation) Client() *Client {
+func (m ModMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -10316,7 +10435,7 @@ func (m ModIdeaMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m ModIdeaMutation) Tx() (*Tx, error) {
+func (m ModMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -10326,14 +10445,14 @@ func (m ModIdeaMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of ModIdea entities.
-func (m *ModIdeaMutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of Mod entities.
+func (m *ModMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ModIdeaMutation) ID() (id uuid.UUID, exists bool) {
+func (m *ModMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -10344,7 +10463,7 @@ func (m *ModIdeaMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ModIdeaMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *ModMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -10353,19 +10472,19 @@ func (m *ModIdeaMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().ModIdea.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().Mod.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetCreateTime sets the "create_time" field.
-func (m *ModIdeaMutation) SetCreateTime(t time.Time) {
+func (m *ModMutation) SetCreateTime(t time.Time) {
 	m.create_time = &t
 }
 
 // CreateTime returns the value of the "create_time" field in the mutation.
-func (m *ModIdeaMutation) CreateTime() (r time.Time, exists bool) {
+func (m *ModMutation) CreateTime() (r time.Time, exists bool) {
 	v := m.create_time
 	if v == nil {
 		return
@@ -10373,10 +10492,10 @@ func (m *ModIdeaMutation) CreateTime() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldCreateTime returns the old "create_time" field's value of the ModIdea entity.
-// If the ModIdea object wasn't provided to the builder, the object is fetched from the database.
+// OldCreateTime returns the old "create_time" field's value of the Mod entity.
+// If the Mod object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ModIdeaMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+func (m *ModMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
 	}
@@ -10391,17 +10510,17 @@ func (m *ModIdeaMutation) OldCreateTime(ctx context.Context) (v time.Time, err e
 }
 
 // ResetCreateTime resets all changes to the "create_time" field.
-func (m *ModIdeaMutation) ResetCreateTime() {
+func (m *ModMutation) ResetCreateTime() {
 	m.create_time = nil
 }
 
 // SetUpdateTime sets the "update_time" field.
-func (m *ModIdeaMutation) SetUpdateTime(t time.Time) {
+func (m *ModMutation) SetUpdateTime(t time.Time) {
 	m.update_time = &t
 }
 
 // UpdateTime returns the value of the "update_time" field in the mutation.
-func (m *ModIdeaMutation) UpdateTime() (r time.Time, exists bool) {
+func (m *ModMutation) UpdateTime() (r time.Time, exists bool) {
 	v := m.update_time
 	if v == nil {
 		return
@@ -10409,10 +10528,10 @@ func (m *ModIdeaMutation) UpdateTime() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldUpdateTime returns the old "update_time" field's value of the ModIdea entity.
-// If the ModIdea object wasn't provided to the builder, the object is fetched from the database.
+// OldUpdateTime returns the old "update_time" field's value of the Mod entity.
+// If the Mod object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ModIdeaMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+func (m *ModMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
 	}
@@ -10427,17 +10546,17 @@ func (m *ModIdeaMutation) OldUpdateTime(ctx context.Context) (v time.Time, err e
 }
 
 // ResetUpdateTime resets all changes to the "update_time" field.
-func (m *ModIdeaMutation) ResetUpdateTime() {
+func (m *ModMutation) ResetUpdateTime() {
 	m.update_time = nil
 }
 
 // SetTitle sets the "title" field.
-func (m *ModIdeaMutation) SetTitle(s string) {
+func (m *ModMutation) SetTitle(s string) {
 	m.title = &s
 }
 
 // Title returns the value of the "title" field in the mutation.
-func (m *ModIdeaMutation) Title() (r string, exists bool) {
+func (m *ModMutation) Title() (r string, exists bool) {
 	v := m.title
 	if v == nil {
 		return
@@ -10445,10 +10564,10 @@ func (m *ModIdeaMutation) Title() (r string, exists bool) {
 	return *v, true
 }
 
-// OldTitle returns the old "title" field's value of the ModIdea entity.
-// If the ModIdea object wasn't provided to the builder, the object is fetched from the database.
+// OldTitle returns the old "title" field's value of the Mod entity.
+// If the Mod object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ModIdeaMutation) OldTitle(ctx context.Context) (v string, err error) {
+func (m *ModMutation) OldTitle(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
 	}
@@ -10463,17 +10582,17 @@ func (m *ModIdeaMutation) OldTitle(ctx context.Context) (v string, err error) {
 }
 
 // ResetTitle resets all changes to the "title" field.
-func (m *ModIdeaMutation) ResetTitle() {
+func (m *ModMutation) ResetTitle() {
 	m.title = nil
 }
 
 // SetCategory sets the "category" field.
-func (m *ModIdeaMutation) SetCategory(value modidea.Category) {
+func (m *ModMutation) SetCategory(value mod.Category) {
 	m.category = &value
 }
 
 // Category returns the value of the "category" field in the mutation.
-func (m *ModIdeaMutation) Category() (r modidea.Category, exists bool) {
+func (m *ModMutation) Category() (r mod.Category, exists bool) {
 	v := m.category
 	if v == nil {
 		return
@@ -10481,10 +10600,10 @@ func (m *ModIdeaMutation) Category() (r modidea.Category, exists bool) {
 	return *v, true
 }
 
-// OldCategory returns the old "category" field's value of the ModIdea entity.
-// If the ModIdea object wasn't provided to the builder, the object is fetched from the database.
+// OldCategory returns the old "category" field's value of the Mod entity.
+// If the Mod object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ModIdeaMutation) OldCategory(ctx context.Context) (v modidea.Category, err error) {
+func (m *ModMutation) OldCategory(ctx context.Context) (v mod.Category, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCategory is only allowed on UpdateOne operations")
 	}
@@ -10499,17 +10618,53 @@ func (m *ModIdeaMutation) OldCategory(ctx context.Context) (v modidea.Category, 
 }
 
 // ResetCategory resets all changes to the "category" field.
-func (m *ModIdeaMutation) ResetCategory() {
+func (m *ModMutation) ResetCategory() {
 	m.category = nil
 }
 
+// SetStatus sets the "status" field.
+func (m *ModMutation) SetStatus(value mod.Status) {
+	m.status = &value
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *ModMutation) Status() (r mod.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the Mod entity.
+// If the Mod object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ModMutation) OldStatus(ctx context.Context) (v mod.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *ModMutation) ResetStatus() {
+	m.status = nil
+}
+
 // SetDescription sets the "description" field.
-func (m *ModIdeaMutation) SetDescription(s string) {
+func (m *ModMutation) SetDescription(s string) {
 	m.description = &s
 }
 
 // Description returns the value of the "description" field in the mutation.
-func (m *ModIdeaMutation) Description() (r string, exists bool) {
+func (m *ModMutation) Description() (r string, exists bool) {
 	v := m.description
 	if v == nil {
 		return
@@ -10517,10 +10672,10 @@ func (m *ModIdeaMutation) Description() (r string, exists bool) {
 	return *v, true
 }
 
-// OldDescription returns the old "description" field's value of the ModIdea entity.
-// If the ModIdea object wasn't provided to the builder, the object is fetched from the database.
+// OldDescription returns the old "description" field's value of the Mod entity.
+// If the Mod object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ModIdeaMutation) OldDescription(ctx context.Context) (v *string, err error) {
+func (m *ModMutation) OldDescription(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
 	}
@@ -10535,30 +10690,30 @@ func (m *ModIdeaMutation) OldDescription(ctx context.Context) (v *string, err er
 }
 
 // ClearDescription clears the value of the "description" field.
-func (m *ModIdeaMutation) ClearDescription() {
+func (m *ModMutation) ClearDescription() {
 	m.description = nil
-	m.clearedFields[modidea.FieldDescription] = struct{}{}
+	m.clearedFields[mod.FieldDescription] = struct{}{}
 }
 
 // DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *ModIdeaMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[modidea.FieldDescription]
+func (m *ModMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[mod.FieldDescription]
 	return ok
 }
 
 // ResetDescription resets all changes to the "description" field.
-func (m *ModIdeaMutation) ResetDescription() {
+func (m *ModMutation) ResetDescription() {
 	m.description = nil
-	delete(m.clearedFields, modidea.FieldDescription)
+	delete(m.clearedFields, mod.FieldDescription)
 }
 
 // SetStage sets the "stage" field.
-func (m *ModIdeaMutation) SetStage(s string) {
+func (m *ModMutation) SetStage(s string) {
 	m.stage = &s
 }
 
 // Stage returns the value of the "stage" field in the mutation.
-func (m *ModIdeaMutation) Stage() (r string, exists bool) {
+func (m *ModMutation) Stage() (r string, exists bool) {
 	v := m.stage
 	if v == nil {
 		return
@@ -10566,10 +10721,10 @@ func (m *ModIdeaMutation) Stage() (r string, exists bool) {
 	return *v, true
 }
 
-// OldStage returns the old "stage" field's value of the ModIdea entity.
-// If the ModIdea object wasn't provided to the builder, the object is fetched from the database.
+// OldStage returns the old "stage" field's value of the Mod entity.
+// If the Mod object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ModIdeaMutation) OldStage(ctx context.Context) (v *string, err error) {
+func (m *ModMutation) OldStage(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldStage is only allowed on UpdateOne operations")
 	}
@@ -10584,40 +10739,40 @@ func (m *ModIdeaMutation) OldStage(ctx context.Context) (v *string, err error) {
 }
 
 // ClearStage clears the value of the "stage" field.
-func (m *ModIdeaMutation) ClearStage() {
+func (m *ModMutation) ClearStage() {
 	m.stage = nil
-	m.clearedFields[modidea.FieldStage] = struct{}{}
+	m.clearedFields[mod.FieldStage] = struct{}{}
 }
 
 // StageCleared returns if the "stage" field was cleared in this mutation.
-func (m *ModIdeaMutation) StageCleared() bool {
-	_, ok := m.clearedFields[modidea.FieldStage]
+func (m *ModMutation) StageCleared() bool {
+	_, ok := m.clearedFields[mod.FieldStage]
 	return ok
 }
 
 // ResetStage resets all changes to the "stage" field.
-func (m *ModIdeaMutation) ResetStage() {
+func (m *ModMutation) ResetStage() {
 	m.stage = nil
-	delete(m.clearedFields, modidea.FieldStage)
+	delete(m.clearedFields, mod.FieldStage)
 }
 
 // SetCarID sets the "car" edge to the Car entity by id.
-func (m *ModIdeaMutation) SetCarID(id uuid.UUID) {
+func (m *ModMutation) SetCarID(id uuid.UUID) {
 	m.car = &id
 }
 
 // ClearCar clears the "car" edge to the Car entity.
-func (m *ModIdeaMutation) ClearCar() {
+func (m *ModMutation) ClearCar() {
 	m.clearedcar = true
 }
 
 // CarCleared reports if the "car" edge to the Car entity was cleared.
-func (m *ModIdeaMutation) CarCleared() bool {
+func (m *ModMutation) CarCleared() bool {
 	return m.clearedcar
 }
 
 // CarID returns the "car" edge ID in the mutation.
-func (m *ModIdeaMutation) CarID() (id uuid.UUID, exists bool) {
+func (m *ModMutation) CarID() (id uuid.UUID, exists bool) {
 	if m.car != nil {
 		return *m.car, true
 	}
@@ -10627,7 +10782,7 @@ func (m *ModIdeaMutation) CarID() (id uuid.UUID, exists bool) {
 // CarIDs returns the "car" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // CarID instead. It exists only for internal usage by the builders.
-func (m *ModIdeaMutation) CarIDs() (ids []uuid.UUID) {
+func (m *ModMutation) CarIDs() (ids []uuid.UUID) {
 	if id := m.car; id != nil {
 		ids = append(ids, *id)
 	}
@@ -10635,13 +10790,13 @@ func (m *ModIdeaMutation) CarIDs() (ids []uuid.UUID) {
 }
 
 // ResetCar resets all changes to the "car" edge.
-func (m *ModIdeaMutation) ResetCar() {
+func (m *ModMutation) ResetCar() {
 	m.car = nil
 	m.clearedcar = false
 }
 
 // AddTaskIDs adds the "tasks" edge to the Task entity by ids.
-func (m *ModIdeaMutation) AddTaskIDs(ids ...uuid.UUID) {
+func (m *ModMutation) AddTaskIDs(ids ...uuid.UUID) {
 	if m.tasks == nil {
 		m.tasks = make(map[uuid.UUID]struct{})
 	}
@@ -10651,17 +10806,17 @@ func (m *ModIdeaMutation) AddTaskIDs(ids ...uuid.UUID) {
 }
 
 // ClearTasks clears the "tasks" edge to the Task entity.
-func (m *ModIdeaMutation) ClearTasks() {
+func (m *ModMutation) ClearTasks() {
 	m.clearedtasks = true
 }
 
 // TasksCleared reports if the "tasks" edge to the Task entity was cleared.
-func (m *ModIdeaMutation) TasksCleared() bool {
+func (m *ModMutation) TasksCleared() bool {
 	return m.clearedtasks
 }
 
 // RemoveTaskIDs removes the "tasks" edge to the Task entity by IDs.
-func (m *ModIdeaMutation) RemoveTaskIDs(ids ...uuid.UUID) {
+func (m *ModMutation) RemoveTaskIDs(ids ...uuid.UUID) {
 	if m.removedtasks == nil {
 		m.removedtasks = make(map[uuid.UUID]struct{})
 	}
@@ -10672,7 +10827,7 @@ func (m *ModIdeaMutation) RemoveTaskIDs(ids ...uuid.UUID) {
 }
 
 // RemovedTasks returns the removed IDs of the "tasks" edge to the Task entity.
-func (m *ModIdeaMutation) RemovedTasksIDs() (ids []uuid.UUID) {
+func (m *ModMutation) RemovedTasksIDs() (ids []uuid.UUID) {
 	for id := range m.removedtasks {
 		ids = append(ids, id)
 	}
@@ -10680,7 +10835,7 @@ func (m *ModIdeaMutation) RemovedTasksIDs() (ids []uuid.UUID) {
 }
 
 // TasksIDs returns the "tasks" edge IDs in the mutation.
-func (m *ModIdeaMutation) TasksIDs() (ids []uuid.UUID) {
+func (m *ModMutation) TasksIDs() (ids []uuid.UUID) {
 	for id := range m.tasks {
 		ids = append(ids, id)
 	}
@@ -10688,14 +10843,14 @@ func (m *ModIdeaMutation) TasksIDs() (ids []uuid.UUID) {
 }
 
 // ResetTasks resets all changes to the "tasks" edge.
-func (m *ModIdeaMutation) ResetTasks() {
+func (m *ModMutation) ResetTasks() {
 	m.tasks = nil
 	m.clearedtasks = false
 	m.removedtasks = nil
 }
 
 // AddProductOptionIDs adds the "product_options" edge to the ModProductOption entity by ids.
-func (m *ModIdeaMutation) AddProductOptionIDs(ids ...uuid.UUID) {
+func (m *ModMutation) AddProductOptionIDs(ids ...uuid.UUID) {
 	if m.product_options == nil {
 		m.product_options = make(map[uuid.UUID]struct{})
 	}
@@ -10705,17 +10860,17 @@ func (m *ModIdeaMutation) AddProductOptionIDs(ids ...uuid.UUID) {
 }
 
 // ClearProductOptions clears the "product_options" edge to the ModProductOption entity.
-func (m *ModIdeaMutation) ClearProductOptions() {
+func (m *ModMutation) ClearProductOptions() {
 	m.clearedproduct_options = true
 }
 
 // ProductOptionsCleared reports if the "product_options" edge to the ModProductOption entity was cleared.
-func (m *ModIdeaMutation) ProductOptionsCleared() bool {
+func (m *ModMutation) ProductOptionsCleared() bool {
 	return m.clearedproduct_options
 }
 
 // RemoveProductOptionIDs removes the "product_options" edge to the ModProductOption entity by IDs.
-func (m *ModIdeaMutation) RemoveProductOptionIDs(ids ...uuid.UUID) {
+func (m *ModMutation) RemoveProductOptionIDs(ids ...uuid.UUID) {
 	if m.removedproduct_options == nil {
 		m.removedproduct_options = make(map[uuid.UUID]struct{})
 	}
@@ -10726,7 +10881,7 @@ func (m *ModIdeaMutation) RemoveProductOptionIDs(ids ...uuid.UUID) {
 }
 
 // RemovedProductOptions returns the removed IDs of the "product_options" edge to the ModProductOption entity.
-func (m *ModIdeaMutation) RemovedProductOptionsIDs() (ids []uuid.UUID) {
+func (m *ModMutation) RemovedProductOptionsIDs() (ids []uuid.UUID) {
 	for id := range m.removedproduct_options {
 		ids = append(ids, id)
 	}
@@ -10734,7 +10889,7 @@ func (m *ModIdeaMutation) RemovedProductOptionsIDs() (ids []uuid.UUID) {
 }
 
 // ProductOptionsIDs returns the "product_options" edge IDs in the mutation.
-func (m *ModIdeaMutation) ProductOptionsIDs() (ids []uuid.UUID) {
+func (m *ModMutation) ProductOptionsIDs() (ids []uuid.UUID) {
 	for id := range m.product_options {
 		ids = append(ids, id)
 	}
@@ -10742,21 +10897,21 @@ func (m *ModIdeaMutation) ProductOptionsIDs() (ids []uuid.UUID) {
 }
 
 // ResetProductOptions resets all changes to the "product_options" edge.
-func (m *ModIdeaMutation) ResetProductOptions() {
+func (m *ModMutation) ResetProductOptions() {
 	m.product_options = nil
 	m.clearedproduct_options = false
 	m.removedproduct_options = nil
 }
 
-// Where appends a list predicates to the ModIdeaMutation builder.
-func (m *ModIdeaMutation) Where(ps ...predicate.ModIdea) {
+// Where appends a list predicates to the ModMutation builder.
+func (m *ModMutation) Where(ps ...predicate.Mod) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the ModIdeaMutation builder. Using this method,
+// WhereP appends storage-level predicates to the ModMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *ModIdeaMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.ModIdea, len(ps))
+func (m *ModMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Mod, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -10764,42 +10919,45 @@ func (m *ModIdeaMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *ModIdeaMutation) Op() Op {
+func (m *ModMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *ModIdeaMutation) SetOp(op Op) {
+func (m *ModMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (ModIdea).
-func (m *ModIdeaMutation) Type() string {
+// Type returns the node type of this mutation (Mod).
+func (m *ModMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *ModIdeaMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+func (m *ModMutation) Fields() []string {
+	fields := make([]string, 0, 7)
 	if m.create_time != nil {
-		fields = append(fields, modidea.FieldCreateTime)
+		fields = append(fields, mod.FieldCreateTime)
 	}
 	if m.update_time != nil {
-		fields = append(fields, modidea.FieldUpdateTime)
+		fields = append(fields, mod.FieldUpdateTime)
 	}
 	if m.title != nil {
-		fields = append(fields, modidea.FieldTitle)
+		fields = append(fields, mod.FieldTitle)
 	}
 	if m.category != nil {
-		fields = append(fields, modidea.FieldCategory)
+		fields = append(fields, mod.FieldCategory)
+	}
+	if m.status != nil {
+		fields = append(fields, mod.FieldStatus)
 	}
 	if m.description != nil {
-		fields = append(fields, modidea.FieldDescription)
+		fields = append(fields, mod.FieldDescription)
 	}
 	if m.stage != nil {
-		fields = append(fields, modidea.FieldStage)
+		fields = append(fields, mod.FieldStage)
 	}
 	return fields
 }
@@ -10807,19 +10965,21 @@ func (m *ModIdeaMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *ModIdeaMutation) Field(name string) (ent.Value, bool) {
+func (m *ModMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case modidea.FieldCreateTime:
+	case mod.FieldCreateTime:
 		return m.CreateTime()
-	case modidea.FieldUpdateTime:
+	case mod.FieldUpdateTime:
 		return m.UpdateTime()
-	case modidea.FieldTitle:
+	case mod.FieldTitle:
 		return m.Title()
-	case modidea.FieldCategory:
+	case mod.FieldCategory:
 		return m.Category()
-	case modidea.FieldDescription:
+	case mod.FieldStatus:
+		return m.Status()
+	case mod.FieldDescription:
 		return m.Description()
-	case modidea.FieldStage:
+	case mod.FieldStage:
 		return m.Stage()
 	}
 	return nil, false
@@ -10828,65 +10988,74 @@ func (m *ModIdeaMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *ModIdeaMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *ModMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case modidea.FieldCreateTime:
+	case mod.FieldCreateTime:
 		return m.OldCreateTime(ctx)
-	case modidea.FieldUpdateTime:
+	case mod.FieldUpdateTime:
 		return m.OldUpdateTime(ctx)
-	case modidea.FieldTitle:
+	case mod.FieldTitle:
 		return m.OldTitle(ctx)
-	case modidea.FieldCategory:
+	case mod.FieldCategory:
 		return m.OldCategory(ctx)
-	case modidea.FieldDescription:
+	case mod.FieldStatus:
+		return m.OldStatus(ctx)
+	case mod.FieldDescription:
 		return m.OldDescription(ctx)
-	case modidea.FieldStage:
+	case mod.FieldStage:
 		return m.OldStage(ctx)
 	}
-	return nil, fmt.Errorf("unknown ModIdea field %s", name)
+	return nil, fmt.Errorf("unknown Mod field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *ModIdeaMutation) SetField(name string, value ent.Value) error {
+func (m *ModMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case modidea.FieldCreateTime:
+	case mod.FieldCreateTime:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreateTime(v)
 		return nil
-	case modidea.FieldUpdateTime:
+	case mod.FieldUpdateTime:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdateTime(v)
 		return nil
-	case modidea.FieldTitle:
+	case mod.FieldTitle:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTitle(v)
 		return nil
-	case modidea.FieldCategory:
-		v, ok := value.(modidea.Category)
+	case mod.FieldCategory:
+		v, ok := value.(mod.Category)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCategory(v)
 		return nil
-	case modidea.FieldDescription:
+	case mod.FieldStatus:
+		v, ok := value.(mod.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case mod.FieldDescription:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDescription(v)
 		return nil
-	case modidea.FieldStage:
+	case mod.FieldStage:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -10894,121 +11063,124 @@ func (m *ModIdeaMutation) SetField(name string, value ent.Value) error {
 		m.SetStage(v)
 		return nil
 	}
-	return fmt.Errorf("unknown ModIdea field %s", name)
+	return fmt.Errorf("unknown Mod field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *ModIdeaMutation) AddedFields() []string {
+func (m *ModMutation) AddedFields() []string {
 	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *ModIdeaMutation) AddedField(name string) (ent.Value, bool) {
+func (m *ModMutation) AddedField(name string) (ent.Value, bool) {
 	return nil, false
 }
 
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *ModIdeaMutation) AddField(name string, value ent.Value) error {
+func (m *ModMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown ModIdea numeric field %s", name)
+	return fmt.Errorf("unknown Mod numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *ModIdeaMutation) ClearedFields() []string {
+func (m *ModMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(modidea.FieldDescription) {
-		fields = append(fields, modidea.FieldDescription)
+	if m.FieldCleared(mod.FieldDescription) {
+		fields = append(fields, mod.FieldDescription)
 	}
-	if m.FieldCleared(modidea.FieldStage) {
-		fields = append(fields, modidea.FieldStage)
+	if m.FieldCleared(mod.FieldStage) {
+		fields = append(fields, mod.FieldStage)
 	}
 	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *ModIdeaMutation) FieldCleared(name string) bool {
+func (m *ModMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *ModIdeaMutation) ClearField(name string) error {
+func (m *ModMutation) ClearField(name string) error {
 	switch name {
-	case modidea.FieldDescription:
+	case mod.FieldDescription:
 		m.ClearDescription()
 		return nil
-	case modidea.FieldStage:
+	case mod.FieldStage:
 		m.ClearStage()
 		return nil
 	}
-	return fmt.Errorf("unknown ModIdea nullable field %s", name)
+	return fmt.Errorf("unknown Mod nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *ModIdeaMutation) ResetField(name string) error {
+func (m *ModMutation) ResetField(name string) error {
 	switch name {
-	case modidea.FieldCreateTime:
+	case mod.FieldCreateTime:
 		m.ResetCreateTime()
 		return nil
-	case modidea.FieldUpdateTime:
+	case mod.FieldUpdateTime:
 		m.ResetUpdateTime()
 		return nil
-	case modidea.FieldTitle:
+	case mod.FieldTitle:
 		m.ResetTitle()
 		return nil
-	case modidea.FieldCategory:
+	case mod.FieldCategory:
 		m.ResetCategory()
 		return nil
-	case modidea.FieldDescription:
+	case mod.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case mod.FieldDescription:
 		m.ResetDescription()
 		return nil
-	case modidea.FieldStage:
+	case mod.FieldStage:
 		m.ResetStage()
 		return nil
 	}
-	return fmt.Errorf("unknown ModIdea field %s", name)
+	return fmt.Errorf("unknown Mod field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ModIdeaMutation) AddedEdges() []string {
+func (m *ModMutation) AddedEdges() []string {
 	edges := make([]string, 0, 3)
 	if m.car != nil {
-		edges = append(edges, modidea.EdgeCar)
+		edges = append(edges, mod.EdgeCar)
 	}
 	if m.tasks != nil {
-		edges = append(edges, modidea.EdgeTasks)
+		edges = append(edges, mod.EdgeTasks)
 	}
 	if m.product_options != nil {
-		edges = append(edges, modidea.EdgeProductOptions)
+		edges = append(edges, mod.EdgeProductOptions)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *ModIdeaMutation) AddedIDs(name string) []ent.Value {
+func (m *ModMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case modidea.EdgeCar:
+	case mod.EdgeCar:
 		if id := m.car; id != nil {
 			return []ent.Value{*id}
 		}
-	case modidea.EdgeTasks:
+	case mod.EdgeTasks:
 		ids := make([]ent.Value, 0, len(m.tasks))
 		for id := range m.tasks {
 			ids = append(ids, id)
 		}
 		return ids
-	case modidea.EdgeProductOptions:
+	case mod.EdgeProductOptions:
 		ids := make([]ent.Value, 0, len(m.product_options))
 		for id := range m.product_options {
 			ids = append(ids, id)
@@ -11019,28 +11191,28 @@ func (m *ModIdeaMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ModIdeaMutation) RemovedEdges() []string {
+func (m *ModMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 3)
 	if m.removedtasks != nil {
-		edges = append(edges, modidea.EdgeTasks)
+		edges = append(edges, mod.EdgeTasks)
 	}
 	if m.removedproduct_options != nil {
-		edges = append(edges, modidea.EdgeProductOptions)
+		edges = append(edges, mod.EdgeProductOptions)
 	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *ModIdeaMutation) RemovedIDs(name string) []ent.Value {
+func (m *ModMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case modidea.EdgeTasks:
+	case mod.EdgeTasks:
 		ids := make([]ent.Value, 0, len(m.removedtasks))
 		for id := range m.removedtasks {
 			ids = append(ids, id)
 		}
 		return ids
-	case modidea.EdgeProductOptions:
+	case mod.EdgeProductOptions:
 		ids := make([]ent.Value, 0, len(m.removedproduct_options))
 		for id := range m.removedproduct_options {
 			ids = append(ids, id)
@@ -11051,29 +11223,29 @@ func (m *ModIdeaMutation) RemovedIDs(name string) []ent.Value {
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ModIdeaMutation) ClearedEdges() []string {
+func (m *ModMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 3)
 	if m.clearedcar {
-		edges = append(edges, modidea.EdgeCar)
+		edges = append(edges, mod.EdgeCar)
 	}
 	if m.clearedtasks {
-		edges = append(edges, modidea.EdgeTasks)
+		edges = append(edges, mod.EdgeTasks)
 	}
 	if m.clearedproduct_options {
-		edges = append(edges, modidea.EdgeProductOptions)
+		edges = append(edges, mod.EdgeProductOptions)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *ModIdeaMutation) EdgeCleared(name string) bool {
+func (m *ModMutation) EdgeCleared(name string) bool {
 	switch name {
-	case modidea.EdgeCar:
+	case mod.EdgeCar:
 		return m.clearedcar
-	case modidea.EdgeTasks:
+	case mod.EdgeTasks:
 		return m.clearedtasks
-	case modidea.EdgeProductOptions:
+	case mod.EdgeProductOptions:
 		return m.clearedproduct_options
 	}
 	return false
@@ -11081,30 +11253,30 @@ func (m *ModIdeaMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *ModIdeaMutation) ClearEdge(name string) error {
+func (m *ModMutation) ClearEdge(name string) error {
 	switch name {
-	case modidea.EdgeCar:
+	case mod.EdgeCar:
 		m.ClearCar()
 		return nil
 	}
-	return fmt.Errorf("unknown ModIdea unique edge %s", name)
+	return fmt.Errorf("unknown Mod unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *ModIdeaMutation) ResetEdge(name string) error {
+func (m *ModMutation) ResetEdge(name string) error {
 	switch name {
-	case modidea.EdgeCar:
+	case mod.EdgeCar:
 		m.ResetCar()
 		return nil
-	case modidea.EdgeTasks:
+	case mod.EdgeTasks:
 		m.ResetTasks()
 		return nil
-	case modidea.EdgeProductOptions:
+	case mod.EdgeProductOptions:
 		m.ResetProductOptions()
 		return nil
 	}
-	return fmt.Errorf("unknown ModIdea edge %s", name)
+	return fmt.Errorf("unknown Mod edge %s", name)
 }
 
 // ModProductOptionMutation represents an operation that mutates the ModProductOption nodes in the graph.
@@ -11127,8 +11299,11 @@ type ModProductOptionMutation struct {
 	appendcons    []string
 	specs         *map[string]string
 	clearedFields map[string]struct{}
-	idea          *uuid.UUID
-	clearedidea   bool
+	mod           *uuid.UUID
+	clearedmod    bool
+	media         map[uuid.UUID]struct{}
+	removedmedia  map[uuid.UUID]struct{}
+	clearedmedia  bool
 	done          bool
 	oldValue      func(context.Context) (*ModProductOption, error)
 	predicates    []predicate.ModProductOption
@@ -11755,43 +11930,97 @@ func (m *ModProductOptionMutation) ResetSpecs() {
 	delete(m.clearedFields, modproductoption.FieldSpecs)
 }
 
-// SetIdeaID sets the "idea" edge to the ModIdea entity by id.
-func (m *ModProductOptionMutation) SetIdeaID(id uuid.UUID) {
-	m.idea = &id
+// SetModID sets the "mod" edge to the Mod entity by id.
+func (m *ModProductOptionMutation) SetModID(id uuid.UUID) {
+	m.mod = &id
 }
 
-// ClearIdea clears the "idea" edge to the ModIdea entity.
-func (m *ModProductOptionMutation) ClearIdea() {
-	m.clearedidea = true
+// ClearMod clears the "mod" edge to the Mod entity.
+func (m *ModProductOptionMutation) ClearMod() {
+	m.clearedmod = true
 }
 
-// IdeaCleared reports if the "idea" edge to the ModIdea entity was cleared.
-func (m *ModProductOptionMutation) IdeaCleared() bool {
-	return m.clearedidea
+// ModCleared reports if the "mod" edge to the Mod entity was cleared.
+func (m *ModProductOptionMutation) ModCleared() bool {
+	return m.clearedmod
 }
 
-// IdeaID returns the "idea" edge ID in the mutation.
-func (m *ModProductOptionMutation) IdeaID() (id uuid.UUID, exists bool) {
-	if m.idea != nil {
-		return *m.idea, true
+// ModID returns the "mod" edge ID in the mutation.
+func (m *ModProductOptionMutation) ModID() (id uuid.UUID, exists bool) {
+	if m.mod != nil {
+		return *m.mod, true
 	}
 	return
 }
 
-// IdeaIDs returns the "idea" edge IDs in the mutation.
+// ModIDs returns the "mod" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// IdeaID instead. It exists only for internal usage by the builders.
-func (m *ModProductOptionMutation) IdeaIDs() (ids []uuid.UUID) {
-	if id := m.idea; id != nil {
+// ModID instead. It exists only for internal usage by the builders.
+func (m *ModProductOptionMutation) ModIDs() (ids []uuid.UUID) {
+	if id := m.mod; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetIdea resets all changes to the "idea" edge.
-func (m *ModProductOptionMutation) ResetIdea() {
-	m.idea = nil
-	m.clearedidea = false
+// ResetMod resets all changes to the "mod" edge.
+func (m *ModProductOptionMutation) ResetMod() {
+	m.mod = nil
+	m.clearedmod = false
+}
+
+// AddMediumIDs adds the "media" edge to the Media entity by ids.
+func (m *ModProductOptionMutation) AddMediumIDs(ids ...uuid.UUID) {
+	if m.media == nil {
+		m.media = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.media[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMedia clears the "media" edge to the Media entity.
+func (m *ModProductOptionMutation) ClearMedia() {
+	m.clearedmedia = true
+}
+
+// MediaCleared reports if the "media" edge to the Media entity was cleared.
+func (m *ModProductOptionMutation) MediaCleared() bool {
+	return m.clearedmedia
+}
+
+// RemoveMediumIDs removes the "media" edge to the Media entity by IDs.
+func (m *ModProductOptionMutation) RemoveMediumIDs(ids ...uuid.UUID) {
+	if m.removedmedia == nil {
+		m.removedmedia = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.media, ids[i])
+		m.removedmedia[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMedia returns the removed IDs of the "media" edge to the Media entity.
+func (m *ModProductOptionMutation) RemovedMediaIDs() (ids []uuid.UUID) {
+	for id := range m.removedmedia {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MediaIDs returns the "media" edge IDs in the mutation.
+func (m *ModProductOptionMutation) MediaIDs() (ids []uuid.UUID) {
+	for id := range m.media {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMedia resets all changes to the "media" edge.
+func (m *ModProductOptionMutation) ResetMedia() {
+	m.media = nil
+	m.clearedmedia = false
+	m.removedmedia = nil
 }
 
 // Where appends a list predicates to the ModProductOptionMutation builder.
@@ -12146,9 +12375,12 @@ func (m *ModProductOptionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ModProductOptionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.idea != nil {
-		edges = append(edges, modproductoption.EdgeIdea)
+	edges := make([]string, 0, 2)
+	if m.mod != nil {
+		edges = append(edges, modproductoption.EdgeMod)
+	}
+	if m.media != nil {
+		edges = append(edges, modproductoption.EdgeMedia)
 	}
 	return edges
 }
@@ -12157,31 +12389,51 @@ func (m *ModProductOptionMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ModProductOptionMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case modproductoption.EdgeIdea:
-		if id := m.idea; id != nil {
+	case modproductoption.EdgeMod:
+		if id := m.mod; id != nil {
 			return []ent.Value{*id}
 		}
+	case modproductoption.EdgeMedia:
+		ids := make([]ent.Value, 0, len(m.media))
+		for id := range m.media {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ModProductOptionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removedmedia != nil {
+		edges = append(edges, modproductoption.EdgeMedia)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *ModProductOptionMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case modproductoption.EdgeMedia:
+		ids := make([]ent.Value, 0, len(m.removedmedia))
+		for id := range m.removedmedia {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ModProductOptionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedidea {
-		edges = append(edges, modproductoption.EdgeIdea)
+	edges := make([]string, 0, 2)
+	if m.clearedmod {
+		edges = append(edges, modproductoption.EdgeMod)
+	}
+	if m.clearedmedia {
+		edges = append(edges, modproductoption.EdgeMedia)
 	}
 	return edges
 }
@@ -12190,8 +12442,10 @@ func (m *ModProductOptionMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ModProductOptionMutation) EdgeCleared(name string) bool {
 	switch name {
-	case modproductoption.EdgeIdea:
-		return m.clearedidea
+	case modproductoption.EdgeMod:
+		return m.clearedmod
+	case modproductoption.EdgeMedia:
+		return m.clearedmedia
 	}
 	return false
 }
@@ -12200,8 +12454,8 @@ func (m *ModProductOptionMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ModProductOptionMutation) ClearEdge(name string) error {
 	switch name {
-	case modproductoption.EdgeIdea:
-		m.ClearIdea()
+	case modproductoption.EdgeMod:
+		m.ClearMod()
 		return nil
 	}
 	return fmt.Errorf("unknown ModProductOption unique edge %s", name)
@@ -12211,8 +12465,11 @@ func (m *ModProductOptionMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ModProductOptionMutation) ResetEdge(name string) error {
 	switch name {
-	case modproductoption.EdgeIdea:
-		m.ResetIdea()
+	case modproductoption.EdgeMod:
+		m.ResetMod()
+		return nil
+	case modproductoption.EdgeMedia:
+		m.ResetMedia()
 		return nil
 	}
 	return fmt.Errorf("unknown ModProductOption edge %s", name)
@@ -18238,39 +18495,39 @@ func (m *SubscriptionMutation) ResetEdge(name string) error {
 // TaskMutation represents an operation that mutates the Task nodes in the graph.
 type TaskMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	create_time      *time.Time
-	update_time      *time.Time
-	status           *task.Status
-	title            *string
-	description      *string
-	rank             *float64
-	addrank          *float64
-	estimate         *float64
-	addestimate      *float64
-	priority         *task.Priority
-	effort           *task.Effort
-	difficulty       *task.Difficulty
-	category         *task.Category
-	budget           *float64
-	addbudget        *float64
-	parts_needed     *string
-	clearedFields    map[string]struct{}
-	car              *uuid.UUID
-	clearedcar       bool
-	parent           *uuid.UUID
-	clearedparent    bool
-	subtasks         map[uuid.UUID]struct{}
-	removedsubtasks  map[uuid.UUID]struct{}
-	clearedsubtasks  bool
-	mod_ideas        map[uuid.UUID]struct{}
-	removedmod_ideas map[uuid.UUID]struct{}
-	clearedmod_ideas bool
-	done             bool
-	oldValue         func(context.Context) (*Task, error)
-	predicates       []predicate.Task
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	create_time     *time.Time
+	update_time     *time.Time
+	status          *task.Status
+	title           *string
+	description     *string
+	rank            *float64
+	addrank         *float64
+	estimate        *float64
+	addestimate     *float64
+	priority        *task.Priority
+	effort          *task.Effort
+	difficulty      *task.Difficulty
+	category        *task.Category
+	budget          *float64
+	addbudget       *float64
+	parts_needed    *string
+	clearedFields   map[string]struct{}
+	car             *uuid.UUID
+	clearedcar      bool
+	parent          *uuid.UUID
+	clearedparent   bool
+	subtasks        map[uuid.UUID]struct{}
+	removedsubtasks map[uuid.UUID]struct{}
+	clearedsubtasks bool
+	mods            map[uuid.UUID]struct{}
+	removedmods     map[uuid.UUID]struct{}
+	clearedmods     bool
+	done            bool
+	oldValue        func(context.Context) (*Task, error)
+	predicates      []predicate.Task
 }
 
 var _ ent.Mutation = (*TaskMutation)(nil)
@@ -19143,58 +19400,58 @@ func (m *TaskMutation) ResetSubtasks() {
 	m.removedsubtasks = nil
 }
 
-// AddModIdeaIDs adds the "mod_ideas" edge to the ModIdea entity by ids.
-func (m *TaskMutation) AddModIdeaIDs(ids ...uuid.UUID) {
-	if m.mod_ideas == nil {
-		m.mod_ideas = make(map[uuid.UUID]struct{})
+// AddModIDs adds the "mods" edge to the Mod entity by ids.
+func (m *TaskMutation) AddModIDs(ids ...uuid.UUID) {
+	if m.mods == nil {
+		m.mods = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.mod_ideas[ids[i]] = struct{}{}
+		m.mods[ids[i]] = struct{}{}
 	}
 }
 
-// ClearModIdeas clears the "mod_ideas" edge to the ModIdea entity.
-func (m *TaskMutation) ClearModIdeas() {
-	m.clearedmod_ideas = true
+// ClearMods clears the "mods" edge to the Mod entity.
+func (m *TaskMutation) ClearMods() {
+	m.clearedmods = true
 }
 
-// ModIdeasCleared reports if the "mod_ideas" edge to the ModIdea entity was cleared.
-func (m *TaskMutation) ModIdeasCleared() bool {
-	return m.clearedmod_ideas
+// ModsCleared reports if the "mods" edge to the Mod entity was cleared.
+func (m *TaskMutation) ModsCleared() bool {
+	return m.clearedmods
 }
 
-// RemoveModIdeaIDs removes the "mod_ideas" edge to the ModIdea entity by IDs.
-func (m *TaskMutation) RemoveModIdeaIDs(ids ...uuid.UUID) {
-	if m.removedmod_ideas == nil {
-		m.removedmod_ideas = make(map[uuid.UUID]struct{})
+// RemoveModIDs removes the "mods" edge to the Mod entity by IDs.
+func (m *TaskMutation) RemoveModIDs(ids ...uuid.UUID) {
+	if m.removedmods == nil {
+		m.removedmods = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.mod_ideas, ids[i])
-		m.removedmod_ideas[ids[i]] = struct{}{}
+		delete(m.mods, ids[i])
+		m.removedmods[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedModIdeas returns the removed IDs of the "mod_ideas" edge to the ModIdea entity.
-func (m *TaskMutation) RemovedModIdeasIDs() (ids []uuid.UUID) {
-	for id := range m.removedmod_ideas {
+// RemovedMods returns the removed IDs of the "mods" edge to the Mod entity.
+func (m *TaskMutation) RemovedModsIDs() (ids []uuid.UUID) {
+	for id := range m.removedmods {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ModIdeasIDs returns the "mod_ideas" edge IDs in the mutation.
-func (m *TaskMutation) ModIdeasIDs() (ids []uuid.UUID) {
-	for id := range m.mod_ideas {
+// ModsIDs returns the "mods" edge IDs in the mutation.
+func (m *TaskMutation) ModsIDs() (ids []uuid.UUID) {
+	for id := range m.mods {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetModIdeas resets all changes to the "mod_ideas" edge.
-func (m *TaskMutation) ResetModIdeas() {
-	m.mod_ideas = nil
-	m.clearedmod_ideas = false
-	m.removedmod_ideas = nil
+// ResetMods resets all changes to the "mods" edge.
+func (m *TaskMutation) ResetMods() {
+	m.mods = nil
+	m.clearedmods = false
+	m.removedmods = nil
 }
 
 // Where appends a list predicates to the TaskMutation builder.
@@ -19634,8 +19891,8 @@ func (m *TaskMutation) AddedEdges() []string {
 	if m.subtasks != nil {
 		edges = append(edges, task.EdgeSubtasks)
 	}
-	if m.mod_ideas != nil {
-		edges = append(edges, task.EdgeModIdeas)
+	if m.mods != nil {
+		edges = append(edges, task.EdgeMods)
 	}
 	return edges
 }
@@ -19658,9 +19915,9 @@ func (m *TaskMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case task.EdgeModIdeas:
-		ids := make([]ent.Value, 0, len(m.mod_ideas))
-		for id := range m.mod_ideas {
+	case task.EdgeMods:
+		ids := make([]ent.Value, 0, len(m.mods))
+		for id := range m.mods {
 			ids = append(ids, id)
 		}
 		return ids
@@ -19674,8 +19931,8 @@ func (m *TaskMutation) RemovedEdges() []string {
 	if m.removedsubtasks != nil {
 		edges = append(edges, task.EdgeSubtasks)
 	}
-	if m.removedmod_ideas != nil {
-		edges = append(edges, task.EdgeModIdeas)
+	if m.removedmods != nil {
+		edges = append(edges, task.EdgeMods)
 	}
 	return edges
 }
@@ -19690,9 +19947,9 @@ func (m *TaskMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case task.EdgeModIdeas:
-		ids := make([]ent.Value, 0, len(m.removedmod_ideas))
-		for id := range m.removedmod_ideas {
+	case task.EdgeMods:
+		ids := make([]ent.Value, 0, len(m.removedmods))
+		for id := range m.removedmods {
 			ids = append(ids, id)
 		}
 		return ids
@@ -19712,8 +19969,8 @@ func (m *TaskMutation) ClearedEdges() []string {
 	if m.clearedsubtasks {
 		edges = append(edges, task.EdgeSubtasks)
 	}
-	if m.clearedmod_ideas {
-		edges = append(edges, task.EdgeModIdeas)
+	if m.clearedmods {
+		edges = append(edges, task.EdgeMods)
 	}
 	return edges
 }
@@ -19728,8 +19985,8 @@ func (m *TaskMutation) EdgeCleared(name string) bool {
 		return m.clearedparent
 	case task.EdgeSubtasks:
 		return m.clearedsubtasks
-	case task.EdgeModIdeas:
-		return m.clearedmod_ideas
+	case task.EdgeMods:
+		return m.clearedmods
 	}
 	return false
 }
@@ -19761,8 +20018,8 @@ func (m *TaskMutation) ResetEdge(name string) error {
 	case task.EdgeSubtasks:
 		m.ResetSubtasks()
 		return nil
-	case task.EdgeModIdeas:
-		m.ResetModIdeas()
+	case task.EdgeMods:
+		m.ResetMods()
 		return nil
 	}
 	return fmt.Errorf("unknown Task edge %s", name)
@@ -19796,6 +20053,9 @@ type UserMutation struct {
 	checkout_sessions           map[uuid.UUID]struct{}
 	removedcheckout_sessions    map[uuid.UUID]struct{}
 	clearedcheckout_sessions    bool
+	media                       map[uuid.UUID]struct{}
+	removedmedia                map[uuid.UUID]struct{}
+	clearedmedia                bool
 	done                        bool
 	oldValue                    func(context.Context) (*User, error)
 	predicates                  []predicate.User
@@ -20498,6 +20758,60 @@ func (m *UserMutation) ResetCheckoutSessions() {
 	m.removedcheckout_sessions = nil
 }
 
+// AddMediumIDs adds the "media" edge to the Media entity by ids.
+func (m *UserMutation) AddMediumIDs(ids ...uuid.UUID) {
+	if m.media == nil {
+		m.media = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.media[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMedia clears the "media" edge to the Media entity.
+func (m *UserMutation) ClearMedia() {
+	m.clearedmedia = true
+}
+
+// MediaCleared reports if the "media" edge to the Media entity was cleared.
+func (m *UserMutation) MediaCleared() bool {
+	return m.clearedmedia
+}
+
+// RemoveMediumIDs removes the "media" edge to the Media entity by IDs.
+func (m *UserMutation) RemoveMediumIDs(ids ...uuid.UUID) {
+	if m.removedmedia == nil {
+		m.removedmedia = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.media, ids[i])
+		m.removedmedia[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMedia returns the removed IDs of the "media" edge to the Media entity.
+func (m *UserMutation) RemovedMediaIDs() (ids []uuid.UUID) {
+	for id := range m.removedmedia {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MediaIDs returns the "media" edge IDs in the mutation.
+func (m *UserMutation) MediaIDs() (ids []uuid.UUID) {
+	for id := range m.media {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMedia resets all changes to the "media" edge.
+func (m *UserMutation) ResetMedia() {
+	m.media = nil
+	m.clearedmedia = false
+	m.removedmedia = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -20783,7 +21097,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.cars != nil {
 		edges = append(edges, user.EdgeCars)
 	}
@@ -20798,6 +21112,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.checkout_sessions != nil {
 		edges = append(edges, user.EdgeCheckoutSessions)
+	}
+	if m.media != nil {
+		edges = append(edges, user.EdgeMedia)
 	}
 	return edges
 }
@@ -20832,13 +21149,19 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeMedia:
+		ids := make([]ent.Value, 0, len(m.media))
+		for id := range m.media {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removedcars != nil {
 		edges = append(edges, user.EdgeCars)
 	}
@@ -20847,6 +21170,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedcheckout_sessions != nil {
 		edges = append(edges, user.EdgeCheckoutSessions)
+	}
+	if m.removedmedia != nil {
+		edges = append(edges, user.EdgeMedia)
 	}
 	return edges
 }
@@ -20873,13 +21199,19 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeMedia:
+		ids := make([]ent.Value, 0, len(m.removedmedia))
+		for id := range m.removedmedia {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedcars {
 		edges = append(edges, user.EdgeCars)
 	}
@@ -20894,6 +21226,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedcheckout_sessions {
 		edges = append(edges, user.EdgeCheckoutSessions)
+	}
+	if m.clearedmedia {
+		edges = append(edges, user.EdgeMedia)
 	}
 	return edges
 }
@@ -20912,6 +21247,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedsubscriptions
 	case user.EdgeCheckoutSessions:
 		return m.clearedcheckout_sessions
+	case user.EdgeMedia:
+		return m.clearedmedia
 	}
 	return false
 }
@@ -20948,6 +21285,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeCheckoutSessions:
 		m.ResetCheckoutSessions()
+		return nil
+	case user.EdgeMedia:
+		m.ResetMedia()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

@@ -20,7 +20,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/Dan6erbond/revline/ent/serviceitem"
@@ -52,7 +52,7 @@ type CarQuery struct {
 	withExpenses              *ExpenseQuery
 	withBannerImage           *MediaQuery
 	withTasks                 *TaskQuery
-	withModIdeas              *ModIdeaQuery
+	withMods                  *ModQuery
 	withFKs                   bool
 	modifiers                 []func(*sql.Selector)
 	loadTotal                 []func(context.Context, []*Car) error
@@ -68,7 +68,7 @@ type CarQuery struct {
 	withNamedDynoSessions     map[string]*DynoSessionQuery
 	withNamedExpenses         map[string]*ExpenseQuery
 	withNamedTasks            map[string]*TaskQuery
-	withNamedModIdeas         map[string]*ModIdeaQuery
+	withNamedMods             map[string]*ModQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -413,9 +413,9 @@ func (cq *CarQuery) QueryTasks() *TaskQuery {
 	return query
 }
 
-// QueryModIdeas chains the current query on the "mod_ideas" edge.
-func (cq *CarQuery) QueryModIdeas() *ModIdeaQuery {
-	query := (&ModIdeaClient{config: cq.config}).Query()
+// QueryMods chains the current query on the "mods" edge.
+func (cq *CarQuery) QueryMods() *ModQuery {
+	query := (&ModClient{config: cq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := cq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -426,8 +426,8 @@ func (cq *CarQuery) QueryModIdeas() *ModIdeaQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(car.Table, car.FieldID, selector),
-			sqlgraph.To(modidea.Table, modidea.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, car.ModIdeasTable, car.ModIdeasColumn),
+			sqlgraph.To(mod.Table, mod.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.ModsTable, car.ModsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -641,7 +641,7 @@ func (cq *CarQuery) Clone() *CarQuery {
 		withExpenses:         cq.withExpenses.Clone(),
 		withBannerImage:      cq.withBannerImage.Clone(),
 		withTasks:            cq.withTasks.Clone(),
-		withModIdeas:         cq.withModIdeas.Clone(),
+		withMods:             cq.withMods.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
@@ -802,14 +802,14 @@ func (cq *CarQuery) WithTasks(opts ...func(*TaskQuery)) *CarQuery {
 	return cq
 }
 
-// WithModIdeas tells the query-builder to eager-load the nodes that are connected to
-// the "mod_ideas" edge. The optional arguments are used to configure the query builder of the edge.
-func (cq *CarQuery) WithModIdeas(opts ...func(*ModIdeaQuery)) *CarQuery {
-	query := (&ModIdeaClient{config: cq.config}).Query()
+// WithMods tells the query-builder to eager-load the nodes that are connected to
+// the "mods" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CarQuery) WithMods(opts ...func(*ModQuery)) *CarQuery {
+	query := (&ModClient{config: cq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	cq.withModIdeas = query
+	cq.withMods = query
 	return cq
 }
 
@@ -907,7 +907,7 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 			cq.withExpenses != nil,
 			cq.withBannerImage != nil,
 			cq.withTasks != nil,
-			cq.withModIdeas != nil,
+			cq.withMods != nil,
 		}
 	)
 	if cq.withOwner != nil || cq.withBannerImage != nil {
@@ -1033,10 +1033,10 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 			return nil, err
 		}
 	}
-	if query := cq.withModIdeas; query != nil {
-		if err := cq.loadModIdeas(ctx, query, nodes,
-			func(n *Car) { n.Edges.ModIdeas = []*ModIdea{} },
-			func(n *Car, e *ModIdea) { n.Edges.ModIdeas = append(n.Edges.ModIdeas, e) }); err != nil {
+	if query := cq.withMods; query != nil {
+		if err := cq.loadMods(ctx, query, nodes,
+			func(n *Car) { n.Edges.Mods = []*Mod{} },
+			func(n *Car, e *Mod) { n.Edges.Mods = append(n.Edges.Mods, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1124,10 +1124,10 @@ func (cq *CarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Car, err
 			return nil, err
 		}
 	}
-	for name, query := range cq.withNamedModIdeas {
-		if err := cq.loadModIdeas(ctx, query, nodes,
-			func(n *Car) { n.appendNamedModIdeas(name) },
-			func(n *Car, e *ModIdea) { n.appendNamedModIdeas(name, e) }); err != nil {
+	for name, query := range cq.withNamedMods {
+		if err := cq.loadMods(ctx, query, nodes,
+			func(n *Car) { n.appendNamedMods(name) },
+			func(n *Car, e *Mod) { n.appendNamedMods(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1575,7 +1575,7 @@ func (cq *CarQuery) loadTasks(ctx context.Context, query *TaskQuery, nodes []*Ca
 	}
 	return nil
 }
-func (cq *CarQuery) loadModIdeas(ctx context.Context, query *ModIdeaQuery, nodes []*Car, init func(*Car), assign func(*Car, *ModIdea)) error {
+func (cq *CarQuery) loadMods(ctx context.Context, query *ModQuery, nodes []*Car, init func(*Car), assign func(*Car, *Mod)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Car)
 	for i := range nodes {
@@ -1586,21 +1586,21 @@ func (cq *CarQuery) loadModIdeas(ctx context.Context, query *ModIdeaQuery, nodes
 		}
 	}
 	query.withFKs = true
-	query.Where(predicate.ModIdea(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(car.ModIdeasColumn), fks...))
+	query.Where(predicate.Mod(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(car.ModsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.car_mod_ideas
+		fk := n.car_mods
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "car_mod_ideas" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "car_mods" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "car_mod_ideas" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "car_mods" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1859,17 +1859,17 @@ func (cq *CarQuery) WithNamedTasks(name string, opts ...func(*TaskQuery)) *CarQu
 	return cq
 }
 
-// WithNamedModIdeas tells the query-builder to eager-load the nodes that are connected to the "mod_ideas"
+// WithNamedMods tells the query-builder to eager-load the nodes that are connected to the "mods"
 // edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (cq *CarQuery) WithNamedModIdeas(name string, opts ...func(*ModIdeaQuery)) *CarQuery {
-	query := (&ModIdeaClient{config: cq.config}).Query()
+func (cq *CarQuery) WithNamedMods(name string, opts ...func(*ModQuery)) *CarQuery {
+	query := (&ModClient{config: cq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	if cq.withNamedModIdeas == nil {
-		cq.withNamedModIdeas = make(map[string]*ModIdeaQuery)
+	if cq.withNamedMods == nil {
+		cq.withNamedMods = make(map[string]*ModQuery)
 	}
-	cq.withNamedModIdeas[name] = query
+	cq.withNamedMods[name] = query
 	return cq
 }
 

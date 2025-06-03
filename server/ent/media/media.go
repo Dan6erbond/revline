@@ -23,12 +23,23 @@ const (
 	FieldTitle = "title"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// EdgeCar holds the string denoting the car edge name in mutations.
 	EdgeCar = "car"
+	// EdgeModProductOption holds the string denoting the mod_product_option edge name in mutations.
+	EdgeModProductOption = "mod_product_option"
 	// EdgeAlbums holds the string denoting the albums edge name in mutations.
 	EdgeAlbums = "albums"
 	// Table holds the table name of the media in the database.
 	Table = "media"
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "media"
+	// UserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "user_media"
 	// CarTable is the table that holds the car relation/edge.
 	CarTable = "media"
 	// CarInverseTable is the table name for the Car entity.
@@ -36,6 +47,13 @@ const (
 	CarInverseTable = "cars"
 	// CarColumn is the table column denoting the car relation/edge.
 	CarColumn = "car_media"
+	// ModProductOptionTable is the table that holds the mod_product_option relation/edge.
+	ModProductOptionTable = "media"
+	// ModProductOptionInverseTable is the table name for the ModProductOption entity.
+	// It exists in this package in order to avoid circular dependency with the "modproductoption" package.
+	ModProductOptionInverseTable = "mod_product_options"
+	// ModProductOptionColumn is the table column denoting the mod_product_option relation/edge.
+	ModProductOptionColumn = "mod_product_option_media"
 	// AlbumsTable is the table that holds the albums relation/edge. The primary key declared below.
 	AlbumsTable = "album_media"
 	// AlbumsInverseTable is the table name for the Album entity.
@@ -56,6 +74,8 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"car_media",
+	"mod_product_option_media",
+	"user_media",
 }
 
 var (
@@ -118,10 +138,24 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
 }
 
+// ByUserField orders the results by user field.
+func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByCarField orders the results by car field.
 func ByCarField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newCarStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByModProductOptionField orders the results by mod_product_option field.
+func ByModProductOptionField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newModProductOptionStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -138,11 +172,25 @@ func ByAlbums(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAlbumsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+func newUserStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+	)
+}
 func newCarStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CarInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, CarTable, CarColumn),
+	)
+}
+func newModProductOptionStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ModProductOptionInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ModProductOptionTable, ModProductOptionColumn),
 	)
 }
 func newAlbumsStep() *sqlgraph.Step {

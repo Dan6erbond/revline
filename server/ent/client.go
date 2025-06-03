@@ -27,7 +27,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/profile"
@@ -69,8 +69,8 @@ type Client struct {
 	FuelUp *FuelUpClient
 	// Media is the client for interacting with the Media builders.
 	Media *MediaClient
-	// ModIdea is the client for interacting with the ModIdea builders.
-	ModIdea *ModIdeaClient
+	// Mod is the client for interacting with the Mod builders.
+	Mod *ModClient
 	// ModProductOption is the client for interacting with the ModProductOption builders.
 	ModProductOption *ModProductOptionClient
 	// OdometerReading is the client for interacting with the OdometerReading builders.
@@ -113,7 +113,7 @@ func (c *Client) init() {
 	c.Expense = NewExpenseClient(c.config)
 	c.FuelUp = NewFuelUpClient(c.config)
 	c.Media = NewMediaClient(c.config)
-	c.ModIdea = NewModIdeaClient(c.config)
+	c.Mod = NewModClient(c.config)
 	c.ModProductOption = NewModProductOptionClient(c.config)
 	c.OdometerReading = NewOdometerReadingClient(c.config)
 	c.Profile = NewProfileClient(c.config)
@@ -227,7 +227,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Expense:          NewExpenseClient(cfg),
 		FuelUp:           NewFuelUpClient(cfg),
 		Media:            NewMediaClient(cfg),
-		ModIdea:          NewModIdeaClient(cfg),
+		Mod:              NewModClient(cfg),
 		ModProductOption: NewModProductOptionClient(cfg),
 		OdometerReading:  NewOdometerReadingClient(cfg),
 		Profile:          NewProfileClient(cfg),
@@ -268,7 +268,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Expense:          NewExpenseClient(cfg),
 		FuelUp:           NewFuelUpClient(cfg),
 		Media:            NewMediaClient(cfg),
-		ModIdea:          NewModIdeaClient(cfg),
+		Mod:              NewModClient(cfg),
 		ModProductOption: NewModProductOptionClient(cfg),
 		OdometerReading:  NewOdometerReadingClient(cfg),
 		Profile:          NewProfileClient(cfg),
@@ -309,7 +309,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Album, c.Car, c.CheckoutSession, c.Document, c.DragResult, c.DragSession,
-		c.DynoResult, c.DynoSession, c.Expense, c.FuelUp, c.Media, c.ModIdea,
+		c.DynoResult, c.DynoSession, c.Expense, c.FuelUp, c.Media, c.Mod,
 		c.ModProductOption, c.OdometerReading, c.Profile, c.ServiceItem, c.ServiceLog,
 		c.ServiceSchedule, c.Subscription, c.Task, c.User, c.UserSettings,
 	} {
@@ -322,7 +322,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Album, c.Car, c.CheckoutSession, c.Document, c.DragResult, c.DragSession,
-		c.DynoResult, c.DynoSession, c.Expense, c.FuelUp, c.Media, c.ModIdea,
+		c.DynoResult, c.DynoSession, c.Expense, c.FuelUp, c.Media, c.Mod,
 		c.ModProductOption, c.OdometerReading, c.Profile, c.ServiceItem, c.ServiceLog,
 		c.ServiceSchedule, c.Subscription, c.Task, c.User, c.UserSettings,
 	} {
@@ -355,8 +355,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.FuelUp.mutate(ctx, m)
 	case *MediaMutation:
 		return c.Media.mutate(ctx, m)
-	case *ModIdeaMutation:
-		return c.ModIdea.mutate(ctx, m)
+	case *ModMutation:
+		return c.Mod.mutate(ctx, m)
 	case *ModProductOptionMutation:
 		return c.ModProductOption.mutate(ctx, m)
 	case *OdometerReadingMutation:
@@ -879,15 +879,15 @@ func (c *CarClient) QueryTasks(ca *Car) *TaskQuery {
 	return query
 }
 
-// QueryModIdeas queries the mod_ideas edge of a Car.
-func (c *CarClient) QueryModIdeas(ca *Car) *ModIdeaQuery {
-	query := (&ModIdeaClient{config: c.config}).Query()
+// QueryMods queries the mods edge of a Car.
+func (c *CarClient) QueryMods(ca *Car) *ModQuery {
+	query := (&ModClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := ca.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(car.Table, car.FieldID, id),
-			sqlgraph.To(modidea.Table, modidea.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, car.ModIdeasTable, car.ModIdeasColumn),
+			sqlgraph.To(mod.Table, mod.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.ModsTable, car.ModsColumn),
 		)
 		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
 		return fromV, nil
@@ -2476,6 +2476,22 @@ func (c *MediaClient) GetX(ctx context.Context, id uuid.UUID) *Media {
 	return obj
 }
 
+// QueryUser queries the user edge of a Media.
+func (c *MediaClient) QueryUser(m *Media) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(media.Table, media.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, media.UserTable, media.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryCar queries the car edge of a Media.
 func (c *MediaClient) QueryCar(m *Media) *CarQuery {
 	query := (&CarClient{config: c.config}).Query()
@@ -2485,6 +2501,22 @@ func (c *MediaClient) QueryCar(m *Media) *CarQuery {
 			sqlgraph.From(media.Table, media.FieldID, id),
 			sqlgraph.To(car.Table, car.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, media.CarTable, media.CarColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryModProductOption queries the mod_product_option edge of a Media.
+func (c *MediaClient) QueryModProductOption(m *Media) *ModProductOptionQuery {
+	query := (&ModProductOptionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(media.Table, media.FieldID, id),
+			sqlgraph.To(modproductoption.Table, modproductoption.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, media.ModProductOptionTable, media.ModProductOptionColumn),
 		)
 		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
 		return fromV, nil
@@ -2533,107 +2565,107 @@ func (c *MediaClient) mutate(ctx context.Context, m *MediaMutation) (Value, erro
 	}
 }
 
-// ModIdeaClient is a client for the ModIdea schema.
-type ModIdeaClient struct {
+// ModClient is a client for the Mod schema.
+type ModClient struct {
 	config
 }
 
-// NewModIdeaClient returns a client for the ModIdea from the given config.
-func NewModIdeaClient(c config) *ModIdeaClient {
-	return &ModIdeaClient{config: c}
+// NewModClient returns a client for the Mod from the given config.
+func NewModClient(c config) *ModClient {
+	return &ModClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `modidea.Hooks(f(g(h())))`.
-func (c *ModIdeaClient) Use(hooks ...Hook) {
-	c.hooks.ModIdea = append(c.hooks.ModIdea, hooks...)
+// A call to `Use(f, g, h)` equals to `mod.Hooks(f(g(h())))`.
+func (c *ModClient) Use(hooks ...Hook) {
+	c.hooks.Mod = append(c.hooks.Mod, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `modidea.Intercept(f(g(h())))`.
-func (c *ModIdeaClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ModIdea = append(c.inters.ModIdea, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `mod.Intercept(f(g(h())))`.
+func (c *ModClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Mod = append(c.inters.Mod, interceptors...)
 }
 
-// Create returns a builder for creating a ModIdea entity.
-func (c *ModIdeaClient) Create() *ModIdeaCreate {
-	mutation := newModIdeaMutation(c.config, OpCreate)
-	return &ModIdeaCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Mod entity.
+func (c *ModClient) Create() *ModCreate {
+	mutation := newModMutation(c.config, OpCreate)
+	return &ModCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of ModIdea entities.
-func (c *ModIdeaClient) CreateBulk(builders ...*ModIdeaCreate) *ModIdeaCreateBulk {
-	return &ModIdeaCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Mod entities.
+func (c *ModClient) CreateBulk(builders ...*ModCreate) *ModCreateBulk {
+	return &ModCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *ModIdeaClient) MapCreateBulk(slice any, setFunc func(*ModIdeaCreate, int)) *ModIdeaCreateBulk {
+func (c *ModClient) MapCreateBulk(slice any, setFunc func(*ModCreate, int)) *ModCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &ModIdeaCreateBulk{err: fmt.Errorf("calling to ModIdeaClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &ModCreateBulk{err: fmt.Errorf("calling to ModClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*ModIdeaCreate, rv.Len())
+	builders := make([]*ModCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &ModIdeaCreateBulk{config: c.config, builders: builders}
+	return &ModCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for ModIdea.
-func (c *ModIdeaClient) Update() *ModIdeaUpdate {
-	mutation := newModIdeaMutation(c.config, OpUpdate)
-	return &ModIdeaUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Mod.
+func (c *ModClient) Update() *ModUpdate {
+	mutation := newModMutation(c.config, OpUpdate)
+	return &ModUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *ModIdeaClient) UpdateOne(mi *ModIdea) *ModIdeaUpdateOne {
-	mutation := newModIdeaMutation(c.config, OpUpdateOne, withModIdea(mi))
-	return &ModIdeaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ModClient) UpdateOne(m *Mod) *ModUpdateOne {
+	mutation := newModMutation(c.config, OpUpdateOne, withMod(m))
+	return &ModUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ModIdeaClient) UpdateOneID(id uuid.UUID) *ModIdeaUpdateOne {
-	mutation := newModIdeaMutation(c.config, OpUpdateOne, withModIdeaID(id))
-	return &ModIdeaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ModClient) UpdateOneID(id uuid.UUID) *ModUpdateOne {
+	mutation := newModMutation(c.config, OpUpdateOne, withModID(id))
+	return &ModUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for ModIdea.
-func (c *ModIdeaClient) Delete() *ModIdeaDelete {
-	mutation := newModIdeaMutation(c.config, OpDelete)
-	return &ModIdeaDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Mod.
+func (c *ModClient) Delete() *ModDelete {
+	mutation := newModMutation(c.config, OpDelete)
+	return &ModDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *ModIdeaClient) DeleteOne(mi *ModIdea) *ModIdeaDeleteOne {
-	return c.DeleteOneID(mi.ID)
+func (c *ModClient) DeleteOne(m *Mod) *ModDeleteOne {
+	return c.DeleteOneID(m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ModIdeaClient) DeleteOneID(id uuid.UUID) *ModIdeaDeleteOne {
-	builder := c.Delete().Where(modidea.ID(id))
+func (c *ModClient) DeleteOneID(id uuid.UUID) *ModDeleteOne {
+	builder := c.Delete().Where(mod.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &ModIdeaDeleteOne{builder}
+	return &ModDeleteOne{builder}
 }
 
-// Query returns a query builder for ModIdea.
-func (c *ModIdeaClient) Query() *ModIdeaQuery {
-	return &ModIdeaQuery{
+// Query returns a query builder for Mod.
+func (c *ModClient) Query() *ModQuery {
+	return &ModQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeModIdea},
+		ctx:    &QueryContext{Type: TypeMod},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a ModIdea entity by its id.
-func (c *ModIdeaClient) Get(ctx context.Context, id uuid.UUID) (*ModIdea, error) {
-	return c.Query().Where(modidea.ID(id)).Only(ctx)
+// Get returns a Mod entity by its id.
+func (c *ModClient) Get(ctx context.Context, id uuid.UUID) (*Mod, error) {
+	return c.Query().Where(mod.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ModIdeaClient) GetX(ctx context.Context, id uuid.UUID) *ModIdea {
+func (c *ModClient) GetX(ctx context.Context, id uuid.UUID) *Mod {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -2641,76 +2673,76 @@ func (c *ModIdeaClient) GetX(ctx context.Context, id uuid.UUID) *ModIdea {
 	return obj
 }
 
-// QueryCar queries the car edge of a ModIdea.
-func (c *ModIdeaClient) QueryCar(mi *ModIdea) *CarQuery {
+// QueryCar queries the car edge of a Mod.
+func (c *ModClient) QueryCar(m *Mod) *CarQuery {
 	query := (&CarClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := mi.ID
+		id := m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(modidea.Table, modidea.FieldID, id),
+			sqlgraph.From(mod.Table, mod.FieldID, id),
 			sqlgraph.To(car.Table, car.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, modidea.CarTable, modidea.CarColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, mod.CarTable, mod.CarColumn),
 		)
-		fromV = sqlgraph.Neighbors(mi.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryTasks queries the tasks edge of a ModIdea.
-func (c *ModIdeaClient) QueryTasks(mi *ModIdea) *TaskQuery {
+// QueryTasks queries the tasks edge of a Mod.
+func (c *ModClient) QueryTasks(m *Mod) *TaskQuery {
 	query := (&TaskClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := mi.ID
+		id := m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(modidea.Table, modidea.FieldID, id),
+			sqlgraph.From(mod.Table, mod.FieldID, id),
 			sqlgraph.To(task.Table, task.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, modidea.TasksTable, modidea.TasksPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, mod.TasksTable, mod.TasksPrimaryKey...),
 		)
-		fromV = sqlgraph.Neighbors(mi.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryProductOptions queries the product_options edge of a ModIdea.
-func (c *ModIdeaClient) QueryProductOptions(mi *ModIdea) *ModProductOptionQuery {
+// QueryProductOptions queries the product_options edge of a Mod.
+func (c *ModClient) QueryProductOptions(m *Mod) *ModProductOptionQuery {
 	query := (&ModProductOptionClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := mi.ID
+		id := m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(modidea.Table, modidea.FieldID, id),
+			sqlgraph.From(mod.Table, mod.FieldID, id),
 			sqlgraph.To(modproductoption.Table, modproductoption.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, modidea.ProductOptionsTable, modidea.ProductOptionsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, mod.ProductOptionsTable, mod.ProductOptionsColumn),
 		)
-		fromV = sqlgraph.Neighbors(mi.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *ModIdeaClient) Hooks() []Hook {
-	return c.hooks.ModIdea
+func (c *ModClient) Hooks() []Hook {
+	return c.hooks.Mod
 }
 
 // Interceptors returns the client interceptors.
-func (c *ModIdeaClient) Interceptors() []Interceptor {
-	return c.inters.ModIdea
+func (c *ModClient) Interceptors() []Interceptor {
+	return c.inters.Mod
 }
 
-func (c *ModIdeaClient) mutate(ctx context.Context, m *ModIdeaMutation) (Value, error) {
+func (c *ModClient) mutate(ctx context.Context, m *ModMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&ModIdeaCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ModCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&ModIdeaUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ModUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&ModIdeaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ModUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&ModIdeaDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&ModDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown ModIdea mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown Mod mutation op: %q", m.Op())
 	}
 }
 
@@ -2822,15 +2854,31 @@ func (c *ModProductOptionClient) GetX(ctx context.Context, id uuid.UUID) *ModPro
 	return obj
 }
 
-// QueryIdea queries the idea edge of a ModProductOption.
-func (c *ModProductOptionClient) QueryIdea(mpo *ModProductOption) *ModIdeaQuery {
-	query := (&ModIdeaClient{config: c.config}).Query()
+// QueryMod queries the mod edge of a ModProductOption.
+func (c *ModProductOptionClient) QueryMod(mpo *ModProductOption) *ModQuery {
+	query := (&ModClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := mpo.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(modproductoption.Table, modproductoption.FieldID, id),
-			sqlgraph.To(modidea.Table, modidea.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, modproductoption.IdeaTable, modproductoption.IdeaColumn),
+			sqlgraph.To(mod.Table, mod.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, modproductoption.ModTable, modproductoption.ModColumn),
+		)
+		fromV = sqlgraph.Neighbors(mpo.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMedia queries the media edge of a ModProductOption.
+func (c *ModProductOptionClient) QueryMedia(mpo *ModProductOption) *MediaQuery {
+	query := (&MediaClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := mpo.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(modproductoption.Table, modproductoption.FieldID, id),
+			sqlgraph.To(media.Table, media.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, modproductoption.MediaTable, modproductoption.MediaColumn),
 		)
 		fromV = sqlgraph.Neighbors(mpo.driver.Dialect(), step)
 		return fromV, nil
@@ -4105,15 +4153,15 @@ func (c *TaskClient) QuerySubtasks(t *Task) *TaskQuery {
 	return query
 }
 
-// QueryModIdeas queries the mod_ideas edge of a Task.
-func (c *TaskClient) QueryModIdeas(t *Task) *ModIdeaQuery {
-	query := (&ModIdeaClient{config: c.config}).Query()
+// QueryMods queries the mods edge of a Task.
+func (c *TaskClient) QueryMods(t *Task) *ModQuery {
+	query := (&ModClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := t.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(task.Table, task.FieldID, id),
-			sqlgraph.To(modidea.Table, modidea.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, task.ModIdeasTable, task.ModIdeasPrimaryKey...),
+			sqlgraph.To(mod.Table, mod.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, task.ModsTable, task.ModsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil
@@ -4334,6 +4382,22 @@ func (c *UserClient) QueryCheckoutSessions(u *User) *CheckoutSessionQuery {
 	return query
 }
 
+// QueryMedia queries the media edge of a User.
+func (c *UserClient) QueryMedia(u *User) *MediaQuery {
+	query := (&MediaClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(media.Table, media.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.MediaTable, user.MediaColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -4512,15 +4576,15 @@ func (c *UserSettingsClient) mutate(ctx context.Context, m *UserSettingsMutation
 type (
 	hooks struct {
 		Album, Car, CheckoutSession, Document, DragResult, DragSession, DynoResult,
-		DynoSession, Expense, FuelUp, Media, ModIdea, ModProductOption,
-		OdometerReading, Profile, ServiceItem, ServiceLog, ServiceSchedule,
-		Subscription, Task, User, UserSettings []ent.Hook
+		DynoSession, Expense, FuelUp, Media, Mod, ModProductOption, OdometerReading,
+		Profile, ServiceItem, ServiceLog, ServiceSchedule, Subscription, Task, User,
+		UserSettings []ent.Hook
 	}
 	inters struct {
 		Album, Car, CheckoutSession, Document, DragResult, DragSession, DynoResult,
-		DynoSession, Expense, FuelUp, Media, ModIdea, ModProductOption,
-		OdometerReading, Profile, ServiceItem, ServiceLog, ServiceSchedule,
-		Subscription, Task, User, UserSettings []ent.Interceptor
+		DynoSession, Expense, FuelUp, Media, Mod, ModProductOption, OdometerReading,
+		Profile, ServiceItem, ServiceLog, ServiceSchedule, Subscription, Task, User,
+		UserSettings []ent.Interceptor
 	}
 )
 

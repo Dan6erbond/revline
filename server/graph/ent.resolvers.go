@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/Dan6erbond/revline/ent"
-	petname "github.com/dustinkirkland/golang-petname"
+	"github.com/dustinkirkland/golang-petname"
 	"github.com/spf13/cast"
 )
 

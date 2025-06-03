@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/google/uuid"
@@ -305,19 +305,19 @@ func (tu *TaskUpdate) AddSubtasks(t ...*Task) *TaskUpdate {
 	return tu.AddSubtaskIDs(ids...)
 }
 
-// AddModIdeaIDs adds the "mod_ideas" edge to the ModIdea entity by IDs.
-func (tu *TaskUpdate) AddModIdeaIDs(ids ...uuid.UUID) *TaskUpdate {
-	tu.mutation.AddModIdeaIDs(ids...)
+// AddModIDs adds the "mods" edge to the Mod entity by IDs.
+func (tu *TaskUpdate) AddModIDs(ids ...uuid.UUID) *TaskUpdate {
+	tu.mutation.AddModIDs(ids...)
 	return tu
 }
 
-// AddModIdeas adds the "mod_ideas" edges to the ModIdea entity.
-func (tu *TaskUpdate) AddModIdeas(m ...*ModIdea) *TaskUpdate {
+// AddMods adds the "mods" edges to the Mod entity.
+func (tu *TaskUpdate) AddMods(m ...*Mod) *TaskUpdate {
 	ids := make([]uuid.UUID, len(m))
 	for i := range m {
 		ids[i] = m[i].ID
 	}
-	return tu.AddModIdeaIDs(ids...)
+	return tu.AddModIDs(ids...)
 }
 
 // Mutation returns the TaskMutation object of the builder.
@@ -358,25 +358,25 @@ func (tu *TaskUpdate) RemoveSubtasks(t ...*Task) *TaskUpdate {
 	return tu.RemoveSubtaskIDs(ids...)
 }
 
-// ClearModIdeas clears all "mod_ideas" edges to the ModIdea entity.
-func (tu *TaskUpdate) ClearModIdeas() *TaskUpdate {
-	tu.mutation.ClearModIdeas()
+// ClearMods clears all "mods" edges to the Mod entity.
+func (tu *TaskUpdate) ClearMods() *TaskUpdate {
+	tu.mutation.ClearMods()
 	return tu
 }
 
-// RemoveModIdeaIDs removes the "mod_ideas" edge to ModIdea entities by IDs.
-func (tu *TaskUpdate) RemoveModIdeaIDs(ids ...uuid.UUID) *TaskUpdate {
-	tu.mutation.RemoveModIdeaIDs(ids...)
+// RemoveModIDs removes the "mods" edge to Mod entities by IDs.
+func (tu *TaskUpdate) RemoveModIDs(ids ...uuid.UUID) *TaskUpdate {
+	tu.mutation.RemoveModIDs(ids...)
 	return tu
 }
 
-// RemoveModIdeas removes "mod_ideas" edges to ModIdea entities.
-func (tu *TaskUpdate) RemoveModIdeas(m ...*ModIdea) *TaskUpdate {
+// RemoveMods removes "mods" edges to Mod entities.
+func (tu *TaskUpdate) RemoveMods(m ...*Mod) *TaskUpdate {
 	ids := make([]uuid.UUID, len(m))
 	for i := range m {
 		ids[i] = m[i].ID
 	}
-	return tu.RemoveModIdeaIDs(ids...)
+	return tu.RemoveModIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -637,28 +637,28 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tu.mutation.ModIdeasCleared() {
+	if tu.mutation.ModsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   task.ModIdeasTable,
-			Columns: task.ModIdeasPrimaryKey,
+			Table:   task.ModsTable,
+			Columns: task.ModsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.RemovedModIdeasIDs(); len(nodes) > 0 && !tu.mutation.ModIdeasCleared() {
+	if nodes := tu.mutation.RemovedModsIDs(); len(nodes) > 0 && !tu.mutation.ModsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   task.ModIdeasTable,
-			Columns: task.ModIdeasPrimaryKey,
+			Table:   task.ModsTable,
+			Columns: task.ModsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -666,15 +666,15 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.ModIdeasIDs(); len(nodes) > 0 {
+	if nodes := tu.mutation.ModsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   task.ModIdeasTable,
-			Columns: task.ModIdeasPrimaryKey,
+			Table:   task.ModsTable,
+			Columns: task.ModsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -976,19 +976,19 @@ func (tuo *TaskUpdateOne) AddSubtasks(t ...*Task) *TaskUpdateOne {
 	return tuo.AddSubtaskIDs(ids...)
 }
 
-// AddModIdeaIDs adds the "mod_ideas" edge to the ModIdea entity by IDs.
-func (tuo *TaskUpdateOne) AddModIdeaIDs(ids ...uuid.UUID) *TaskUpdateOne {
-	tuo.mutation.AddModIdeaIDs(ids...)
+// AddModIDs adds the "mods" edge to the Mod entity by IDs.
+func (tuo *TaskUpdateOne) AddModIDs(ids ...uuid.UUID) *TaskUpdateOne {
+	tuo.mutation.AddModIDs(ids...)
 	return tuo
 }
 
-// AddModIdeas adds the "mod_ideas" edges to the ModIdea entity.
-func (tuo *TaskUpdateOne) AddModIdeas(m ...*ModIdea) *TaskUpdateOne {
+// AddMods adds the "mods" edges to the Mod entity.
+func (tuo *TaskUpdateOne) AddMods(m ...*Mod) *TaskUpdateOne {
 	ids := make([]uuid.UUID, len(m))
 	for i := range m {
 		ids[i] = m[i].ID
 	}
-	return tuo.AddModIdeaIDs(ids...)
+	return tuo.AddModIDs(ids...)
 }
 
 // Mutation returns the TaskMutation object of the builder.
@@ -1029,25 +1029,25 @@ func (tuo *TaskUpdateOne) RemoveSubtasks(t ...*Task) *TaskUpdateOne {
 	return tuo.RemoveSubtaskIDs(ids...)
 }
 
-// ClearModIdeas clears all "mod_ideas" edges to the ModIdea entity.
-func (tuo *TaskUpdateOne) ClearModIdeas() *TaskUpdateOne {
-	tuo.mutation.ClearModIdeas()
+// ClearMods clears all "mods" edges to the Mod entity.
+func (tuo *TaskUpdateOne) ClearMods() *TaskUpdateOne {
+	tuo.mutation.ClearMods()
 	return tuo
 }
 
-// RemoveModIdeaIDs removes the "mod_ideas" edge to ModIdea entities by IDs.
-func (tuo *TaskUpdateOne) RemoveModIdeaIDs(ids ...uuid.UUID) *TaskUpdateOne {
-	tuo.mutation.RemoveModIdeaIDs(ids...)
+// RemoveModIDs removes the "mods" edge to Mod entities by IDs.
+func (tuo *TaskUpdateOne) RemoveModIDs(ids ...uuid.UUID) *TaskUpdateOne {
+	tuo.mutation.RemoveModIDs(ids...)
 	return tuo
 }
 
-// RemoveModIdeas removes "mod_ideas" edges to ModIdea entities.
-func (tuo *TaskUpdateOne) RemoveModIdeas(m ...*ModIdea) *TaskUpdateOne {
+// RemoveMods removes "mods" edges to Mod entities.
+func (tuo *TaskUpdateOne) RemoveMods(m ...*Mod) *TaskUpdateOne {
 	ids := make([]uuid.UUID, len(m))
 	for i := range m {
 		ids[i] = m[i].ID
 	}
-	return tuo.RemoveModIdeaIDs(ids...)
+	return tuo.RemoveModIDs(ids...)
 }
 
 // Where appends a list predicates to the TaskUpdate builder.
@@ -1338,28 +1338,28 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tuo.mutation.ModIdeasCleared() {
+	if tuo.mutation.ModsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   task.ModIdeasTable,
-			Columns: task.ModIdeasPrimaryKey,
+			Table:   task.ModsTable,
+			Columns: task.ModsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.RemovedModIdeasIDs(); len(nodes) > 0 && !tuo.mutation.ModIdeasCleared() {
+	if nodes := tuo.mutation.RemovedModsIDs(); len(nodes) > 0 && !tuo.mutation.ModsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   task.ModIdeasTable,
-			Columns: task.ModIdeasPrimaryKey,
+			Table:   task.ModsTable,
+			Columns: task.ModsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1367,15 +1367,15 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.ModIdeasIDs(); len(nodes) > 0 {
+	if nodes := tuo.mutation.ModsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   task.ModIdeasTable,
-			Columns: task.ModIdeasPrimaryKey,
+			Table:   task.ModsTable,
+			Columns: task.ModsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

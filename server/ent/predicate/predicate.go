@@ -39,8 +39,8 @@ type FuelUp func(*sql.Selector)
 // Media is the predicate function for media builders.
 type Media func(*sql.Selector)
 
-// ModIdea is the predicate function for modidea builders.
-type ModIdea func(*sql.Selector)
+// Mod is the predicate function for mod builders.
+type Mod func(*sql.Selector)
 
 // ModProductOption is the predicate function for modproductoption builders.
 type ModProductOption func(*sql.Selector)

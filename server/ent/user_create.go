@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
+	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/user"
@@ -219,6 +220,21 @@ func (uc *UserCreate) AddCheckoutSessions(c ...*CheckoutSession) *UserCreate {
 	return uc.AddCheckoutSessionIDs(ids...)
 }
 
+// AddMediumIDs adds the "media" edge to the Media entity by IDs.
+func (uc *UserCreate) AddMediumIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddMediumIDs(ids...)
+	return uc
+}
+
+// AddMedia adds the "media" edges to the Media entity.
+func (uc *UserCreate) AddMedia(m ...*Media) *UserCreate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return uc.AddMediumIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uc *UserCreate) Mutation() *UserMutation {
 	return uc.mutation
@@ -419,6 +435,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(checkoutsession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.MediaIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.MediaTable,
+			Columns: []string{user.MediaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

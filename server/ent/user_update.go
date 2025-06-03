@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
+	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/subscription"
@@ -229,6 +230,21 @@ func (uu *UserUpdate) AddCheckoutSessions(c ...*CheckoutSession) *UserUpdate {
 	return uu.AddCheckoutSessionIDs(ids...)
 }
 
+// AddMediumIDs adds the "media" edge to the Media entity by IDs.
+func (uu *UserUpdate) AddMediumIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddMediumIDs(ids...)
+	return uu
+}
+
+// AddMedia adds the "media" edges to the Media entity.
+func (uu *UserUpdate) AddMedia(m ...*Media) *UserUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return uu.AddMediumIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -307,6 +323,27 @@ func (uu *UserUpdate) RemoveCheckoutSessions(c ...*CheckoutSession) *UserUpdate 
 		ids[i] = c[i].ID
 	}
 	return uu.RemoveCheckoutSessionIDs(ids...)
+}
+
+// ClearMedia clears all "media" edges to the Media entity.
+func (uu *UserUpdate) ClearMedia() *UserUpdate {
+	uu.mutation.ClearMedia()
+	return uu
+}
+
+// RemoveMediumIDs removes the "media" edge to Media entities by IDs.
+func (uu *UserUpdate) RemoveMediumIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveMediumIDs(ids...)
+	return uu
+}
+
+// RemoveMedia removes "media" edges to Media entities.
+func (uu *UserUpdate) RemoveMedia(m ...*Media) *UserUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return uu.RemoveMediumIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -583,6 +620,51 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.MediaCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.MediaTable,
+			Columns: []string{user.MediaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedMediaIDs(); len(nodes) > 0 && !uu.mutation.MediaCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.MediaTable,
+			Columns: []string{user.MediaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.MediaIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.MediaTable,
+			Columns: []string{user.MediaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -798,6 +880,21 @@ func (uuo *UserUpdateOne) AddCheckoutSessions(c ...*CheckoutSession) *UserUpdate
 	return uuo.AddCheckoutSessionIDs(ids...)
 }
 
+// AddMediumIDs adds the "media" edge to the Media entity by IDs.
+func (uuo *UserUpdateOne) AddMediumIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddMediumIDs(ids...)
+	return uuo
+}
+
+// AddMedia adds the "media" edges to the Media entity.
+func (uuo *UserUpdateOne) AddMedia(m ...*Media) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return uuo.AddMediumIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -876,6 +973,27 @@ func (uuo *UserUpdateOne) RemoveCheckoutSessions(c ...*CheckoutSession) *UserUpd
 		ids[i] = c[i].ID
 	}
 	return uuo.RemoveCheckoutSessionIDs(ids...)
+}
+
+// ClearMedia clears all "media" edges to the Media entity.
+func (uuo *UserUpdateOne) ClearMedia() *UserUpdateOne {
+	uuo.mutation.ClearMedia()
+	return uuo
+}
+
+// RemoveMediumIDs removes the "media" edge to Media entities by IDs.
+func (uuo *UserUpdateOne) RemoveMediumIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveMediumIDs(ids...)
+	return uuo
+}
+
+// RemoveMedia removes "media" edges to Media entities.
+func (uuo *UserUpdateOne) RemoveMedia(m ...*Media) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return uuo.RemoveMediumIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -1175,6 +1293,51 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(checkoutsession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.MediaCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.MediaTable,
+			Columns: []string{user.MediaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedMediaIDs(); len(nodes) > 0 && !uuo.mutation.MediaCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.MediaTable,
+			Columns: []string{user.MediaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.MediaIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.MediaTable,
+			Columns: []string{user.MediaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

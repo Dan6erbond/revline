@@ -19,7 +19,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/profile"
@@ -94,10 +94,10 @@ var mediaImplementors = []string{"Media", "Node"}
 // IsNode implements the Node interface check for GQLGen.
 func (*Media) IsNode() {}
 
-var modideaImplementors = []string{"ModIdea", "Node"}
+var modImplementors = []string{"Mod", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
-func (*ModIdea) IsNode() {}
+func (*Mod) IsNode() {}
 
 var modproductoptionImplementors = []string{"ModProductOption", "Node"}
 
@@ -306,11 +306,11 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 			}
 		}
 		return query.Only(ctx)
-	case modidea.Table:
-		query := c.ModIdea.Query().
-			Where(modidea.ID(id))
+	case mod.Table:
+		query := c.Mod.Query().
+			Where(mod.ID(id))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
-			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, modideaImplementors...); err != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, modImplementors...); err != nil {
 				return nil, err
 			}
 		}
@@ -654,10 +654,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 				*noder = node
 			}
 		}
-	case modidea.Table:
-		query := c.ModIdea.Query().
-			Where(modidea.IDIn(ids...))
-		query, err := query.CollectFields(ctx, modideaImplementors...)
+	case mod.Table:
+		query := c.Mod.Query().
+			Where(mod.IDIn(ids...))
+		query, err := query.CollectFields(ctx, modImplementors...)
 		if err != nil {
 			return nil, err
 		}

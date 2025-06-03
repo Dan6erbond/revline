@@ -12,7 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/google/uuid"
@@ -192,15 +193,30 @@ func (mpou *ModProductOptionUpdate) ClearSpecs() *ModProductOptionUpdate {
 	return mpou
 }
 
-// SetIdeaID sets the "idea" edge to the ModIdea entity by ID.
-func (mpou *ModProductOptionUpdate) SetIdeaID(id uuid.UUID) *ModProductOptionUpdate {
-	mpou.mutation.SetIdeaID(id)
+// SetModID sets the "mod" edge to the Mod entity by ID.
+func (mpou *ModProductOptionUpdate) SetModID(id uuid.UUID) *ModProductOptionUpdate {
+	mpou.mutation.SetModID(id)
 	return mpou
 }
 
-// SetIdea sets the "idea" edge to the ModIdea entity.
-func (mpou *ModProductOptionUpdate) SetIdea(m *ModIdea) *ModProductOptionUpdate {
-	return mpou.SetIdeaID(m.ID)
+// SetMod sets the "mod" edge to the Mod entity.
+func (mpou *ModProductOptionUpdate) SetMod(m *Mod) *ModProductOptionUpdate {
+	return mpou.SetModID(m.ID)
+}
+
+// AddMediumIDs adds the "media" edge to the Media entity by IDs.
+func (mpou *ModProductOptionUpdate) AddMediumIDs(ids ...uuid.UUID) *ModProductOptionUpdate {
+	mpou.mutation.AddMediumIDs(ids...)
+	return mpou
+}
+
+// AddMedia adds the "media" edges to the Media entity.
+func (mpou *ModProductOptionUpdate) AddMedia(m ...*Media) *ModProductOptionUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return mpou.AddMediumIDs(ids...)
 }
 
 // Mutation returns the ModProductOptionMutation object of the builder.
@@ -208,10 +224,31 @@ func (mpou *ModProductOptionUpdate) Mutation() *ModProductOptionMutation {
 	return mpou.mutation
 }
 
-// ClearIdea clears the "idea" edge to the ModIdea entity.
-func (mpou *ModProductOptionUpdate) ClearIdea() *ModProductOptionUpdate {
-	mpou.mutation.ClearIdea()
+// ClearMod clears the "mod" edge to the Mod entity.
+func (mpou *ModProductOptionUpdate) ClearMod() *ModProductOptionUpdate {
+	mpou.mutation.ClearMod()
 	return mpou
+}
+
+// ClearMedia clears all "media" edges to the Media entity.
+func (mpou *ModProductOptionUpdate) ClearMedia() *ModProductOptionUpdate {
+	mpou.mutation.ClearMedia()
+	return mpou
+}
+
+// RemoveMediumIDs removes the "media" edge to Media entities by IDs.
+func (mpou *ModProductOptionUpdate) RemoveMediumIDs(ids ...uuid.UUID) *ModProductOptionUpdate {
+	mpou.mutation.RemoveMediumIDs(ids...)
+	return mpou
+}
+
+// RemoveMedia removes "media" edges to Media entities.
+func (mpou *ModProductOptionUpdate) RemoveMedia(m ...*Media) *ModProductOptionUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return mpou.RemoveMediumIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -252,8 +289,8 @@ func (mpou *ModProductOptionUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (mpou *ModProductOptionUpdate) check() error {
-	if mpou.mutation.IdeaCleared() && len(mpou.mutation.IdeaIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "ModProductOption.idea"`)
+	if mpou.mutation.ModCleared() && len(mpou.mutation.ModIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "ModProductOption.mod"`)
 	}
 	return nil
 }
@@ -334,28 +371,73 @@ func (mpou *ModProductOptionUpdate) sqlSave(ctx context.Context) (n int, err err
 	if mpou.mutation.SpecsCleared() {
 		_spec.ClearField(modproductoption.FieldSpecs, field.TypeJSON)
 	}
-	if mpou.mutation.IdeaCleared() {
+	if mpou.mutation.ModCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   modproductoption.IdeaTable,
-			Columns: []string{modproductoption.IdeaColumn},
+			Table:   modproductoption.ModTable,
+			Columns: []string{modproductoption.ModColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := mpou.mutation.IdeaIDs(); len(nodes) > 0 {
+	if nodes := mpou.mutation.ModIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   modproductoption.IdeaTable,
-			Columns: []string{modproductoption.IdeaColumn},
+			Table:   modproductoption.ModTable,
+			Columns: []string{modproductoption.ModColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if mpou.mutation.MediaCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.MediaTable,
+			Columns: []string{modproductoption.MediaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mpou.mutation.RemovedMediaIDs(); len(nodes) > 0 && !mpou.mutation.MediaCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.MediaTable,
+			Columns: []string{modproductoption.MediaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mpou.mutation.MediaIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.MediaTable,
+			Columns: []string{modproductoption.MediaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -544,15 +626,30 @@ func (mpouo *ModProductOptionUpdateOne) ClearSpecs() *ModProductOptionUpdateOne 
 	return mpouo
 }
 
-// SetIdeaID sets the "idea" edge to the ModIdea entity by ID.
-func (mpouo *ModProductOptionUpdateOne) SetIdeaID(id uuid.UUID) *ModProductOptionUpdateOne {
-	mpouo.mutation.SetIdeaID(id)
+// SetModID sets the "mod" edge to the Mod entity by ID.
+func (mpouo *ModProductOptionUpdateOne) SetModID(id uuid.UUID) *ModProductOptionUpdateOne {
+	mpouo.mutation.SetModID(id)
 	return mpouo
 }
 
-// SetIdea sets the "idea" edge to the ModIdea entity.
-func (mpouo *ModProductOptionUpdateOne) SetIdea(m *ModIdea) *ModProductOptionUpdateOne {
-	return mpouo.SetIdeaID(m.ID)
+// SetMod sets the "mod" edge to the Mod entity.
+func (mpouo *ModProductOptionUpdateOne) SetMod(m *Mod) *ModProductOptionUpdateOne {
+	return mpouo.SetModID(m.ID)
+}
+
+// AddMediumIDs adds the "media" edge to the Media entity by IDs.
+func (mpouo *ModProductOptionUpdateOne) AddMediumIDs(ids ...uuid.UUID) *ModProductOptionUpdateOne {
+	mpouo.mutation.AddMediumIDs(ids...)
+	return mpouo
+}
+
+// AddMedia adds the "media" edges to the Media entity.
+func (mpouo *ModProductOptionUpdateOne) AddMedia(m ...*Media) *ModProductOptionUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return mpouo.AddMediumIDs(ids...)
 }
 
 // Mutation returns the ModProductOptionMutation object of the builder.
@@ -560,10 +657,31 @@ func (mpouo *ModProductOptionUpdateOne) Mutation() *ModProductOptionMutation {
 	return mpouo.mutation
 }
 
-// ClearIdea clears the "idea" edge to the ModIdea entity.
-func (mpouo *ModProductOptionUpdateOne) ClearIdea() *ModProductOptionUpdateOne {
-	mpouo.mutation.ClearIdea()
+// ClearMod clears the "mod" edge to the Mod entity.
+func (mpouo *ModProductOptionUpdateOne) ClearMod() *ModProductOptionUpdateOne {
+	mpouo.mutation.ClearMod()
 	return mpouo
+}
+
+// ClearMedia clears all "media" edges to the Media entity.
+func (mpouo *ModProductOptionUpdateOne) ClearMedia() *ModProductOptionUpdateOne {
+	mpouo.mutation.ClearMedia()
+	return mpouo
+}
+
+// RemoveMediumIDs removes the "media" edge to Media entities by IDs.
+func (mpouo *ModProductOptionUpdateOne) RemoveMediumIDs(ids ...uuid.UUID) *ModProductOptionUpdateOne {
+	mpouo.mutation.RemoveMediumIDs(ids...)
+	return mpouo
+}
+
+// RemoveMedia removes "media" edges to Media entities.
+func (mpouo *ModProductOptionUpdateOne) RemoveMedia(m ...*Media) *ModProductOptionUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return mpouo.RemoveMediumIDs(ids...)
 }
 
 // Where appends a list predicates to the ModProductOptionUpdate builder.
@@ -617,8 +735,8 @@ func (mpouo *ModProductOptionUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (mpouo *ModProductOptionUpdateOne) check() error {
-	if mpouo.mutation.IdeaCleared() && len(mpouo.mutation.IdeaIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "ModProductOption.idea"`)
+	if mpouo.mutation.ModCleared() && len(mpouo.mutation.ModIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "ModProductOption.mod"`)
 	}
 	return nil
 }
@@ -716,28 +834,73 @@ func (mpouo *ModProductOptionUpdateOne) sqlSave(ctx context.Context) (_node *Mod
 	if mpouo.mutation.SpecsCleared() {
 		_spec.ClearField(modproductoption.FieldSpecs, field.TypeJSON)
 	}
-	if mpouo.mutation.IdeaCleared() {
+	if mpouo.mutation.ModCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   modproductoption.IdeaTable,
-			Columns: []string{modproductoption.IdeaColumn},
+			Table:   modproductoption.ModTable,
+			Columns: []string{modproductoption.ModColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := mpouo.mutation.IdeaIDs(); len(nodes) > 0 {
+	if nodes := mpouo.mutation.ModIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   modproductoption.IdeaTable,
-			Columns: []string{modproductoption.IdeaColumn},
+			Table:   modproductoption.ModTable,
+			Columns: []string{modproductoption.ModColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if mpouo.mutation.MediaCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.MediaTable,
+			Columns: []string{modproductoption.MediaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mpouo.mutation.RemovedMediaIDs(); len(nodes) > 0 && !mpouo.mutation.MediaCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.MediaTable,
+			Columns: []string{modproductoption.MediaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mpouo.mutation.MediaIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.MediaTable,
+			Columns: []string{modproductoption.MediaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

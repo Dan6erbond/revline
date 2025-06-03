@@ -55,15 +55,18 @@ type UserEdges struct {
 	Subscriptions []*Subscription `json:"subscriptions,omitempty"`
 	// CheckoutSessions holds the value of the checkout_sessions edge.
 	CheckoutSessions []*CheckoutSession `json:"checkout_sessions,omitempty"`
+	// Media holds the value of the media edge.
+	Media []*Media `json:"media,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 	// totalCount holds the count of the edges above.
-	totalCount [5]map[string]int
+	totalCount [6]map[string]int
 
 	namedCars             map[string][]*Car
 	namedSubscriptions    map[string][]*Subscription
 	namedCheckoutSessions map[string][]*CheckoutSession
+	namedMedia            map[string][]*Media
 }
 
 // CarsOrErr returns the Cars value or an error if the edge
@@ -113,6 +116,15 @@ func (e UserEdges) CheckoutSessionsOrErr() ([]*CheckoutSession, error) {
 		return e.CheckoutSessions, nil
 	}
 	return nil, &NotLoadedError{edge: "checkout_sessions"}
+}
+
+// MediaOrErr returns the Media value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) MediaOrErr() ([]*Media, error) {
+	if e.loadedTypes[5] {
+		return e.Media, nil
+	}
+	return nil, &NotLoadedError{edge: "media"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -239,6 +251,11 @@ func (u *User) QuerySubscriptions() *SubscriptionQuery {
 // QueryCheckoutSessions queries the "checkout_sessions" edge of the User entity.
 func (u *User) QueryCheckoutSessions() *CheckoutSessionQuery {
 	return NewUserClient(u.config).QueryCheckoutSessions(u)
+}
+
+// QueryMedia queries the "media" edge of the User entity.
+func (u *User) QueryMedia() *MediaQuery {
+	return NewUserClient(u.config).QueryMedia(u)
 }
 
 // Update returns a builder for updating this User.
@@ -368,6 +385,30 @@ func (u *User) appendNamedCheckoutSessions(name string, edges ...*CheckoutSessio
 		u.Edges.namedCheckoutSessions[name] = []*CheckoutSession{}
 	} else {
 		u.Edges.namedCheckoutSessions[name] = append(u.Edges.namedCheckoutSessions[name], edges...)
+	}
+}
+
+// NamedMedia returns the Media named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (u *User) NamedMedia(name string) ([]*Media, error) {
+	if u.Edges.namedMedia == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := u.Edges.namedMedia[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (u *User) appendNamedMedia(name string, edges ...*Media) {
+	if u.Edges.namedMedia == nil {
+		u.Edges.namedMedia = make(map[string][]*Media)
+	}
+	if len(edges) == 0 {
+		u.Edges.namedMedia[name] = []*Media{}
+	} else {
+		u.Edges.namedMedia[name] = append(u.Edges.namedMedia[name], edges...)
 	}
 }
 

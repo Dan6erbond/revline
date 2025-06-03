@@ -35,17 +35,26 @@ const (
 	FieldCons = "cons"
 	// FieldSpecs holds the string denoting the specs field in the database.
 	FieldSpecs = "specs"
-	// EdgeIdea holds the string denoting the idea edge name in mutations.
-	EdgeIdea = "idea"
+	// EdgeMod holds the string denoting the mod edge name in mutations.
+	EdgeMod = "mod"
+	// EdgeMedia holds the string denoting the media edge name in mutations.
+	EdgeMedia = "media"
 	// Table holds the table name of the modproductoption in the database.
 	Table = "mod_product_options"
-	// IdeaTable is the table that holds the idea relation/edge.
-	IdeaTable = "mod_product_options"
-	// IdeaInverseTable is the table name for the ModIdea entity.
-	// It exists in this package in order to avoid circular dependency with the "modidea" package.
-	IdeaInverseTable = "mod_ideas"
-	// IdeaColumn is the table column denoting the idea relation/edge.
-	IdeaColumn = "mod_idea_product_options"
+	// ModTable is the table that holds the mod relation/edge.
+	ModTable = "mod_product_options"
+	// ModInverseTable is the table name for the Mod entity.
+	// It exists in this package in order to avoid circular dependency with the "mod" package.
+	ModInverseTable = "mods"
+	// ModColumn is the table column denoting the mod relation/edge.
+	ModColumn = "mod_product_options"
+	// MediaTable is the table that holds the media relation/edge.
+	MediaTable = "media"
+	// MediaInverseTable is the table name for the Media entity.
+	// It exists in this package in order to avoid circular dependency with the "media" package.
+	MediaInverseTable = "media"
+	// MediaColumn is the table column denoting the media relation/edge.
+	MediaColumn = "mod_product_option_media"
 )
 
 // Columns holds all SQL columns for modproductoption fields.
@@ -66,7 +75,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "mod_product_options"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"mod_idea_product_options",
+	"mod_product_options",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -138,16 +147,37 @@ func ByNotes(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNotes, opts...).ToFunc()
 }
 
-// ByIdeaField orders the results by idea field.
-func ByIdeaField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByModField orders the results by mod field.
+func ByModField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newIdeaStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newModStep(), sql.OrderByField(field, opts...))
 	}
 }
-func newIdeaStep() *sqlgraph.Step {
+
+// ByMediaCount orders the results by media count.
+func ByMediaCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newMediaStep(), opts...)
+	}
+}
+
+// ByMedia orders the results by media terms.
+func ByMedia(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMediaStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newModStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(IdeaInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, IdeaTable, IdeaColumn),
+		sqlgraph.To(ModInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ModTable, ModColumn),
+	)
+}
+func newMediaStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MediaInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, MediaTable, MediaColumn),
 	)
 }

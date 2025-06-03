@@ -10,12 +10,12 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/Dan6erbond/revline/ent/car"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/google/uuid"
 )
 
-// ModIdea is the model entity for the ModIdea schema.
-type ModIdea struct {
+// Mod is the model entity for the Mod schema.
+type Mod struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
@@ -26,20 +26,22 @@ type ModIdea struct {
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// Category holds the value of the "category" field.
-	Category modidea.Category `json:"category,omitempty"`
+	Category mod.Category `json:"category,omitempty"`
+	// Status holds the value of the "status" field.
+	Status mod.Status `json:"status,omitempty"`
 	// Description holds the value of the "description" field.
 	Description *string `json:"description,omitempty"`
 	// Stage holds the value of the "stage" field.
 	Stage *string `json:"stage,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the ModIdeaQuery when eager-loading is set.
-	Edges         ModIdeaEdges `json:"edges"`
-	car_mod_ideas *uuid.UUID
-	selectValues  sql.SelectValues
+	// The values are being populated by the ModQuery when eager-loading is set.
+	Edges        ModEdges `json:"edges"`
+	car_mods     *uuid.UUID
+	selectValues sql.SelectValues
 }
 
-// ModIdeaEdges holds the relations/edges for other nodes in the graph.
-type ModIdeaEdges struct {
+// ModEdges holds the relations/edges for other nodes in the graph.
+type ModEdges struct {
 	// Car holds the value of the car edge.
 	Car *Car `json:"car,omitempty"`
 	// Tasks holds the value of the tasks edge.
@@ -58,7 +60,7 @@ type ModIdeaEdges struct {
 
 // CarOrErr returns the Car value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e ModIdeaEdges) CarOrErr() (*Car, error) {
+func (e ModEdges) CarOrErr() (*Car, error) {
 	if e.Car != nil {
 		return e.Car, nil
 	} else if e.loadedTypes[0] {
@@ -69,7 +71,7 @@ func (e ModIdeaEdges) CarOrErr() (*Car, error) {
 
 // TasksOrErr returns the Tasks value or an error if the edge
 // was not loaded in eager-loading.
-func (e ModIdeaEdges) TasksOrErr() ([]*Task, error) {
+func (e ModEdges) TasksOrErr() ([]*Task, error) {
 	if e.loadedTypes[1] {
 		return e.Tasks, nil
 	}
@@ -78,7 +80,7 @@ func (e ModIdeaEdges) TasksOrErr() ([]*Task, error) {
 
 // ProductOptionsOrErr returns the ProductOptions value or an error if the edge
 // was not loaded in eager-loading.
-func (e ModIdeaEdges) ProductOptionsOrErr() ([]*ModProductOption, error) {
+func (e ModEdges) ProductOptionsOrErr() ([]*ModProductOption, error) {
 	if e.loadedTypes[2] {
 		return e.ProductOptions, nil
 	}
@@ -86,17 +88,17 @@ func (e ModIdeaEdges) ProductOptionsOrErr() ([]*ModProductOption, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*ModIdea) scanValues(columns []string) ([]any, error) {
+func (*Mod) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case modidea.FieldTitle, modidea.FieldCategory, modidea.FieldDescription, modidea.FieldStage:
+		case mod.FieldTitle, mod.FieldCategory, mod.FieldStatus, mod.FieldDescription, mod.FieldStage:
 			values[i] = new(sql.NullString)
-		case modidea.FieldCreateTime, modidea.FieldUpdateTime:
+		case mod.FieldCreateTime, mod.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
-		case modidea.FieldID:
+		case mod.FieldID:
 			values[i] = new(uuid.UUID)
-		case modidea.ForeignKeys[0]: // car_mod_ideas
+		case mod.ForeignKeys[0]: // car_mods
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -106,133 +108,142 @@ func (*ModIdea) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the ModIdea fields.
-func (mi *ModIdea) assignValues(columns []string, values []any) error {
+// to the Mod fields.
+func (m *Mod) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case modidea.FieldID:
+		case mod.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				mi.ID = *value
+				m.ID = *value
 			}
-		case modidea.FieldCreateTime:
+		case mod.FieldCreateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field create_time", values[i])
 			} else if value.Valid {
-				mi.CreateTime = value.Time
+				m.CreateTime = value.Time
 			}
-		case modidea.FieldUpdateTime:
+		case mod.FieldUpdateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field update_time", values[i])
 			} else if value.Valid {
-				mi.UpdateTime = value.Time
+				m.UpdateTime = value.Time
 			}
-		case modidea.FieldTitle:
+		case mod.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				mi.Title = value.String
+				m.Title = value.String
 			}
-		case modidea.FieldCategory:
+		case mod.FieldCategory:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field category", values[i])
 			} else if value.Valid {
-				mi.Category = modidea.Category(value.String)
+				m.Category = mod.Category(value.String)
 			}
-		case modidea.FieldDescription:
+		case mod.FieldStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field status", values[i])
+			} else if value.Valid {
+				m.Status = mod.Status(value.String)
+			}
+		case mod.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				mi.Description = new(string)
-				*mi.Description = value.String
+				m.Description = new(string)
+				*m.Description = value.String
 			}
-		case modidea.FieldStage:
+		case mod.FieldStage:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field stage", values[i])
 			} else if value.Valid {
-				mi.Stage = new(string)
-				*mi.Stage = value.String
+				m.Stage = new(string)
+				*m.Stage = value.String
 			}
-		case modidea.ForeignKeys[0]:
+		case mod.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field car_mod_ideas", values[i])
+				return fmt.Errorf("unexpected type %T for field car_mods", values[i])
 			} else if value.Valid {
-				mi.car_mod_ideas = new(uuid.UUID)
-				*mi.car_mod_ideas = *value.S.(*uuid.UUID)
+				m.car_mods = new(uuid.UUID)
+				*m.car_mods = *value.S.(*uuid.UUID)
 			}
 		default:
-			mi.selectValues.Set(columns[i], values[i])
+			m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the ModIdea.
+// Value returns the ent.Value that was dynamically selected and assigned to the Mod.
 // This includes values selected through modifiers, order, etc.
-func (mi *ModIdea) Value(name string) (ent.Value, error) {
-	return mi.selectValues.Get(name)
+func (m *Mod) Value(name string) (ent.Value, error) {
+	return m.selectValues.Get(name)
 }
 
-// QueryCar queries the "car" edge of the ModIdea entity.
-func (mi *ModIdea) QueryCar() *CarQuery {
-	return NewModIdeaClient(mi.config).QueryCar(mi)
+// QueryCar queries the "car" edge of the Mod entity.
+func (m *Mod) QueryCar() *CarQuery {
+	return NewModClient(m.config).QueryCar(m)
 }
 
-// QueryTasks queries the "tasks" edge of the ModIdea entity.
-func (mi *ModIdea) QueryTasks() *TaskQuery {
-	return NewModIdeaClient(mi.config).QueryTasks(mi)
+// QueryTasks queries the "tasks" edge of the Mod entity.
+func (m *Mod) QueryTasks() *TaskQuery {
+	return NewModClient(m.config).QueryTasks(m)
 }
 
-// QueryProductOptions queries the "product_options" edge of the ModIdea entity.
-func (mi *ModIdea) QueryProductOptions() *ModProductOptionQuery {
-	return NewModIdeaClient(mi.config).QueryProductOptions(mi)
+// QueryProductOptions queries the "product_options" edge of the Mod entity.
+func (m *Mod) QueryProductOptions() *ModProductOptionQuery {
+	return NewModClient(m.config).QueryProductOptions(m)
 }
 
-// Update returns a builder for updating this ModIdea.
-// Note that you need to call ModIdea.Unwrap() before calling this method if this ModIdea
+// Update returns a builder for updating this Mod.
+// Note that you need to call Mod.Unwrap() before calling this method if this Mod
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (mi *ModIdea) Update() *ModIdeaUpdateOne {
-	return NewModIdeaClient(mi.config).UpdateOne(mi)
+func (m *Mod) Update() *ModUpdateOne {
+	return NewModClient(m.config).UpdateOne(m)
 }
 
-// Unwrap unwraps the ModIdea entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the Mod entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (mi *ModIdea) Unwrap() *ModIdea {
-	_tx, ok := mi.config.driver.(*txDriver)
+func (m *Mod) Unwrap() *Mod {
+	_tx, ok := m.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: ModIdea is not a transactional entity")
+		panic("ent: Mod is not a transactional entity")
 	}
-	mi.config.driver = _tx.drv
-	return mi
+	m.config.driver = _tx.drv
+	return m
 }
 
 // String implements the fmt.Stringer.
-func (mi *ModIdea) String() string {
+func (m *Mod) String() string {
 	var builder strings.Builder
-	builder.WriteString("ModIdea(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", mi.ID))
+	builder.WriteString("Mod(")
+	builder.WriteString(fmt.Sprintf("id=%v, ", m.ID))
 	builder.WriteString("create_time=")
-	builder.WriteString(mi.CreateTime.Format(time.ANSIC))
+	builder.WriteString(m.CreateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("update_time=")
-	builder.WriteString(mi.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(m.UpdateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
-	builder.WriteString(mi.Title)
+	builder.WriteString(m.Title)
 	builder.WriteString(", ")
 	builder.WriteString("category=")
-	builder.WriteString(fmt.Sprintf("%v", mi.Category))
+	builder.WriteString(fmt.Sprintf("%v", m.Category))
 	builder.WriteString(", ")
-	if v := mi.Description; v != nil {
+	builder.WriteString("status=")
+	builder.WriteString(fmt.Sprintf("%v", m.Status))
+	builder.WriteString(", ")
+	if v := m.Description; v != nil {
 		builder.WriteString("description=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := mi.Stage; v != nil {
+	if v := m.Stage; v != nil {
 		builder.WriteString("stage=")
 		builder.WriteString(*v)
 	}
@@ -242,51 +253,51 @@ func (mi *ModIdea) String() string {
 
 // NamedTasks returns the Tasks named value or an error if the edge was not
 // loaded in eager-loading with this name.
-func (mi *ModIdea) NamedTasks(name string) ([]*Task, error) {
-	if mi.Edges.namedTasks == nil {
+func (m *Mod) NamedTasks(name string) ([]*Task, error) {
+	if m.Edges.namedTasks == nil {
 		return nil, &NotLoadedError{edge: name}
 	}
-	nodes, ok := mi.Edges.namedTasks[name]
+	nodes, ok := m.Edges.namedTasks[name]
 	if !ok {
 		return nil, &NotLoadedError{edge: name}
 	}
 	return nodes, nil
 }
 
-func (mi *ModIdea) appendNamedTasks(name string, edges ...*Task) {
-	if mi.Edges.namedTasks == nil {
-		mi.Edges.namedTasks = make(map[string][]*Task)
+func (m *Mod) appendNamedTasks(name string, edges ...*Task) {
+	if m.Edges.namedTasks == nil {
+		m.Edges.namedTasks = make(map[string][]*Task)
 	}
 	if len(edges) == 0 {
-		mi.Edges.namedTasks[name] = []*Task{}
+		m.Edges.namedTasks[name] = []*Task{}
 	} else {
-		mi.Edges.namedTasks[name] = append(mi.Edges.namedTasks[name], edges...)
+		m.Edges.namedTasks[name] = append(m.Edges.namedTasks[name], edges...)
 	}
 }
 
 // NamedProductOptions returns the ProductOptions named value or an error if the edge was not
 // loaded in eager-loading with this name.
-func (mi *ModIdea) NamedProductOptions(name string) ([]*ModProductOption, error) {
-	if mi.Edges.namedProductOptions == nil {
+func (m *Mod) NamedProductOptions(name string) ([]*ModProductOption, error) {
+	if m.Edges.namedProductOptions == nil {
 		return nil, &NotLoadedError{edge: name}
 	}
-	nodes, ok := mi.Edges.namedProductOptions[name]
+	nodes, ok := m.Edges.namedProductOptions[name]
 	if !ok {
 		return nil, &NotLoadedError{edge: name}
 	}
 	return nodes, nil
 }
 
-func (mi *ModIdea) appendNamedProductOptions(name string, edges ...*ModProductOption) {
-	if mi.Edges.namedProductOptions == nil {
-		mi.Edges.namedProductOptions = make(map[string][]*ModProductOption)
+func (m *Mod) appendNamedProductOptions(name string, edges ...*ModProductOption) {
+	if m.Edges.namedProductOptions == nil {
+		m.Edges.namedProductOptions = make(map[string][]*ModProductOption)
 	}
 	if len(edges) == 0 {
-		mi.Edges.namedProductOptions[name] = []*ModProductOption{}
+		m.Edges.namedProductOptions[name] = []*ModProductOption{}
 	} else {
-		mi.Edges.namedProductOptions[name] = append(mi.Edges.namedProductOptions[name], edges...)
+		m.Edges.namedProductOptions[name] = append(m.Edges.namedProductOptions[name], edges...)
 	}
 }
 
-// ModIdeas is a parsable slice of ModIdea.
-type ModIdeas []*ModIdea
+// Mods is a parsable slice of Mod.
+type Mods []*Mod

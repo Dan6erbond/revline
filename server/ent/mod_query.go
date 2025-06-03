@@ -12,90 +12,67 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/car"
-	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/predicate"
-	"github.com/Dan6erbond/revline/ent/user"
+	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/google/uuid"
 )
 
-// MediaQuery is the builder for querying Media entities.
-type MediaQuery struct {
+// ModQuery is the builder for querying Mod entities.
+type ModQuery struct {
 	config
-	ctx                  *QueryContext
-	order                []media.OrderOption
-	inters               []Interceptor
-	predicates           []predicate.Media
-	withUser             *UserQuery
-	withCar              *CarQuery
-	withModProductOption *ModProductOptionQuery
-	withAlbums           *AlbumQuery
-	withFKs              bool
-	modifiers            []func(*sql.Selector)
-	loadTotal            []func(context.Context, []*Media) error
-	withNamedAlbums      map[string]*AlbumQuery
+	ctx                     *QueryContext
+	order                   []mod.OrderOption
+	inters                  []Interceptor
+	predicates              []predicate.Mod
+	withCar                 *CarQuery
+	withTasks               *TaskQuery
+	withProductOptions      *ModProductOptionQuery
+	withFKs                 bool
+	modifiers               []func(*sql.Selector)
+	loadTotal               []func(context.Context, []*Mod) error
+	withNamedTasks          map[string]*TaskQuery
+	withNamedProductOptions map[string]*ModProductOptionQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the MediaQuery builder.
-func (mq *MediaQuery) Where(ps ...predicate.Media) *MediaQuery {
+// Where adds a new predicate for the ModQuery builder.
+func (mq *ModQuery) Where(ps ...predicate.Mod) *ModQuery {
 	mq.predicates = append(mq.predicates, ps...)
 	return mq
 }
 
 // Limit the number of records to be returned by this query.
-func (mq *MediaQuery) Limit(limit int) *MediaQuery {
+func (mq *ModQuery) Limit(limit int) *ModQuery {
 	mq.ctx.Limit = &limit
 	return mq
 }
 
 // Offset to start from.
-func (mq *MediaQuery) Offset(offset int) *MediaQuery {
+func (mq *ModQuery) Offset(offset int) *ModQuery {
 	mq.ctx.Offset = &offset
 	return mq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (mq *MediaQuery) Unique(unique bool) *MediaQuery {
+func (mq *ModQuery) Unique(unique bool) *ModQuery {
 	mq.ctx.Unique = &unique
 	return mq
 }
 
 // Order specifies how the records should be ordered.
-func (mq *MediaQuery) Order(o ...media.OrderOption) *MediaQuery {
+func (mq *ModQuery) Order(o ...mod.OrderOption) *ModQuery {
 	mq.order = append(mq.order, o...)
 	return mq
 }
 
-// QueryUser chains the current query on the "user" edge.
-func (mq *MediaQuery) QueryUser() *UserQuery {
-	query := (&UserClient{config: mq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := mq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := mq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(media.Table, media.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, media.UserTable, media.UserColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryCar chains the current query on the "car" edge.
-func (mq *MediaQuery) QueryCar() *CarQuery {
+func (mq *ModQuery) QueryCar() *CarQuery {
 	query := (&CarClient{config: mq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := mq.prepareQuery(ctx); err != nil {
@@ -106,9 +83,9 @@ func (mq *MediaQuery) QueryCar() *CarQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(media.Table, media.FieldID, selector),
+			sqlgraph.From(mod.Table, mod.FieldID, selector),
 			sqlgraph.To(car.Table, car.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, media.CarTable, media.CarColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, mod.CarTable, mod.CarColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
 		return fromU, nil
@@ -116,8 +93,30 @@ func (mq *MediaQuery) QueryCar() *CarQuery {
 	return query
 }
 
-// QueryModProductOption chains the current query on the "mod_product_option" edge.
-func (mq *MediaQuery) QueryModProductOption() *ModProductOptionQuery {
+// QueryTasks chains the current query on the "tasks" edge.
+func (mq *ModQuery) QueryTasks() *TaskQuery {
+	query := (&TaskClient{config: mq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := mq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := mq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(mod.Table, mod.FieldID, selector),
+			sqlgraph.To(task.Table, task.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, mod.TasksTable, mod.TasksPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProductOptions chains the current query on the "product_options" edge.
+func (mq *ModQuery) QueryProductOptions() *ModProductOptionQuery {
 	query := (&ModProductOptionClient{config: mq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := mq.prepareQuery(ctx); err != nil {
@@ -128,9 +127,9 @@ func (mq *MediaQuery) QueryModProductOption() *ModProductOptionQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(media.Table, media.FieldID, selector),
+			sqlgraph.From(mod.Table, mod.FieldID, selector),
 			sqlgraph.To(modproductoption.Table, modproductoption.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, media.ModProductOptionTable, media.ModProductOptionColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, mod.ProductOptionsTable, mod.ProductOptionsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
 		return fromU, nil
@@ -138,43 +137,21 @@ func (mq *MediaQuery) QueryModProductOption() *ModProductOptionQuery {
 	return query
 }
 
-// QueryAlbums chains the current query on the "albums" edge.
-func (mq *MediaQuery) QueryAlbums() *AlbumQuery {
-	query := (&AlbumClient{config: mq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := mq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := mq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(media.Table, media.FieldID, selector),
-			sqlgraph.To(album.Table, album.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, media.AlbumsTable, media.AlbumsPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// First returns the first Media entity from the query.
-// Returns a *NotFoundError when no Media was found.
-func (mq *MediaQuery) First(ctx context.Context) (*Media, error) {
+// First returns the first Mod entity from the query.
+// Returns a *NotFoundError when no Mod was found.
+func (mq *ModQuery) First(ctx context.Context) (*Mod, error) {
 	nodes, err := mq.Limit(1).All(setContextOp(ctx, mq.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{media.Label}
+		return nil, &NotFoundError{mod.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (mq *MediaQuery) FirstX(ctx context.Context) *Media {
+func (mq *ModQuery) FirstX(ctx context.Context) *Mod {
 	node, err := mq.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -182,22 +159,22 @@ func (mq *MediaQuery) FirstX(ctx context.Context) *Media {
 	return node
 }
 
-// FirstID returns the first Media ID from the query.
-// Returns a *NotFoundError when no Media ID was found.
-func (mq *MediaQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first Mod ID from the query.
+// Returns a *NotFoundError when no Mod ID was found.
+func (mq *ModQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = mq.Limit(1).IDs(setContextOp(ctx, mq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{media.Label}
+		err = &NotFoundError{mod.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (mq *MediaQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (mq *ModQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := mq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -205,10 +182,10 @@ func (mq *MediaQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// Only returns a single Media entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one Media entity is found.
-// Returns a *NotFoundError when no Media entities are found.
-func (mq *MediaQuery) Only(ctx context.Context) (*Media, error) {
+// Only returns a single Mod entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one Mod entity is found.
+// Returns a *NotFoundError when no Mod entities are found.
+func (mq *ModQuery) Only(ctx context.Context) (*Mod, error) {
 	nodes, err := mq.Limit(2).All(setContextOp(ctx, mq.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -217,14 +194,14 @@ func (mq *MediaQuery) Only(ctx context.Context) (*Media, error) {
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{media.Label}
+		return nil, &NotFoundError{mod.Label}
 	default:
-		return nil, &NotSingularError{media.Label}
+		return nil, &NotSingularError{mod.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (mq *MediaQuery) OnlyX(ctx context.Context) *Media {
+func (mq *ModQuery) OnlyX(ctx context.Context) *Mod {
 	node, err := mq.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -232,10 +209,10 @@ func (mq *MediaQuery) OnlyX(ctx context.Context) *Media {
 	return node
 }
 
-// OnlyID is like Only, but returns the only Media ID in the query.
-// Returns a *NotSingularError when more than one Media ID is found.
+// OnlyID is like Only, but returns the only Mod ID in the query.
+// Returns a *NotSingularError when more than one Mod ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (mq *MediaQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (mq *ModQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = mq.Limit(2).IDs(setContextOp(ctx, mq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -244,15 +221,15 @@ func (mq *MediaQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{media.Label}
+		err = &NotFoundError{mod.Label}
 	default:
-		err = &NotSingularError{media.Label}
+		err = &NotSingularError{mod.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (mq *MediaQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (mq *ModQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := mq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -260,18 +237,18 @@ func (mq *MediaQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// All executes the query and returns a list of MediaSlice.
-func (mq *MediaQuery) All(ctx context.Context) ([]*Media, error) {
+// All executes the query and returns a list of Mods.
+func (mq *ModQuery) All(ctx context.Context) ([]*Mod, error) {
 	ctx = setContextOp(ctx, mq.ctx, ent.OpQueryAll)
 	if err := mq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*Media, *MediaQuery]()
-	return withInterceptors[[]*Media](ctx, mq, qr, mq.inters)
+	qr := querierAll[[]*Mod, *ModQuery]()
+	return withInterceptors[[]*Mod](ctx, mq, qr, mq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (mq *MediaQuery) AllX(ctx context.Context) []*Media {
+func (mq *ModQuery) AllX(ctx context.Context) []*Mod {
 	nodes, err := mq.All(ctx)
 	if err != nil {
 		panic(err)
@@ -279,20 +256,20 @@ func (mq *MediaQuery) AllX(ctx context.Context) []*Media {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Media IDs.
-func (mq *MediaQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of Mod IDs.
+func (mq *ModQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if mq.ctx.Unique == nil && mq.path != nil {
 		mq.Unique(true)
 	}
 	ctx = setContextOp(ctx, mq.ctx, ent.OpQueryIDs)
-	if err = mq.Select(media.FieldID).Scan(ctx, &ids); err != nil {
+	if err = mq.Select(mod.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (mq *MediaQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (mq *ModQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := mq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -301,16 +278,16 @@ func (mq *MediaQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (mq *MediaQuery) Count(ctx context.Context) (int, error) {
+func (mq *ModQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, mq.ctx, ent.OpQueryCount)
 	if err := mq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, mq, querierCount[*MediaQuery](), mq.inters)
+	return withInterceptors[int](ctx, mq, querierCount[*ModQuery](), mq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (mq *MediaQuery) CountX(ctx context.Context) int {
+func (mq *ModQuery) CountX(ctx context.Context) int {
 	count, err := mq.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -319,7 +296,7 @@ func (mq *MediaQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (mq *MediaQuery) Exist(ctx context.Context) (bool, error) {
+func (mq *ModQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, mq.ctx, ent.OpQueryExist)
 	switch _, err := mq.FirstID(ctx); {
 	case IsNotFound(err):
@@ -332,7 +309,7 @@ func (mq *MediaQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (mq *MediaQuery) ExistX(ctx context.Context) bool {
+func (mq *ModQuery) ExistX(ctx context.Context) bool {
 	exist, err := mq.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -340,42 +317,30 @@ func (mq *MediaQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the MediaQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the ModQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (mq *MediaQuery) Clone() *MediaQuery {
+func (mq *ModQuery) Clone() *ModQuery {
 	if mq == nil {
 		return nil
 	}
-	return &MediaQuery{
-		config:               mq.config,
-		ctx:                  mq.ctx.Clone(),
-		order:                append([]media.OrderOption{}, mq.order...),
-		inters:               append([]Interceptor{}, mq.inters...),
-		predicates:           append([]predicate.Media{}, mq.predicates...),
-		withUser:             mq.withUser.Clone(),
-		withCar:              mq.withCar.Clone(),
-		withModProductOption: mq.withModProductOption.Clone(),
-		withAlbums:           mq.withAlbums.Clone(),
+	return &ModQuery{
+		config:             mq.config,
+		ctx:                mq.ctx.Clone(),
+		order:              append([]mod.OrderOption{}, mq.order...),
+		inters:             append([]Interceptor{}, mq.inters...),
+		predicates:         append([]predicate.Mod{}, mq.predicates...),
+		withCar:            mq.withCar.Clone(),
+		withTasks:          mq.withTasks.Clone(),
+		withProductOptions: mq.withProductOptions.Clone(),
 		// clone intermediate query.
 		sql:  mq.sql.Clone(),
 		path: mq.path,
 	}
 }
 
-// WithUser tells the query-builder to eager-load the nodes that are connected to
-// the "user" edge. The optional arguments are used to configure the query builder of the edge.
-func (mq *MediaQuery) WithUser(opts ...func(*UserQuery)) *MediaQuery {
-	query := (&UserClient{config: mq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	mq.withUser = query
-	return mq
-}
-
 // WithCar tells the query-builder to eager-load the nodes that are connected to
 // the "car" edge. The optional arguments are used to configure the query builder of the edge.
-func (mq *MediaQuery) WithCar(opts ...func(*CarQuery)) *MediaQuery {
+func (mq *ModQuery) WithCar(opts ...func(*CarQuery)) *ModQuery {
 	query := (&CarClient{config: mq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -384,25 +349,25 @@ func (mq *MediaQuery) WithCar(opts ...func(*CarQuery)) *MediaQuery {
 	return mq
 }
 
-// WithModProductOption tells the query-builder to eager-load the nodes that are connected to
-// the "mod_product_option" edge. The optional arguments are used to configure the query builder of the edge.
-func (mq *MediaQuery) WithModProductOption(opts ...func(*ModProductOptionQuery)) *MediaQuery {
+// WithTasks tells the query-builder to eager-load the nodes that are connected to
+// the "tasks" edge. The optional arguments are used to configure the query builder of the edge.
+func (mq *ModQuery) WithTasks(opts ...func(*TaskQuery)) *ModQuery {
+	query := (&TaskClient{config: mq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	mq.withTasks = query
+	return mq
+}
+
+// WithProductOptions tells the query-builder to eager-load the nodes that are connected to
+// the "product_options" edge. The optional arguments are used to configure the query builder of the edge.
+func (mq *ModQuery) WithProductOptions(opts ...func(*ModProductOptionQuery)) *ModQuery {
 	query := (&ModProductOptionClient{config: mq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	mq.withModProductOption = query
-	return mq
-}
-
-// WithAlbums tells the query-builder to eager-load the nodes that are connected to
-// the "albums" edge. The optional arguments are used to configure the query builder of the edge.
-func (mq *MediaQuery) WithAlbums(opts ...func(*AlbumQuery)) *MediaQuery {
-	query := (&AlbumClient{config: mq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	mq.withAlbums = query
+	mq.withProductOptions = query
 	return mq
 }
 
@@ -416,15 +381,15 @@ func (mq *MediaQuery) WithAlbums(opts ...func(*AlbumQuery)) *MediaQuery {
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.Media.Query().
-//		GroupBy(media.FieldCreateTime).
+//	client.Mod.Query().
+//		GroupBy(mod.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (mq *MediaQuery) GroupBy(field string, fields ...string) *MediaGroupBy {
+func (mq *ModQuery) GroupBy(field string, fields ...string) *ModGroupBy {
 	mq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &MediaGroupBy{build: mq}
+	grbuild := &ModGroupBy{build: mq}
 	grbuild.flds = &mq.ctx.Fields
-	grbuild.label = media.Label
+	grbuild.label = mod.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -438,23 +403,23 @@ func (mq *MediaQuery) GroupBy(field string, fields ...string) *MediaGroupBy {
 //		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
-//	client.Media.Query().
-//		Select(media.FieldCreateTime).
+//	client.Mod.Query().
+//		Select(mod.FieldCreateTime).
 //		Scan(ctx, &v)
-func (mq *MediaQuery) Select(fields ...string) *MediaSelect {
+func (mq *ModQuery) Select(fields ...string) *ModSelect {
 	mq.ctx.Fields = append(mq.ctx.Fields, fields...)
-	sbuild := &MediaSelect{MediaQuery: mq}
-	sbuild.label = media.Label
+	sbuild := &ModSelect{ModQuery: mq}
+	sbuild.label = mod.Label
 	sbuild.flds, sbuild.scan = &mq.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a MediaSelect configured with the given aggregations.
-func (mq *MediaQuery) Aggregate(fns ...AggregateFunc) *MediaSelect {
+// Aggregate returns a ModSelect configured with the given aggregations.
+func (mq *ModQuery) Aggregate(fns ...AggregateFunc) *ModSelect {
 	return mq.Select().Aggregate(fns...)
 }
 
-func (mq *MediaQuery) prepareQuery(ctx context.Context) error {
+func (mq *ModQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range mq.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -466,7 +431,7 @@ func (mq *MediaQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range mq.ctx.Fields {
-		if !media.ValidColumn(f) {
+		if !mod.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -480,29 +445,28 @@ func (mq *MediaQuery) prepareQuery(ctx context.Context) error {
 	return nil
 }
 
-func (mq *MediaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Media, error) {
+func (mq *ModQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mod, error) {
 	var (
-		nodes       = []*Media{}
+		nodes       = []*Mod{}
 		withFKs     = mq.withFKs
 		_spec       = mq.querySpec()
-		loadedTypes = [4]bool{
-			mq.withUser != nil,
+		loadedTypes = [3]bool{
 			mq.withCar != nil,
-			mq.withModProductOption != nil,
-			mq.withAlbums != nil,
+			mq.withTasks != nil,
+			mq.withProductOptions != nil,
 		}
 	)
-	if mq.withUser != nil || mq.withCar != nil || mq.withModProductOption != nil {
+	if mq.withCar != nil {
 		withFKs = true
 	}
 	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, media.ForeignKeys...)
+		_spec.Node.Columns = append(_spec.Node.Columns, mod.ForeignKeys...)
 	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*Media).scanValues(nil, columns)
+		return (*Mod).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Media{config: mq.config}
+		node := &Mod{config: mq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
@@ -519,35 +483,37 @@ func (mq *MediaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Media,
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := mq.withUser; query != nil {
-		if err := mq.loadUser(ctx, query, nodes, nil,
-			func(n *Media, e *User) { n.Edges.User = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := mq.withCar; query != nil {
 		if err := mq.loadCar(ctx, query, nodes, nil,
-			func(n *Media, e *Car) { n.Edges.Car = e }); err != nil {
+			func(n *Mod, e *Car) { n.Edges.Car = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := mq.withModProductOption; query != nil {
-		if err := mq.loadModProductOption(ctx, query, nodes, nil,
-			func(n *Media, e *ModProductOption) { n.Edges.ModProductOption = e }); err != nil {
+	if query := mq.withTasks; query != nil {
+		if err := mq.loadTasks(ctx, query, nodes,
+			func(n *Mod) { n.Edges.Tasks = []*Task{} },
+			func(n *Mod, e *Task) { n.Edges.Tasks = append(n.Edges.Tasks, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := mq.withAlbums; query != nil {
-		if err := mq.loadAlbums(ctx, query, nodes,
-			func(n *Media) { n.Edges.Albums = []*Album{} },
-			func(n *Media, e *Album) { n.Edges.Albums = append(n.Edges.Albums, e) }); err != nil {
+	if query := mq.withProductOptions; query != nil {
+		if err := mq.loadProductOptions(ctx, query, nodes,
+			func(n *Mod) { n.Edges.ProductOptions = []*ModProductOption{} },
+			func(n *Mod, e *ModProductOption) { n.Edges.ProductOptions = append(n.Edges.ProductOptions, e) }); err != nil {
 			return nil, err
 		}
 	}
-	for name, query := range mq.withNamedAlbums {
-		if err := mq.loadAlbums(ctx, query, nodes,
-			func(n *Media) { n.appendNamedAlbums(name) },
-			func(n *Media, e *Album) { n.appendNamedAlbums(name, e) }); err != nil {
+	for name, query := range mq.withNamedTasks {
+		if err := mq.loadTasks(ctx, query, nodes,
+			func(n *Mod) { n.appendNamedTasks(name) },
+			func(n *Mod, e *Task) { n.appendNamedTasks(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range mq.withNamedProductOptions {
+		if err := mq.loadProductOptions(ctx, query, nodes,
+			func(n *Mod) { n.appendNamedProductOptions(name) },
+			func(n *Mod, e *ModProductOption) { n.appendNamedProductOptions(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -559,46 +525,14 @@ func (mq *MediaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Media,
 	return nodes, nil
 }
 
-func (mq *MediaQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Media, init func(*Media), assign func(*Media, *User)) error {
+func (mq *ModQuery) loadCar(ctx context.Context, query *CarQuery, nodes []*Mod, init func(*Mod), assign func(*Mod, *Car)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Media)
+	nodeids := make(map[uuid.UUID][]*Mod)
 	for i := range nodes {
-		if nodes[i].user_media == nil {
+		if nodes[i].car_mods == nil {
 			continue
 		}
-		fk := *nodes[i].user_media
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(user.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_media" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (mq *MediaQuery) loadCar(ctx context.Context, query *CarQuery, nodes []*Media, init func(*Media), assign func(*Media, *Car)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Media)
-	for i := range nodes {
-		if nodes[i].car_media == nil {
-			continue
-		}
-		fk := *nodes[i].car_media
+		fk := *nodes[i].car_mods
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -615,7 +549,7 @@ func (mq *MediaQuery) loadCar(ctx context.Context, query *CarQuery, nodes []*Med
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "car_media" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "car_mods" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -623,42 +557,10 @@ func (mq *MediaQuery) loadCar(ctx context.Context, query *CarQuery, nodes []*Med
 	}
 	return nil
 }
-func (mq *MediaQuery) loadModProductOption(ctx context.Context, query *ModProductOptionQuery, nodes []*Media, init func(*Media), assign func(*Media, *ModProductOption)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Media)
-	for i := range nodes {
-		if nodes[i].mod_product_option_media == nil {
-			continue
-		}
-		fk := *nodes[i].mod_product_option_media
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(modproductoption.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "mod_product_option_media" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (mq *MediaQuery) loadAlbums(ctx context.Context, query *AlbumQuery, nodes []*Media, init func(*Media), assign func(*Media, *Album)) error {
+func (mq *ModQuery) loadTasks(ctx context.Context, query *TaskQuery, nodes []*Mod, init func(*Mod), assign func(*Mod, *Task)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*Media)
-	nids := make(map[uuid.UUID]map[*Media]struct{})
+	byID := make(map[uuid.UUID]*Mod)
+	nids := make(map[uuid.UUID]map[*Mod]struct{})
 	for i, node := range nodes {
 		edgeIDs[i] = node.ID
 		byID[node.ID] = node
@@ -667,11 +569,11 @@ func (mq *MediaQuery) loadAlbums(ctx context.Context, query *AlbumQuery, nodes [
 		}
 	}
 	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(media.AlbumsTable)
-		s.Join(joinT).On(s.C(album.FieldID), joinT.C(media.AlbumsPrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(media.AlbumsPrimaryKey[1]), edgeIDs...))
+		joinT := sql.Table(mod.TasksTable)
+		s.Join(joinT).On(s.C(task.FieldID), joinT.C(mod.TasksPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(mod.TasksPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
-		s.Select(joinT.C(media.AlbumsPrimaryKey[1]))
+		s.Select(joinT.C(mod.TasksPrimaryKey[1]))
 		s.AppendSelect(columns...)
 		s.SetDistinct(false)
 	})
@@ -693,7 +595,7 @@ func (mq *MediaQuery) loadAlbums(ctx context.Context, query *AlbumQuery, nodes [
 				outValue := *values[0].(*uuid.UUID)
 				inValue := *values[1].(*uuid.UUID)
 				if nids[inValue] == nil {
-					nids[inValue] = map[*Media]struct{}{byID[outValue]: {}}
+					nids[inValue] = map[*Mod]struct{}{byID[outValue]: {}}
 					return assign(columns[1:], values[1:])
 				}
 				nids[inValue][byID[outValue]] = struct{}{}
@@ -701,14 +603,14 @@ func (mq *MediaQuery) loadAlbums(ctx context.Context, query *AlbumQuery, nodes [
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*Album](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*Task](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
 		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "albums" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "tasks" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)
@@ -716,8 +618,39 @@ func (mq *MediaQuery) loadAlbums(ctx context.Context, query *AlbumQuery, nodes [
 	}
 	return nil
 }
+func (mq *ModQuery) loadProductOptions(ctx context.Context, query *ModProductOptionQuery, nodes []*Mod, init func(*Mod), assign func(*Mod, *ModProductOption)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Mod)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.ModProductOption(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(mod.ProductOptionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.mod_product_options
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "mod_product_options" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "mod_product_options" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
-func (mq *MediaQuery) sqlCount(ctx context.Context) (int, error) {
+func (mq *ModQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := mq.querySpec()
 	if len(mq.modifiers) > 0 {
 		_spec.Modifiers = mq.modifiers
@@ -729,8 +662,8 @@ func (mq *MediaQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, mq.driver, _spec)
 }
 
-func (mq *MediaQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(media.Table, media.Columns, sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID))
+func (mq *ModQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(mod.Table, mod.Columns, sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID))
 	_spec.From = mq.sql
 	if unique := mq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -739,9 +672,9 @@ func (mq *MediaQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := mq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, media.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, mod.FieldID)
 		for i := range fields {
-			if fields[i] != media.FieldID {
+			if fields[i] != mod.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
@@ -769,12 +702,12 @@ func (mq *MediaQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (mq *MediaQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (mq *ModQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(mq.driver.Dialect())
-	t1 := builder.Table(media.Table)
+	t1 := builder.Table(mod.Table)
 	columns := mq.ctx.Fields
 	if len(columns) == 0 {
-		columns = media.Columns
+		columns = mod.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if mq.sql != nil {
@@ -801,42 +734,56 @@ func (mq *MediaQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// WithNamedAlbums tells the query-builder to eager-load the nodes that are connected to the "albums"
+// WithNamedTasks tells the query-builder to eager-load the nodes that are connected to the "tasks"
 // edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (mq *MediaQuery) WithNamedAlbums(name string, opts ...func(*AlbumQuery)) *MediaQuery {
-	query := (&AlbumClient{config: mq.config}).Query()
+func (mq *ModQuery) WithNamedTasks(name string, opts ...func(*TaskQuery)) *ModQuery {
+	query := (&TaskClient{config: mq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	if mq.withNamedAlbums == nil {
-		mq.withNamedAlbums = make(map[string]*AlbumQuery)
+	if mq.withNamedTasks == nil {
+		mq.withNamedTasks = make(map[string]*TaskQuery)
 	}
-	mq.withNamedAlbums[name] = query
+	mq.withNamedTasks[name] = query
 	return mq
 }
 
-// MediaGroupBy is the group-by builder for Media entities.
-type MediaGroupBy struct {
+// WithNamedProductOptions tells the query-builder to eager-load the nodes that are connected to the "product_options"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (mq *ModQuery) WithNamedProductOptions(name string, opts ...func(*ModProductOptionQuery)) *ModQuery {
+	query := (&ModProductOptionClient{config: mq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if mq.withNamedProductOptions == nil {
+		mq.withNamedProductOptions = make(map[string]*ModProductOptionQuery)
+	}
+	mq.withNamedProductOptions[name] = query
+	return mq
+}
+
+// ModGroupBy is the group-by builder for Mod entities.
+type ModGroupBy struct {
 	selector
-	build *MediaQuery
+	build *ModQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (mgb *MediaGroupBy) Aggregate(fns ...AggregateFunc) *MediaGroupBy {
+func (mgb *ModGroupBy) Aggregate(fns ...AggregateFunc) *ModGroupBy {
 	mgb.fns = append(mgb.fns, fns...)
 	return mgb
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (mgb *MediaGroupBy) Scan(ctx context.Context, v any) error {
+func (mgb *ModGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, mgb.build.ctx, ent.OpQueryGroupBy)
 	if err := mgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*MediaQuery, *MediaGroupBy](ctx, mgb.build, mgb, mgb.build.inters, v)
+	return scanWithInterceptors[*ModQuery, *ModGroupBy](ctx, mgb.build, mgb, mgb.build.inters, v)
 }
 
-func (mgb *MediaGroupBy) sqlScan(ctx context.Context, root *MediaQuery, v any) error {
+func (mgb *ModGroupBy) sqlScan(ctx context.Context, root *ModQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(mgb.fns))
 	for _, fn := range mgb.fns {
@@ -863,28 +810,28 @@ func (mgb *MediaGroupBy) sqlScan(ctx context.Context, root *MediaQuery, v any) e
 	return sql.ScanSlice(rows, v)
 }
 
-// MediaSelect is the builder for selecting fields of Media entities.
-type MediaSelect struct {
-	*MediaQuery
+// ModSelect is the builder for selecting fields of Mod entities.
+type ModSelect struct {
+	*ModQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (ms *MediaSelect) Aggregate(fns ...AggregateFunc) *MediaSelect {
+func (ms *ModSelect) Aggregate(fns ...AggregateFunc) *ModSelect {
 	ms.fns = append(ms.fns, fns...)
 	return ms
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ms *MediaSelect) Scan(ctx context.Context, v any) error {
+func (ms *ModSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, ms.ctx, ent.OpQuerySelect)
 	if err := ms.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*MediaQuery, *MediaSelect](ctx, ms.MediaQuery, ms, ms.inters, v)
+	return scanWithInterceptors[*ModQuery, *ModSelect](ctx, ms.ModQuery, ms, ms.inters, v)
 }
 
-func (ms *MediaSelect) sqlScan(ctx context.Context, root *MediaQuery, v any) error {
+func (ms *ModSelect) sqlScan(ctx context.Context, root *ModQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(ms.fns))
 	for _, fn := range ms.fns {

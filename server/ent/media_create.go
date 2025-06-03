@@ -13,6 +13,8 @@ import (
 	"github.com/Dan6erbond/revline/ent/album"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/modproductoption"
+	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -93,6 +95,25 @@ func (mc *MediaCreate) SetNillableID(u *uuid.UUID) *MediaCreate {
 	return mc
 }
 
+// SetUserID sets the "user" edge to the User entity by ID.
+func (mc *MediaCreate) SetUserID(id uuid.UUID) *MediaCreate {
+	mc.mutation.SetUserID(id)
+	return mc
+}
+
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (mc *MediaCreate) SetNillableUserID(id *uuid.UUID) *MediaCreate {
+	if id != nil {
+		mc = mc.SetUserID(*id)
+	}
+	return mc
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (mc *MediaCreate) SetUser(u *User) *MediaCreate {
+	return mc.SetUserID(u.ID)
+}
+
 // SetCarID sets the "car" edge to the Car entity by ID.
 func (mc *MediaCreate) SetCarID(id uuid.UUID) *MediaCreate {
 	mc.mutation.SetCarID(id)
@@ -110,6 +131,25 @@ func (mc *MediaCreate) SetNillableCarID(id *uuid.UUID) *MediaCreate {
 // SetCar sets the "car" edge to the Car entity.
 func (mc *MediaCreate) SetCar(c *Car) *MediaCreate {
 	return mc.SetCarID(c.ID)
+}
+
+// SetModProductOptionID sets the "mod_product_option" edge to the ModProductOption entity by ID.
+func (mc *MediaCreate) SetModProductOptionID(id uuid.UUID) *MediaCreate {
+	mc.mutation.SetModProductOptionID(id)
+	return mc
+}
+
+// SetNillableModProductOptionID sets the "mod_product_option" edge to the ModProductOption entity by ID if the given value is not nil.
+func (mc *MediaCreate) SetNillableModProductOptionID(id *uuid.UUID) *MediaCreate {
+	if id != nil {
+		mc = mc.SetModProductOptionID(*id)
+	}
+	return mc
+}
+
+// SetModProductOption sets the "mod_product_option" edge to the ModProductOption entity.
+func (mc *MediaCreate) SetModProductOption(m *ModProductOption) *MediaCreate {
+	return mc.SetModProductOptionID(m.ID)
 }
 
 // AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
@@ -235,6 +275,23 @@ func (mc *MediaCreate) createSpec() (*Media, *sqlgraph.CreateSpec) {
 		_spec.SetField(media.FieldDescription, field.TypeString, value)
 		_node.Description = &value
 	}
+	if nodes := mc.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.UserTable,
+			Columns: []string{media.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.user_media = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := mc.mutation.CarIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -250,6 +307,23 @@ func (mc *MediaCreate) createSpec() (*Media, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.car_media = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := mc.mutation.ModProductOptionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.ModProductOptionTable,
+			Columns: []string{media.ModProductOptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modproductoption.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.mod_product_option_media = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := mc.mutation.AlbumsIDs(); len(nodes) > 0 {

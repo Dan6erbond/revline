@@ -18,7 +18,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -511,9 +511,9 @@ type CarWhereInput struct {
 	HasTasks     *bool             `json:"hasTasks,omitempty"`
 	HasTasksWith []*TaskWhereInput `json:"hasTasksWith,omitempty"`
 
-	// "mod_ideas" edge predicates.
-	HasModIdeas     *bool                `json:"hasModIdeas,omitempty"`
-	HasModIdeasWith []*ModIdeaWhereInput `json:"hasModIdeasWith,omitempty"`
+	// "mods" edge predicates.
+	HasMods     *bool            `json:"hasMods,omitempty"`
+	HasModsWith []*ModWhereInput `json:"hasModsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1161,23 +1161,23 @@ func (i *CarWhereInput) P() (predicate.Car, error) {
 		}
 		predicates = append(predicates, car.HasTasksWith(with...))
 	}
-	if i.HasModIdeas != nil {
-		p := car.HasModIdeas()
-		if !*i.HasModIdeas {
+	if i.HasMods != nil {
+		p := car.HasMods()
+		if !*i.HasMods {
 			p = car.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
-	if len(i.HasModIdeasWith) > 0 {
-		with := make([]predicate.ModIdea, 0, len(i.HasModIdeasWith))
-		for _, w := range i.HasModIdeasWith {
+	if len(i.HasModsWith) > 0 {
+		with := make([]predicate.Mod, 0, len(i.HasModsWith))
+		for _, w := range i.HasModsWith {
 			p, err := w.P()
 			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasModIdeasWith'", err)
+				return nil, fmt.Errorf("%w: field 'HasModsWith'", err)
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, car.HasModIdeasWith(with...))
+		predicates = append(predicates, car.HasModsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -4386,9 +4386,17 @@ type MediaWhereInput struct {
 	DescriptionEqualFold    *string  `json:"descriptionEqualFold,omitempty"`
 	DescriptionContainsFold *string  `json:"descriptionContainsFold,omitempty"`
 
+	// "user" edge predicates.
+	HasUser     *bool             `json:"hasUser,omitempty"`
+	HasUserWith []*UserWhereInput `json:"hasUserWith,omitempty"`
+
 	// "car" edge predicates.
 	HasCar     *bool            `json:"hasCar,omitempty"`
 	HasCarWith []*CarWhereInput `json:"hasCarWith,omitempty"`
+
+	// "mod_product_option" edge predicates.
+	HasModProductOption     *bool                         `json:"hasModProductOption,omitempty"`
+	HasModProductOptionWith []*ModProductOptionWhereInput `json:"hasModProductOptionWith,omitempty"`
 
 	// "albums" edge predicates.
 	HasAlbums     *bool              `json:"hasAlbums,omitempty"`
@@ -4629,6 +4637,24 @@ func (i *MediaWhereInput) P() (predicate.Media, error) {
 		predicates = append(predicates, media.DescriptionContainsFold(*i.DescriptionContainsFold))
 	}
 
+	if i.HasUser != nil {
+		p := media.HasUser()
+		if !*i.HasUser {
+			p = media.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasUserWith) > 0 {
+		with := make([]predicate.User, 0, len(i.HasUserWith))
+		for _, w := range i.HasUserWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasUserWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, media.HasUserWith(with...))
+	}
 	if i.HasCar != nil {
 		p := media.HasCar()
 		if !*i.HasCar {
@@ -4646,6 +4672,24 @@ func (i *MediaWhereInput) P() (predicate.Media, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, media.HasCarWith(with...))
+	}
+	if i.HasModProductOption != nil {
+		p := media.HasModProductOption()
+		if !*i.HasModProductOption {
+			p = media.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasModProductOptionWith) > 0 {
+		with := make([]predicate.ModProductOption, 0, len(i.HasModProductOptionWith))
+		for _, w := range i.HasModProductOptionWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasModProductOptionWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, media.HasModProductOptionWith(with...))
 	}
 	if i.HasAlbums != nil {
 		p := media.HasAlbums()
@@ -4675,12 +4719,12 @@ func (i *MediaWhereInput) P() (predicate.Media, error) {
 	}
 }
 
-// ModIdeaWhereInput represents a where input for filtering ModIdea queries.
-type ModIdeaWhereInput struct {
-	Predicates []predicate.ModIdea  `json:"-"`
-	Not        *ModIdeaWhereInput   `json:"not,omitempty"`
-	Or         []*ModIdeaWhereInput `json:"or,omitempty"`
-	And        []*ModIdeaWhereInput `json:"and,omitempty"`
+// ModWhereInput represents a where input for filtering Mod queries.
+type ModWhereInput struct {
+	Predicates []predicate.Mod  `json:"-"`
+	Not        *ModWhereInput   `json:"not,omitempty"`
+	Or         []*ModWhereInput `json:"or,omitempty"`
+	And        []*ModWhereInput `json:"and,omitempty"`
 
 	// "id" field predicates.
 	ID      *uuid.UUID  `json:"id,omitempty"`
@@ -4728,10 +4772,16 @@ type ModIdeaWhereInput struct {
 	TitleContainsFold *string  `json:"titleContainsFold,omitempty"`
 
 	// "category" field predicates.
-	Category      *modidea.Category  `json:"category,omitempty"`
-	CategoryNEQ   *modidea.Category  `json:"categoryNEQ,omitempty"`
-	CategoryIn    []modidea.Category `json:"categoryIn,omitempty"`
-	CategoryNotIn []modidea.Category `json:"categoryNotIn,omitempty"`
+	Category      *mod.Category  `json:"category,omitempty"`
+	CategoryNEQ   *mod.Category  `json:"categoryNEQ,omitempty"`
+	CategoryIn    []mod.Category `json:"categoryIn,omitempty"`
+	CategoryNotIn []mod.Category `json:"categoryNotIn,omitempty"`
+
+	// "status" field predicates.
+	Status      *mod.Status  `json:"status,omitempty"`
+	StatusNEQ   *mod.Status  `json:"statusNEQ,omitempty"`
+	StatusIn    []mod.Status `json:"statusIn,omitempty"`
+	StatusNotIn []mod.Status `json:"statusNotIn,omitempty"`
 
 	// "description" field predicates.
 	Description             *string  `json:"description,omitempty"`
@@ -4781,18 +4831,18 @@ type ModIdeaWhereInput struct {
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
-func (i *ModIdeaWhereInput) AddPredicates(predicates ...predicate.ModIdea) {
+func (i *ModWhereInput) AddPredicates(predicates ...predicate.Mod) {
 	i.Predicates = append(i.Predicates, predicates...)
 }
 
-// Filter applies the ModIdeaWhereInput filter on the ModIdeaQuery builder.
-func (i *ModIdeaWhereInput) Filter(q *ModIdeaQuery) (*ModIdeaQuery, error) {
+// Filter applies the ModWhereInput filter on the ModQuery builder.
+func (i *ModWhereInput) Filter(q *ModQuery) (*ModQuery, error) {
 	if i == nil {
 		return q, nil
 	}
 	p, err := i.P()
 	if err != nil {
-		if err == ErrEmptyModIdeaWhereInput {
+		if err == ErrEmptyModWhereInput {
 			return q, nil
 		}
 		return nil, err
@@ -4800,19 +4850,19 @@ func (i *ModIdeaWhereInput) Filter(q *ModIdeaQuery) (*ModIdeaQuery, error) {
 	return q.Where(p), nil
 }
 
-// ErrEmptyModIdeaWhereInput is returned in case the ModIdeaWhereInput is empty.
-var ErrEmptyModIdeaWhereInput = errors.New("ent: empty predicate ModIdeaWhereInput")
+// ErrEmptyModWhereInput is returned in case the ModWhereInput is empty.
+var ErrEmptyModWhereInput = errors.New("ent: empty predicate ModWhereInput")
 
-// P returns a predicate for filtering modideas.
+// P returns a predicate for filtering mods.
 // An error is returned if the input is empty or invalid.
-func (i *ModIdeaWhereInput) P() (predicate.ModIdea, error) {
-	var predicates []predicate.ModIdea
+func (i *ModWhereInput) P() (predicate.Mod, error) {
+	var predicates []predicate.Mod
 	if i.Not != nil {
 		p, err := i.Not.P()
 		if err != nil {
 			return nil, fmt.Errorf("%w: field 'not'", err)
 		}
-		predicates = append(predicates, modidea.Not(p))
+		predicates = append(predicates, mod.Not(p))
 	}
 	switch n := len(i.Or); {
 	case n == 1:
@@ -4822,7 +4872,7 @@ func (i *ModIdeaWhereInput) P() (predicate.ModIdea, error) {
 		}
 		predicates = append(predicates, p)
 	case n > 1:
-		or := make([]predicate.ModIdea, 0, n)
+		or := make([]predicate.Mod, 0, n)
 		for _, w := range i.Or {
 			p, err := w.P()
 			if err != nil {
@@ -4830,7 +4880,7 @@ func (i *ModIdeaWhereInput) P() (predicate.ModIdea, error) {
 			}
 			or = append(or, p)
 		}
-		predicates = append(predicates, modidea.Or(or...))
+		predicates = append(predicates, mod.Or(or...))
 	}
 	switch n := len(i.And); {
 	case n == 1:
@@ -4840,7 +4890,7 @@ func (i *ModIdeaWhereInput) P() (predicate.ModIdea, error) {
 		}
 		predicates = append(predicates, p)
 	case n > 1:
-		and := make([]predicate.ModIdea, 0, n)
+		and := make([]predicate.Mod, 0, n)
 		for _, w := range i.And {
 			p, err := w.P()
 			if err != nil {
@@ -4848,227 +4898,239 @@ func (i *ModIdeaWhereInput) P() (predicate.ModIdea, error) {
 			}
 			and = append(and, p)
 		}
-		predicates = append(predicates, modidea.And(and...))
+		predicates = append(predicates, mod.And(and...))
 	}
 	predicates = append(predicates, i.Predicates...)
 	if i.ID != nil {
-		predicates = append(predicates, modidea.IDEQ(*i.ID))
+		predicates = append(predicates, mod.IDEQ(*i.ID))
 	}
 	if i.IDNEQ != nil {
-		predicates = append(predicates, modidea.IDNEQ(*i.IDNEQ))
+		predicates = append(predicates, mod.IDNEQ(*i.IDNEQ))
 	}
 	if len(i.IDIn) > 0 {
-		predicates = append(predicates, modidea.IDIn(i.IDIn...))
+		predicates = append(predicates, mod.IDIn(i.IDIn...))
 	}
 	if len(i.IDNotIn) > 0 {
-		predicates = append(predicates, modidea.IDNotIn(i.IDNotIn...))
+		predicates = append(predicates, mod.IDNotIn(i.IDNotIn...))
 	}
 	if i.IDGT != nil {
-		predicates = append(predicates, modidea.IDGT(*i.IDGT))
+		predicates = append(predicates, mod.IDGT(*i.IDGT))
 	}
 	if i.IDGTE != nil {
-		predicates = append(predicates, modidea.IDGTE(*i.IDGTE))
+		predicates = append(predicates, mod.IDGTE(*i.IDGTE))
 	}
 	if i.IDLT != nil {
-		predicates = append(predicates, modidea.IDLT(*i.IDLT))
+		predicates = append(predicates, mod.IDLT(*i.IDLT))
 	}
 	if i.IDLTE != nil {
-		predicates = append(predicates, modidea.IDLTE(*i.IDLTE))
+		predicates = append(predicates, mod.IDLTE(*i.IDLTE))
 	}
 	if i.CreateTime != nil {
-		predicates = append(predicates, modidea.CreateTimeEQ(*i.CreateTime))
+		predicates = append(predicates, mod.CreateTimeEQ(*i.CreateTime))
 	}
 	if i.CreateTimeNEQ != nil {
-		predicates = append(predicates, modidea.CreateTimeNEQ(*i.CreateTimeNEQ))
+		predicates = append(predicates, mod.CreateTimeNEQ(*i.CreateTimeNEQ))
 	}
 	if len(i.CreateTimeIn) > 0 {
-		predicates = append(predicates, modidea.CreateTimeIn(i.CreateTimeIn...))
+		predicates = append(predicates, mod.CreateTimeIn(i.CreateTimeIn...))
 	}
 	if len(i.CreateTimeNotIn) > 0 {
-		predicates = append(predicates, modidea.CreateTimeNotIn(i.CreateTimeNotIn...))
+		predicates = append(predicates, mod.CreateTimeNotIn(i.CreateTimeNotIn...))
 	}
 	if i.CreateTimeGT != nil {
-		predicates = append(predicates, modidea.CreateTimeGT(*i.CreateTimeGT))
+		predicates = append(predicates, mod.CreateTimeGT(*i.CreateTimeGT))
 	}
 	if i.CreateTimeGTE != nil {
-		predicates = append(predicates, modidea.CreateTimeGTE(*i.CreateTimeGTE))
+		predicates = append(predicates, mod.CreateTimeGTE(*i.CreateTimeGTE))
 	}
 	if i.CreateTimeLT != nil {
-		predicates = append(predicates, modidea.CreateTimeLT(*i.CreateTimeLT))
+		predicates = append(predicates, mod.CreateTimeLT(*i.CreateTimeLT))
 	}
 	if i.CreateTimeLTE != nil {
-		predicates = append(predicates, modidea.CreateTimeLTE(*i.CreateTimeLTE))
+		predicates = append(predicates, mod.CreateTimeLTE(*i.CreateTimeLTE))
 	}
 	if i.UpdateTime != nil {
-		predicates = append(predicates, modidea.UpdateTimeEQ(*i.UpdateTime))
+		predicates = append(predicates, mod.UpdateTimeEQ(*i.UpdateTime))
 	}
 	if i.UpdateTimeNEQ != nil {
-		predicates = append(predicates, modidea.UpdateTimeNEQ(*i.UpdateTimeNEQ))
+		predicates = append(predicates, mod.UpdateTimeNEQ(*i.UpdateTimeNEQ))
 	}
 	if len(i.UpdateTimeIn) > 0 {
-		predicates = append(predicates, modidea.UpdateTimeIn(i.UpdateTimeIn...))
+		predicates = append(predicates, mod.UpdateTimeIn(i.UpdateTimeIn...))
 	}
 	if len(i.UpdateTimeNotIn) > 0 {
-		predicates = append(predicates, modidea.UpdateTimeNotIn(i.UpdateTimeNotIn...))
+		predicates = append(predicates, mod.UpdateTimeNotIn(i.UpdateTimeNotIn...))
 	}
 	if i.UpdateTimeGT != nil {
-		predicates = append(predicates, modidea.UpdateTimeGT(*i.UpdateTimeGT))
+		predicates = append(predicates, mod.UpdateTimeGT(*i.UpdateTimeGT))
 	}
 	if i.UpdateTimeGTE != nil {
-		predicates = append(predicates, modidea.UpdateTimeGTE(*i.UpdateTimeGTE))
+		predicates = append(predicates, mod.UpdateTimeGTE(*i.UpdateTimeGTE))
 	}
 	if i.UpdateTimeLT != nil {
-		predicates = append(predicates, modidea.UpdateTimeLT(*i.UpdateTimeLT))
+		predicates = append(predicates, mod.UpdateTimeLT(*i.UpdateTimeLT))
 	}
 	if i.UpdateTimeLTE != nil {
-		predicates = append(predicates, modidea.UpdateTimeLTE(*i.UpdateTimeLTE))
+		predicates = append(predicates, mod.UpdateTimeLTE(*i.UpdateTimeLTE))
 	}
 	if i.Title != nil {
-		predicates = append(predicates, modidea.TitleEQ(*i.Title))
+		predicates = append(predicates, mod.TitleEQ(*i.Title))
 	}
 	if i.TitleNEQ != nil {
-		predicates = append(predicates, modidea.TitleNEQ(*i.TitleNEQ))
+		predicates = append(predicates, mod.TitleNEQ(*i.TitleNEQ))
 	}
 	if len(i.TitleIn) > 0 {
-		predicates = append(predicates, modidea.TitleIn(i.TitleIn...))
+		predicates = append(predicates, mod.TitleIn(i.TitleIn...))
 	}
 	if len(i.TitleNotIn) > 0 {
-		predicates = append(predicates, modidea.TitleNotIn(i.TitleNotIn...))
+		predicates = append(predicates, mod.TitleNotIn(i.TitleNotIn...))
 	}
 	if i.TitleGT != nil {
-		predicates = append(predicates, modidea.TitleGT(*i.TitleGT))
+		predicates = append(predicates, mod.TitleGT(*i.TitleGT))
 	}
 	if i.TitleGTE != nil {
-		predicates = append(predicates, modidea.TitleGTE(*i.TitleGTE))
+		predicates = append(predicates, mod.TitleGTE(*i.TitleGTE))
 	}
 	if i.TitleLT != nil {
-		predicates = append(predicates, modidea.TitleLT(*i.TitleLT))
+		predicates = append(predicates, mod.TitleLT(*i.TitleLT))
 	}
 	if i.TitleLTE != nil {
-		predicates = append(predicates, modidea.TitleLTE(*i.TitleLTE))
+		predicates = append(predicates, mod.TitleLTE(*i.TitleLTE))
 	}
 	if i.TitleContains != nil {
-		predicates = append(predicates, modidea.TitleContains(*i.TitleContains))
+		predicates = append(predicates, mod.TitleContains(*i.TitleContains))
 	}
 	if i.TitleHasPrefix != nil {
-		predicates = append(predicates, modidea.TitleHasPrefix(*i.TitleHasPrefix))
+		predicates = append(predicates, mod.TitleHasPrefix(*i.TitleHasPrefix))
 	}
 	if i.TitleHasSuffix != nil {
-		predicates = append(predicates, modidea.TitleHasSuffix(*i.TitleHasSuffix))
+		predicates = append(predicates, mod.TitleHasSuffix(*i.TitleHasSuffix))
 	}
 	if i.TitleEqualFold != nil {
-		predicates = append(predicates, modidea.TitleEqualFold(*i.TitleEqualFold))
+		predicates = append(predicates, mod.TitleEqualFold(*i.TitleEqualFold))
 	}
 	if i.TitleContainsFold != nil {
-		predicates = append(predicates, modidea.TitleContainsFold(*i.TitleContainsFold))
+		predicates = append(predicates, mod.TitleContainsFold(*i.TitleContainsFold))
 	}
 	if i.Category != nil {
-		predicates = append(predicates, modidea.CategoryEQ(*i.Category))
+		predicates = append(predicates, mod.CategoryEQ(*i.Category))
 	}
 	if i.CategoryNEQ != nil {
-		predicates = append(predicates, modidea.CategoryNEQ(*i.CategoryNEQ))
+		predicates = append(predicates, mod.CategoryNEQ(*i.CategoryNEQ))
 	}
 	if len(i.CategoryIn) > 0 {
-		predicates = append(predicates, modidea.CategoryIn(i.CategoryIn...))
+		predicates = append(predicates, mod.CategoryIn(i.CategoryIn...))
 	}
 	if len(i.CategoryNotIn) > 0 {
-		predicates = append(predicates, modidea.CategoryNotIn(i.CategoryNotIn...))
+		predicates = append(predicates, mod.CategoryNotIn(i.CategoryNotIn...))
+	}
+	if i.Status != nil {
+		predicates = append(predicates, mod.StatusEQ(*i.Status))
+	}
+	if i.StatusNEQ != nil {
+		predicates = append(predicates, mod.StatusNEQ(*i.StatusNEQ))
+	}
+	if len(i.StatusIn) > 0 {
+		predicates = append(predicates, mod.StatusIn(i.StatusIn...))
+	}
+	if len(i.StatusNotIn) > 0 {
+		predicates = append(predicates, mod.StatusNotIn(i.StatusNotIn...))
 	}
 	if i.Description != nil {
-		predicates = append(predicates, modidea.DescriptionEQ(*i.Description))
+		predicates = append(predicates, mod.DescriptionEQ(*i.Description))
 	}
 	if i.DescriptionNEQ != nil {
-		predicates = append(predicates, modidea.DescriptionNEQ(*i.DescriptionNEQ))
+		predicates = append(predicates, mod.DescriptionNEQ(*i.DescriptionNEQ))
 	}
 	if len(i.DescriptionIn) > 0 {
-		predicates = append(predicates, modidea.DescriptionIn(i.DescriptionIn...))
+		predicates = append(predicates, mod.DescriptionIn(i.DescriptionIn...))
 	}
 	if len(i.DescriptionNotIn) > 0 {
-		predicates = append(predicates, modidea.DescriptionNotIn(i.DescriptionNotIn...))
+		predicates = append(predicates, mod.DescriptionNotIn(i.DescriptionNotIn...))
 	}
 	if i.DescriptionGT != nil {
-		predicates = append(predicates, modidea.DescriptionGT(*i.DescriptionGT))
+		predicates = append(predicates, mod.DescriptionGT(*i.DescriptionGT))
 	}
 	if i.DescriptionGTE != nil {
-		predicates = append(predicates, modidea.DescriptionGTE(*i.DescriptionGTE))
+		predicates = append(predicates, mod.DescriptionGTE(*i.DescriptionGTE))
 	}
 	if i.DescriptionLT != nil {
-		predicates = append(predicates, modidea.DescriptionLT(*i.DescriptionLT))
+		predicates = append(predicates, mod.DescriptionLT(*i.DescriptionLT))
 	}
 	if i.DescriptionLTE != nil {
-		predicates = append(predicates, modidea.DescriptionLTE(*i.DescriptionLTE))
+		predicates = append(predicates, mod.DescriptionLTE(*i.DescriptionLTE))
 	}
 	if i.DescriptionContains != nil {
-		predicates = append(predicates, modidea.DescriptionContains(*i.DescriptionContains))
+		predicates = append(predicates, mod.DescriptionContains(*i.DescriptionContains))
 	}
 	if i.DescriptionHasPrefix != nil {
-		predicates = append(predicates, modidea.DescriptionHasPrefix(*i.DescriptionHasPrefix))
+		predicates = append(predicates, mod.DescriptionHasPrefix(*i.DescriptionHasPrefix))
 	}
 	if i.DescriptionHasSuffix != nil {
-		predicates = append(predicates, modidea.DescriptionHasSuffix(*i.DescriptionHasSuffix))
+		predicates = append(predicates, mod.DescriptionHasSuffix(*i.DescriptionHasSuffix))
 	}
 	if i.DescriptionIsNil {
-		predicates = append(predicates, modidea.DescriptionIsNil())
+		predicates = append(predicates, mod.DescriptionIsNil())
 	}
 	if i.DescriptionNotNil {
-		predicates = append(predicates, modidea.DescriptionNotNil())
+		predicates = append(predicates, mod.DescriptionNotNil())
 	}
 	if i.DescriptionEqualFold != nil {
-		predicates = append(predicates, modidea.DescriptionEqualFold(*i.DescriptionEqualFold))
+		predicates = append(predicates, mod.DescriptionEqualFold(*i.DescriptionEqualFold))
 	}
 	if i.DescriptionContainsFold != nil {
-		predicates = append(predicates, modidea.DescriptionContainsFold(*i.DescriptionContainsFold))
+		predicates = append(predicates, mod.DescriptionContainsFold(*i.DescriptionContainsFold))
 	}
 	if i.Stage != nil {
-		predicates = append(predicates, modidea.StageEQ(*i.Stage))
+		predicates = append(predicates, mod.StageEQ(*i.Stage))
 	}
 	if i.StageNEQ != nil {
-		predicates = append(predicates, modidea.StageNEQ(*i.StageNEQ))
+		predicates = append(predicates, mod.StageNEQ(*i.StageNEQ))
 	}
 	if len(i.StageIn) > 0 {
-		predicates = append(predicates, modidea.StageIn(i.StageIn...))
+		predicates = append(predicates, mod.StageIn(i.StageIn...))
 	}
 	if len(i.StageNotIn) > 0 {
-		predicates = append(predicates, modidea.StageNotIn(i.StageNotIn...))
+		predicates = append(predicates, mod.StageNotIn(i.StageNotIn...))
 	}
 	if i.StageGT != nil {
-		predicates = append(predicates, modidea.StageGT(*i.StageGT))
+		predicates = append(predicates, mod.StageGT(*i.StageGT))
 	}
 	if i.StageGTE != nil {
-		predicates = append(predicates, modidea.StageGTE(*i.StageGTE))
+		predicates = append(predicates, mod.StageGTE(*i.StageGTE))
 	}
 	if i.StageLT != nil {
-		predicates = append(predicates, modidea.StageLT(*i.StageLT))
+		predicates = append(predicates, mod.StageLT(*i.StageLT))
 	}
 	if i.StageLTE != nil {
-		predicates = append(predicates, modidea.StageLTE(*i.StageLTE))
+		predicates = append(predicates, mod.StageLTE(*i.StageLTE))
 	}
 	if i.StageContains != nil {
-		predicates = append(predicates, modidea.StageContains(*i.StageContains))
+		predicates = append(predicates, mod.StageContains(*i.StageContains))
 	}
 	if i.StageHasPrefix != nil {
-		predicates = append(predicates, modidea.StageHasPrefix(*i.StageHasPrefix))
+		predicates = append(predicates, mod.StageHasPrefix(*i.StageHasPrefix))
 	}
 	if i.StageHasSuffix != nil {
-		predicates = append(predicates, modidea.StageHasSuffix(*i.StageHasSuffix))
+		predicates = append(predicates, mod.StageHasSuffix(*i.StageHasSuffix))
 	}
 	if i.StageIsNil {
-		predicates = append(predicates, modidea.StageIsNil())
+		predicates = append(predicates, mod.StageIsNil())
 	}
 	if i.StageNotNil {
-		predicates = append(predicates, modidea.StageNotNil())
+		predicates = append(predicates, mod.StageNotNil())
 	}
 	if i.StageEqualFold != nil {
-		predicates = append(predicates, modidea.StageEqualFold(*i.StageEqualFold))
+		predicates = append(predicates, mod.StageEqualFold(*i.StageEqualFold))
 	}
 	if i.StageContainsFold != nil {
-		predicates = append(predicates, modidea.StageContainsFold(*i.StageContainsFold))
+		predicates = append(predicates, mod.StageContainsFold(*i.StageContainsFold))
 	}
 
 	if i.HasCar != nil {
-		p := modidea.HasCar()
+		p := mod.HasCar()
 		if !*i.HasCar {
-			p = modidea.Not(p)
+			p = mod.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
@@ -5081,12 +5143,12 @@ func (i *ModIdeaWhereInput) P() (predicate.ModIdea, error) {
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, modidea.HasCarWith(with...))
+		predicates = append(predicates, mod.HasCarWith(with...))
 	}
 	if i.HasTasks != nil {
-		p := modidea.HasTasks()
+		p := mod.HasTasks()
 		if !*i.HasTasks {
-			p = modidea.Not(p)
+			p = mod.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
@@ -5099,12 +5161,12 @@ func (i *ModIdeaWhereInput) P() (predicate.ModIdea, error) {
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, modidea.HasTasksWith(with...))
+		predicates = append(predicates, mod.HasTasksWith(with...))
 	}
 	if i.HasProductOptions != nil {
-		p := modidea.HasProductOptions()
+		p := mod.HasProductOptions()
 		if !*i.HasProductOptions {
-			p = modidea.Not(p)
+			p = mod.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
@@ -5117,15 +5179,15 @@ func (i *ModIdeaWhereInput) P() (predicate.ModIdea, error) {
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, modidea.HasProductOptionsWith(with...))
+		predicates = append(predicates, mod.HasProductOptionsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
-		return nil, ErrEmptyModIdeaWhereInput
+		return nil, ErrEmptyModWhereInput
 	case 1:
 		return predicates[0], nil
 	default:
-		return modidea.And(predicates...), nil
+		return mod.And(predicates...), nil
 	}
 }
 
@@ -5246,9 +5308,13 @@ type ModProductOptionWhereInput struct {
 	NotesEqualFold    *string  `json:"notesEqualFold,omitempty"`
 	NotesContainsFold *string  `json:"notesContainsFold,omitempty"`
 
-	// "idea" edge predicates.
-	HasIdea     *bool                `json:"hasIdea,omitempty"`
-	HasIdeaWith []*ModIdeaWhereInput `json:"hasIdeaWith,omitempty"`
+	// "mod" edge predicates.
+	HasMod     *bool            `json:"hasMod,omitempty"`
+	HasModWith []*ModWhereInput `json:"hasModWith,omitempty"`
+
+	// "media" edge predicates.
+	HasMedia     *bool              `json:"hasMedia,omitempty"`
+	HasMediaWith []*MediaWhereInput `json:"hasMediaWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -5605,23 +5671,41 @@ func (i *ModProductOptionWhereInput) P() (predicate.ModProductOption, error) {
 		predicates = append(predicates, modproductoption.NotesContainsFold(*i.NotesContainsFold))
 	}
 
-	if i.HasIdea != nil {
-		p := modproductoption.HasIdea()
-		if !*i.HasIdea {
+	if i.HasMod != nil {
+		p := modproductoption.HasMod()
+		if !*i.HasMod {
 			p = modproductoption.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
-	if len(i.HasIdeaWith) > 0 {
-		with := make([]predicate.ModIdea, 0, len(i.HasIdeaWith))
-		for _, w := range i.HasIdeaWith {
+	if len(i.HasModWith) > 0 {
+		with := make([]predicate.Mod, 0, len(i.HasModWith))
+		for _, w := range i.HasModWith {
 			p, err := w.P()
 			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasIdeaWith'", err)
+				return nil, fmt.Errorf("%w: field 'HasModWith'", err)
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, modproductoption.HasIdeaWith(with...))
+		predicates = append(predicates, modproductoption.HasModWith(with...))
+	}
+	if i.HasMedia != nil {
+		p := modproductoption.HasMedia()
+		if !*i.HasMedia {
+			p = modproductoption.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasMediaWith) > 0 {
+		with := make([]predicate.Media, 0, len(i.HasMediaWith))
+		for _, w := range i.HasMediaWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasMediaWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, modproductoption.HasMediaWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -8695,9 +8779,9 @@ type TaskWhereInput struct {
 	HasSubtasks     *bool             `json:"hasSubtasks,omitempty"`
 	HasSubtasksWith []*TaskWhereInput `json:"hasSubtasksWith,omitempty"`
 
-	// "mod_ideas" edge predicates.
-	HasModIdeas     *bool                `json:"hasModIdeas,omitempty"`
-	HasModIdeasWith []*ModIdeaWhereInput `json:"hasModIdeasWith,omitempty"`
+	// "mods" edge predicates.
+	HasMods     *bool            `json:"hasMods,omitempty"`
+	HasModsWith []*ModWhereInput `json:"hasModsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -9195,23 +9279,23 @@ func (i *TaskWhereInput) P() (predicate.Task, error) {
 		}
 		predicates = append(predicates, task.HasSubtasksWith(with...))
 	}
-	if i.HasModIdeas != nil {
-		p := task.HasModIdeas()
-		if !*i.HasModIdeas {
+	if i.HasMods != nil {
+		p := task.HasMods()
+		if !*i.HasMods {
 			p = task.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
-	if len(i.HasModIdeasWith) > 0 {
-		with := make([]predicate.ModIdea, 0, len(i.HasModIdeasWith))
-		for _, w := range i.HasModIdeasWith {
+	if len(i.HasModsWith) > 0 {
+		with := make([]predicate.Mod, 0, len(i.HasModsWith))
+		for _, w := range i.HasModsWith {
 			p, err := w.P()
 			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasModIdeasWith'", err)
+				return nil, fmt.Errorf("%w: field 'HasModsWith'", err)
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, task.HasModIdeasWith(with...))
+		predicates = append(predicates, task.HasModsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -9362,6 +9446,10 @@ type UserWhereInput struct {
 	// "checkout_sessions" edge predicates.
 	HasCheckoutSessions     *bool                        `json:"hasCheckoutSessions,omitempty"`
 	HasCheckoutSessionsWith []*CheckoutSessionWhereInput `json:"hasCheckoutSessionsWith,omitempty"`
+
+	// "media" edge predicates.
+	HasMedia     *bool              `json:"hasMedia,omitempty"`
+	HasMediaWith []*MediaWhereInput `json:"hasMediaWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -9816,6 +9904,24 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, user.HasCheckoutSessionsWith(with...))
+	}
+	if i.HasMedia != nil {
+		p := user.HasMedia()
+		if !*i.HasMedia {
+			p = user.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasMediaWith) > 0 {
+		with := make([]predicate.Media, 0, len(i.HasMediaWith))
+		for _, w := range i.HasMediaWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasMediaWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, user.HasMediaWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

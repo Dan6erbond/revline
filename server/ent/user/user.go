@@ -41,6 +41,8 @@ const (
 	EdgeSubscriptions = "subscriptions"
 	// EdgeCheckoutSessions holds the string denoting the checkout_sessions edge name in mutations.
 	EdgeCheckoutSessions = "checkout_sessions"
+	// EdgeMedia holds the string denoting the media edge name in mutations.
+	EdgeMedia = "media"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// CarsTable is the table that holds the cars relation/edge.
@@ -78,6 +80,13 @@ const (
 	CheckoutSessionsInverseTable = "checkout_sessions"
 	// CheckoutSessionsColumn is the table column denoting the checkout_sessions relation/edge.
 	CheckoutSessionsColumn = "user_checkout_sessions"
+	// MediaTable is the table that holds the media relation/edge.
+	MediaTable = "media"
+	// MediaInverseTable is the table name for the Media entity.
+	// It exists in this package in order to avoid circular dependency with the "media" package.
+	MediaInverseTable = "media"
+	// MediaColumn is the table column denoting the media relation/edge.
+	MediaColumn = "user_media"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -212,6 +221,20 @@ func ByCheckoutSessions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption 
 		sqlgraph.OrderByNeighborTerms(s, newCheckoutSessionsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByMediaCount orders the results by media count.
+func ByMediaCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newMediaStep(), opts...)
+	}
+}
+
+// ByMedia orders the results by media terms.
+func ByMedia(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMediaStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newCarsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -245,5 +268,12 @@ func newCheckoutSessionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CheckoutSessionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, CheckoutSessionsTable, CheckoutSessionsColumn),
+	)
+}
+func newMediaStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MediaInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, MediaTable, MediaColumn),
 	)
 }

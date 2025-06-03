@@ -59,8 +59,8 @@ const (
 	EdgeBannerImage = "banner_image"
 	// EdgeTasks holds the string denoting the tasks edge name in mutations.
 	EdgeTasks = "tasks"
-	// EdgeModIdeas holds the string denoting the mod_ideas edge name in mutations.
-	EdgeModIdeas = "mod_ideas"
+	// EdgeMods holds the string denoting the mods edge name in mutations.
+	EdgeMods = "mods"
 	// Table holds the table name of the car in the database.
 	Table = "cars"
 	// OwnerTable is the table that holds the owner relation/edge.
@@ -161,13 +161,13 @@ const (
 	TasksInverseTable = "tasks"
 	// TasksColumn is the table column denoting the tasks relation/edge.
 	TasksColumn = "car_tasks"
-	// ModIdeasTable is the table that holds the mod_ideas relation/edge.
-	ModIdeasTable = "mod_ideas"
-	// ModIdeasInverseTable is the table name for the ModIdea entity.
-	// It exists in this package in order to avoid circular dependency with the "modidea" package.
-	ModIdeasInverseTable = "mod_ideas"
-	// ModIdeasColumn is the table column denoting the mod_ideas relation/edge.
-	ModIdeasColumn = "car_mod_ideas"
+	// ModsTable is the table that holds the mods relation/edge.
+	ModsTable = "mods"
+	// ModsInverseTable is the table name for the Mod entity.
+	// It exists in this package in order to avoid circular dependency with the "mod" package.
+	ModsInverseTable = "mods"
+	// ModsColumn is the table column denoting the mods relation/edge.
+	ModsColumn = "car_mods"
 )
 
 // Columns holds all SQL columns for car fields.
@@ -446,17 +446,17 @@ func ByTasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByModIdeasCount orders the results by mod_ideas count.
-func ByModIdeasCount(opts ...sql.OrderTermOption) OrderOption {
+// ByModsCount orders the results by mods count.
+func ByModsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newModIdeasStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newModsStep(), opts...)
 	}
 }
 
-// ByModIdeas orders the results by mod_ideas terms.
-func ByModIdeas(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByMods orders the results by mods terms.
+func ByMods(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newModIdeasStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newModsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newOwnerStep() *sqlgraph.Step {
@@ -557,10 +557,10 @@ func newTasksStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, TasksTable, TasksColumn),
 	)
 }
-func newModIdeasStep() *sqlgraph.Step {
+func newModsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ModIdeasInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, ModIdeasTable, ModIdeasColumn),
+		sqlgraph.To(ModsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ModsTable, ModsColumn),
 	)
 }

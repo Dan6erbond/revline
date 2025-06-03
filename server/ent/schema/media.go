@@ -28,7 +28,13 @@ func (Media) Fields() []ent.Field {
 // Edges of the Media.
 func (Media) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.From("user", User.Type).
+			Ref("media").
+			Unique(),
 		edge.From("car", Car.Type).
+			Ref("media").
+			Unique(),
+		edge.From("mod_product_option", ModProductOption.Type).
 			Ref("media").
 			Unique(),
 		edge.From("albums", Album.Type).

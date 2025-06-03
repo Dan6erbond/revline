@@ -74,8 +74,8 @@ type CarEdges struct {
 	BannerImage *Media `json:"banner_image,omitempty"`
 	// Tasks holds the value of the tasks edge.
 	Tasks []*Task `json:"tasks,omitempty"`
-	// ModIdeas holds the value of the mod_ideas edge.
-	ModIdeas []*ModIdea `json:"mod_ideas,omitempty"`
+	// Mods holds the value of the mods edge.
+	Mods []*Mod `json:"mods,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [15]bool
@@ -94,7 +94,7 @@ type CarEdges struct {
 	namedDynoSessions     map[string][]*DynoSession
 	namedExpenses         map[string][]*Expense
 	namedTasks            map[string][]*Task
-	namedModIdeas         map[string][]*ModIdea
+	namedMods             map[string][]*Mod
 }
 
 // OwnerOrErr returns the Owner value or an error if the edge
@@ -227,13 +227,13 @@ func (e CarEdges) TasksOrErr() ([]*Task, error) {
 	return nil, &NotLoadedError{edge: "tasks"}
 }
 
-// ModIdeasOrErr returns the ModIdeas value or an error if the edge
+// ModsOrErr returns the Mods value or an error if the edge
 // was not loaded in eager-loading.
-func (e CarEdges) ModIdeasOrErr() ([]*ModIdea, error) {
+func (e CarEdges) ModsOrErr() ([]*Mod, error) {
 	if e.loadedTypes[14] {
-		return e.ModIdeas, nil
+		return e.Mods, nil
 	}
-	return nil, &NotLoadedError{edge: "mod_ideas"}
+	return nil, &NotLoadedError{edge: "mods"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -424,9 +424,9 @@ func (c *Car) QueryTasks() *TaskQuery {
 	return NewCarClient(c.config).QueryTasks(c)
 }
 
-// QueryModIdeas queries the "mod_ideas" edge of the Car entity.
-func (c *Car) QueryModIdeas() *ModIdeaQuery {
-	return NewCarClient(c.config).QueryModIdeas(c)
+// QueryMods queries the "mods" edge of the Car entity.
+func (c *Car) QueryMods() *ModQuery {
+	return NewCarClient(c.config).QueryMods(c)
 }
 
 // Update returns a builder for updating this Car.
@@ -777,27 +777,27 @@ func (c *Car) appendNamedTasks(name string, edges ...*Task) {
 	}
 }
 
-// NamedModIdeas returns the ModIdeas named value or an error if the edge was not
+// NamedMods returns the Mods named value or an error if the edge was not
 // loaded in eager-loading with this name.
-func (c *Car) NamedModIdeas(name string) ([]*ModIdea, error) {
-	if c.Edges.namedModIdeas == nil {
+func (c *Car) NamedMods(name string) ([]*Mod, error) {
+	if c.Edges.namedMods == nil {
 		return nil, &NotLoadedError{edge: name}
 	}
-	nodes, ok := c.Edges.namedModIdeas[name]
+	nodes, ok := c.Edges.namedMods[name]
 	if !ok {
 		return nil, &NotLoadedError{edge: name}
 	}
 	return nodes, nil
 }
 
-func (c *Car) appendNamedModIdeas(name string, edges ...*ModIdea) {
-	if c.Edges.namedModIdeas == nil {
-		c.Edges.namedModIdeas = make(map[string][]*ModIdea)
+func (c *Car) appendNamedMods(name string, edges ...*Mod) {
+	if c.Edges.namedMods == nil {
+		c.Edges.namedMods = make(map[string][]*Mod)
 	}
 	if len(edges) == 0 {
-		c.Edges.namedModIdeas[name] = []*ModIdea{}
+		c.Edges.namedMods[name] = []*Mod{}
 	} else {
-		c.Edges.namedModIdeas[name] = append(c.Edges.namedModIdeas[name], edges...)
+		c.Edges.namedMods[name] = append(c.Edges.namedMods[name], edges...)
 	}
 }
 

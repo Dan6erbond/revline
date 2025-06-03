@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/modproductoption"
+	"github.com/Dan6erbond/revline/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -29,24 +31,41 @@ type Media struct {
 	Description *string `json:"description,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MediaQuery when eager-loading is set.
-	Edges        MediaEdges `json:"edges"`
-	car_media    *uuid.UUID
-	selectValues sql.SelectValues
+	Edges                    MediaEdges `json:"edges"`
+	car_media                *uuid.UUID
+	mod_product_option_media *uuid.UUID
+	user_media               *uuid.UUID
+	selectValues             sql.SelectValues
 }
 
 // MediaEdges holds the relations/edges for other nodes in the graph.
 type MediaEdges struct {
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// Car holds the value of the car edge.
 	Car *Car `json:"car,omitempty"`
+	// ModProductOption holds the value of the mod_product_option edge.
+	ModProductOption *ModProductOption `json:"mod_product_option,omitempty"`
 	// Albums holds the value of the albums edge.
 	Albums []*Album `json:"albums,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [4]bool
 	// totalCount holds the count of the edges above.
-	totalCount [2]map[string]int
+	totalCount [4]map[string]int
 
 	namedAlbums map[string][]*Album
+}
+
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e MediaEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // CarOrErr returns the Car value or an error if the edge
@@ -54,16 +73,27 @@ type MediaEdges struct {
 func (e MediaEdges) CarOrErr() (*Car, error) {
 	if e.Car != nil {
 		return e.Car, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: car.Label}
 	}
 	return nil, &NotLoadedError{edge: "car"}
 }
 
+// ModProductOptionOrErr returns the ModProductOption value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e MediaEdges) ModProductOptionOrErr() (*ModProductOption, error) {
+	if e.ModProductOption != nil {
+		return e.ModProductOption, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: modproductoption.Label}
+	}
+	return nil, &NotLoadedError{edge: "mod_product_option"}
+}
+
 // AlbumsOrErr returns the Albums value or an error if the edge
 // was not loaded in eager-loading.
 func (e MediaEdges) AlbumsOrErr() ([]*Album, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[3] {
 		return e.Albums, nil
 	}
 	return nil, &NotLoadedError{edge: "albums"}
@@ -81,6 +111,10 @@ func (*Media) scanValues(columns []string) ([]any, error) {
 		case media.FieldID:
 			values[i] = new(uuid.UUID)
 		case media.ForeignKeys[0]: // car_media
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case media.ForeignKeys[1]: // mod_product_option_media
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case media.ForeignKeys[2]: // user_media
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -136,6 +170,20 @@ func (m *Media) assignValues(columns []string, values []any) error {
 				m.car_media = new(uuid.UUID)
 				*m.car_media = *value.S.(*uuid.UUID)
 			}
+		case media.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field mod_product_option_media", values[i])
+			} else if value.Valid {
+				m.mod_product_option_media = new(uuid.UUID)
+				*m.mod_product_option_media = *value.S.(*uuid.UUID)
+			}
+		case media.ForeignKeys[2]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field user_media", values[i])
+			} else if value.Valid {
+				m.user_media = new(uuid.UUID)
+				*m.user_media = *value.S.(*uuid.UUID)
+			}
 		default:
 			m.selectValues.Set(columns[i], values[i])
 		}
@@ -149,9 +197,19 @@ func (m *Media) Value(name string) (ent.Value, error) {
 	return m.selectValues.Get(name)
 }
 
+// QueryUser queries the "user" edge of the Media entity.
+func (m *Media) QueryUser() *UserQuery {
+	return NewMediaClient(m.config).QueryUser(m)
+}
+
 // QueryCar queries the "car" edge of the Media entity.
 func (m *Media) QueryCar() *CarQuery {
 	return NewMediaClient(m.config).QueryCar(m)
+}
+
+// QueryModProductOption queries the "mod_product_option" edge of the Media entity.
+func (m *Media) QueryModProductOption() *ModProductOptionQuery {
+	return NewMediaClient(m.config).QueryModProductOption(m)
 }
 
 // QueryAlbums queries the "albums" edge of the Media entity.

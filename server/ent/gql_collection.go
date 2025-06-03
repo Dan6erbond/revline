@@ -21,7 +21,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/profile"
@@ -412,16 +412,16 @@ func (c *CarQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphq
 				*wq = *query
 			})
 
-		case "modIdeas":
+		case "mods":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&ModIdeaClient{config: c.config}).Query()
+				query = (&ModClient{config: c.config}).Query()
 			)
-			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, modideaImplementors)...); err != nil {
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, modImplementors)...); err != nil {
 				return err
 			}
-			c.WithNamedModIdeas(alias, func(wq *ModIdeaQuery) {
+			c.WithNamedMods(alias, func(wq *ModQuery) {
 				*wq = *query
 			})
 		case "createTime":
@@ -1529,6 +1529,17 @@ func (m *MediaQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
 
+		case "user":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&UserClient{config: m.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, userImplementors)...); err != nil {
+				return err
+			}
+			m.withUser = query
+
 		case "car":
 			var (
 				alias = field.Alias
@@ -1539,6 +1550,17 @@ func (m *MediaQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 				return err
 			}
 			m.withCar = query
+
+		case "modProductOption":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ModProductOptionClient{config: m.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, modproductoptionImplementors)...); err != nil {
+				return err
+			}
+			m.withModProductOption = query
 
 		case "albums":
 			var (
@@ -1614,23 +1636,23 @@ func newMediaPaginateArgs(rv map[string]any) *mediaPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (mi *ModIdeaQuery) CollectFields(ctx context.Context, satisfies ...string) (*ModIdeaQuery, error) {
+func (m *ModQuery) CollectFields(ctx context.Context, satisfies ...string) (*ModQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
-		return mi, nil
+		return m, nil
 	}
-	if err := mi.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := m.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
-	return mi, nil
+	return m, nil
 }
 
-func (mi *ModIdeaQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+func (m *ModQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	var (
 		unknownSeen    bool
-		fieldSeen      = make(map[string]struct{}, len(modidea.Columns))
-		selectedFields = []string{modidea.FieldID}
+		fieldSeen      = make(map[string]struct{}, len(mod.Columns))
+		selectedFields = []string{mod.FieldID}
 	)
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
@@ -1639,23 +1661,23 @@ func (mi *ModIdeaQuery) collectField(ctx context.Context, oneNode bool, opCtx *g
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&CarClient{config: mi.config}).Query()
+				query = (&CarClient{config: m.config}).Query()
 			)
 			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, carImplementors)...); err != nil {
 				return err
 			}
-			mi.withCar = query
+			m.withCar = query
 
 		case "tasks":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&TaskClient{config: mi.config}).Query()
+				query = (&TaskClient{config: m.config}).Query()
 			)
 			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, taskImplementors)...); err != nil {
 				return err
 			}
-			mi.WithNamedTasks(alias, func(wq *TaskQuery) {
+			m.WithNamedTasks(alias, func(wq *TaskQuery) {
 				*wq = *query
 			})
 
@@ -1663,43 +1685,48 @@ func (mi *ModIdeaQuery) collectField(ctx context.Context, oneNode bool, opCtx *g
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&ModProductOptionClient{config: mi.config}).Query()
+				query = (&ModProductOptionClient{config: m.config}).Query()
 			)
 			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, modproductoptionImplementors)...); err != nil {
 				return err
 			}
-			mi.WithNamedProductOptions(alias, func(wq *ModProductOptionQuery) {
+			m.WithNamedProductOptions(alias, func(wq *ModProductOptionQuery) {
 				*wq = *query
 			})
 		case "createTime":
-			if _, ok := fieldSeen[modidea.FieldCreateTime]; !ok {
-				selectedFields = append(selectedFields, modidea.FieldCreateTime)
-				fieldSeen[modidea.FieldCreateTime] = struct{}{}
+			if _, ok := fieldSeen[mod.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, mod.FieldCreateTime)
+				fieldSeen[mod.FieldCreateTime] = struct{}{}
 			}
 		case "updateTime":
-			if _, ok := fieldSeen[modidea.FieldUpdateTime]; !ok {
-				selectedFields = append(selectedFields, modidea.FieldUpdateTime)
-				fieldSeen[modidea.FieldUpdateTime] = struct{}{}
+			if _, ok := fieldSeen[mod.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, mod.FieldUpdateTime)
+				fieldSeen[mod.FieldUpdateTime] = struct{}{}
 			}
 		case "title":
-			if _, ok := fieldSeen[modidea.FieldTitle]; !ok {
-				selectedFields = append(selectedFields, modidea.FieldTitle)
-				fieldSeen[modidea.FieldTitle] = struct{}{}
+			if _, ok := fieldSeen[mod.FieldTitle]; !ok {
+				selectedFields = append(selectedFields, mod.FieldTitle)
+				fieldSeen[mod.FieldTitle] = struct{}{}
 			}
 		case "category":
-			if _, ok := fieldSeen[modidea.FieldCategory]; !ok {
-				selectedFields = append(selectedFields, modidea.FieldCategory)
-				fieldSeen[modidea.FieldCategory] = struct{}{}
+			if _, ok := fieldSeen[mod.FieldCategory]; !ok {
+				selectedFields = append(selectedFields, mod.FieldCategory)
+				fieldSeen[mod.FieldCategory] = struct{}{}
+			}
+		case "status":
+			if _, ok := fieldSeen[mod.FieldStatus]; !ok {
+				selectedFields = append(selectedFields, mod.FieldStatus)
+				fieldSeen[mod.FieldStatus] = struct{}{}
 			}
 		case "description":
-			if _, ok := fieldSeen[modidea.FieldDescription]; !ok {
-				selectedFields = append(selectedFields, modidea.FieldDescription)
-				fieldSeen[modidea.FieldDescription] = struct{}{}
+			if _, ok := fieldSeen[mod.FieldDescription]; !ok {
+				selectedFields = append(selectedFields, mod.FieldDescription)
+				fieldSeen[mod.FieldDescription] = struct{}{}
 			}
 		case "stage":
-			if _, ok := fieldSeen[modidea.FieldStage]; !ok {
-				selectedFields = append(selectedFields, modidea.FieldStage)
-				fieldSeen[modidea.FieldStage] = struct{}{}
+			if _, ok := fieldSeen[mod.FieldStage]; !ok {
+				selectedFields = append(selectedFields, mod.FieldStage)
+				fieldSeen[mod.FieldStage] = struct{}{}
 			}
 		case "id":
 		case "__typename":
@@ -1708,19 +1735,19 @@ func (mi *ModIdeaQuery) collectField(ctx context.Context, oneNode bool, opCtx *g
 		}
 	}
 	if !unknownSeen {
-		mi.Select(selectedFields...)
+		m.Select(selectedFields...)
 	}
 	return nil
 }
 
-type modideaPaginateArgs struct {
+type modPaginateArgs struct {
 	first, last   *int
 	after, before *Cursor
-	opts          []ModIdeaPaginateOption
+	opts          []ModPaginateOption
 }
 
-func newModIdeaPaginateArgs(rv map[string]any) *modideaPaginateArgs {
-	args := &modideaPaginateArgs{}
+func newModPaginateArgs(rv map[string]any) *modPaginateArgs {
+	args := &modPaginateArgs{}
 	if rv == nil {
 		return args
 	}
@@ -1736,8 +1763,8 @@ func newModIdeaPaginateArgs(rv map[string]any) *modideaPaginateArgs {
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
 	}
-	if v, ok := rv[whereField].(*ModIdeaWhereInput); ok {
-		args.opts = append(args.opts, WithModIdeaFilter(v.Filter))
+	if v, ok := rv[whereField].(*ModWhereInput); ok {
+		args.opts = append(args.opts, WithModFilter(v.Filter))
 	}
 	return args
 }
@@ -1764,16 +1791,29 @@ func (mpo *ModProductOptionQuery) collectField(ctx context.Context, oneNode bool
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
 
-		case "idea":
+		case "mod":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&ModIdeaClient{config: mpo.config}).Query()
+				query = (&ModClient{config: mpo.config}).Query()
 			)
-			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, modideaImplementors)...); err != nil {
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, modImplementors)...); err != nil {
 				return err
 			}
-			mpo.withIdea = query
+			mpo.withMod = query
+
+		case "media":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&MediaClient{config: mpo.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, mediaImplementors)...); err != nil {
+				return err
+			}
+			mpo.WithNamedMedia(alias, func(wq *MediaQuery) {
+				*wq = *query
+			})
 		case "createTime":
 			if _, ok := fieldSeen[modproductoption.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, modproductoption.FieldCreateTime)
@@ -2719,16 +2759,16 @@ func (t *TaskQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 				*wq = *query
 			})
 
-		case "modIdeas":
+		case "mods":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&ModIdeaClient{config: t.config}).Query()
+				query = (&ModClient{config: t.config}).Query()
 			)
-			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, modideaImplementors)...); err != nil {
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, modImplementors)...); err != nil {
 				return err
 			}
-			t.WithNamedModIdeas(alias, func(wq *ModIdeaQuery) {
+			t.WithNamedMods(alias, func(wq *ModQuery) {
 				*wq = *query
 			})
 		case "createTime":
@@ -2945,6 +2985,19 @@ func (u *UserQuery) collectField(ctx context.Context, oneNode bool, opCtx *graph
 				return err
 			}
 			u.WithNamedCheckoutSessions(alias, func(wq *CheckoutSessionQuery) {
+				*wq = *query
+			})
+
+		case "media":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&MediaClient{config: u.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, mediaImplementors)...); err != nil {
+				return err
+			}
+			u.WithNamedMedia(alias, func(wq *MediaQuery) {
 				*wq = *query
 			})
 		case "createTime":

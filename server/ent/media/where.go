@@ -306,6 +306,29 @@ func DescriptionContainsFold(v string) predicate.Media {
 	return predicate.Media(sql.FieldContainsFold(FieldDescription, v))
 }
 
+// HasUser applies the HasEdge predicate on the "user" edge.
+func HasUser() predicate.Media {
+	return predicate.Media(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
+func HasUserWith(preds ...predicate.User) predicate.Media {
+	return predicate.Media(func(s *sql.Selector) {
+		step := newUserStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasCar applies the HasEdge predicate on the "car" edge.
 func HasCar() predicate.Media {
 	return predicate.Media(func(s *sql.Selector) {
@@ -321,6 +344,29 @@ func HasCar() predicate.Media {
 func HasCarWith(preds ...predicate.Car) predicate.Media {
 	return predicate.Media(func(s *sql.Selector) {
 		step := newCarStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasModProductOption applies the HasEdge predicate on the "mod_product_option" edge.
+func HasModProductOption() predicate.Media {
+	return predicate.Media(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ModProductOptionTable, ModProductOptionColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasModProductOptionWith applies the HasEdge predicate on the "mod_product_option" edge with a given conditions (other predicates).
+func HasModProductOptionWith(preds ...predicate.ModProductOption) predicate.Media {
+	return predicate.Media(func(s *sql.Selector) {
+		step := newModProductOptionStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

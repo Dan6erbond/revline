@@ -141,16 +141,16 @@ func (f MediaFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MediaMutation", m)
 }
 
-// The ModIdeaFunc type is an adapter to allow the use of ordinary
-// function as ModIdea mutator.
-type ModIdeaFunc func(context.Context, *ent.ModIdeaMutation) (ent.Value, error)
+// The ModFunc type is an adapter to allow the use of ordinary
+// function as Mod mutator.
+type ModFunc func(context.Context, *ent.ModMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f ModIdeaFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ModIdeaMutation); ok {
+func (f ModFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ModMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ModIdeaMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ModMutation", m)
 }
 
 // The ModProductOptionFunc type is an adapter to allow the use of ordinary

@@ -551,21 +551,44 @@ func SpecsNotNil() predicate.ModProductOption {
 	return predicate.ModProductOption(sql.FieldNotNull(FieldSpecs))
 }
 
-// HasIdea applies the HasEdge predicate on the "idea" edge.
-func HasIdea() predicate.ModProductOption {
+// HasMod applies the HasEdge predicate on the "mod" edge.
+func HasMod() predicate.ModProductOption {
 	return predicate.ModProductOption(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, IdeaTable, IdeaColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, ModTable, ModColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasIdeaWith applies the HasEdge predicate on the "idea" edge with a given conditions (other predicates).
-func HasIdeaWith(preds ...predicate.ModIdea) predicate.ModProductOption {
+// HasModWith applies the HasEdge predicate on the "mod" edge with a given conditions (other predicates).
+func HasModWith(preds ...predicate.Mod) predicate.ModProductOption {
 	return predicate.ModProductOption(func(s *sql.Selector) {
-		step := newIdeaStep()
+		step := newModStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMedia applies the HasEdge predicate on the "media" edge.
+func HasMedia() predicate.ModProductOption {
+	return predicate.ModProductOption(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MediaTable, MediaColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMediaWith applies the HasEdge predicate on the "media" edge with a given conditions (other predicates).
+func HasMediaWith(preds ...predicate.Media) predicate.ModProductOption {
+	return predicate.ModProductOption(func(s *sql.Selector) {
+		step := newMediaStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

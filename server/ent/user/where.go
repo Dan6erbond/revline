@@ -661,6 +661,29 @@ func HasCheckoutSessionsWith(preds ...predicate.CheckoutSession) predicate.User 
 	})
 }
 
+// HasMedia applies the HasEdge predicate on the "media" edge.
+func HasMedia() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MediaTable, MediaColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMediaWith applies the HasEdge predicate on the "media" edge with a given conditions (other predicates).
+func HasMediaWith(preds ...predicate.Media) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newMediaStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(sql.AndPredicates(predicates...))

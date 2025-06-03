@@ -50,8 +50,8 @@ const (
 	EdgeParent = "parent"
 	// EdgeSubtasks holds the string denoting the subtasks edge name in mutations.
 	EdgeSubtasks = "subtasks"
-	// EdgeModIdeas holds the string denoting the mod_ideas edge name in mutations.
-	EdgeModIdeas = "mod_ideas"
+	// EdgeMods holds the string denoting the mods edge name in mutations.
+	EdgeMods = "mods"
 	// Table holds the table name of the task in the database.
 	Table = "tasks"
 	// CarTable is the table that holds the car relation/edge.
@@ -69,11 +69,11 @@ const (
 	SubtasksTable = "tasks"
 	// SubtasksColumn is the table column denoting the subtasks relation/edge.
 	SubtasksColumn = "task_subtasks"
-	// ModIdeasTable is the table that holds the mod_ideas relation/edge. The primary key declared below.
-	ModIdeasTable = "task_mod_ideas"
-	// ModIdeasInverseTable is the table name for the ModIdea entity.
-	// It exists in this package in order to avoid circular dependency with the "modidea" package.
-	ModIdeasInverseTable = "mod_ideas"
+	// ModsTable is the table that holds the mods relation/edge. The primary key declared below.
+	ModsTable = "task_mods"
+	// ModsInverseTable is the table name for the Mod entity.
+	// It exists in this package in order to avoid circular dependency with the "mod" package.
+	ModsInverseTable = "mods"
 )
 
 // Columns holds all SQL columns for task fields.
@@ -102,9 +102,9 @@ var ForeignKeys = []string{
 }
 
 var (
-	// ModIdeasPrimaryKey and ModIdeasColumn2 are the table columns denoting the
-	// primary key for the mod_ideas relation (M2M).
-	ModIdeasPrimaryKey = []string{"task_id", "mod_idea_id"}
+	// ModsPrimaryKey and ModsColumn2 are the table columns denoting the
+	// primary key for the mods relation (M2M).
+	ModsPrimaryKey = []string{"task_id", "mod_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -374,17 +374,17 @@ func BySubtasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByModIdeasCount orders the results by mod_ideas count.
-func ByModIdeasCount(opts ...sql.OrderTermOption) OrderOption {
+// ByModsCount orders the results by mods count.
+func ByModsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newModIdeasStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newModsStep(), opts...)
 	}
 }
 
-// ByModIdeas orders the results by mod_ideas terms.
-func ByModIdeas(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByMods orders the results by mods terms.
+func ByMods(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newModIdeasStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newModsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newCarStep() *sqlgraph.Step {
@@ -408,11 +408,11 @@ func newSubtasksStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, SubtasksTable, SubtasksColumn),
 	)
 }
-func newModIdeasStep() *sqlgraph.Step {
+func newModsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ModIdeasInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, ModIdeasTable, ModIdeasPrimaryKey...),
+		sqlgraph.To(ModsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, ModsTable, ModsPrimaryKey...),
 	)
 }
 

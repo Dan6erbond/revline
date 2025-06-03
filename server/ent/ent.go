@@ -23,7 +23,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/profile"
@@ -105,7 +105,7 @@ func checkColumn(table, column string) error {
 			expense.Table:          expense.ValidColumn,
 			fuelup.Table:           fuelup.ValidColumn,
 			media.Table:            media.ValidColumn,
-			modidea.Table:          modidea.ValidColumn,
+			mod.Table:              mod.ValidColumn,
 			modproductoption.Table: modproductoption.ValidColumn,
 			odometerreading.Table:  odometerreading.ValidColumn,
 			profile.Table:          profile.ValidColumn,

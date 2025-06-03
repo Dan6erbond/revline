@@ -10,13 +10,13 @@ import (
 	"github.com/google/uuid"
 )
 
-// ModIdea holds the schema definition for the ModIdea entity.
-type ModIdea struct {
+// Mod holds the schema definition for the Mod entity.
+type Mod struct {
 	ent.Schema
 }
 
-// Fields of the ModIdea.
-func (ModIdea) Fields() []ent.Field {
+// Fields of the Mod.
+func (Mod) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
@@ -26,10 +26,14 @@ func (ModIdea) Fields() []ent.Field {
 				"Performance", "performance",
 				"Aesthetic", "aesthetic",
 				"Utility", "utility",
-			).
-			Annotations(
-				entgql.Type("ModCategory"),
 			),
+		field.Enum("status").
+			NamedValues(
+				"Idea", "idea",
+				"Planned", "planned",
+				"Completed", "completed",
+			).
+			Default("idea"),
 		field.String("description").
 			Optional().
 			Nillable(),
@@ -39,29 +43,29 @@ func (ModIdea) Fields() []ent.Field {
 	}
 }
 
-// Edges of the ModIdea.
-func (ModIdea) Edges() []ent.Edge {
+// Edges of the Mod.
+func (Mod) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("car", Car.Type).
-			Ref("mod_ideas").
+			Ref("mods").
 			Unique().
 			Required(),
 		edge.From("tasks", Task.Type).
-			Ref("mod_ideas"),
+			Ref("mods"),
 		edge.To("product_options", ModProductOption.Type),
 		/* edge.To("gains", ModGain.Type), */
 	}
 }
 
-// Mixins of the ModIdea.
-func (ModIdea) Mixin() []ent.Mixin {
+// Mixins of the Mod.
+func (Mod) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixin.Time{},
 	}
 }
 
-// Annotations returns ModIdea annotations.
-func (ModIdea) Annotations() []schema.Annotation {
+// Annotations returns Mod annotations.
+func (Mod) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 	}

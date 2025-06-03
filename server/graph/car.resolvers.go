@@ -299,37 +299,24 @@ func (r *documentResolver) Metadata(ctx context.Context, obj *ent.Document) (*mi
 
 // URL is the resolver for the url field.
 func (r *mediaResolver) URL(ctx context.Context, obj *ent.Media) (string, error) {
+	var objectName string
+
 	car, err := obj.QueryCar().WithOwner().First(ctx)
 
 	if err != nil {
-		return "", err
-	}
-
-	objectName := fmt.Sprintf("users/%s/cars/%s/media/%s", car.Edges.Owner.ID, car.ID, obj.ID)
-
-	object, err := r.s3Client.GetObject(ctx, r.config.S3.Bucket, objectName, minio.GetObjectOptions{})
-
-	if err != nil {
-		return "", err
-	}
-
-	info, err := object.Stat()
-
-	if err != nil {
-		if err, ok := err.(minio.ErrorResponse); ok && (err.Code == "NoSuchKey") {
-			return "", nil
+		if !ent.IsNotFound(err) {
+			return "", err
 		}
-		return "", err
-	}
 
-	if strings.HasPrefix(info.ContentType, "image/") {
-		baseURL, err := r.config.GetServerPublicURL()
+		user, err := obj.QueryUser().First(ctx)
 
 		if err != nil {
 			return "", err
 		}
 
-		return baseURL.JoinPath("/media/" + obj.ID.String()).String(), nil
+		objectName = fmt.Sprintf("users/%s/media/%s", user.ID, obj.ID)
+	} else {
+		objectName = fmt.Sprintf("users/%s/cars/%s/media/%s", car.Edges.Owner.ID, car.ID, obj.ID)
 	}
 
 	url, err := r.s3Client.PresignedGetObject(ctx, r.config.S3.Bucket, objectName, time.Hour, nil)
@@ -346,19 +333,25 @@ func (r *mediaResolver) URL(ctx context.Context, obj *ent.Media) (string, error)
 
 // Metadata is the resolver for the metadata field.
 func (r *mediaResolver) Metadata(ctx context.Context, obj *ent.Media) (*minio.ObjectInfo, error) {
-	car, err := obj.Car(ctx)
+	var objectName string
+
+	car, err := obj.QueryCar().WithOwner().First(ctx)
 
 	if err != nil {
-		return nil, err
+		if !ent.IsNotFound(err) {
+			return nil, err
+		}
+
+		user, err := obj.QueryUser().First(ctx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		objectName = fmt.Sprintf("users/%s/media/%s", user.ID, obj.ID)
+	} else {
+		objectName = fmt.Sprintf("users/%s/cars/%s/media/%s", car.Edges.Owner.ID, car.ID, obj.ID)
 	}
-
-	owner, err := car.Owner(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	objectName := fmt.Sprintf("users/%s/cars/%s/media/%s", owner.ID, car.ID, obj.ID)
 
 	object, err := r.s3Client.GetObject(ctx, r.config.S3.Bucket, objectName, minio.GetObjectOptions{})
 
@@ -424,19 +417,37 @@ func (r *mutationResolver) UploadBannerImage(ctx context.Context, input ent.Crea
 func (r *mutationResolver) UploadMedia(ctx context.Context, input ent.CreateMediaInput) (*model.UploadMediaResult, error) {
 	user := auth.ForContext(ctx)
 
-	car, err := r.entClient.Car.Get(ctx, *input.CarID)
+	var (
+		err        error
+		media      *ent.Media
+		objectName string
+	)
 
-	if err != nil {
-		return nil, err
+	if input.CarID != nil {
+		car, err := r.entClient.Car.Get(ctx, *input.CarID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		media, err = r.entClient.Media.Create().SetInput(input).Save(ctx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		objectName = fmt.Sprintf("users/%s/cars/%s/media/%s", user.ID, car.ID, media.ID)
+	} else {
+		input.UserID = &user.ID
+
+		media, err = r.entClient.Media.Create().SetInput(input).Save(ctx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		objectName = fmt.Sprintf("users/%s/media/%s", user.ID, media.ID)
 	}
-
-	media, err := r.entClient.Media.Create().SetInput(input).Save(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	objectName := fmt.Sprintf("users/%s/cars/%s/media/%s", user.ID, car.ID, media.ID)
 
 	url, err := r.s3Client.PresignedPutObject(ctx, r.config.S3.Bucket, objectName, time.Hour)
 
@@ -631,20 +642,20 @@ func (r *mutationResolver) UpdateTask(ctx context.Context, id string, input ent.
 	return r.entClient.Task.UpdateOneID(uid).SetInput(input).Save(ctx)
 }
 
-// CreateModIdea is the resolver for the createModIdea field.
-func (r *mutationResolver) CreateModIdea(ctx context.Context, input ent.CreateModIdeaInput) (*ent.ModIdea, error) {
-	return r.entClient.ModIdea.Create().SetInput(input).Save(ctx)
+// CreateMod is the resolver for the createMod field.
+func (r *mutationResolver) CreateMod(ctx context.Context, input ent.CreateModInput) (*ent.Mod, error) {
+	return r.entClient.Mod.Create().SetInput(input).Save(ctx)
 }
 
-// UpdateModIdea is the resolver for the updateModIdea field.
-func (r *mutationResolver) UpdateModIdea(ctx context.Context, id string, input ent.UpdateModIdeaInput) (*ent.ModIdea, error) {
+// UpdateMod is the resolver for the updateMod field.
+func (r *mutationResolver) UpdateMod(ctx context.Context, id string, input ent.UpdateModInput) (*ent.Mod, error) {
 	uid, err := uuid.Parse(id)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return r.entClient.ModIdea.UpdateOneID(uid).SetInput(input).Save(ctx)
+	return r.entClient.Mod.UpdateOneID(uid).SetInput(input).Save(ctx)
 }
 
 // CreateModProductOption is the resolver for the createModProductOption field.
@@ -740,15 +751,26 @@ func (r *queryResolver) Task(ctx context.Context, id string) (*ent.Task, error) 
 	return r.entClient.Task.Get(ctx, uid)
 }
 
-// ModIdea is the resolver for the modIdea field.
-func (r *queryResolver) ModIdea(ctx context.Context, id string) (*ent.ModIdea, error) {
+// Mod is the resolver for the mod field.
+func (r *queryResolver) Mod(ctx context.Context, id string) (*ent.Mod, error) {
 	uid, err := uuid.Parse(id)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return r.entClient.ModIdea.Get(ctx, uid)
+	return r.entClient.Mod.Get(ctx, uid)
+}
+
+// ModProductOption is the resolver for the modProductOption field.
+func (r *queryResolver) ModProductOption(ctx context.Context, id string) (*ent.ModProductOption, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.ModProductOption.Get(ctx, uid)
 }
 
 // Cost is the resolver for the cost field.

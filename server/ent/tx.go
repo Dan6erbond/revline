@@ -36,8 +36,8 @@ type Tx struct {
 	FuelUp *FuelUpClient
 	// Media is the client for interacting with the Media builders.
 	Media *MediaClient
-	// ModIdea is the client for interacting with the ModIdea builders.
-	ModIdea *ModIdeaClient
+	// Mod is the client for interacting with the Mod builders.
+	Mod *ModClient
 	// ModProductOption is the client for interacting with the ModProductOption builders.
 	ModProductOption *ModProductOptionClient
 	// OdometerReading is the client for interacting with the OdometerReading builders.
@@ -200,7 +200,7 @@ func (tx *Tx) init() {
 	tx.Expense = NewExpenseClient(tx.config)
 	tx.FuelUp = NewFuelUpClient(tx.config)
 	tx.Media = NewMediaClient(tx.config)
-	tx.ModIdea = NewModIdeaClient(tx.config)
+	tx.Mod = NewModClient(tx.config)
 	tx.ModProductOption = NewModProductOptionClient(tx.config)
 	tx.OdometerReading = NewOdometerReadingClient(tx.config)
 	tx.Profile = NewProfileClient(tx.config)

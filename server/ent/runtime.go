@@ -16,7 +16,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/media"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/profile"
@@ -264,25 +264,25 @@ func init() {
 	mediaDescID := mediaFields[0].Descriptor()
 	// media.DefaultID holds the default value on creation for the id field.
 	media.DefaultID = mediaDescID.Default.(func() uuid.UUID)
-	modideaMixin := schema.ModIdea{}.Mixin()
-	modideaMixinFields0 := modideaMixin[0].Fields()
-	_ = modideaMixinFields0
-	modideaFields := schema.ModIdea{}.Fields()
-	_ = modideaFields
-	// modideaDescCreateTime is the schema descriptor for create_time field.
-	modideaDescCreateTime := modideaMixinFields0[0].Descriptor()
-	// modidea.DefaultCreateTime holds the default value on creation for the create_time field.
-	modidea.DefaultCreateTime = modideaDescCreateTime.Default.(func() time.Time)
-	// modideaDescUpdateTime is the schema descriptor for update_time field.
-	modideaDescUpdateTime := modideaMixinFields0[1].Descriptor()
-	// modidea.DefaultUpdateTime holds the default value on creation for the update_time field.
-	modidea.DefaultUpdateTime = modideaDescUpdateTime.Default.(func() time.Time)
-	// modidea.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
-	modidea.UpdateDefaultUpdateTime = modideaDescUpdateTime.UpdateDefault.(func() time.Time)
-	// modideaDescID is the schema descriptor for id field.
-	modideaDescID := modideaFields[0].Descriptor()
-	// modidea.DefaultID holds the default value on creation for the id field.
-	modidea.DefaultID = modideaDescID.Default.(func() uuid.UUID)
+	modMixin := schema.Mod{}.Mixin()
+	modMixinFields0 := modMixin[0].Fields()
+	_ = modMixinFields0
+	modFields := schema.Mod{}.Fields()
+	_ = modFields
+	// modDescCreateTime is the schema descriptor for create_time field.
+	modDescCreateTime := modMixinFields0[0].Descriptor()
+	// mod.DefaultCreateTime holds the default value on creation for the create_time field.
+	mod.DefaultCreateTime = modDescCreateTime.Default.(func() time.Time)
+	// modDescUpdateTime is the schema descriptor for update_time field.
+	modDescUpdateTime := modMixinFields0[1].Descriptor()
+	// mod.DefaultUpdateTime holds the default value on creation for the update_time field.
+	mod.DefaultUpdateTime = modDescUpdateTime.Default.(func() time.Time)
+	// mod.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	mod.UpdateDefaultUpdateTime = modDescUpdateTime.UpdateDefault.(func() time.Time)
+	// modDescID is the schema descriptor for id field.
+	modDescID := modFields[0].Descriptor()
+	// mod.DefaultID holds the default value on creation for the id field.
+	mod.DefaultID = modDescID.Default.(func() uuid.UUID)
 	modproductoptionMixin := schema.ModProductOption{}.Mixin()
 	modproductoptionMixinFields0 := modproductoptionMixin[0].Fields()
 	_ = modproductoptionMixinFields0

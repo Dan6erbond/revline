@@ -56,10 +56,12 @@ func (ModProductOption) Fields() []ent.Field {
 // Edges of the ModProductOption.
 func (ModProductOption) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("idea", ModIdea.Type).
+		edge.From("mod", Mod.Type).
 			Ref("product_options").
 			Unique().
 			Required(),
+		edge.To("media", Media.Type),
+		/* edge.To("previews", ModProductOptionPreview.Type), */
 	}
 }
 

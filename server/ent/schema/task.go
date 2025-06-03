@@ -139,7 +139,7 @@ func (Task) Edges() []ent.Edge {
 		edge.To("subtasks", Task.Type).
 			From("parent").
 			Unique(),
-		edge.To("mod_ideas", ModIdea.Type),
+		edge.To("mods", Mod.Type),
 	}
 }
 

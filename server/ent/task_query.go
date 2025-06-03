@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/google/uuid"
@@ -29,12 +29,12 @@ type TaskQuery struct {
 	withCar           *CarQuery
 	withParent        *TaskQuery
 	withSubtasks      *TaskQuery
-	withModIdeas      *ModIdeaQuery
+	withMods          *ModQuery
 	withFKs           bool
 	modifiers         []func(*sql.Selector)
 	loadTotal         []func(context.Context, []*Task) error
 	withNamedSubtasks map[string]*TaskQuery
-	withNamedModIdeas map[string]*ModIdeaQuery
+	withNamedMods     map[string]*ModQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -137,9 +137,9 @@ func (tq *TaskQuery) QuerySubtasks() *TaskQuery {
 	return query
 }
 
-// QueryModIdeas chains the current query on the "mod_ideas" edge.
-func (tq *TaskQuery) QueryModIdeas() *ModIdeaQuery {
-	query := (&ModIdeaClient{config: tq.config}).Query()
+// QueryMods chains the current query on the "mods" edge.
+func (tq *TaskQuery) QueryMods() *ModQuery {
+	query := (&ModClient{config: tq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := tq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -150,8 +150,8 @@ func (tq *TaskQuery) QueryModIdeas() *ModIdeaQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(task.Table, task.FieldID, selector),
-			sqlgraph.To(modidea.Table, modidea.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, task.ModIdeasTable, task.ModIdeasPrimaryKey...),
+			sqlgraph.To(mod.Table, mod.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, task.ModsTable, task.ModsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -354,7 +354,7 @@ func (tq *TaskQuery) Clone() *TaskQuery {
 		withCar:      tq.withCar.Clone(),
 		withParent:   tq.withParent.Clone(),
 		withSubtasks: tq.withSubtasks.Clone(),
-		withModIdeas: tq.withModIdeas.Clone(),
+		withMods:     tq.withMods.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
@@ -394,14 +394,14 @@ func (tq *TaskQuery) WithSubtasks(opts ...func(*TaskQuery)) *TaskQuery {
 	return tq
 }
 
-// WithModIdeas tells the query-builder to eager-load the nodes that are connected to
-// the "mod_ideas" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TaskQuery) WithModIdeas(opts ...func(*ModIdeaQuery)) *TaskQuery {
-	query := (&ModIdeaClient{config: tq.config}).Query()
+// WithMods tells the query-builder to eager-load the nodes that are connected to
+// the "mods" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TaskQuery) WithMods(opts ...func(*ModQuery)) *TaskQuery {
+	query := (&ModClient{config: tq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	tq.withModIdeas = query
+	tq.withMods = query
 	return tq
 }
 
@@ -488,7 +488,7 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 			tq.withCar != nil,
 			tq.withParent != nil,
 			tq.withSubtasks != nil,
-			tq.withModIdeas != nil,
+			tq.withMods != nil,
 		}
 	)
 	if tq.withCar != nil || tq.withParent != nil {
@@ -537,10 +537,10 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 			return nil, err
 		}
 	}
-	if query := tq.withModIdeas; query != nil {
-		if err := tq.loadModIdeas(ctx, query, nodes,
-			func(n *Task) { n.Edges.ModIdeas = []*ModIdea{} },
-			func(n *Task, e *ModIdea) { n.Edges.ModIdeas = append(n.Edges.ModIdeas, e) }); err != nil {
+	if query := tq.withMods; query != nil {
+		if err := tq.loadMods(ctx, query, nodes,
+			func(n *Task) { n.Edges.Mods = []*Mod{} },
+			func(n *Task, e *Mod) { n.Edges.Mods = append(n.Edges.Mods, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -551,10 +551,10 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 			return nil, err
 		}
 	}
-	for name, query := range tq.withNamedModIdeas {
-		if err := tq.loadModIdeas(ctx, query, nodes,
-			func(n *Task) { n.appendNamedModIdeas(name) },
-			func(n *Task, e *ModIdea) { n.appendNamedModIdeas(name, e) }); err != nil {
+	for name, query := range tq.withNamedMods {
+		if err := tq.loadMods(ctx, query, nodes,
+			func(n *Task) { n.appendNamedMods(name) },
+			func(n *Task, e *Mod) { n.appendNamedMods(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -661,7 +661,7 @@ func (tq *TaskQuery) loadSubtasks(ctx context.Context, query *TaskQuery, nodes [
 	}
 	return nil
 }
-func (tq *TaskQuery) loadModIdeas(ctx context.Context, query *ModIdeaQuery, nodes []*Task, init func(*Task), assign func(*Task, *ModIdea)) error {
+func (tq *TaskQuery) loadMods(ctx context.Context, query *ModQuery, nodes []*Task, init func(*Task), assign func(*Task, *Mod)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Task)
 	nids := make(map[uuid.UUID]map[*Task]struct{})
@@ -673,11 +673,11 @@ func (tq *TaskQuery) loadModIdeas(ctx context.Context, query *ModIdeaQuery, node
 		}
 	}
 	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(task.ModIdeasTable)
-		s.Join(joinT).On(s.C(modidea.FieldID), joinT.C(task.ModIdeasPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(task.ModIdeasPrimaryKey[0]), edgeIDs...))
+		joinT := sql.Table(task.ModsTable)
+		s.Join(joinT).On(s.C(mod.FieldID), joinT.C(task.ModsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(task.ModsPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
-		s.Select(joinT.C(task.ModIdeasPrimaryKey[0]))
+		s.Select(joinT.C(task.ModsPrimaryKey[0]))
 		s.AppendSelect(columns...)
 		s.SetDistinct(false)
 	})
@@ -707,14 +707,14 @@ func (tq *TaskQuery) loadModIdeas(ctx context.Context, query *ModIdeaQuery, node
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*ModIdea](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*Mod](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
 		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "mod_ideas" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "mods" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)
@@ -821,17 +821,17 @@ func (tq *TaskQuery) WithNamedSubtasks(name string, opts ...func(*TaskQuery)) *T
 	return tq
 }
 
-// WithNamedModIdeas tells the query-builder to eager-load the nodes that are connected to the "mod_ideas"
+// WithNamedMods tells the query-builder to eager-load the nodes that are connected to the "mods"
 // edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (tq *TaskQuery) WithNamedModIdeas(name string, opts ...func(*ModIdeaQuery)) *TaskQuery {
-	query := (&ModIdeaClient{config: tq.config}).Query()
+func (tq *TaskQuery) WithNamedMods(name string, opts ...func(*ModQuery)) *TaskQuery {
+	query := (&ModClient{config: tq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	if tq.withNamedModIdeas == nil {
-		tq.withNamedModIdeas = make(map[string]*ModIdeaQuery)
+	if tq.withNamedMods == nil {
+		tq.withNamedMods = make(map[string]*ModQuery)
 	}
-	tq.withNamedModIdeas[name] = query
+	tq.withNamedMods[name] = query
 	return tq
 }
 

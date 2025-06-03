@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -11,7 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/google/uuid"
@@ -20,14 +22,16 @@ import (
 // ModProductOptionQuery is the builder for querying ModProductOption entities.
 type ModProductOptionQuery struct {
 	config
-	ctx        *QueryContext
-	order      []modproductoption.OrderOption
-	inters     []Interceptor
-	predicates []predicate.ModProductOption
-	withIdea   *ModIdeaQuery
-	withFKs    bool
-	modifiers  []func(*sql.Selector)
-	loadTotal  []func(context.Context, []*ModProductOption) error
+	ctx            *QueryContext
+	order          []modproductoption.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.ModProductOption
+	withMod        *ModQuery
+	withMedia      *MediaQuery
+	withFKs        bool
+	modifiers      []func(*sql.Selector)
+	loadTotal      []func(context.Context, []*ModProductOption) error
+	withNamedMedia map[string]*MediaQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -64,9 +68,9 @@ func (mpoq *ModProductOptionQuery) Order(o ...modproductoption.OrderOption) *Mod
 	return mpoq
 }
 
-// QueryIdea chains the current query on the "idea" edge.
-func (mpoq *ModProductOptionQuery) QueryIdea() *ModIdeaQuery {
-	query := (&ModIdeaClient{config: mpoq.config}).Query()
+// QueryMod chains the current query on the "mod" edge.
+func (mpoq *ModProductOptionQuery) QueryMod() *ModQuery {
+	query := (&ModClient{config: mpoq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := mpoq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -77,8 +81,30 @@ func (mpoq *ModProductOptionQuery) QueryIdea() *ModIdeaQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(modproductoption.Table, modproductoption.FieldID, selector),
-			sqlgraph.To(modidea.Table, modidea.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, modproductoption.IdeaTable, modproductoption.IdeaColumn),
+			sqlgraph.To(mod.Table, mod.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, modproductoption.ModTable, modproductoption.ModColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(mpoq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMedia chains the current query on the "media" edge.
+func (mpoq *ModProductOptionQuery) QueryMedia() *MediaQuery {
+	query := (&MediaClient{config: mpoq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := mpoq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := mpoq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(modproductoption.Table, modproductoption.FieldID, selector),
+			sqlgraph.To(media.Table, media.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, modproductoption.MediaTable, modproductoption.MediaColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(mpoq.driver.Dialect(), step)
 		return fromU, nil
@@ -278,21 +304,33 @@ func (mpoq *ModProductOptionQuery) Clone() *ModProductOptionQuery {
 		order:      append([]modproductoption.OrderOption{}, mpoq.order...),
 		inters:     append([]Interceptor{}, mpoq.inters...),
 		predicates: append([]predicate.ModProductOption{}, mpoq.predicates...),
-		withIdea:   mpoq.withIdea.Clone(),
+		withMod:    mpoq.withMod.Clone(),
+		withMedia:  mpoq.withMedia.Clone(),
 		// clone intermediate query.
 		sql:  mpoq.sql.Clone(),
 		path: mpoq.path,
 	}
 }
 
-// WithIdea tells the query-builder to eager-load the nodes that are connected to
-// the "idea" edge. The optional arguments are used to configure the query builder of the edge.
-func (mpoq *ModProductOptionQuery) WithIdea(opts ...func(*ModIdeaQuery)) *ModProductOptionQuery {
-	query := (&ModIdeaClient{config: mpoq.config}).Query()
+// WithMod tells the query-builder to eager-load the nodes that are connected to
+// the "mod" edge. The optional arguments are used to configure the query builder of the edge.
+func (mpoq *ModProductOptionQuery) WithMod(opts ...func(*ModQuery)) *ModProductOptionQuery {
+	query := (&ModClient{config: mpoq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	mpoq.withIdea = query
+	mpoq.withMod = query
+	return mpoq
+}
+
+// WithMedia tells the query-builder to eager-load the nodes that are connected to
+// the "media" edge. The optional arguments are used to configure the query builder of the edge.
+func (mpoq *ModProductOptionQuery) WithMedia(opts ...func(*MediaQuery)) *ModProductOptionQuery {
+	query := (&MediaClient{config: mpoq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	mpoq.withMedia = query
 	return mpoq
 }
 
@@ -375,11 +413,12 @@ func (mpoq *ModProductOptionQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 		nodes       = []*ModProductOption{}
 		withFKs     = mpoq.withFKs
 		_spec       = mpoq.querySpec()
-		loadedTypes = [1]bool{
-			mpoq.withIdea != nil,
+		loadedTypes = [2]bool{
+			mpoq.withMod != nil,
+			mpoq.withMedia != nil,
 		}
 	)
-	if mpoq.withIdea != nil {
+	if mpoq.withMod != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -406,9 +445,23 @@ func (mpoq *ModProductOptionQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := mpoq.withIdea; query != nil {
-		if err := mpoq.loadIdea(ctx, query, nodes, nil,
-			func(n *ModProductOption, e *ModIdea) { n.Edges.Idea = e }); err != nil {
+	if query := mpoq.withMod; query != nil {
+		if err := mpoq.loadMod(ctx, query, nodes, nil,
+			func(n *ModProductOption, e *Mod) { n.Edges.Mod = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := mpoq.withMedia; query != nil {
+		if err := mpoq.loadMedia(ctx, query, nodes,
+			func(n *ModProductOption) { n.Edges.Media = []*Media{} },
+			func(n *ModProductOption, e *Media) { n.Edges.Media = append(n.Edges.Media, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range mpoq.withNamedMedia {
+		if err := mpoq.loadMedia(ctx, query, nodes,
+			func(n *ModProductOption) { n.appendNamedMedia(name) },
+			func(n *ModProductOption, e *Media) { n.appendNamedMedia(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -420,14 +473,14 @@ func (mpoq *ModProductOptionQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	return nodes, nil
 }
 
-func (mpoq *ModProductOptionQuery) loadIdea(ctx context.Context, query *ModIdeaQuery, nodes []*ModProductOption, init func(*ModProductOption), assign func(*ModProductOption, *ModIdea)) error {
+func (mpoq *ModProductOptionQuery) loadMod(ctx context.Context, query *ModQuery, nodes []*ModProductOption, init func(*ModProductOption), assign func(*ModProductOption, *Mod)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ModProductOption)
 	for i := range nodes {
-		if nodes[i].mod_idea_product_options == nil {
+		if nodes[i].mod_product_options == nil {
 			continue
 		}
-		fk := *nodes[i].mod_idea_product_options
+		fk := *nodes[i].mod_product_options
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -436,7 +489,7 @@ func (mpoq *ModProductOptionQuery) loadIdea(ctx context.Context, query *ModIdeaQ
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(modidea.IDIn(ids...))
+	query.Where(mod.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -444,11 +497,42 @@ func (mpoq *ModProductOptionQuery) loadIdea(ctx context.Context, query *ModIdeaQ
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "mod_idea_product_options" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "mod_product_options" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (mpoq *ModProductOptionQuery) loadMedia(ctx context.Context, query *MediaQuery, nodes []*ModProductOption, init func(*ModProductOption), assign func(*ModProductOption, *Media)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*ModProductOption)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Media(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(modproductoption.MediaColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.mod_product_option_media
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "mod_product_option_media" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "mod_product_option_media" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }
@@ -535,6 +619,20 @@ func (mpoq *ModProductOptionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedMedia tells the query-builder to eager-load the nodes that are connected to the "media"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (mpoq *ModProductOptionQuery) WithNamedMedia(name string, opts ...func(*MediaQuery)) *ModProductOptionQuery {
+	query := (&MediaClient{config: mpoq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if mpoq.withNamedMedia == nil {
+		mpoq.withNamedMedia = make(map[string]*MediaQuery)
+	}
+	mpoq.withNamedMedia[name] = query
+	return mpoq
 }
 
 // ModProductOptionGroupBy is the group-by builder for ModProductOption entities.

@@ -21,7 +21,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/task"
@@ -97,8 +97,8 @@ type ComplexityRoot struct {
 		ID                            func(childComplexity int) int
 		Make                          func(childComplexity int) int
 		Media                         func(childComplexity int) int
-		ModIdeas                      func(childComplexity int) int
 		Model                         func(childComplexity int) int
+		Mods                          func(childComplexity int) int
 		Name                          func(childComplexity int) int
 		OdometerKm                    func(childComplexity int) int
 		OdometerReadings              func(childComplexity int) int
@@ -227,18 +227,20 @@ type ComplexityRoot struct {
 	}
 
 	Media struct {
-		Albums      func(childComplexity int) int
-		Car         func(childComplexity int) int
-		CreateTime  func(childComplexity int) int
-		Description func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Metadata    func(childComplexity int) int
-		Title       func(childComplexity int) int
-		URL         func(childComplexity int) int
-		UpdateTime  func(childComplexity int) int
+		Albums           func(childComplexity int) int
+		Car              func(childComplexity int) int
+		CreateTime       func(childComplexity int) int
+		Description      func(childComplexity int) int
+		ID               func(childComplexity int) int
+		Metadata         func(childComplexity int) int
+		ModProductOption func(childComplexity int) int
+		Title            func(childComplexity int) int
+		URL              func(childComplexity int) int
+		UpdateTime       func(childComplexity int) int
+		User             func(childComplexity int) int
 	}
 
-	ModIdea struct {
+	Mod struct {
 		Car            func(childComplexity int) int
 		Category       func(childComplexity int) int
 		CreateTime     func(childComplexity int) int
@@ -246,6 +248,7 @@ type ComplexityRoot struct {
 		ID             func(childComplexity int) int
 		ProductOptions func(childComplexity int) int
 		Stage          func(childComplexity int) int
+		Status         func(childComplexity int) int
 		Tasks          func(childComplexity int) int
 		Title          func(childComplexity int) int
 		UpdateTime     func(childComplexity int) int
@@ -255,8 +258,9 @@ type ComplexityRoot struct {
 		Cons       func(childComplexity int) int
 		CreateTime func(childComplexity int) int
 		ID         func(childComplexity int) int
-		Idea       func(childComplexity int) int
 		Link       func(childComplexity int) int
+		Media      func(childComplexity int) int
+		Mod        func(childComplexity int) int
 		Name       func(childComplexity int) int
 		Notes      func(childComplexity int) int
 		Price      func(childComplexity int) int
@@ -279,7 +283,7 @@ type ComplexityRoot struct {
 		CreateExpense              func(childComplexity int, input ent.CreateExpenseInput) int
 		CreateExpressLoginLink     func(childComplexity int) int
 		CreateFuelUp               func(childComplexity int, input ent.CreateFuelUpInput) int
-		CreateModIdea              func(childComplexity int, input ent.CreateModIdeaInput) int
+		CreateMod                  func(childComplexity int, input ent.CreateModInput) int
 		CreateModProductOption     func(childComplexity int, input ent.CreateModProductOptionInput) int
 		CreateOdometerReading      func(childComplexity int, input ent.CreateOdometerReadingInput) int
 		CreateServiceItem          func(childComplexity int, input ent.CreateServiceItemInput) int
@@ -293,7 +297,7 @@ type ComplexityRoot struct {
 		UpdateDragSession          func(childComplexity int, id string, input ent.UpdateDragSessionInput) int
 		UpdateDynoSession          func(childComplexity int, id string, input ent.UpdateDynoSessionInput) int
 		UpdateMedia                func(childComplexity int, id string, input ent.UpdateMediaInput) int
-		UpdateModIdea              func(childComplexity int, id string, input ent.UpdateModIdeaInput) int
+		UpdateMod                  func(childComplexity int, id string, input ent.UpdateModInput) int
 		UpdateModProductOption     func(childComplexity int, id string, input ent.UpdateModProductOptionInput) int
 		UpdateProfile              func(childComplexity int, input ent.UpdateProfileInput) int
 		UpdateSettings             func(childComplexity int, input ent.UpdateUserSettingsInput) int
@@ -336,17 +340,18 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Album       func(childComplexity int, id string) int
-		Car         func(childComplexity int, id string) int
-		Document    func(childComplexity int, id string) int
-		DragSession func(childComplexity int, id string) int
-		DynoSession func(childComplexity int, id string) int
-		Me          func(childComplexity int) int
-		Media       func(childComplexity int, id string) int
-		ModIdea     func(childComplexity int, id string) int
-		Node        func(childComplexity int, id string) int
-		Nodes       func(childComplexity int, ids []string) int
-		Task        func(childComplexity int, id string) int
+		Album            func(childComplexity int, id string) int
+		Car              func(childComplexity int, id string) int
+		Document         func(childComplexity int, id string) int
+		DragSession      func(childComplexity int, id string) int
+		DynoSession      func(childComplexity int, id string) int
+		Me               func(childComplexity int) int
+		Media            func(childComplexity int, id string) int
+		Mod              func(childComplexity int, id string) int
+		ModProductOption func(childComplexity int, id string) int
+		Node             func(childComplexity int, id string) int
+		Nodes            func(childComplexity int, ids []string) int
+		Task             func(childComplexity int, id string) int
 	}
 
 	ServiceItem struct {
@@ -421,7 +426,7 @@ type ComplexityRoot struct {
 		Effort      func(childComplexity int) int
 		Estimate    func(childComplexity int) int
 		ID          func(childComplexity int) int
-		ModIdeas    func(childComplexity int) int
+		Mods        func(childComplexity int) int
 		Parent      func(childComplexity int) int
 		PartsNeeded func(childComplexity int) int
 		Priority    func(childComplexity int) int
@@ -468,6 +473,7 @@ type ComplexityRoot struct {
 		CreateTime                func(childComplexity int) int
 		Email                     func(childComplexity int) int
 		ID                        func(childComplexity int) int
+		Media                     func(childComplexity int) int
 		Profile                   func(childComplexity int) int
 		Settings                  func(childComplexity int) int
 		StripeAccountCapabilities func(childComplexity int) int
@@ -540,8 +546,8 @@ type MutationResolver interface {
 	UpdateAlbum(ctx context.Context, id string, input ent.UpdateAlbumInput) (*ent.Album, error)
 	CreateTask(ctx context.Context, input ent.CreateTaskInput) (*ent.Task, error)
 	UpdateTask(ctx context.Context, id string, input ent.UpdateTaskInput) (*ent.Task, error)
-	CreateModIdea(ctx context.Context, input ent.CreateModIdeaInput) (*ent.ModIdea, error)
-	UpdateModIdea(ctx context.Context, id string, input ent.UpdateModIdeaInput) (*ent.ModIdea, error)
+	CreateMod(ctx context.Context, input ent.CreateModInput) (*ent.Mod, error)
+	UpdateMod(ctx context.Context, id string, input ent.UpdateModInput) (*ent.Mod, error)
 	CreateModProductOption(ctx context.Context, input ent.CreateModProductOptionInput) (*ent.ModProductOption, error)
 	UpdateModProductOption(ctx context.Context, id string, input ent.UpdateModProductOptionInput) (*ent.ModProductOption, error)
 	CreateCheckoutSession(ctx context.Context, input model.CreateCheckoutSessionInput) (string, error)
@@ -560,7 +566,8 @@ type QueryResolver interface {
 	Media(ctx context.Context, id string) (*ent.Media, error)
 	Album(ctx context.Context, id string) (*ent.Album, error)
 	Task(ctx context.Context, id string) (*ent.Task, error)
-	ModIdea(ctx context.Context, id string) (*ent.ModIdea, error)
+	Mod(ctx context.Context, id string) (*ent.Mod, error)
+	ModProductOption(ctx context.Context, id string) (*ent.ModProductOption, error)
 	Me(ctx context.Context) (*ent.User, error)
 }
 type UserResolver interface {
@@ -744,19 +751,19 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Car.Media(childComplexity), true
 
-	case "Car.modIdeas":
-		if e.complexity.Car.ModIdeas == nil {
-			break
-		}
-
-		return e.complexity.Car.ModIdeas(childComplexity), true
-
 	case "Car.model":
 		if e.complexity.Car.Model == nil {
 			break
 		}
 
 		return e.complexity.Car.Model(childComplexity), true
+
+	case "Car.mods":
+		if e.complexity.Car.Mods == nil {
+			break
+		}
+
+		return e.complexity.Car.Mods(childComplexity), true
 
 	case "Car.name":
 		if e.complexity.Car.Name == nil {
@@ -1491,6 +1498,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Media.Metadata(childComplexity), true
 
+	case "Media.modProductOption":
+		if e.complexity.Media.ModProductOption == nil {
+			break
+		}
+
+		return e.complexity.Media.ModProductOption(childComplexity), true
+
 	case "Media.title":
 		if e.complexity.Media.Title == nil {
 			break
@@ -1512,75 +1526,89 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Media.UpdateTime(childComplexity), true
 
-	case "ModIdea.car":
-		if e.complexity.ModIdea.Car == nil {
+	case "Media.user":
+		if e.complexity.Media.User == nil {
 			break
 		}
 
-		return e.complexity.ModIdea.Car(childComplexity), true
+		return e.complexity.Media.User(childComplexity), true
 
-	case "ModIdea.category":
-		if e.complexity.ModIdea.Category == nil {
+	case "Mod.car":
+		if e.complexity.Mod.Car == nil {
 			break
 		}
 
-		return e.complexity.ModIdea.Category(childComplexity), true
+		return e.complexity.Mod.Car(childComplexity), true
 
-	case "ModIdea.createTime":
-		if e.complexity.ModIdea.CreateTime == nil {
+	case "Mod.category":
+		if e.complexity.Mod.Category == nil {
 			break
 		}
 
-		return e.complexity.ModIdea.CreateTime(childComplexity), true
+		return e.complexity.Mod.Category(childComplexity), true
 
-	case "ModIdea.description":
-		if e.complexity.ModIdea.Description == nil {
+	case "Mod.createTime":
+		if e.complexity.Mod.CreateTime == nil {
 			break
 		}
 
-		return e.complexity.ModIdea.Description(childComplexity), true
+		return e.complexity.Mod.CreateTime(childComplexity), true
 
-	case "ModIdea.id":
-		if e.complexity.ModIdea.ID == nil {
+	case "Mod.description":
+		if e.complexity.Mod.Description == nil {
 			break
 		}
 
-		return e.complexity.ModIdea.ID(childComplexity), true
+		return e.complexity.Mod.Description(childComplexity), true
 
-	case "ModIdea.productOptions":
-		if e.complexity.ModIdea.ProductOptions == nil {
+	case "Mod.id":
+		if e.complexity.Mod.ID == nil {
 			break
 		}
 
-		return e.complexity.ModIdea.ProductOptions(childComplexity), true
+		return e.complexity.Mod.ID(childComplexity), true
 
-	case "ModIdea.stage":
-		if e.complexity.ModIdea.Stage == nil {
+	case "Mod.productOptions":
+		if e.complexity.Mod.ProductOptions == nil {
 			break
 		}
 
-		return e.complexity.ModIdea.Stage(childComplexity), true
+		return e.complexity.Mod.ProductOptions(childComplexity), true
 
-	case "ModIdea.tasks":
-		if e.complexity.ModIdea.Tasks == nil {
+	case "Mod.stage":
+		if e.complexity.Mod.Stage == nil {
 			break
 		}
 
-		return e.complexity.ModIdea.Tasks(childComplexity), true
+		return e.complexity.Mod.Stage(childComplexity), true
 
-	case "ModIdea.title":
-		if e.complexity.ModIdea.Title == nil {
+	case "Mod.status":
+		if e.complexity.Mod.Status == nil {
 			break
 		}
 
-		return e.complexity.ModIdea.Title(childComplexity), true
+		return e.complexity.Mod.Status(childComplexity), true
 
-	case "ModIdea.updateTime":
-		if e.complexity.ModIdea.UpdateTime == nil {
+	case "Mod.tasks":
+		if e.complexity.Mod.Tasks == nil {
 			break
 		}
 
-		return e.complexity.ModIdea.UpdateTime(childComplexity), true
+		return e.complexity.Mod.Tasks(childComplexity), true
+
+	case "Mod.title":
+		if e.complexity.Mod.Title == nil {
+			break
+		}
+
+		return e.complexity.Mod.Title(childComplexity), true
+
+	case "Mod.updateTime":
+		if e.complexity.Mod.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.Mod.UpdateTime(childComplexity), true
 
 	case "ModProductOption.cons":
 		if e.complexity.ModProductOption.Cons == nil {
@@ -1603,19 +1631,26 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.ModProductOption.ID(childComplexity), true
 
-	case "ModProductOption.idea":
-		if e.complexity.ModProductOption.Idea == nil {
-			break
-		}
-
-		return e.complexity.ModProductOption.Idea(childComplexity), true
-
 	case "ModProductOption.link":
 		if e.complexity.ModProductOption.Link == nil {
 			break
 		}
 
 		return e.complexity.ModProductOption.Link(childComplexity), true
+
+	case "ModProductOption.media":
+		if e.complexity.ModProductOption.Media == nil {
+			break
+		}
+
+		return e.complexity.ModProductOption.Media(childComplexity), true
+
+	case "ModProductOption.mod":
+		if e.complexity.ModProductOption.Mod == nil {
+			break
+		}
+
+		return e.complexity.ModProductOption.Mod(childComplexity), true
 
 	case "ModProductOption.name":
 		if e.complexity.ModProductOption.Name == nil {
@@ -1795,17 +1830,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Mutation.CreateFuelUp(childComplexity, args["input"].(ent.CreateFuelUpInput)), true
 
-	case "Mutation.createModIdea":
-		if e.complexity.Mutation.CreateModIdea == nil {
+	case "Mutation.createMod":
+		if e.complexity.Mutation.CreateMod == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_createModIdea_args(ctx, rawArgs)
+		args, err := ec.field_Mutation_createMod_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateModIdea(childComplexity, args["input"].(ent.CreateModIdeaInput)), true
+		return e.complexity.Mutation.CreateMod(childComplexity, args["input"].(ent.CreateModInput)), true
 
 	case "Mutation.createModProductOption":
 		if e.complexity.Mutation.CreateModProductOption == nil {
@@ -1958,17 +1993,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Mutation.UpdateMedia(childComplexity, args["id"].(string), args["input"].(ent.UpdateMediaInput)), true
 
-	case "Mutation.updateModIdea":
-		if e.complexity.Mutation.UpdateModIdea == nil {
+	case "Mutation.updateMod":
+		if e.complexity.Mutation.UpdateMod == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_updateModIdea_args(ctx, rawArgs)
+		args, err := ec.field_Mutation_updateMod_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateModIdea(childComplexity, args["id"].(string), args["input"].(ent.UpdateModIdeaInput)), true
+		return e.complexity.Mutation.UpdateMod(childComplexity, args["id"].(string), args["input"].(ent.UpdateModInput)), true
 
 	case "Mutation.updateModProductOption":
 		if e.complexity.Mutation.UpdateModProductOption == nil {
@@ -2299,17 +2334,29 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.Media(childComplexity, args["id"].(string)), true
 
-	case "Query.modIdea":
-		if e.complexity.Query.ModIdea == nil {
+	case "Query.mod":
+		if e.complexity.Query.Mod == nil {
 			break
 		}
 
-		args, err := ec.field_Query_modIdea_args(ctx, rawArgs)
+		args, err := ec.field_Query_mod_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.ModIdea(childComplexity, args["id"].(string)), true
+		return e.complexity.Query.Mod(childComplexity, args["id"].(string)), true
+
+	case "Query.modProductOption":
+		if e.complexity.Query.ModProductOption == nil {
+			break
+		}
+
+		args, err := ec.field_Query_modProductOption_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ModProductOption(childComplexity, args["id"].(string)), true
 
 	case "Query.node":
 		if e.complexity.Query.Node == nil {
@@ -2760,12 +2807,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Task.ID(childComplexity), true
 
-	case "Task.modIdeas":
-		if e.complexity.Task.ModIdeas == nil {
+	case "Task.mods":
+		if e.complexity.Task.Mods == nil {
 			break
 		}
 
-		return e.complexity.Task.ModIdeas(childComplexity), true
+		return e.complexity.Task.Mods(childComplexity), true
 
 	case "Task.parent":
 		if e.complexity.Task.Parent == nil {
@@ -2963,6 +3010,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.User.ID(childComplexity), true
 
+	case "User.media":
+		if e.complexity.User.Media == nil {
+			break
+		}
+
+		return e.complexity.User.Media(childComplexity), true
+
 	case "User.profile":
 		if e.complexity.User.Profile == nil {
 			break
@@ -3118,7 +3172,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateExpenseInput,
 		ec.unmarshalInputCreateFuelUpInput,
 		ec.unmarshalInputCreateMediaInput,
-		ec.unmarshalInputCreateModIdeaInput,
+		ec.unmarshalInputCreateModInput,
 		ec.unmarshalInputCreateModProductOptionInput,
 		ec.unmarshalInputCreateOdometerReadingInput,
 		ec.unmarshalInputCreateProfileInput,
@@ -3136,8 +3190,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputExpenseWhereInput,
 		ec.unmarshalInputFuelUpWhereInput,
 		ec.unmarshalInputMediaWhereInput,
-		ec.unmarshalInputModIdeaWhereInput,
 		ec.unmarshalInputModProductOptionWhereInput,
+		ec.unmarshalInputModWhereInput,
 		ec.unmarshalInputOdometerReadingWhereInput,
 		ec.unmarshalInputProfileWhereInput,
 		ec.unmarshalInputServiceItemWhereInput,
@@ -3156,7 +3210,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputUpdateExpenseInput,
 		ec.unmarshalInputUpdateFuelUpInput,
 		ec.unmarshalInputUpdateMediaInput,
-		ec.unmarshalInputUpdateModIdeaInput,
+		ec.unmarshalInputUpdateModInput,
 		ec.unmarshalInputUpdateModProductOptionInput,
 		ec.unmarshalInputUpdateOdometerReadingInput,
 		ec.unmarshalInputUpdateProfileInput,
@@ -3609,29 +3663,6 @@ func (ec *executionContext) field_Mutation_createFuelUp_argsInput(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Mutation_createModIdea_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_createModIdea_argsInput(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["input"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_createModIdea_argsInput(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (ent.CreateModIdeaInput, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNCreateModIdeaInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐCreateModIdeaInput(ctx, tmp)
-	}
-
-	var zeroVal ent.CreateModIdeaInput
-	return zeroVal, nil
-}
-
 func (ec *executionContext) field_Mutation_createModProductOption_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -3652,6 +3683,29 @@ func (ec *executionContext) field_Mutation_createModProductOption_argsInput(
 	}
 
 	var zeroVal ent.CreateModProductOptionInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_createMod_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_createMod_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_createMod_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (ent.CreateModInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNCreateModInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐCreateModInput(ctx, tmp)
+	}
+
+	var zeroVal ent.CreateModInput
 	return zeroVal, nil
 }
 
@@ -3980,47 +4034,6 @@ func (ec *executionContext) field_Mutation_updateMedia_argsInput(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Mutation_updateModIdea_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_updateModIdea_argsID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["id"] = arg0
-	arg1, err := ec.field_Mutation_updateModIdea_argsInput(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["input"] = arg1
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_updateModIdea_argsID(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
-	}
-
-	var zeroVal string
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_updateModIdea_argsInput(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (ent.UpdateModIdeaInput, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNUpdateModIdeaInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateModIdeaInput(ctx, tmp)
-	}
-
-	var zeroVal ent.UpdateModIdeaInput
-	return zeroVal, nil
-}
-
 func (ec *executionContext) field_Mutation_updateModProductOption_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -4059,6 +4072,47 @@ func (ec *executionContext) field_Mutation_updateModProductOption_argsInput(
 	}
 
 	var zeroVal ent.UpdateModProductOptionInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateMod_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_updateMod_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := ec.field_Mutation_updateMod_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_updateMod_argsID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateMod_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (ent.UpdateModInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNUpdateModInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateModInput(ctx, tmp)
+	}
+
+	var zeroVal ent.UpdateModInput
 	return zeroVal, nil
 }
 
@@ -4402,17 +4456,40 @@ func (ec *executionContext) field_Query_media_argsID(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query_modIdea_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Query_modProductOption_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := ec.field_Query_modIdea_argsID(ctx, rawArgs)
+	arg0, err := ec.field_Query_modProductOption_argsID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
 	args["id"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Query_modIdea_argsID(
+func (ec *executionContext) field_Query_modProductOption_argsID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_mod_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Query_mod_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_mod_argsID(
 	ctx context.Context,
 	rawArgs map[string]any,
 ) (string, error) {
@@ -4855,8 +4932,8 @@ func (ec *executionContext) fieldContext_Album_car(_ context.Context, field grap
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -4918,8 +4995,12 @@ func (ec *executionContext) fieldContext_Album_media(_ context.Context, field gr
 				return ec.fieldContext_Media_title(ctx, field)
 			case "description":
 				return ec.fieldContext_Media_description(ctx, field)
+			case "user":
+				return ec.fieldContext_Media_user(ctx, field)
 			case "car":
 				return ec.fieldContext_Media_car(ctx, field)
+			case "modProductOption":
+				return ec.fieldContext_Media_modProductOption(ctx, field)
 			case "albums":
 				return ec.fieldContext_Media_albums(ctx, field)
 			case "url":
@@ -5378,6 +5459,8 @@ func (ec *executionContext) fieldContext_Car_owner(_ context.Context, field grap
 				return ec.fieldContext_User_subscriptions(ctx, field)
 			case "checkoutSessions":
 				return ec.fieldContext_User_checkoutSessions(ctx, field)
+			case "media":
+				return ec.fieldContext_User_media(ctx, field)
 			case "subscription":
 				return ec.fieldContext_User_subscription(ctx, field)
 			}
@@ -5827,8 +5910,12 @@ func (ec *executionContext) fieldContext_Car_media(_ context.Context, field grap
 				return ec.fieldContext_Media_title(ctx, field)
 			case "description":
 				return ec.fieldContext_Media_description(ctx, field)
+			case "user":
+				return ec.fieldContext_Media_user(ctx, field)
 			case "car":
 				return ec.fieldContext_Media_car(ctx, field)
+			case "modProductOption":
+				return ec.fieldContext_Media_modProductOption(ctx, field)
 			case "albums":
 				return ec.fieldContext_Media_albums(ctx, field)
 			case "url":
@@ -6136,8 +6223,12 @@ func (ec *executionContext) fieldContext_Car_bannerImage(_ context.Context, fiel
 				return ec.fieldContext_Media_title(ctx, field)
 			case "description":
 				return ec.fieldContext_Media_description(ctx, field)
+			case "user":
+				return ec.fieldContext_Media_user(ctx, field)
 			case "car":
 				return ec.fieldContext_Media_car(ctx, field)
+			case "modProductOption":
+				return ec.fieldContext_Media_modProductOption(ctx, field)
 			case "albums":
 				return ec.fieldContext_Media_albums(ctx, field)
 			case "url":
@@ -6214,8 +6305,8 @@ func (ec *executionContext) fieldContext_Car_tasks(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Car_modIdeas(ctx context.Context, field graphql.CollectedField, obj *ent.Car) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Car_modIdeas(ctx, field)
+func (ec *executionContext) _Car_mods(ctx context.Context, field graphql.CollectedField, obj *ent.Car) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Car_mods(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -6228,7 +6319,7 @@ func (ec *executionContext) _Car_modIdeas(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ModIdeas(ctx)
+		return obj.Mods(ctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6237,12 +6328,12 @@ func (ec *executionContext) _Car_modIdeas(ctx context.Context, field graphql.Col
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.ModIdea)
+	res := resTmp.([]*ent.Mod)
 	fc.Result = res
-	return ec.marshalOModIdea2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdeaᚄ(ctx, field.Selections, res)
+	return ec.marshalOMod2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Car_modIdeas(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Car_mods(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Car",
 		Field:      field,
@@ -6251,27 +6342,29 @@ func (ec *executionContext) fieldContext_Car_modIdeas(_ context.Context, field g
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_ModIdea_id(ctx, field)
+				return ec.fieldContext_Mod_id(ctx, field)
 			case "createTime":
-				return ec.fieldContext_ModIdea_createTime(ctx, field)
+				return ec.fieldContext_Mod_createTime(ctx, field)
 			case "updateTime":
-				return ec.fieldContext_ModIdea_updateTime(ctx, field)
+				return ec.fieldContext_Mod_updateTime(ctx, field)
 			case "title":
-				return ec.fieldContext_ModIdea_title(ctx, field)
+				return ec.fieldContext_Mod_title(ctx, field)
 			case "category":
-				return ec.fieldContext_ModIdea_category(ctx, field)
+				return ec.fieldContext_Mod_category(ctx, field)
+			case "status":
+				return ec.fieldContext_Mod_status(ctx, field)
 			case "description":
-				return ec.fieldContext_ModIdea_description(ctx, field)
+				return ec.fieldContext_Mod_description(ctx, field)
 			case "stage":
-				return ec.fieldContext_ModIdea_stage(ctx, field)
+				return ec.fieldContext_Mod_stage(ctx, field)
 			case "car":
-				return ec.fieldContext_ModIdea_car(ctx, field)
+				return ec.fieldContext_Mod_car(ctx, field)
 			case "tasks":
-				return ec.fieldContext_ModIdea_tasks(ctx, field)
+				return ec.fieldContext_Mod_tasks(ctx, field)
 			case "productOptions":
-				return ec.fieldContext_ModIdea_productOptions(ctx, field)
+				return ec.fieldContext_Mod_productOptions(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type ModIdea", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Mod", field.Name)
 		},
 	}
 	return fc, nil
@@ -6955,6 +7048,8 @@ func (ec *executionContext) fieldContext_CheckoutSession_user(_ context.Context,
 				return ec.fieldContext_User_subscriptions(ctx, field)
 			case "checkoutSessions":
 				return ec.fieldContext_User_checkoutSessions(ctx, field)
+			case "media":
+				return ec.fieldContext_User_media(ctx, field)
 			case "subscription":
 				return ec.fieldContext_User_subscription(ctx, field)
 			}
@@ -7335,8 +7430,8 @@ func (ec *executionContext) fieldContext_Document_car(_ context.Context, field g
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -8398,8 +8493,8 @@ func (ec *executionContext) fieldContext_DragSession_car(_ context.Context, fiel
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -9163,8 +9258,8 @@ func (ec *executionContext) fieldContext_DynoSession_car(_ context.Context, fiel
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -9696,8 +9791,8 @@ func (ec *executionContext) fieldContext_Expense_car(_ context.Context, field gr
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -10656,8 +10751,8 @@ func (ec *executionContext) fieldContext_FuelUp_car(_ context.Context, field gra
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -11082,6 +11177,81 @@ func (ec *executionContext) fieldContext_Media_description(_ context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Media_user(ctx context.Context, field graphql.CollectedField, obj *ent.Media) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Media_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.User(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Media_user(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Media",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_User_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_User_updateTime(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "stripeCustomerID":
+				return ec.fieldContext_User_stripeCustomerID(ctx, field)
+			case "stripeAccountID":
+				return ec.fieldContext_User_stripeAccountID(ctx, field)
+			case "stripeAccountCapabilities":
+				return ec.fieldContext_User_stripeAccountCapabilities(ctx, field)
+			case "affiliate6moCode":
+				return ec.fieldContext_User_affiliate6moCode(ctx, field)
+			case "affiliate12moCode":
+				return ec.fieldContext_User_affiliate12moCode(ctx, field)
+			case "cars":
+				return ec.fieldContext_User_cars(ctx, field)
+			case "profile":
+				return ec.fieldContext_User_profile(ctx, field)
+			case "settings":
+				return ec.fieldContext_User_settings(ctx, field)
+			case "subscriptions":
+				return ec.fieldContext_User_subscriptions(ctx, field)
+			case "checkoutSessions":
+				return ec.fieldContext_User_checkoutSessions(ctx, field)
+			case "media":
+				return ec.fieldContext_User_media(ctx, field)
+			case "subscription":
+				return ec.fieldContext_User_subscription(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Media_car(ctx context.Context, field graphql.CollectedField, obj *ent.Media) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Media_car(ctx, field)
 	if err != nil {
@@ -11164,8 +11334,8 @@ func (ec *executionContext) fieldContext_Media_car(_ context.Context, field grap
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -11176,6 +11346,75 @@ func (ec *executionContext) fieldContext_Media_car(_ context.Context, field grap
 				return ec.fieldContext_Car_odometerKm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Media_modProductOption(ctx context.Context, field graphql.CollectedField, obj *ent.Media) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Media_modProductOption(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ModProductOption(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ModProductOption)
+	fc.Result = res
+	return ec.marshalOModProductOption2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOption(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Media_modProductOption(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Media",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ModProductOption_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_ModProductOption_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_ModProductOption_updateTime(ctx, field)
+			case "vendor":
+				return ec.fieldContext_ModProductOption_vendor(ctx, field)
+			case "name":
+				return ec.fieldContext_ModProductOption_name(ctx, field)
+			case "link":
+				return ec.fieldContext_ModProductOption_link(ctx, field)
+			case "price":
+				return ec.fieldContext_ModProductOption_price(ctx, field)
+			case "notes":
+				return ec.fieldContext_ModProductOption_notes(ctx, field)
+			case "pros":
+				return ec.fieldContext_ModProductOption_pros(ctx, field)
+			case "cons":
+				return ec.fieldContext_ModProductOption_cons(ctx, field)
+			case "specs":
+				return ec.fieldContext_ModProductOption_specs(ctx, field)
+			case "mod":
+				return ec.fieldContext_ModProductOption_mod(ctx, field)
+			case "media":
+				return ec.fieldContext_ModProductOption_media(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ModProductOption", field.Name)
 		},
 	}
 	return fc, nil
@@ -11333,8 +11572,8 @@ func (ec *executionContext) fieldContext_Media_metadata(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _ModIdea_id(ctx context.Context, field graphql.CollectedField, obj *ent.ModIdea) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ModIdea_id(ctx, field)
+func (ec *executionContext) _Mod_id(ctx context.Context, field graphql.CollectedField, obj *ent.Mod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mod_id(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -11364,9 +11603,9 @@ func (ec *executionContext) _ModIdea_id(ctx context.Context, field graphql.Colle
 	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ModIdea_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mod_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "ModIdea",
+		Object:     "Mod",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -11377,8 +11616,8 @@ func (ec *executionContext) fieldContext_ModIdea_id(_ context.Context, field gra
 	return fc, nil
 }
 
-func (ec *executionContext) _ModIdea_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.ModIdea) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ModIdea_createTime(ctx, field)
+func (ec *executionContext) _Mod_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.Mod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mod_createTime(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -11408,9 +11647,9 @@ func (ec *executionContext) _ModIdea_createTime(ctx context.Context, field graph
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ModIdea_createTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mod_createTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "ModIdea",
+		Object:     "Mod",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -11421,8 +11660,8 @@ func (ec *executionContext) fieldContext_ModIdea_createTime(_ context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _ModIdea_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.ModIdea) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ModIdea_updateTime(ctx, field)
+func (ec *executionContext) _Mod_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.Mod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mod_updateTime(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -11452,9 +11691,9 @@ func (ec *executionContext) _ModIdea_updateTime(ctx context.Context, field graph
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ModIdea_updateTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mod_updateTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "ModIdea",
+		Object:     "Mod",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -11465,8 +11704,8 @@ func (ec *executionContext) fieldContext_ModIdea_updateTime(_ context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _ModIdea_title(ctx context.Context, field graphql.CollectedField, obj *ent.ModIdea) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ModIdea_title(ctx, field)
+func (ec *executionContext) _Mod_title(ctx context.Context, field graphql.CollectedField, obj *ent.Mod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mod_title(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -11496,9 +11735,9 @@ func (ec *executionContext) _ModIdea_title(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ModIdea_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mod_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "ModIdea",
+		Object:     "Mod",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -11509,8 +11748,8 @@ func (ec *executionContext) fieldContext_ModIdea_title(_ context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _ModIdea_category(ctx context.Context, field graphql.CollectedField, obj *ent.ModIdea) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ModIdea_category(ctx, field)
+func (ec *executionContext) _Mod_category(ctx context.Context, field graphql.CollectedField, obj *ent.Mod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mod_category(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -11535,14 +11774,14 @@ func (ec *executionContext) _ModIdea_category(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(modidea.Category)
+	res := resTmp.(mod.Category)
 	fc.Result = res
-	return ec.marshalNModCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategory(ctx, field.Selections, res)
+	return ec.marshalNModCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategory(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ModIdea_category(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mod_category(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "ModIdea",
+		Object:     "Mod",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -11553,8 +11792,52 @@ func (ec *executionContext) fieldContext_ModIdea_category(_ context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _ModIdea_description(ctx context.Context, field graphql.CollectedField, obj *ent.ModIdea) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ModIdea_description(ctx, field)
+func (ec *executionContext) _Mod_status(ctx context.Context, field graphql.CollectedField, obj *ent.Mod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mod_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(mod.Status)
+	fc.Result = res
+	return ec.marshalNModStatus2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mod_status(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mod",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ModStatus does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mod_description(ctx context.Context, field graphql.CollectedField, obj *ent.Mod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mod_description(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -11581,9 +11864,9 @@ func (ec *executionContext) _ModIdea_description(ctx context.Context, field grap
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ModIdea_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mod_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "ModIdea",
+		Object:     "Mod",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -11594,8 +11877,8 @@ func (ec *executionContext) fieldContext_ModIdea_description(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _ModIdea_stage(ctx context.Context, field graphql.CollectedField, obj *ent.ModIdea) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ModIdea_stage(ctx, field)
+func (ec *executionContext) _Mod_stage(ctx context.Context, field graphql.CollectedField, obj *ent.Mod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mod_stage(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -11622,9 +11905,9 @@ func (ec *executionContext) _ModIdea_stage(ctx context.Context, field graphql.Co
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ModIdea_stage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mod_stage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "ModIdea",
+		Object:     "Mod",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -11635,8 +11918,8 @@ func (ec *executionContext) fieldContext_ModIdea_stage(_ context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _ModIdea_car(ctx context.Context, field graphql.CollectedField, obj *ent.ModIdea) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ModIdea_car(ctx, field)
+func (ec *executionContext) _Mod_car(ctx context.Context, field graphql.CollectedField, obj *ent.Mod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mod_car(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -11666,9 +11949,9 @@ func (ec *executionContext) _ModIdea_car(ctx context.Context, field graphql.Coll
 	return ec.marshalNCar2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐCar(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ModIdea_car(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mod_car(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "ModIdea",
+		Object:     "Mod",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: false,
@@ -11720,8 +12003,8 @@ func (ec *executionContext) fieldContext_ModIdea_car(_ context.Context, field gr
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -11737,8 +12020,8 @@ func (ec *executionContext) fieldContext_ModIdea_car(_ context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _ModIdea_tasks(ctx context.Context, field graphql.CollectedField, obj *ent.ModIdea) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ModIdea_tasks(ctx, field)
+func (ec *executionContext) _Mod_tasks(ctx context.Context, field graphql.CollectedField, obj *ent.Mod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mod_tasks(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -11765,9 +12048,9 @@ func (ec *executionContext) _ModIdea_tasks(ctx context.Context, field graphql.Co
 	return ec.marshalOTask2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTaskᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ModIdea_tasks(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mod_tasks(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "ModIdea",
+		Object:     "Mod",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: false,
@@ -11807,8 +12090,8 @@ func (ec *executionContext) fieldContext_ModIdea_tasks(_ context.Context, field 
 				return ec.fieldContext_Task_parent(ctx, field)
 			case "subtasks":
 				return ec.fieldContext_Task_subtasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Task_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Task_mods(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -11816,8 +12099,8 @@ func (ec *executionContext) fieldContext_ModIdea_tasks(_ context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _ModIdea_productOptions(ctx context.Context, field graphql.CollectedField, obj *ent.ModIdea) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ModIdea_productOptions(ctx, field)
+func (ec *executionContext) _Mod_productOptions(ctx context.Context, field graphql.CollectedField, obj *ent.Mod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mod_productOptions(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -11844,9 +12127,9 @@ func (ec *executionContext) _ModIdea_productOptions(ctx context.Context, field g
 	return ec.marshalOModProductOption2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ModIdea_productOptions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mod_productOptions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "ModIdea",
+		Object:     "Mod",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: false,
@@ -11874,8 +12157,10 @@ func (ec *executionContext) fieldContext_ModIdea_productOptions(_ context.Contex
 				return ec.fieldContext_ModProductOption_cons(ctx, field)
 			case "specs":
 				return ec.fieldContext_ModProductOption_specs(ctx, field)
-			case "idea":
-				return ec.fieldContext_ModProductOption_idea(ctx, field)
+			case "mod":
+				return ec.fieldContext_ModProductOption_mod(ctx, field)
+			case "media":
+				return ec.fieldContext_ModProductOption_media(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ModProductOption", field.Name)
 		},
@@ -12343,8 +12628,8 @@ func (ec *executionContext) fieldContext_ModProductOption_specs(_ context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _ModProductOption_idea(ctx context.Context, field graphql.CollectedField, obj *ent.ModProductOption) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ModProductOption_idea(ctx, field)
+func (ec *executionContext) _ModProductOption_mod(ctx context.Context, field graphql.CollectedField, obj *ent.ModProductOption) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModProductOption_mod(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -12357,7 +12642,7 @@ func (ec *executionContext) _ModProductOption_idea(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Idea(ctx)
+		return obj.Mod(ctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12369,12 +12654,12 @@ func (ec *executionContext) _ModProductOption_idea(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*ent.ModIdea)
+	res := resTmp.(*ent.Mod)
 	fc.Result = res
-	return ec.marshalNModIdea2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdea(ctx, field.Selections, res)
+	return ec.marshalNMod2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMod(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ModProductOption_idea(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ModProductOption_mod(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ModProductOption",
 		Field:      field,
@@ -12383,27 +12668,94 @@ func (ec *executionContext) fieldContext_ModProductOption_idea(_ context.Context
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_ModIdea_id(ctx, field)
+				return ec.fieldContext_Mod_id(ctx, field)
 			case "createTime":
-				return ec.fieldContext_ModIdea_createTime(ctx, field)
+				return ec.fieldContext_Mod_createTime(ctx, field)
 			case "updateTime":
-				return ec.fieldContext_ModIdea_updateTime(ctx, field)
+				return ec.fieldContext_Mod_updateTime(ctx, field)
 			case "title":
-				return ec.fieldContext_ModIdea_title(ctx, field)
+				return ec.fieldContext_Mod_title(ctx, field)
 			case "category":
-				return ec.fieldContext_ModIdea_category(ctx, field)
+				return ec.fieldContext_Mod_category(ctx, field)
+			case "status":
+				return ec.fieldContext_Mod_status(ctx, field)
 			case "description":
-				return ec.fieldContext_ModIdea_description(ctx, field)
+				return ec.fieldContext_Mod_description(ctx, field)
 			case "stage":
-				return ec.fieldContext_ModIdea_stage(ctx, field)
+				return ec.fieldContext_Mod_stage(ctx, field)
 			case "car":
-				return ec.fieldContext_ModIdea_car(ctx, field)
+				return ec.fieldContext_Mod_car(ctx, field)
 			case "tasks":
-				return ec.fieldContext_ModIdea_tasks(ctx, field)
+				return ec.fieldContext_Mod_tasks(ctx, field)
 			case "productOptions":
-				return ec.fieldContext_ModIdea_productOptions(ctx, field)
+				return ec.fieldContext_Mod_productOptions(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type ModIdea", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Mod", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModProductOption_media(ctx context.Context, field graphql.CollectedField, obj *ent.ModProductOption) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModProductOption_media(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Media(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Media)
+	fc.Result = res
+	return ec.marshalOMedia2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModProductOption_media(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModProductOption",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Media_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Media_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Media_updateTime(ctx, field)
+			case "title":
+				return ec.fieldContext_Media_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Media_description(ctx, field)
+			case "user":
+				return ec.fieldContext_Media_user(ctx, field)
+			case "car":
+				return ec.fieldContext_Media_car(ctx, field)
+			case "modProductOption":
+				return ec.fieldContext_Media_modProductOption(ctx, field)
+			case "albums":
+				return ec.fieldContext_Media_albums(ctx, field)
+			case "url":
+				return ec.fieldContext_Media_url(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Media_metadata(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Media", field.Name)
 		},
 	}
 	return fc, nil
@@ -12793,6 +13145,8 @@ func (ec *executionContext) fieldContext_Mutation_createConnectAccount(_ context
 				return ec.fieldContext_User_subscriptions(ctx, field)
 			case "checkoutSessions":
 				return ec.fieldContext_User_checkoutSessions(ctx, field)
+			case "media":
+				return ec.fieldContext_User_media(ctx, field)
 			case "subscription":
 				return ec.fieldContext_User_subscription(ctx, field)
 			}
@@ -13041,8 +13395,8 @@ func (ec *executionContext) fieldContext_Mutation_createCar(ctx context.Context,
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -13306,8 +13660,12 @@ func (ec *executionContext) fieldContext_Mutation_updateMedia(ctx context.Contex
 				return ec.fieldContext_Media_title(ctx, field)
 			case "description":
 				return ec.fieldContext_Media_description(ctx, field)
+			case "user":
+				return ec.fieldContext_Media_user(ctx, field)
 			case "car":
 				return ec.fieldContext_Media_car(ctx, field)
+			case "modProductOption":
+				return ec.fieldContext_Media_modProductOption(ctx, field)
 			case "albums":
 				return ec.fieldContext_Media_albums(ctx, field)
 			case "url":
@@ -14984,8 +15342,8 @@ func (ec *executionContext) fieldContext_Mutation_createTask(ctx context.Context
 				return ec.fieldContext_Task_parent(ctx, field)
 			case "subtasks":
 				return ec.fieldContext_Task_subtasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Task_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Task_mods(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -15099,8 +15457,8 @@ func (ec *executionContext) fieldContext_Mutation_updateTask(ctx context.Context
 				return ec.fieldContext_Task_parent(ctx, field)
 			case "subtasks":
 				return ec.fieldContext_Task_subtasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Task_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Task_mods(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -15119,8 +15477,8 @@ func (ec *executionContext) fieldContext_Mutation_updateTask(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_createModIdea(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createModIdea(ctx, field)
+func (ec *executionContext) _Mutation_createMod(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createMod(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -15134,12 +15492,12 @@ func (ec *executionContext) _Mutation_createModIdea(ctx context.Context, field g
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		directive0 := func(rctx context.Context) (any, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().CreateModIdea(rctx, fc.Args["input"].(ent.CreateModIdeaInput))
+			return ec.resolvers.Mutation().CreateMod(rctx, fc.Args["input"].(ent.CreateModInput))
 		}
 
 		directive1 := func(ctx context.Context) (any, error) {
 			if ec.directives.LoggedIn == nil {
-				var zeroVal *ent.ModIdea
+				var zeroVal *ent.Mod
 				return zeroVal, errors.New("directive loggedIn is not implemented")
 			}
 			return ec.directives.LoggedIn(ctx, nil, directive0)
@@ -15152,10 +15510,10 @@ func (ec *executionContext) _Mutation_createModIdea(ctx context.Context, field g
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(*ent.ModIdea); ok {
+		if data, ok := tmp.(*ent.Mod); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/Dan6erbond/revline/ent.ModIdea`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/Dan6erbond/revline/ent.Mod`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -15167,12 +15525,12 @@ func (ec *executionContext) _Mutation_createModIdea(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*ent.ModIdea)
+	res := resTmp.(*ent.Mod)
 	fc.Result = res
-	return ec.marshalNModIdea2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdea(ctx, field.Selections, res)
+	return ec.marshalNMod2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMod(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_createModIdea(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_createMod(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -15181,27 +15539,29 @@ func (ec *executionContext) fieldContext_Mutation_createModIdea(ctx context.Cont
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_ModIdea_id(ctx, field)
+				return ec.fieldContext_Mod_id(ctx, field)
 			case "createTime":
-				return ec.fieldContext_ModIdea_createTime(ctx, field)
+				return ec.fieldContext_Mod_createTime(ctx, field)
 			case "updateTime":
-				return ec.fieldContext_ModIdea_updateTime(ctx, field)
+				return ec.fieldContext_Mod_updateTime(ctx, field)
 			case "title":
-				return ec.fieldContext_ModIdea_title(ctx, field)
+				return ec.fieldContext_Mod_title(ctx, field)
 			case "category":
-				return ec.fieldContext_ModIdea_category(ctx, field)
+				return ec.fieldContext_Mod_category(ctx, field)
+			case "status":
+				return ec.fieldContext_Mod_status(ctx, field)
 			case "description":
-				return ec.fieldContext_ModIdea_description(ctx, field)
+				return ec.fieldContext_Mod_description(ctx, field)
 			case "stage":
-				return ec.fieldContext_ModIdea_stage(ctx, field)
+				return ec.fieldContext_Mod_stage(ctx, field)
 			case "car":
-				return ec.fieldContext_ModIdea_car(ctx, field)
+				return ec.fieldContext_Mod_car(ctx, field)
 			case "tasks":
-				return ec.fieldContext_ModIdea_tasks(ctx, field)
+				return ec.fieldContext_Mod_tasks(ctx, field)
 			case "productOptions":
-				return ec.fieldContext_ModIdea_productOptions(ctx, field)
+				return ec.fieldContext_Mod_productOptions(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type ModIdea", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Mod", field.Name)
 		},
 	}
 	defer func() {
@@ -15211,15 +15571,15 @@ func (ec *executionContext) fieldContext_Mutation_createModIdea(ctx context.Cont
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createModIdea_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_createMod_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_updateModIdea(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updateModIdea(ctx, field)
+func (ec *executionContext) _Mutation_updateMod(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateMod(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -15233,12 +15593,12 @@ func (ec *executionContext) _Mutation_updateModIdea(ctx context.Context, field g
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		directive0 := func(rctx context.Context) (any, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UpdateModIdea(rctx, fc.Args["id"].(string), fc.Args["input"].(ent.UpdateModIdeaInput))
+			return ec.resolvers.Mutation().UpdateMod(rctx, fc.Args["id"].(string), fc.Args["input"].(ent.UpdateModInput))
 		}
 
 		directive1 := func(ctx context.Context) (any, error) {
 			if ec.directives.LoggedIn == nil {
-				var zeroVal *ent.ModIdea
+				var zeroVal *ent.Mod
 				return zeroVal, errors.New("directive loggedIn is not implemented")
 			}
 			return ec.directives.LoggedIn(ctx, nil, directive0)
@@ -15251,10 +15611,10 @@ func (ec *executionContext) _Mutation_updateModIdea(ctx context.Context, field g
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(*ent.ModIdea); ok {
+		if data, ok := tmp.(*ent.Mod); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/Dan6erbond/revline/ent.ModIdea`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/Dan6erbond/revline/ent.Mod`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -15266,12 +15626,12 @@ func (ec *executionContext) _Mutation_updateModIdea(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*ent.ModIdea)
+	res := resTmp.(*ent.Mod)
 	fc.Result = res
-	return ec.marshalNModIdea2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdea(ctx, field.Selections, res)
+	return ec.marshalNMod2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMod(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_updateModIdea(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_updateMod(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -15280,27 +15640,29 @@ func (ec *executionContext) fieldContext_Mutation_updateModIdea(ctx context.Cont
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_ModIdea_id(ctx, field)
+				return ec.fieldContext_Mod_id(ctx, field)
 			case "createTime":
-				return ec.fieldContext_ModIdea_createTime(ctx, field)
+				return ec.fieldContext_Mod_createTime(ctx, field)
 			case "updateTime":
-				return ec.fieldContext_ModIdea_updateTime(ctx, field)
+				return ec.fieldContext_Mod_updateTime(ctx, field)
 			case "title":
-				return ec.fieldContext_ModIdea_title(ctx, field)
+				return ec.fieldContext_Mod_title(ctx, field)
 			case "category":
-				return ec.fieldContext_ModIdea_category(ctx, field)
+				return ec.fieldContext_Mod_category(ctx, field)
+			case "status":
+				return ec.fieldContext_Mod_status(ctx, field)
 			case "description":
-				return ec.fieldContext_ModIdea_description(ctx, field)
+				return ec.fieldContext_Mod_description(ctx, field)
 			case "stage":
-				return ec.fieldContext_ModIdea_stage(ctx, field)
+				return ec.fieldContext_Mod_stage(ctx, field)
 			case "car":
-				return ec.fieldContext_ModIdea_car(ctx, field)
+				return ec.fieldContext_Mod_car(ctx, field)
 			case "tasks":
-				return ec.fieldContext_ModIdea_tasks(ctx, field)
+				return ec.fieldContext_Mod_tasks(ctx, field)
 			case "productOptions":
-				return ec.fieldContext_ModIdea_productOptions(ctx, field)
+				return ec.fieldContext_Mod_productOptions(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type ModIdea", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Mod", field.Name)
 		},
 	}
 	defer func() {
@@ -15310,7 +15672,7 @@ func (ec *executionContext) fieldContext_Mutation_updateModIdea(ctx context.Cont
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateModIdea_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_updateMod_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -15400,8 +15762,10 @@ func (ec *executionContext) fieldContext_Mutation_createModProductOption(ctx con
 				return ec.fieldContext_ModProductOption_cons(ctx, field)
 			case "specs":
 				return ec.fieldContext_ModProductOption_specs(ctx, field)
-			case "idea":
-				return ec.fieldContext_ModProductOption_idea(ctx, field)
+			case "mod":
+				return ec.fieldContext_ModProductOption_mod(ctx, field)
+			case "media":
+				return ec.fieldContext_ModProductOption_media(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ModProductOption", field.Name)
 		},
@@ -15503,8 +15867,10 @@ func (ec *executionContext) fieldContext_Mutation_updateModProductOption(ctx con
 				return ec.fieldContext_ModProductOption_cons(ctx, field)
 			case "specs":
 				return ec.fieldContext_ModProductOption_specs(ctx, field)
-			case "idea":
-				return ec.fieldContext_ModProductOption_idea(ctx, field)
+			case "mod":
+				return ec.fieldContext_ModProductOption_mod(ctx, field)
+			case "media":
+				return ec.fieldContext_ModProductOption_media(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ModProductOption", field.Name)
 		},
@@ -16012,8 +16378,8 @@ func (ec *executionContext) fieldContext_OdometerReading_car(_ context.Context, 
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -16703,6 +17069,8 @@ func (ec *executionContext) fieldContext_Profile_user(_ context.Context, field g
 				return ec.fieldContext_User_subscriptions(ctx, field)
 			case "checkoutSessions":
 				return ec.fieldContext_User_checkoutSessions(ctx, field)
+			case "media":
+				return ec.fieldContext_User_media(ctx, field)
 			case "subscription":
 				return ec.fieldContext_User_subscription(ctx, field)
 			}
@@ -16945,8 +17313,8 @@ func (ec *executionContext) fieldContext_Query_car(ctx context.Context, field gr
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -17251,8 +17619,12 @@ func (ec *executionContext) fieldContext_Query_media(ctx context.Context, field 
 				return ec.fieldContext_Media_title(ctx, field)
 			case "description":
 				return ec.fieldContext_Media_description(ctx, field)
+			case "user":
+				return ec.fieldContext_Media_user(ctx, field)
 			case "car":
 				return ec.fieldContext_Media_car(ctx, field)
+			case "modProductOption":
+				return ec.fieldContext_Media_modProductOption(ctx, field)
 			case "albums":
 				return ec.fieldContext_Media_albums(ctx, field)
 			case "url":
@@ -17419,8 +17791,8 @@ func (ec *executionContext) fieldContext_Query_task(ctx context.Context, field g
 				return ec.fieldContext_Task_parent(ctx, field)
 			case "subtasks":
 				return ec.fieldContext_Task_subtasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Task_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Task_mods(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -17439,8 +17811,8 @@ func (ec *executionContext) fieldContext_Query_task(ctx context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_modIdea(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_modIdea(ctx, field)
+func (ec *executionContext) _Query_mod(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_mod(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -17453,7 +17825,7 @@ func (ec *executionContext) _Query_modIdea(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ModIdea(rctx, fc.Args["id"].(string))
+		return ec.resolvers.Query().Mod(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -17465,12 +17837,12 @@ func (ec *executionContext) _Query_modIdea(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*ent.ModIdea)
+	res := resTmp.(*ent.Mod)
 	fc.Result = res
-	return ec.marshalNModIdea2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdea(ctx, field.Selections, res)
+	return ec.marshalNMod2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMod(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_modIdea(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_mod(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -17479,27 +17851,29 @@ func (ec *executionContext) fieldContext_Query_modIdea(ctx context.Context, fiel
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_ModIdea_id(ctx, field)
+				return ec.fieldContext_Mod_id(ctx, field)
 			case "createTime":
-				return ec.fieldContext_ModIdea_createTime(ctx, field)
+				return ec.fieldContext_Mod_createTime(ctx, field)
 			case "updateTime":
-				return ec.fieldContext_ModIdea_updateTime(ctx, field)
+				return ec.fieldContext_Mod_updateTime(ctx, field)
 			case "title":
-				return ec.fieldContext_ModIdea_title(ctx, field)
+				return ec.fieldContext_Mod_title(ctx, field)
 			case "category":
-				return ec.fieldContext_ModIdea_category(ctx, field)
+				return ec.fieldContext_Mod_category(ctx, field)
+			case "status":
+				return ec.fieldContext_Mod_status(ctx, field)
 			case "description":
-				return ec.fieldContext_ModIdea_description(ctx, field)
+				return ec.fieldContext_Mod_description(ctx, field)
 			case "stage":
-				return ec.fieldContext_ModIdea_stage(ctx, field)
+				return ec.fieldContext_Mod_stage(ctx, field)
 			case "car":
-				return ec.fieldContext_ModIdea_car(ctx, field)
+				return ec.fieldContext_Mod_car(ctx, field)
 			case "tasks":
-				return ec.fieldContext_ModIdea_tasks(ctx, field)
+				return ec.fieldContext_Mod_tasks(ctx, field)
 			case "productOptions":
-				return ec.fieldContext_ModIdea_productOptions(ctx, field)
+				return ec.fieldContext_Mod_productOptions(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type ModIdea", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Mod", field.Name)
 		},
 	}
 	defer func() {
@@ -17509,7 +17883,90 @@ func (ec *executionContext) fieldContext_Query_modIdea(ctx context.Context, fiel
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_modIdea_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_mod_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_modProductOption(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_modProductOption(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ModProductOption(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ModProductOption)
+	fc.Result = res
+	return ec.marshalNModProductOption2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOption(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_modProductOption(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ModProductOption_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_ModProductOption_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_ModProductOption_updateTime(ctx, field)
+			case "vendor":
+				return ec.fieldContext_ModProductOption_vendor(ctx, field)
+			case "name":
+				return ec.fieldContext_ModProductOption_name(ctx, field)
+			case "link":
+				return ec.fieldContext_ModProductOption_link(ctx, field)
+			case "price":
+				return ec.fieldContext_ModProductOption_price(ctx, field)
+			case "notes":
+				return ec.fieldContext_ModProductOption_notes(ctx, field)
+			case "pros":
+				return ec.fieldContext_ModProductOption_pros(ctx, field)
+			case "cons":
+				return ec.fieldContext_ModProductOption_cons(ctx, field)
+			case "specs":
+				return ec.fieldContext_ModProductOption_specs(ctx, field)
+			case "mod":
+				return ec.fieldContext_ModProductOption_mod(ctx, field)
+			case "media":
+				return ec.fieldContext_ModProductOption_media(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ModProductOption", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_modProductOption_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -17605,6 +18062,8 @@ func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graph
 				return ec.fieldContext_User_subscriptions(ctx, field)
 			case "checkoutSessions":
 				return ec.fieldContext_User_checkoutSessions(ctx, field)
+			case "media":
+				return ec.fieldContext_User_media(ctx, field)
 			case "subscription":
 				return ec.fieldContext_User_subscription(ctx, field)
 			}
@@ -18214,8 +18673,8 @@ func (ec *executionContext) fieldContext_ServiceItem_car(_ context.Context, fiel
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -18710,8 +19169,8 @@ func (ec *executionContext) fieldContext_ServiceLog_car(_ context.Context, field
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -19568,8 +20027,8 @@ func (ec *executionContext) fieldContext_ServiceSchedule_car(_ context.Context, 
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -20255,6 +20714,8 @@ func (ec *executionContext) fieldContext_SubscriptionPlan_user(_ context.Context
 				return ec.fieldContext_User_subscriptions(ctx, field)
 			case "checkoutSessions":
 				return ec.fieldContext_User_checkoutSessions(ctx, field)
+			case "media":
+				return ec.fieldContext_User_media(ctx, field)
 			case "subscription":
 				return ec.fieldContext_User_subscription(ctx, field)
 			}
@@ -21008,8 +21469,8 @@ func (ec *executionContext) fieldContext_Task_car(_ context.Context, field graph
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -21095,8 +21556,8 @@ func (ec *executionContext) fieldContext_Task_parent(_ context.Context, field gr
 				return ec.fieldContext_Task_parent(ctx, field)
 			case "subtasks":
 				return ec.fieldContext_Task_subtasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Task_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Task_mods(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -21174,8 +21635,8 @@ func (ec *executionContext) fieldContext_Task_subtasks(_ context.Context, field 
 				return ec.fieldContext_Task_parent(ctx, field)
 			case "subtasks":
 				return ec.fieldContext_Task_subtasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Task_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Task_mods(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -21183,8 +21644,8 @@ func (ec *executionContext) fieldContext_Task_subtasks(_ context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Task_modIdeas(ctx context.Context, field graphql.CollectedField, obj *ent.Task) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Task_modIdeas(ctx, field)
+func (ec *executionContext) _Task_mods(ctx context.Context, field graphql.CollectedField, obj *ent.Task) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Task_mods(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -21197,7 +21658,7 @@ func (ec *executionContext) _Task_modIdeas(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ModIdeas(ctx)
+		return obj.Mods(ctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -21206,12 +21667,12 @@ func (ec *executionContext) _Task_modIdeas(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.ModIdea)
+	res := resTmp.([]*ent.Mod)
 	fc.Result = res
-	return ec.marshalOModIdea2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdeaᚄ(ctx, field.Selections, res)
+	return ec.marshalOMod2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Task_modIdeas(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Task_mods(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Task",
 		Field:      field,
@@ -21220,27 +21681,29 @@ func (ec *executionContext) fieldContext_Task_modIdeas(_ context.Context, field 
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_ModIdea_id(ctx, field)
+				return ec.fieldContext_Mod_id(ctx, field)
 			case "createTime":
-				return ec.fieldContext_ModIdea_createTime(ctx, field)
+				return ec.fieldContext_Mod_createTime(ctx, field)
 			case "updateTime":
-				return ec.fieldContext_ModIdea_updateTime(ctx, field)
+				return ec.fieldContext_Mod_updateTime(ctx, field)
 			case "title":
-				return ec.fieldContext_ModIdea_title(ctx, field)
+				return ec.fieldContext_Mod_title(ctx, field)
 			case "category":
-				return ec.fieldContext_ModIdea_category(ctx, field)
+				return ec.fieldContext_Mod_category(ctx, field)
+			case "status":
+				return ec.fieldContext_Mod_status(ctx, field)
 			case "description":
-				return ec.fieldContext_ModIdea_description(ctx, field)
+				return ec.fieldContext_Mod_description(ctx, field)
 			case "stage":
-				return ec.fieldContext_ModIdea_stage(ctx, field)
+				return ec.fieldContext_Mod_stage(ctx, field)
 			case "car":
-				return ec.fieldContext_ModIdea_car(ctx, field)
+				return ec.fieldContext_Mod_car(ctx, field)
 			case "tasks":
-				return ec.fieldContext_ModIdea_tasks(ctx, field)
+				return ec.fieldContext_Mod_tasks(ctx, field)
 			case "productOptions":
-				return ec.fieldContext_ModIdea_productOptions(ctx, field)
+				return ec.fieldContext_Mod_productOptions(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type ModIdea", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Mod", field.Name)
 		},
 	}
 	return fc, nil
@@ -21461,8 +21924,8 @@ func (ec *executionContext) fieldContext_TaskEdge_node(_ context.Context, field 
 				return ec.fieldContext_Task_parent(ctx, field)
 			case "subtasks":
 				return ec.fieldContext_Task_subtasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Task_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Task_mods(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -21877,8 +22340,12 @@ func (ec *executionContext) fieldContext_UploadMediaResult_media(_ context.Conte
 				return ec.fieldContext_Media_title(ctx, field)
 			case "description":
 				return ec.fieldContext_Media_description(ctx, field)
+			case "user":
+				return ec.fieldContext_Media_user(ctx, field)
 			case "car":
 				return ec.fieldContext_Media_car(ctx, field)
+			case "modProductOption":
+				return ec.fieldContext_Media_modProductOption(ctx, field)
 			case "albums":
 				return ec.fieldContext_Media_albums(ctx, field)
 			case "url":
@@ -22399,8 +22866,8 @@ func (ec *executionContext) fieldContext_User_cars(_ context.Context, field grap
 				return ec.fieldContext_Car_bannerImage(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Car_tasks(ctx, field)
-			case "modIdeas":
-				return ec.fieldContext_Car_modIdeas(ctx, field)
+			case "mods":
+				return ec.fieldContext_Car_mods(ctx, field)
 			case "bannerImageUrl":
 				return ec.fieldContext_Car_bannerImageUrl(ctx, field)
 			case "averageConsumptionLitersPerKm":
@@ -22673,6 +23140,71 @@ func (ec *executionContext) fieldContext_User_checkoutSessions(_ context.Context
 				return ec.fieldContext_CheckoutSession_subscription(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type CheckoutSession", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_media(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_media(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Media(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Media)
+	fc.Result = res
+	return ec.marshalOMedia2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_media(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Media_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Media_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Media_updateTime(ctx, field)
+			case "title":
+				return ec.fieldContext_Media_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Media_description(ctx, field)
+			case "user":
+				return ec.fieldContext_Media_user(ctx, field)
+			case "car":
+				return ec.fieldContext_Media_car(ctx, field)
+			case "modProductOption":
+				return ec.fieldContext_Media_modProductOption(ctx, field)
+			case "albums":
+				return ec.fieldContext_Media_albums(ctx, field)
+			case "url":
+				return ec.fieldContext_Media_url(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Media_metadata(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Media", field.Name)
 		},
 	}
 	return fc, nil
@@ -23233,6 +23765,8 @@ func (ec *executionContext) fieldContext_UserSettings_user(_ context.Context, fi
 				return ec.fieldContext_User_subscriptions(ctx, field)
 			case "checkoutSessions":
 				return ec.fieldContext_User_checkoutSessions(ctx, field)
+			case "media":
+				return ec.fieldContext_User_media(ctx, field)
 			case "subscription":
 				return ec.fieldContext_User_subscription(ctx, field)
 			}
@@ -25528,7 +26062,7 @@ func (ec *executionContext) unmarshalInputCarWhereInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "make", "makeNEQ", "makeIn", "makeNotIn", "makeGT", "makeGTE", "makeLT", "makeLTE", "makeContains", "makeHasPrefix", "makeHasSuffix", "makeIsNil", "makeNotNil", "makeEqualFold", "makeContainsFold", "model", "modelNEQ", "modelIn", "modelNotIn", "modelGT", "modelGTE", "modelLT", "modelLTE", "modelContains", "modelHasPrefix", "modelHasSuffix", "modelIsNil", "modelNotNil", "modelEqualFold", "modelContainsFold", "type", "typeNEQ", "typeIn", "typeNotIn", "typeGT", "typeGTE", "typeLT", "typeLTE", "typeContains", "typeHasPrefix", "typeHasSuffix", "typeIsNil", "typeNotNil", "typeEqualFold", "typeContainsFold", "year", "yearNEQ", "yearIn", "yearNotIn", "yearGT", "yearGTE", "yearLT", "yearLTE", "yearIsNil", "yearNotNil", "trim", "trimNEQ", "trimIn", "trimNotIn", "trimGT", "trimGTE", "trimLT", "trimLTE", "trimContains", "trimHasPrefix", "trimHasSuffix", "trimIsNil", "trimNotNil", "trimEqualFold", "trimContainsFold", "hasOwner", "hasOwnerWith", "hasDragSessions", "hasDragSessionsWith", "hasFuelUps", "hasFuelUpsWith", "hasOdometerReadings", "hasOdometerReadingsWith", "hasServiceItems", "hasServiceItemsWith", "hasServiceLogs", "hasServiceLogsWith", "hasServiceSchedules", "hasServiceSchedulesWith", "hasMedia", "hasMediaWith", "hasAlbums", "hasAlbumsWith", "hasDocuments", "hasDocumentsWith", "hasDynoSessions", "hasDynoSessionsWith", "hasExpenses", "hasExpensesWith", "hasBannerImage", "hasBannerImageWith", "hasTasks", "hasTasksWith", "hasModIdeas", "hasModIdeasWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "make", "makeNEQ", "makeIn", "makeNotIn", "makeGT", "makeGTE", "makeLT", "makeLTE", "makeContains", "makeHasPrefix", "makeHasSuffix", "makeIsNil", "makeNotNil", "makeEqualFold", "makeContainsFold", "model", "modelNEQ", "modelIn", "modelNotIn", "modelGT", "modelGTE", "modelLT", "modelLTE", "modelContains", "modelHasPrefix", "modelHasSuffix", "modelIsNil", "modelNotNil", "modelEqualFold", "modelContainsFold", "type", "typeNEQ", "typeIn", "typeNotIn", "typeGT", "typeGTE", "typeLT", "typeLTE", "typeContains", "typeHasPrefix", "typeHasSuffix", "typeIsNil", "typeNotNil", "typeEqualFold", "typeContainsFold", "year", "yearNEQ", "yearIn", "yearNotIn", "yearGT", "yearGTE", "yearLT", "yearLTE", "yearIsNil", "yearNotNil", "trim", "trimNEQ", "trimIn", "trimNotIn", "trimGT", "trimGTE", "trimLT", "trimLTE", "trimContains", "trimHasPrefix", "trimHasSuffix", "trimIsNil", "trimNotNil", "trimEqualFold", "trimContainsFold", "hasOwner", "hasOwnerWith", "hasDragSessions", "hasDragSessionsWith", "hasFuelUps", "hasFuelUpsWith", "hasOdometerReadings", "hasOdometerReadingsWith", "hasServiceItems", "hasServiceItemsWith", "hasServiceLogs", "hasServiceLogsWith", "hasServiceSchedules", "hasServiceSchedulesWith", "hasMedia", "hasMediaWith", "hasAlbums", "hasAlbumsWith", "hasDocuments", "hasDocumentsWith", "hasDynoSessions", "hasDynoSessionsWith", "hasExpenses", "hasExpensesWith", "hasBannerImage", "hasBannerImageWith", "hasTasks", "hasTasksWith", "hasMods", "hasModsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -26501,20 +27035,20 @@ func (ec *executionContext) unmarshalInputCarWhereInput(ctx context.Context, obj
 				return it, err
 			}
 			it.HasTasksWith = data
-		case "hasModIdeas":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasModIdeas"))
+		case "hasMods":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMods"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasModIdeas = data
-		case "hasModIdeasWith":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasModIdeasWith"))
-			data, err := ec.unmarshalOModIdeaWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdeaWhereInputᚄ(ctx, v)
+			it.HasMods = data
+		case "hasModsWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasModsWith"))
+			data, err := ec.unmarshalOModWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasModIdeasWith = data
+			it.HasModsWith = data
 		}
 	}
 
@@ -27338,7 +27872,7 @@ func (ec *executionContext) unmarshalInputCreateCarInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "make", "model", "type", "year", "trim", "ownerID", "dragSessionIDs", "fuelUpIDs", "odometerReadingIDs", "serviceItemIDs", "serviceLogIDs", "serviceScheduleIDs", "mediumIDs", "albumIDs", "documentIDs", "dynoSessionIDs", "expenseIDs", "bannerImageID", "taskIDs", "modIdeaIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "make", "model", "type", "year", "trim", "ownerID", "dragSessionIDs", "fuelUpIDs", "odometerReadingIDs", "serviceItemIDs", "serviceLogIDs", "serviceScheduleIDs", "mediumIDs", "albumIDs", "documentIDs", "dynoSessionIDs", "expenseIDs", "bannerImageID", "taskIDs", "modIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -27499,13 +28033,13 @@ func (ec *executionContext) unmarshalInputCreateCarInput(ctx context.Context, ob
 				return it, err
 			}
 			it.TaskIDs = data
-		case "modIdeaIDs":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modIdeaIDs"))
+		case "modIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ModIdeaIDs = data
+			it.ModIDs = data
 		}
 	}
 
@@ -28124,7 +28658,7 @@ func (ec *executionContext) unmarshalInputCreateMediaInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "description", "carID", "albumIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "description", "userID", "carID", "modProductOptionID", "albumIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -28159,6 +28693,13 @@ func (ec *executionContext) unmarshalInputCreateMediaInput(ctx context.Context, 
 				return it, err
 			}
 			it.Description = data
+		case "userID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserID = data
 		case "carID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("carID"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -28166,6 +28707,13 @@ func (ec *executionContext) unmarshalInputCreateMediaInput(ctx context.Context, 
 				return it, err
 			}
 			it.CarID = data
+		case "modProductOptionID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modProductOptionID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ModProductOptionID = data
 		case "albumIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("albumIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
@@ -28179,14 +28727,14 @@ func (ec *executionContext) unmarshalInputCreateMediaInput(ctx context.Context, 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputCreateModIdeaInput(ctx context.Context, obj any) (ent.CreateModIdeaInput, error) {
-	var it ent.CreateModIdeaInput
+func (ec *executionContext) unmarshalInputCreateModInput(ctx context.Context, obj any) (ent.CreateModInput, error) {
+	var it ent.CreateModInput
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "category", "description", "stage", "carID", "taskIDs", "productOptionIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "category", "status", "description", "stage", "carID", "taskIDs", "productOptionIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -28216,11 +28764,18 @@ func (ec *executionContext) unmarshalInputCreateModIdeaInput(ctx context.Context
 			it.Title = data
 		case "category":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
-			data, err := ec.unmarshalNModCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategory(ctx, v)
+			data, err := ec.unmarshalNModCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategory(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Category = data
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOModStatus2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
 		case "description":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -28269,7 +28824,7 @@ func (ec *executionContext) unmarshalInputCreateModProductOptionInput(ctx contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "vendor", "name", "link", "price", "notes", "pros", "cons", "specs", "ideaID"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "vendor", "name", "link", "price", "notes", "pros", "cons", "specs", "modID", "mediumIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -28348,13 +28903,20 @@ func (ec *executionContext) unmarshalInputCreateModProductOptionInput(ctx contex
 			if err = ec.resolvers.CreateModProductOptionInput().Specs(ctx, &it, data); err != nil {
 				return it, err
 			}
-		case "ideaID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ideaID"))
+		case "modID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modID"))
 			data, err := ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.IdeaID = data
+			it.ModID = data
+		case "mediumIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mediumIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MediumIDs = data
 		}
 	}
 
@@ -28829,7 +29391,7 @@ func (ec *executionContext) unmarshalInputCreateTaskInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "status", "title", "description", "rank", "estimate", "priority", "effort", "difficulty", "category", "budget", "partsNeeded", "carID", "parentID", "subtaskIDs", "modIdeaIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "status", "title", "description", "rank", "estimate", "priority", "effort", "difficulty", "category", "budget", "partsNeeded", "carID", "parentID", "subtaskIDs", "modIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -28948,13 +29510,13 @@ func (ec *executionContext) unmarshalInputCreateTaskInput(ctx context.Context, o
 				return it, err
 			}
 			it.SubtaskIDs = data
-		case "modIdeaIDs":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modIdeaIDs"))
+		case "modIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ModIdeaIDs = data
+			it.ModIDs = data
 		}
 	}
 
@@ -28968,7 +29530,7 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "email", "stripeCustomerID", "stripeAccountID", "stripeAccountCapabilities", "affiliate6moCode", "affiliate12moCode", "carIDs", "profileID", "settingsID", "subscriptionIDs", "checkoutSessionIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "email", "stripeCustomerID", "stripeAccountID", "stripeAccountCapabilities", "affiliate6moCode", "affiliate12moCode", "carIDs", "profileID", "settingsID", "subscriptionIDs", "checkoutSessionIDs", "mediumIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -29068,6 +29630,13 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.CheckoutSessionIDs = data
+		case "mediumIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mediumIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MediumIDs = data
 		}
 	}
 
@@ -32188,7 +32757,7 @@ func (ec *executionContext) unmarshalInputMediaWhereInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleIsNil", "titleNotNil", "titleEqualFold", "titleContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "hasCar", "hasCarWith", "hasAlbums", "hasAlbumsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleIsNil", "titleNotNil", "titleEqualFold", "titleContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "hasUser", "hasUserWith", "hasCar", "hasCarWith", "hasModProductOption", "hasModProductOptionWith", "hasAlbums", "hasAlbumsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -32594,6 +33163,20 @@ func (ec *executionContext) unmarshalInputMediaWhereInput(ctx context.Context, o
 				return it, err
 			}
 			it.DescriptionContainsFold = data
+		case "hasUser":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUser"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasUser = data
+		case "hasUserWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUserWith"))
+			data, err := ec.unmarshalOUserWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUserWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasUserWith = data
 		case "hasCar":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCar"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -32608,6 +33191,20 @@ func (ec *executionContext) unmarshalInputMediaWhereInput(ctx context.Context, o
 				return it, err
 			}
 			it.HasCarWith = data
+		case "hasModProductOption":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasModProductOption"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasModProductOption = data
+		case "hasModProductOptionWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasModProductOptionWith"))
+			data, err := ec.unmarshalOModProductOptionWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasModProductOptionWith = data
 		case "hasAlbums":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasAlbums"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -32628,586 +33225,6 @@ func (ec *executionContext) unmarshalInputMediaWhereInput(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputModIdeaWhereInput(ctx context.Context, obj any) (ent.ModIdeaWhereInput, error) {
-	var it ent.ModIdeaWhereInput
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "category", "categoryNEQ", "categoryIn", "categoryNotIn", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "stage", "stageNEQ", "stageIn", "stageNotIn", "stageGT", "stageGTE", "stageLT", "stageLTE", "stageContains", "stageHasPrefix", "stageHasSuffix", "stageIsNil", "stageNotNil", "stageEqualFold", "stageContainsFold", "hasCar", "hasCarWith", "hasTasks", "hasTasksWith", "hasProductOptions", "hasProductOptionsWith"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "not":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOModIdeaWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdeaWhereInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Not = data
-		case "and":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOModIdeaWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdeaWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.And = data
-		case "or":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOModIdeaWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdeaWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Or = data
-		case "id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ID = data
-		case "idNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDNEQ = data
-		case "idIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
-			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDIn = data
-		case "idNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
-			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDNotIn = data
-		case "idGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDGT = data
-		case "idGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDGTE = data
-		case "idLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDLT = data
-		case "idLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.IDLTE = data
-		case "createTime":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTime = data
-		case "createTimeNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTimeNEQ = data
-		case "createTimeIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
-			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTimeIn = data
-		case "createTimeNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
-			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTimeNotIn = data
-		case "createTimeGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTimeGT = data
-		case "createTimeGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTimeGTE = data
-		case "createTimeLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTimeLT = data
-		case "createTimeLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTimeLTE = data
-		case "updateTime":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTime = data
-		case "updateTimeNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTimeNEQ = data
-		case "updateTimeIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
-			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTimeIn = data
-		case "updateTimeNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
-			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTimeNotIn = data
-		case "updateTimeGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTimeGT = data
-		case "updateTimeGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTimeGTE = data
-		case "updateTimeLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTimeLT = data
-		case "updateTimeLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTimeLTE = data
-		case "title":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Title = data
-		case "titleNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleNEQ"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TitleNEQ = data
-		case "titleIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TitleIn = data
-		case "titleNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleNotIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TitleNotIn = data
-		case "titleGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleGT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TitleGT = data
-		case "titleGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleGTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TitleGTE = data
-		case "titleLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleLT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TitleLT = data
-		case "titleLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleLTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TitleLTE = data
-		case "titleContains":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleContains"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TitleContains = data
-		case "titleHasPrefix":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleHasPrefix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TitleHasPrefix = data
-		case "titleHasSuffix":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleHasSuffix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TitleHasSuffix = data
-		case "titleEqualFold":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleEqualFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TitleEqualFold = data
-		case "titleContainsFold":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleContainsFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TitleContainsFold = data
-		case "category":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
-			data, err := ec.unmarshalOModCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategory(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Category = data
-		case "categoryNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryNEQ"))
-			data, err := ec.unmarshalOModCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategory(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CategoryNEQ = data
-		case "categoryIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryIn"))
-			data, err := ec.unmarshalOModCategory2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategoryᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CategoryIn = data
-		case "categoryNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryNotIn"))
-			data, err := ec.unmarshalOModCategory2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategoryᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CategoryNotIn = data
-		case "description":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Description = data
-		case "descriptionNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionNEQ"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DescriptionNEQ = data
-		case "descriptionIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DescriptionIn = data
-		case "descriptionNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionNotIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DescriptionNotIn = data
-		case "descriptionGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionGT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DescriptionGT = data
-		case "descriptionGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionGTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DescriptionGTE = data
-		case "descriptionLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionLT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DescriptionLT = data
-		case "descriptionLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionLTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DescriptionLTE = data
-		case "descriptionContains":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionContains"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DescriptionContains = data
-		case "descriptionHasPrefix":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionHasPrefix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DescriptionHasPrefix = data
-		case "descriptionHasSuffix":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionHasSuffix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DescriptionHasSuffix = data
-		case "descriptionIsNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DescriptionIsNil = data
-		case "descriptionNotNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DescriptionNotNil = data
-		case "descriptionEqualFold":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionEqualFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DescriptionEqualFold = data
-		case "descriptionContainsFold":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionContainsFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DescriptionContainsFold = data
-		case "stage":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stage"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Stage = data
-		case "stageNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageNEQ"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StageNEQ = data
-		case "stageIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StageIn = data
-		case "stageNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageNotIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StageNotIn = data
-		case "stageGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageGT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StageGT = data
-		case "stageGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageGTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StageGTE = data
-		case "stageLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageLT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StageLT = data
-		case "stageLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageLTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StageLTE = data
-		case "stageContains":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageContains"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StageContains = data
-		case "stageHasPrefix":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageHasPrefix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StageHasPrefix = data
-		case "stageHasSuffix":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageHasSuffix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StageHasSuffix = data
-		case "stageIsNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StageIsNil = data
-		case "stageNotNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StageNotNil = data
-		case "stageEqualFold":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageEqualFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StageEqualFold = data
-		case "stageContainsFold":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageContainsFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.StageContainsFold = data
-		case "hasCar":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCar"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasCar = data
-		case "hasCarWith":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCarWith"))
-			data, err := ec.unmarshalOCarWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐCarWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasCarWith = data
-		case "hasTasks":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasTasks"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasTasks = data
-		case "hasTasksWith":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasTasksWith"))
-			data, err := ec.unmarshalOTaskWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTaskWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasTasksWith = data
-		case "hasProductOptions":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasProductOptions"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasProductOptions = data
-		case "hasProductOptionsWith":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasProductOptionsWith"))
-			data, err := ec.unmarshalOModProductOptionWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionWhereInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.HasProductOptionsWith = data
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputModProductOptionWhereInput(ctx context.Context, obj any) (ent.ModProductOptionWhereInput, error) {
 	var it ent.ModProductOptionWhereInput
 	asMap := map[string]any{}
@@ -33215,7 +33232,7 @@ func (ec *executionContext) unmarshalInputModProductOptionWhereInput(ctx context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "vendor", "vendorNEQ", "vendorIn", "vendorNotIn", "vendorGT", "vendorGTE", "vendorLT", "vendorLTE", "vendorContains", "vendorHasPrefix", "vendorHasSuffix", "vendorIsNil", "vendorNotNil", "vendorEqualFold", "vendorContainsFold", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameIsNil", "nameNotNil", "nameEqualFold", "nameContainsFold", "link", "linkNEQ", "linkIn", "linkNotIn", "linkGT", "linkGTE", "linkLT", "linkLTE", "linkContains", "linkHasPrefix", "linkHasSuffix", "linkIsNil", "linkNotNil", "linkEqualFold", "linkContainsFold", "price", "priceNEQ", "priceIn", "priceNotIn", "priceGT", "priceGTE", "priceLT", "priceLTE", "priceIsNil", "priceNotNil", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasIdea", "hasIdeaWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "vendor", "vendorNEQ", "vendorIn", "vendorNotIn", "vendorGT", "vendorGTE", "vendorLT", "vendorLTE", "vendorContains", "vendorHasPrefix", "vendorHasSuffix", "vendorIsNil", "vendorNotNil", "vendorEqualFold", "vendorContainsFold", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameIsNil", "nameNotNil", "nameEqualFold", "nameContainsFold", "link", "linkNEQ", "linkIn", "linkNotIn", "linkGT", "linkGTE", "linkLT", "linkLTE", "linkContains", "linkHasPrefix", "linkHasSuffix", "linkIsNil", "linkNotNil", "linkEqualFold", "linkContainsFold", "price", "priceNEQ", "priceIn", "priceNotIn", "priceGT", "priceGTE", "priceLT", "priceLTE", "priceIsNil", "priceNotNil", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasMod", "hasModWith", "hasMedia", "hasMediaWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -33901,20 +33918,642 @@ func (ec *executionContext) unmarshalInputModProductOptionWhereInput(ctx context
 				return it, err
 			}
 			it.NotesContainsFold = data
-		case "hasIdea":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasIdea"))
+		case "hasMod":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMod"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasIdea = data
-		case "hasIdeaWith":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasIdeaWith"))
-			data, err := ec.unmarshalOModIdeaWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdeaWhereInputᚄ(ctx, v)
+			it.HasMod = data
+		case "hasModWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasModWith"))
+			data, err := ec.unmarshalOModWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasIdeaWith = data
+			it.HasModWith = data
+		case "hasMedia":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMedia"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasMedia = data
+		case "hasMediaWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMediaWith"))
+			data, err := ec.unmarshalOMediaWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasMediaWith = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputModWhereInput(ctx context.Context, obj any) (ent.ModWhereInput, error) {
+	var it ent.ModWhereInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "category", "categoryNEQ", "categoryIn", "categoryNotIn", "status", "statusNEQ", "statusIn", "statusNotIn", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "stage", "stageNEQ", "stageIn", "stageNotIn", "stageGT", "stageGTE", "stageLT", "stageLTE", "stageContains", "stageHasPrefix", "stageHasSuffix", "stageIsNil", "stageNotNil", "stageEqualFold", "stageContainsFold", "hasCar", "hasCarWith", "hasTasks", "hasTasksWith", "hasProductOptions", "hasProductOptionsWith"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "not":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
+			data, err := ec.unmarshalOModWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModWhereInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Not = data
+		case "and":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
+			data, err := ec.unmarshalOModWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.And = data
+		case "or":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
+			data, err := ec.unmarshalOModWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Or = data
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "idNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDNEQ = data
+		case "idIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDIn = data
+		case "idNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDNotIn = data
+		case "idGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDGT = data
+		case "idGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDGTE = data
+		case "idLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDLT = data
+		case "idLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
+		case "title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Title = data
+		case "titleNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TitleNEQ = data
+		case "titleIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TitleIn = data
+		case "titleNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TitleNotIn = data
+		case "titleGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TitleGT = data
+		case "titleGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TitleGTE = data
+		case "titleLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TitleLT = data
+		case "titleLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TitleLTE = data
+		case "titleContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TitleContains = data
+		case "titleHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TitleHasPrefix = data
+		case "titleHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TitleHasSuffix = data
+		case "titleEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TitleEqualFold = data
+		case "titleContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("titleContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TitleContainsFold = data
+		case "category":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
+			data, err := ec.unmarshalOModCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategory(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Category = data
+		case "categoryNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryNEQ"))
+			data, err := ec.unmarshalOModCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategory(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CategoryNEQ = data
+		case "categoryIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryIn"))
+			data, err := ec.unmarshalOModCategory2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategoryᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CategoryIn = data
+		case "categoryNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("categoryNotIn"))
+			data, err := ec.unmarshalOModCategory2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategoryᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CategoryNotIn = data
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOModStatus2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
+		case "statusNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusNEQ"))
+			data, err := ec.unmarshalOModStatus2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusNEQ = data
+		case "statusIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusIn"))
+			data, err := ec.unmarshalOModStatus2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatusᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusIn = data
+		case "statusNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusNotIn"))
+			data, err := ec.unmarshalOModStatus2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatusᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusNotIn = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "descriptionNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionNEQ = data
+		case "descriptionIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionIn = data
+		case "descriptionNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionNotIn = data
+		case "descriptionGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionGT = data
+		case "descriptionGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionGTE = data
+		case "descriptionLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionLT = data
+		case "descriptionLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionLTE = data
+		case "descriptionContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionContains = data
+		case "descriptionHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionHasPrefix = data
+		case "descriptionHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionHasSuffix = data
+		case "descriptionIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionIsNil = data
+		case "descriptionNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionNotNil = data
+		case "descriptionEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionEqualFold = data
+		case "descriptionContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("descriptionContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DescriptionContainsFold = data
+		case "stage":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stage"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Stage = data
+		case "stageNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StageNEQ = data
+		case "stageIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StageIn = data
+		case "stageNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StageNotIn = data
+		case "stageGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StageGT = data
+		case "stageGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StageGTE = data
+		case "stageLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StageLT = data
+		case "stageLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StageLTE = data
+		case "stageContains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StageContains = data
+		case "stageHasPrefix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StageHasPrefix = data
+		case "stageHasSuffix":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StageHasSuffix = data
+		case "stageIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StageIsNil = data
+		case "stageNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StageNotNil = data
+		case "stageEqualFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StageEqualFold = data
+		case "stageContainsFold":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stageContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StageContainsFold = data
+		case "hasCar":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCar"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasCar = data
+		case "hasCarWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCarWith"))
+			data, err := ec.unmarshalOCarWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐCarWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasCarWith = data
+		case "hasTasks":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasTasks"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasTasks = data
+		case "hasTasksWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasTasksWith"))
+			data, err := ec.unmarshalOTaskWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐTaskWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasTasksWith = data
+		case "hasProductOptions":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasProductOptions"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasProductOptions = data
+		case "hasProductOptionsWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasProductOptionsWith"))
+			data, err := ec.unmarshalOModProductOptionWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasProductOptionsWith = data
 		}
 	}
 
@@ -37719,7 +38358,7 @@ func (ec *executionContext) unmarshalInputTaskWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "status", "statusNEQ", "statusIn", "statusNotIn", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "rank", "rankNEQ", "rankIn", "rankNotIn", "rankGT", "rankGTE", "rankLT", "rankLTE", "estimate", "estimateNEQ", "estimateIn", "estimateNotIn", "estimateGT", "estimateGTE", "estimateLT", "estimateLTE", "estimateIsNil", "estimateNotNil", "priority", "priorityNEQ", "priorityIn", "priorityNotIn", "priorityIsNil", "priorityNotNil", "effort", "effortNEQ", "effortIn", "effortNotIn", "effortIsNil", "effortNotNil", "difficulty", "difficultyNEQ", "difficultyIn", "difficultyNotIn", "difficultyIsNil", "difficultyNotNil", "category", "categoryNEQ", "categoryIn", "categoryNotIn", "categoryIsNil", "categoryNotNil", "budget", "budgetNEQ", "budgetIn", "budgetNotIn", "budgetGT", "budgetGTE", "budgetLT", "budgetLTE", "budgetIsNil", "budgetNotNil", "partsNeeded", "partsNeededNEQ", "partsNeededIn", "partsNeededNotIn", "partsNeededGT", "partsNeededGTE", "partsNeededLT", "partsNeededLTE", "partsNeededContains", "partsNeededHasPrefix", "partsNeededHasSuffix", "partsNeededIsNil", "partsNeededNotNil", "partsNeededEqualFold", "partsNeededContainsFold", "hasCar", "hasCarWith", "hasParent", "hasParentWith", "hasSubtasks", "hasSubtasksWith", "hasModIdeas", "hasModIdeasWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "status", "statusNEQ", "statusIn", "statusNotIn", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "rank", "rankNEQ", "rankIn", "rankNotIn", "rankGT", "rankGTE", "rankLT", "rankLTE", "estimate", "estimateNEQ", "estimateIn", "estimateNotIn", "estimateGT", "estimateGTE", "estimateLT", "estimateLTE", "estimateIsNil", "estimateNotNil", "priority", "priorityNEQ", "priorityIn", "priorityNotIn", "priorityIsNil", "priorityNotNil", "effort", "effortNEQ", "effortIn", "effortNotIn", "effortIsNil", "effortNotNil", "difficulty", "difficultyNEQ", "difficultyIn", "difficultyNotIn", "difficultyIsNil", "difficultyNotNil", "category", "categoryNEQ", "categoryIn", "categoryNotIn", "categoryIsNil", "categoryNotNil", "budget", "budgetNEQ", "budgetIn", "budgetNotIn", "budgetGT", "budgetGTE", "budgetLT", "budgetLTE", "budgetIsNil", "budgetNotNil", "partsNeeded", "partsNeededNEQ", "partsNeededIn", "partsNeededNotIn", "partsNeededGT", "partsNeededGTE", "partsNeededLT", "partsNeededLTE", "partsNeededContains", "partsNeededHasPrefix", "partsNeededHasSuffix", "partsNeededIsNil", "partsNeededNotNil", "partsNeededEqualFold", "partsNeededContainsFold", "hasCar", "hasCarWith", "hasParent", "hasParentWith", "hasSubtasks", "hasSubtasksWith", "hasMods", "hasModsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -38650,20 +39289,20 @@ func (ec *executionContext) unmarshalInputTaskWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.HasSubtasksWith = data
-		case "hasModIdeas":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasModIdeas"))
+		case "hasMods":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMods"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasModIdeas = data
-		case "hasModIdeasWith":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasModIdeasWith"))
-			data, err := ec.unmarshalOModIdeaWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdeaWhereInputᚄ(ctx, v)
+			it.HasMods = data
+		case "hasModsWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasModsWith"))
+			data, err := ec.unmarshalOModWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasModIdeasWith = data
+			it.HasModsWith = data
 		}
 	}
 
@@ -38739,7 +39378,7 @@ func (ec *executionContext) unmarshalInputUpdateCarInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "name", "make", "clearMake", "model", "clearModel", "type", "clearType", "year", "clearYear", "trim", "clearTrim", "ownerID", "clearOwner", "addDragSessionIDs", "removeDragSessionIDs", "clearDragSessions", "addFuelUpIDs", "removeFuelUpIDs", "clearFuelUps", "addOdometerReadingIDs", "removeOdometerReadingIDs", "clearOdometerReadings", "addServiceItemIDs", "removeServiceItemIDs", "clearServiceItems", "addServiceLogIDs", "removeServiceLogIDs", "clearServiceLogs", "addServiceScheduleIDs", "removeServiceScheduleIDs", "clearServiceSchedules", "addMediumIDs", "removeMediumIDs", "clearMedia", "addAlbumIDs", "removeAlbumIDs", "clearAlbums", "addDocumentIDs", "removeDocumentIDs", "clearDocuments", "addDynoSessionIDs", "removeDynoSessionIDs", "clearDynoSessions", "addExpenseIDs", "removeExpenseIDs", "clearExpenses", "bannerImageID", "clearBannerImage", "addTaskIDs", "removeTaskIDs", "clearTasks", "addModIdeaIDs", "removeModIdeaIDs", "clearModIdeas"}
+	fieldsInOrder := [...]string{"updateTime", "name", "make", "clearMake", "model", "clearModel", "type", "clearType", "year", "clearYear", "trim", "clearTrim", "ownerID", "clearOwner", "addDragSessionIDs", "removeDragSessionIDs", "clearDragSessions", "addFuelUpIDs", "removeFuelUpIDs", "clearFuelUps", "addOdometerReadingIDs", "removeOdometerReadingIDs", "clearOdometerReadings", "addServiceItemIDs", "removeServiceItemIDs", "clearServiceItems", "addServiceLogIDs", "removeServiceLogIDs", "clearServiceLogs", "addServiceScheduleIDs", "removeServiceScheduleIDs", "clearServiceSchedules", "addMediumIDs", "removeMediumIDs", "clearMedia", "addAlbumIDs", "removeAlbumIDs", "clearAlbums", "addDocumentIDs", "removeDocumentIDs", "clearDocuments", "addDynoSessionIDs", "removeDynoSessionIDs", "clearDynoSessions", "addExpenseIDs", "removeExpenseIDs", "clearExpenses", "bannerImageID", "clearBannerImage", "addTaskIDs", "removeTaskIDs", "clearTasks", "addModIDs", "removeModIDs", "clearMods"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -39110,27 +39749,27 @@ func (ec *executionContext) unmarshalInputUpdateCarInput(ctx context.Context, ob
 				return it, err
 			}
 			it.ClearTasks = data
-		case "addModIdeaIDs":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addModIdeaIDs"))
+		case "addModIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addModIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddModIdeaIDs = data
-		case "removeModIdeaIDs":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeModIdeaIDs"))
+			it.AddModIDs = data
+		case "removeModIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeModIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.RemoveModIdeaIDs = data
-		case "clearModIdeas":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearModIdeas"))
+			it.RemoveModIDs = data
+		case "clearMods":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearMods"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ClearModIdeas = data
+			it.ClearMods = data
 		}
 	}
 
@@ -39858,7 +40497,7 @@ func (ec *executionContext) unmarshalInputUpdateMediaInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "title", "clearTitle", "description", "clearDescription", "carID", "clearCar", "addAlbumIDs", "removeAlbumIDs", "clearAlbums"}
+	fieldsInOrder := [...]string{"updateTime", "title", "clearTitle", "description", "clearDescription", "userID", "clearUser", "carID", "clearCar", "modProductOptionID", "clearModProductOption", "addAlbumIDs", "removeAlbumIDs", "clearAlbums"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -39900,6 +40539,20 @@ func (ec *executionContext) unmarshalInputUpdateMediaInput(ctx context.Context, 
 				return it, err
 			}
 			it.ClearDescription = data
+		case "userID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserID = data
+		case "clearUser":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearUser"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearUser = data
 		case "carID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("carID"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -39914,6 +40567,20 @@ func (ec *executionContext) unmarshalInputUpdateMediaInput(ctx context.Context, 
 				return it, err
 			}
 			it.ClearCar = data
+		case "modProductOptionID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modProductOptionID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ModProductOptionID = data
+		case "clearModProductOption":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearModProductOption"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearModProductOption = data
 		case "addAlbumIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addAlbumIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
@@ -39941,14 +40608,14 @@ func (ec *executionContext) unmarshalInputUpdateMediaInput(ctx context.Context, 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUpdateModIdeaInput(ctx context.Context, obj any) (ent.UpdateModIdeaInput, error) {
-	var it ent.UpdateModIdeaInput
+func (ec *executionContext) unmarshalInputUpdateModInput(ctx context.Context, obj any) (ent.UpdateModInput, error) {
+	var it ent.UpdateModInput
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "title", "category", "description", "clearDescription", "stage", "clearStage", "carID", "addTaskIDs", "removeTaskIDs", "clearTasks", "addProductOptionIDs", "removeProductOptionIDs", "clearProductOptions"}
+	fieldsInOrder := [...]string{"updateTime", "title", "category", "status", "description", "clearDescription", "stage", "clearStage", "carID", "addTaskIDs", "removeTaskIDs", "clearTasks", "addProductOptionIDs", "removeProductOptionIDs", "clearProductOptions"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -39971,11 +40638,18 @@ func (ec *executionContext) unmarshalInputUpdateModIdeaInput(ctx context.Context
 			it.Title = data
 		case "category":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
-			data, err := ec.unmarshalOModCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategory(ctx, v)
+			data, err := ec.unmarshalOModCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategory(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Category = data
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOModStatus2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
 		case "description":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -40066,7 +40740,7 @@ func (ec *executionContext) unmarshalInputUpdateModProductOptionInput(ctx contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "vendor", "clearVendor", "name", "clearName", "link", "clearLink", "price", "clearPrice", "notes", "clearNotes", "pros", "appendPros", "clearPros", "cons", "appendCons", "clearCons", "specs", "clearSpecs", "ideaID"}
+	fieldsInOrder := [...]string{"updateTime", "vendor", "clearVendor", "name", "clearName", "link", "clearLink", "price", "clearPrice", "notes", "clearNotes", "pros", "appendPros", "clearPros", "cons", "appendCons", "clearCons", "specs", "clearSpecs", "modID", "addMediumIDs", "removeMediumIDs", "clearMedia"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -40208,13 +40882,34 @@ func (ec *executionContext) unmarshalInputUpdateModProductOptionInput(ctx contex
 				return it, err
 			}
 			it.ClearSpecs = data
-		case "ideaID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ideaID"))
+		case "modID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modID"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.IdeaID = data
+			it.ModID = data
+		case "addMediumIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addMediumIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddMediumIDs = data
+		case "removeMediumIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeMediumIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveMediumIDs = data
+		case "clearMedia":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearMedia"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearMedia = data
 		}
 	}
 
@@ -40867,7 +41562,7 @@ func (ec *executionContext) unmarshalInputUpdateTaskInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "status", "title", "description", "clearDescription", "rank", "estimate", "clearEstimate", "priority", "clearPriority", "effort", "clearEffort", "difficulty", "clearDifficulty", "category", "clearCategory", "budget", "clearBudget", "partsNeeded", "clearPartsNeeded", "carID", "parentID", "clearParent", "addSubtaskIDs", "removeSubtaskIDs", "clearSubtasks", "addModIdeaIDs", "removeModIdeaIDs", "clearModIdeas"}
+	fieldsInOrder := [...]string{"updateTime", "status", "title", "description", "clearDescription", "rank", "estimate", "clearEstimate", "priority", "clearPriority", "effort", "clearEffort", "difficulty", "clearDifficulty", "category", "clearCategory", "budget", "clearBudget", "partsNeeded", "clearPartsNeeded", "carID", "parentID", "clearParent", "addSubtaskIDs", "removeSubtaskIDs", "clearSubtasks", "addModIDs", "removeModIDs", "clearMods"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -41056,27 +41751,27 @@ func (ec *executionContext) unmarshalInputUpdateTaskInput(ctx context.Context, o
 				return it, err
 			}
 			it.ClearSubtasks = data
-		case "addModIdeaIDs":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addModIdeaIDs"))
+		case "addModIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addModIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddModIdeaIDs = data
-		case "removeModIdeaIDs":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeModIdeaIDs"))
+			it.AddModIDs = data
+		case "removeModIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeModIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.RemoveModIdeaIDs = data
-		case "clearModIdeas":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearModIdeas"))
+			it.RemoveModIDs = data
+		case "clearMods":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearMods"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ClearModIdeas = data
+			it.ClearMods = data
 		}
 	}
 
@@ -41090,7 +41785,7 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "email", "stripeCustomerID", "clearStripeCustomerID", "stripeAccountID", "clearStripeAccountID", "stripeAccountCapabilities", "clearStripeAccountCapabilities", "affiliate6moCode", "clearAffiliate6moCode", "affiliate12moCode", "clearAffiliate12moCode", "addCarIDs", "removeCarIDs", "clearCars", "profileID", "clearProfile", "settingsID", "clearSettings", "addSubscriptionIDs", "removeSubscriptionIDs", "clearSubscriptions", "addCheckoutSessionIDs", "removeCheckoutSessionIDs", "clearCheckoutSessions"}
+	fieldsInOrder := [...]string{"updateTime", "email", "stripeCustomerID", "clearStripeCustomerID", "stripeAccountID", "clearStripeAccountID", "stripeAccountCapabilities", "clearStripeAccountCapabilities", "affiliate6moCode", "clearAffiliate6moCode", "affiliate12moCode", "clearAffiliate12moCode", "addCarIDs", "removeCarIDs", "clearCars", "profileID", "clearProfile", "settingsID", "clearSettings", "addSubscriptionIDs", "removeSubscriptionIDs", "clearSubscriptions", "addCheckoutSessionIDs", "removeCheckoutSessionIDs", "clearCheckoutSessions", "addMediumIDs", "removeMediumIDs", "clearMedia"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -41274,6 +41969,27 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.ClearCheckoutSessions = data
+		case "addMediumIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addMediumIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddMediumIDs = data
+		case "removeMediumIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeMediumIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveMediumIDs = data
+		case "clearMedia":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearMedia"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearMedia = data
 		}
 	}
 
@@ -42026,7 +42742,7 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "stripeCustomerID", "stripeCustomerIDNEQ", "stripeCustomerIDIn", "stripeCustomerIDNotIn", "stripeCustomerIDGT", "stripeCustomerIDGTE", "stripeCustomerIDLT", "stripeCustomerIDLTE", "stripeCustomerIDContains", "stripeCustomerIDHasPrefix", "stripeCustomerIDHasSuffix", "stripeCustomerIDIsNil", "stripeCustomerIDNotNil", "stripeCustomerIDEqualFold", "stripeCustomerIDContainsFold", "stripeAccountID", "stripeAccountIDNEQ", "stripeAccountIDIn", "stripeAccountIDNotIn", "stripeAccountIDGT", "stripeAccountIDGTE", "stripeAccountIDLT", "stripeAccountIDLTE", "stripeAccountIDContains", "stripeAccountIDHasPrefix", "stripeAccountIDHasSuffix", "stripeAccountIDIsNil", "stripeAccountIDNotNil", "stripeAccountIDEqualFold", "stripeAccountIDContainsFold", "affiliate6moCode", "affiliate6moCodeNEQ", "affiliate6moCodeIn", "affiliate6moCodeNotIn", "affiliate6moCodeGT", "affiliate6moCodeGTE", "affiliate6moCodeLT", "affiliate6moCodeLTE", "affiliate6moCodeContains", "affiliate6moCodeHasPrefix", "affiliate6moCodeHasSuffix", "affiliate6moCodeIsNil", "affiliate6moCodeNotNil", "affiliate6moCodeEqualFold", "affiliate6moCodeContainsFold", "affiliate12moCode", "affiliate12moCodeNEQ", "affiliate12moCodeIn", "affiliate12moCodeNotIn", "affiliate12moCodeGT", "affiliate12moCodeGTE", "affiliate12moCodeLT", "affiliate12moCodeLTE", "affiliate12moCodeContains", "affiliate12moCodeHasPrefix", "affiliate12moCodeHasSuffix", "affiliate12moCodeIsNil", "affiliate12moCodeNotNil", "affiliate12moCodeEqualFold", "affiliate12moCodeContainsFold", "hasCars", "hasCarsWith", "hasProfile", "hasProfileWith", "hasSettings", "hasSettingsWith", "hasSubscriptions", "hasSubscriptionsWith", "hasCheckoutSessions", "hasCheckoutSessionsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "stripeCustomerID", "stripeCustomerIDNEQ", "stripeCustomerIDIn", "stripeCustomerIDNotIn", "stripeCustomerIDGT", "stripeCustomerIDGTE", "stripeCustomerIDLT", "stripeCustomerIDLTE", "stripeCustomerIDContains", "stripeCustomerIDHasPrefix", "stripeCustomerIDHasSuffix", "stripeCustomerIDIsNil", "stripeCustomerIDNotNil", "stripeCustomerIDEqualFold", "stripeCustomerIDContainsFold", "stripeAccountID", "stripeAccountIDNEQ", "stripeAccountIDIn", "stripeAccountIDNotIn", "stripeAccountIDGT", "stripeAccountIDGTE", "stripeAccountIDLT", "stripeAccountIDLTE", "stripeAccountIDContains", "stripeAccountIDHasPrefix", "stripeAccountIDHasSuffix", "stripeAccountIDIsNil", "stripeAccountIDNotNil", "stripeAccountIDEqualFold", "stripeAccountIDContainsFold", "affiliate6moCode", "affiliate6moCodeNEQ", "affiliate6moCodeIn", "affiliate6moCodeNotIn", "affiliate6moCodeGT", "affiliate6moCodeGTE", "affiliate6moCodeLT", "affiliate6moCodeLTE", "affiliate6moCodeContains", "affiliate6moCodeHasPrefix", "affiliate6moCodeHasSuffix", "affiliate6moCodeIsNil", "affiliate6moCodeNotNil", "affiliate6moCodeEqualFold", "affiliate6moCodeContainsFold", "affiliate12moCode", "affiliate12moCodeNEQ", "affiliate12moCodeIn", "affiliate12moCodeNotIn", "affiliate12moCodeGT", "affiliate12moCodeGTE", "affiliate12moCodeLT", "affiliate12moCodeLTE", "affiliate12moCodeContains", "affiliate12moCodeHasPrefix", "affiliate12moCodeHasSuffix", "affiliate12moCodeIsNil", "affiliate12moCodeNotNil", "affiliate12moCodeEqualFold", "affiliate12moCodeContainsFold", "hasCars", "hasCarsWith", "hasProfile", "hasProfileWith", "hasSettings", "hasSettingsWith", "hasSubscriptions", "hasSubscriptionsWith", "hasCheckoutSessions", "hasCheckoutSessionsWith", "hasMedia", "hasMediaWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -42803,6 +43519,20 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.HasCheckoutSessionsWith = data
+		case "hasMedia":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMedia"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasMedia = data
+		case "hasMediaWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMediaWith"))
+			data, err := ec.unmarshalOMediaWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasMediaWith = data
 		}
 	}
 
@@ -42867,11 +43597,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._ModProductOption(ctx, sel, obj)
-	case *ent.ModIdea:
+	case *ent.Mod:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._ModIdea(ctx, sel, obj)
+		return ec._Mod(ctx, sel, obj)
 	case *ent.Media:
 		if obj == nil {
 			return graphql.Null
@@ -43565,7 +44295,7 @@ func (ec *executionContext) _Car(ctx context.Context, sel ast.SelectionSet, obj 
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "modIdeas":
+		case "mods":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -43574,7 +44304,7 @@ func (ec *executionContext) _Car(ctx context.Context, sel ast.SelectionSet, obj 
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Car_modIdeas(ctx, field, obj)
+				res = ec._Car_mods(ctx, field, obj)
 				return res
 			}
 
@@ -45239,6 +45969,39 @@ func (ec *executionContext) _Media(ctx context.Context, sel ast.SelectionSet, ob
 			out.Values[i] = ec._Media_title(ctx, field, obj)
 		case "description":
 			out.Values[i] = ec._Media_description(ctx, field, obj)
+		case "user":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Media_user(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "car":
 			field := field
 
@@ -45249,6 +46012,39 @@ func (ec *executionContext) _Media(ctx context.Context, sel ast.SelectionSet, ob
 					}
 				}()
 				res = ec._Media_car(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "modProductOption":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Media_modProductOption(ctx, field, obj)
 				return res
 			}
 
@@ -45397,46 +46193,51 @@ func (ec *executionContext) _Media(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
-var modIdeaImplementors = []string{"ModIdea", "Node"}
+var modImplementors = []string{"Mod", "Node"}
 
-func (ec *executionContext) _ModIdea(ctx context.Context, sel ast.SelectionSet, obj *ent.ModIdea) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, modIdeaImplementors)
+func (ec *executionContext) _Mod(ctx context.Context, sel ast.SelectionSet, obj *ent.Mod) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, modImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("ModIdea")
+			out.Values[i] = graphql.MarshalString("Mod")
 		case "id":
-			out.Values[i] = ec._ModIdea_id(ctx, field, obj)
+			out.Values[i] = ec._Mod_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "createTime":
-			out.Values[i] = ec._ModIdea_createTime(ctx, field, obj)
+			out.Values[i] = ec._Mod_createTime(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "updateTime":
-			out.Values[i] = ec._ModIdea_updateTime(ctx, field, obj)
+			out.Values[i] = ec._Mod_updateTime(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "title":
-			out.Values[i] = ec._ModIdea_title(ctx, field, obj)
+			out.Values[i] = ec._Mod_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "category":
-			out.Values[i] = ec._ModIdea_category(ctx, field, obj)
+			out.Values[i] = ec._Mod_category(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "status":
+			out.Values[i] = ec._Mod_status(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "description":
-			out.Values[i] = ec._ModIdea_description(ctx, field, obj)
+			out.Values[i] = ec._Mod_description(ctx, field, obj)
 		case "stage":
-			out.Values[i] = ec._ModIdea_stage(ctx, field, obj)
+			out.Values[i] = ec._Mod_stage(ctx, field, obj)
 		case "car":
 			field := field
 
@@ -45446,7 +46247,7 @@ func (ec *executionContext) _ModIdea(ctx context.Context, sel ast.SelectionSet, 
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._ModIdea_car(ctx, field, obj)
+				res = ec._Mod_car(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -45482,7 +46283,7 @@ func (ec *executionContext) _ModIdea(ctx context.Context, sel ast.SelectionSet, 
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._ModIdea_tasks(ctx, field, obj)
+				res = ec._Mod_tasks(ctx, field, obj)
 				return res
 			}
 
@@ -45515,7 +46316,7 @@ func (ec *executionContext) _ModIdea(ctx context.Context, sel ast.SelectionSet, 
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._ModIdea_productOptions(ctx, field, obj)
+				res = ec._Mod_productOptions(ctx, field, obj)
 				return res
 			}
 
@@ -45635,7 +46436,7 @@ func (ec *executionContext) _ModProductOption(ctx context.Context, sel ast.Selec
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "idea":
+		case "mod":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -45644,10 +46445,43 @@ func (ec *executionContext) _ModProductOption(ctx context.Context, sel ast.Selec
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._ModProductOption_idea(ctx, field, obj)
+				res = ec._ModProductOption_mod(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "media":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ModProductOption_media(ctx, field, obj)
 				return res
 			}
 
@@ -45916,16 +46750,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "createModIdea":
+		case "createMod":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createModIdea(ctx, field)
+				return ec._Mutation_createMod(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "updateModIdea":
+		case "updateMod":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateModIdea(ctx, field)
+				return ec._Mutation_updateMod(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -46535,7 +47369,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "modIdea":
+		case "mod":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -46544,7 +47378,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_modIdea(ctx, field)
+				res = ec._Query_mod(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "modProductOption":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_modProductOption(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -47511,7 +48367,7 @@ func (ec *executionContext) _Task(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "modIdeas":
+		case "mods":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -47520,7 +48376,7 @@ func (ec *executionContext) _Task(ctx context.Context, sel ast.SelectionSet, obj
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Task_modIdeas(ctx, field, obj)
+				res = ec._Task_mods(ctx, field, obj)
 				return res
 			}
 
@@ -48066,6 +48922,39 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._User_checkoutSessions(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "media":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_media(ctx, field, obj)
 				return res
 			}
 
@@ -48712,8 +49601,8 @@ func (ec *executionContext) unmarshalNCreateMediaInput2githubᚗcomᚋDan6erbond
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNCreateModIdeaInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐCreateModIdeaInput(ctx context.Context, v any) (ent.CreateModIdeaInput, error) {
-	res, err := ec.unmarshalInputCreateModIdeaInput(ctx, v)
+func (ec *executionContext) unmarshalNCreateModInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐCreateModInput(ctx context.Context, v any) (ent.CreateModInput, error) {
+	res, err := ec.unmarshalInputCreateModInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -49074,33 +49963,28 @@ func (ec *executionContext) unmarshalNMediaWhereInput2ᚖgithubᚗcomᚋDan6erbo
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNModCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategory(ctx context.Context, v any) (modidea.Category, error) {
-	var res modidea.Category
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
+func (ec *executionContext) marshalNMod2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMod(ctx context.Context, sel ast.SelectionSet, v ent.Mod) graphql.Marshaler {
+	return ec._Mod(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNModCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategory(ctx context.Context, sel ast.SelectionSet, v modidea.Category) graphql.Marshaler {
-	return v
-}
-
-func (ec *executionContext) marshalNModIdea2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdea(ctx context.Context, sel ast.SelectionSet, v ent.ModIdea) graphql.Marshaler {
-	return ec._ModIdea(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNModIdea2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdea(ctx context.Context, sel ast.SelectionSet, v *ent.ModIdea) graphql.Marshaler {
+func (ec *executionContext) marshalNMod2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMod(ctx context.Context, sel ast.SelectionSet, v *ent.Mod) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._ModIdea(ctx, sel, v)
+	return ec._Mod(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNModIdeaWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdeaWhereInput(ctx context.Context, v any) (*ent.ModIdeaWhereInput, error) {
-	res, err := ec.unmarshalInputModIdeaWhereInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
+func (ec *executionContext) unmarshalNModCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategory(ctx context.Context, v any) (mod.Category, error) {
+	var res mod.Category
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNModCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategory(ctx context.Context, sel ast.SelectionSet, v mod.Category) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNModProductOption2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOption(ctx context.Context, sel ast.SelectionSet, v ent.ModProductOption) graphql.Marshaler {
@@ -49119,6 +50003,21 @@ func (ec *executionContext) marshalNModProductOption2ᚖgithubᚗcomᚋDan6erbon
 
 func (ec *executionContext) unmarshalNModProductOptionWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionWhereInput(ctx context.Context, v any) (*ent.ModProductOptionWhereInput, error) {
 	res, err := ec.unmarshalInputModProductOptionWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNModStatus2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatus(ctx context.Context, v any) (mod.Status, error) {
+	var res mod.Status
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNModStatus2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatus(ctx context.Context, sel ast.SelectionSet, v mod.Status) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNModWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModWhereInput(ctx context.Context, v any) (*ent.ModWhereInput, error) {
+	res, err := ec.unmarshalInputModWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -49588,8 +50487,8 @@ func (ec *executionContext) unmarshalNUpdateMediaInput2githubᚗcomᚋDan6erbond
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNUpdateModIdeaInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateModIdeaInput(ctx context.Context, v any) (ent.UpdateModIdeaInput, error) {
-	res, err := ec.unmarshalInputUpdateModIdeaInput(ctx, v)
+func (ec *executionContext) unmarshalNUpdateModInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateModInput(ctx context.Context, v any) (ent.UpdateModInput, error) {
+	res, err := ec.unmarshalInputUpdateModInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -51474,7 +52373,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]any, error) {
+func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]interface{}, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -51482,7 +52381,7 @@ func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[s
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
+func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -51570,25 +52469,7 @@ func (ec *executionContext) unmarshalOMediaWhereInput2ᚖgithubᚗcomᚋDan6erbo
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOModCategory2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategoryᚄ(ctx context.Context, v any) ([]modidea.Category, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []any
-	vSlice = graphql.CoerceList(v)
-	var err error
-	res := make([]modidea.Category, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNModCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategory(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalOModCategory2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []modidea.Category) graphql.Marshaler {
+func (ec *executionContext) marshalOMod2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Mod) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -51615,7 +52496,7 @@ func (ec *executionContext) marshalOModCategory2ᚕgithubᚗcomᚋDan6erbondᚋr
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNModCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategory(ctx, sel, v[i])
+			ret[i] = ec.marshalNMod2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMod(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -51635,93 +52516,85 @@ func (ec *executionContext) marshalOModCategory2ᚕgithubᚗcomᚋDan6erbondᚋr
 	return ret
 }
 
-func (ec *executionContext) unmarshalOModCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategory(ctx context.Context, v any) (*modidea.Category, error) {
+func (ec *executionContext) unmarshalOModCategory2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategoryᚄ(ctx context.Context, v any) ([]mod.Category, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var res = new(modidea.Category)
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]mod.Category, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNModCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategory(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOModCategory2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []mod.Category) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNModCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategory(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOModCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategory(ctx context.Context, v any) (*mod.Category, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(mod.Category)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOModCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodideaᚐCategory(ctx context.Context, sel ast.SelectionSet, v *modidea.Category) graphql.Marshaler {
+func (ec *executionContext) marshalOModCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategory(ctx context.Context, sel ast.SelectionSet, v *mod.Category) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
-}
-
-func (ec *executionContext) marshalOModIdea2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdeaᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.ModIdea) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNModIdea2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdea(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) unmarshalOModIdeaWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdeaWhereInputᚄ(ctx context.Context, v any) ([]*ent.ModIdeaWhereInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []any
-	vSlice = graphql.CoerceList(v)
-	var err error
-	res := make([]*ent.ModIdeaWhereInput, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNModIdeaWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdeaWhereInput(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) unmarshalOModIdeaWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModIdeaWhereInput(ctx context.Context, v any) (*ent.ModIdeaWhereInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputModIdeaWhereInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOModProductOption2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.ModProductOption) graphql.Marshaler {
@@ -51771,6 +52644,13 @@ func (ec *executionContext) marshalOModProductOption2ᚕᚖgithubᚗcomᚋDan6er
 	return ret
 }
 
+func (ec *executionContext) marshalOModProductOption2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOption(ctx context.Context, sel ast.SelectionSet, v *ent.ModProductOption) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ModProductOption(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOModProductOptionWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionWhereInputᚄ(ctx context.Context, v any) ([]*ent.ModProductOptionWhereInput, error) {
 	if v == nil {
 		return nil, nil
@@ -51794,6 +52674,113 @@ func (ec *executionContext) unmarshalOModProductOptionWhereInput2ᚖgithubᚗcom
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputModProductOptionWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOModStatus2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatusᚄ(ctx context.Context, v any) ([]mod.Status, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]mod.Status, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNModStatus2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatus(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOModStatus2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatusᚄ(ctx context.Context, sel ast.SelectionSet, v []mod.Status) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNModStatus2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatus(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOModStatus2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatus(ctx context.Context, v any) (*mod.Status, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(mod.Status)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOModStatus2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐStatus(ctx context.Context, sel ast.SelectionSet, v *mod.Status) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOModWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModWhereInputᚄ(ctx context.Context, v any) ([]*ent.ModWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*ent.ModWhereInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNModWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModWhereInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOModWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModWhereInput(ctx context.Context, v any) (*ent.ModWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputModWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

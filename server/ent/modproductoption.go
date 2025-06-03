@@ -10,7 +10,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/google/uuid"
 )
@@ -42,31 +42,44 @@ type ModProductOption struct {
 	Specs map[string]string `json:"specs,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ModProductOptionQuery when eager-loading is set.
-	Edges                    ModProductOptionEdges `json:"edges"`
-	mod_idea_product_options *uuid.UUID
-	selectValues             sql.SelectValues
+	Edges               ModProductOptionEdges `json:"edges"`
+	mod_product_options *uuid.UUID
+	selectValues        sql.SelectValues
 }
 
 // ModProductOptionEdges holds the relations/edges for other nodes in the graph.
 type ModProductOptionEdges struct {
-	// Idea holds the value of the idea edge.
-	Idea *ModIdea `json:"idea,omitempty"`
+	// Mod holds the value of the mod edge.
+	Mod *Mod `json:"mod,omitempty"`
+	// Media holds the value of the media edge.
+	Media []*Media `json:"media,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
+	totalCount [2]map[string]int
+
+	namedMedia map[string][]*Media
 }
 
-// IdeaOrErr returns the Idea value or an error if the edge
+// ModOrErr returns the Mod value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e ModProductOptionEdges) IdeaOrErr() (*ModIdea, error) {
-	if e.Idea != nil {
-		return e.Idea, nil
+func (e ModProductOptionEdges) ModOrErr() (*Mod, error) {
+	if e.Mod != nil {
+		return e.Mod, nil
 	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: modidea.Label}
+		return nil, &NotFoundError{label: mod.Label}
 	}
-	return nil, &NotLoadedError{edge: "idea"}
+	return nil, &NotLoadedError{edge: "mod"}
+}
+
+// MediaOrErr returns the Media value or an error if the edge
+// was not loaded in eager-loading.
+func (e ModProductOptionEdges) MediaOrErr() ([]*Media, error) {
+	if e.loadedTypes[1] {
+		return e.Media, nil
+	}
+	return nil, &NotLoadedError{edge: "media"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -84,7 +97,7 @@ func (*ModProductOption) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case modproductoption.FieldID:
 			values[i] = new(uuid.UUID)
-		case modproductoption.ForeignKeys[0]: // mod_idea_product_options
+		case modproductoption.ForeignKeys[0]: // mod_product_options
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -180,10 +193,10 @@ func (mpo *ModProductOption) assignValues(columns []string, values []any) error 
 			}
 		case modproductoption.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field mod_idea_product_options", values[i])
+				return fmt.Errorf("unexpected type %T for field mod_product_options", values[i])
 			} else if value.Valid {
-				mpo.mod_idea_product_options = new(uuid.UUID)
-				*mpo.mod_idea_product_options = *value.S.(*uuid.UUID)
+				mpo.mod_product_options = new(uuid.UUID)
+				*mpo.mod_product_options = *value.S.(*uuid.UUID)
 			}
 		default:
 			mpo.selectValues.Set(columns[i], values[i])
@@ -198,9 +211,14 @@ func (mpo *ModProductOption) Value(name string) (ent.Value, error) {
 	return mpo.selectValues.Get(name)
 }
 
-// QueryIdea queries the "idea" edge of the ModProductOption entity.
-func (mpo *ModProductOption) QueryIdea() *ModIdeaQuery {
-	return NewModProductOptionClient(mpo.config).QueryIdea(mpo)
+// QueryMod queries the "mod" edge of the ModProductOption entity.
+func (mpo *ModProductOption) QueryMod() *ModQuery {
+	return NewModProductOptionClient(mpo.config).QueryMod(mpo)
+}
+
+// QueryMedia queries the "media" edge of the ModProductOption entity.
+func (mpo *ModProductOption) QueryMedia() *MediaQuery {
+	return NewModProductOptionClient(mpo.config).QueryMedia(mpo)
 }
 
 // Update returns a builder for updating this ModProductOption.
@@ -267,6 +285,30 @@ func (mpo *ModProductOption) String() string {
 	builder.WriteString(fmt.Sprintf("%v", mpo.Specs))
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedMedia returns the Media named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (mpo *ModProductOption) NamedMedia(name string) ([]*Media, error) {
+	if mpo.Edges.namedMedia == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := mpo.Edges.namedMedia[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (mpo *ModProductOption) appendNamedMedia(name string, edges ...*Media) {
+	if mpo.Edges.namedMedia == nil {
+		mpo.Edges.namedMedia = make(map[string][]*Media)
+	}
+	if len(edges) == 0 {
+		mpo.Edges.namedMedia[name] = []*Media{}
+	} else {
+		mpo.Edges.namedMedia[name] = append(mpo.Edges.namedMedia[name], edges...)
+	}
 }
 
 // ModProductOptions is a parsable slice of ModProductOption.

@@ -197,14 +197,14 @@ func (c *Car) Tasks(
 	return c.QueryTasks().Paginate(ctx, after, first, before, last, opts...)
 }
 
-func (c *Car) ModIdeas(ctx context.Context) (result []*ModIdea, err error) {
+func (c *Car) Mods(ctx context.Context) (result []*Mod, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = c.NamedModIdeas(graphql.GetFieldContext(ctx).Field.Alias)
+		result, err = c.NamedMods(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
-		result, err = c.Edges.ModIdeasOrErr()
+		result, err = c.Edges.ModsOrErr()
 	}
 	if IsNotLoaded(err) {
-		result, err = c.QueryModIdeas().All(ctx)
+		result, err = c.QueryMods().All(ctx)
 	}
 	return result, err
 }
@@ -425,10 +425,26 @@ func (fu *FuelUp) Documents(ctx context.Context) (result []*Document, err error)
 	return result, err
 }
 
+func (m *Media) User(ctx context.Context) (*User, error) {
+	result, err := m.Edges.UserOrErr()
+	if IsNotLoaded(err) {
+		result, err = m.QueryUser().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (m *Media) Car(ctx context.Context) (*Car, error) {
 	result, err := m.Edges.CarOrErr()
 	if IsNotLoaded(err) {
 		result, err = m.QueryCar().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (m *Media) ModProductOption(ctx context.Context) (*ModProductOption, error) {
+	result, err := m.Edges.ModProductOptionOrErr()
+	if IsNotLoaded(err) {
+		result, err = m.QueryModProductOption().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }
@@ -445,42 +461,54 @@ func (m *Media) Albums(ctx context.Context) (result []*Album, err error) {
 	return result, err
 }
 
-func (mi *ModIdea) Car(ctx context.Context) (*Car, error) {
-	result, err := mi.Edges.CarOrErr()
+func (m *Mod) Car(ctx context.Context) (*Car, error) {
+	result, err := m.Edges.CarOrErr()
 	if IsNotLoaded(err) {
-		result, err = mi.QueryCar().Only(ctx)
+		result, err = m.QueryCar().Only(ctx)
 	}
 	return result, err
 }
 
-func (mi *ModIdea) Tasks(ctx context.Context) (result []*Task, err error) {
+func (m *Mod) Tasks(ctx context.Context) (result []*Task, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = mi.NamedTasks(graphql.GetFieldContext(ctx).Field.Alias)
+		result, err = m.NamedTasks(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
-		result, err = mi.Edges.TasksOrErr()
+		result, err = m.Edges.TasksOrErr()
 	}
 	if IsNotLoaded(err) {
-		result, err = mi.QueryTasks().All(ctx)
+		result, err = m.QueryTasks().All(ctx)
 	}
 	return result, err
 }
 
-func (mi *ModIdea) ProductOptions(ctx context.Context) (result []*ModProductOption, err error) {
+func (m *Mod) ProductOptions(ctx context.Context) (result []*ModProductOption, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = mi.NamedProductOptions(graphql.GetFieldContext(ctx).Field.Alias)
+		result, err = m.NamedProductOptions(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
-		result, err = mi.Edges.ProductOptionsOrErr()
+		result, err = m.Edges.ProductOptionsOrErr()
 	}
 	if IsNotLoaded(err) {
-		result, err = mi.QueryProductOptions().All(ctx)
+		result, err = m.QueryProductOptions().All(ctx)
 	}
 	return result, err
 }
 
-func (mpo *ModProductOption) Idea(ctx context.Context) (*ModIdea, error) {
-	result, err := mpo.Edges.IdeaOrErr()
+func (mpo *ModProductOption) Mod(ctx context.Context) (*Mod, error) {
+	result, err := mpo.Edges.ModOrErr()
 	if IsNotLoaded(err) {
-		result, err = mpo.QueryIdea().Only(ctx)
+		result, err = mpo.QueryMod().Only(ctx)
+	}
+	return result, err
+}
+
+func (mpo *ModProductOption) Media(ctx context.Context) (result []*Media, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = mpo.NamedMedia(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = mpo.Edges.MediaOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = mpo.QueryMedia().All(ctx)
 	}
 	return result, err
 }
@@ -681,14 +709,14 @@ func (t *Task) Subtasks(ctx context.Context) (result []*Task, err error) {
 	return result, err
 }
 
-func (t *Task) ModIdeas(ctx context.Context) (result []*ModIdea, err error) {
+func (t *Task) Mods(ctx context.Context) (result []*Mod, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = t.NamedModIdeas(graphql.GetFieldContext(ctx).Field.Alias)
+		result, err = t.NamedMods(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
-		result, err = t.Edges.ModIdeasOrErr()
+		result, err = t.Edges.ModsOrErr()
 	}
 	if IsNotLoaded(err) {
-		result, err = t.QueryModIdeas().All(ctx)
+		result, err = t.QueryMods().All(ctx)
 	}
 	return result, err
 }
@@ -741,6 +769,18 @@ func (u *User) CheckoutSessions(ctx context.Context) (result []*CheckoutSession,
 	}
 	if IsNotLoaded(err) {
 		result, err = u.QueryCheckoutSessions().All(ctx)
+	}
+	return result, err
+}
+
+func (u *User) Media(ctx context.Context) (result []*Media, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = u.NamedMedia(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = u.Edges.MediaOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = u.QueryMedia().All(ctx)
 	}
 	return result, err
 }

@@ -375,28 +375,28 @@ func (f MediaMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation)
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.MediaMutation", m)
 }
 
-// The ModIdeaQueryRuleFunc type is an adapter to allow the use of ordinary
+// The ModQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type ModIdeaQueryRuleFunc func(context.Context, *ent.ModIdeaQuery) error
+type ModQueryRuleFunc func(context.Context, *ent.ModQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f ModIdeaQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.ModIdeaQuery); ok {
+func (f ModQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ModQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ModIdeaQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ModQuery", q)
 }
 
-// The ModIdeaMutationRuleFunc type is an adapter to allow the use of ordinary
+// The ModMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type ModIdeaMutationRuleFunc func(context.Context, *ent.ModIdeaMutation) error
+type ModMutationRuleFunc func(context.Context, *ent.ModMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f ModIdeaMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.ModIdeaMutation); ok {
+func (f ModMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.ModMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ModIdeaMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ModMutation", m)
 }
 
 // The ModProductOptionQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -696,7 +696,7 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.MediaQuery:
 		return q.Filter(), nil
-	case *ent.ModIdeaQuery:
+	case *ent.ModQuery:
 		return q.Filter(), nil
 	case *ent.ModProductOptionQuery:
 		return q.Filter(), nil
@@ -747,7 +747,7 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.MediaMutation:
 		return m.Filter(), nil
-	case *ent.ModIdeaMutation:
+	case *ent.ModMutation:
 		return m.Filter(), nil
 	case *ent.ModProductOptionMutation:
 		return m.Filter(), nil

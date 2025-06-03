@@ -61,8 +61,8 @@ type TaskEdges struct {
 	Parent *Task `json:"parent,omitempty"`
 	// Subtasks holds the value of the subtasks edge.
 	Subtasks []*Task `json:"subtasks,omitempty"`
-	// ModIdeas holds the value of the mod_ideas edge.
-	ModIdeas []*ModIdea `json:"mod_ideas,omitempty"`
+	// Mods holds the value of the mods edge.
+	Mods []*Mod `json:"mods,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -70,7 +70,7 @@ type TaskEdges struct {
 	totalCount [4]map[string]int
 
 	namedSubtasks map[string][]*Task
-	namedModIdeas map[string][]*ModIdea
+	namedMods     map[string][]*Mod
 }
 
 // CarOrErr returns the Car value or an error if the edge
@@ -104,13 +104,13 @@ func (e TaskEdges) SubtasksOrErr() ([]*Task, error) {
 	return nil, &NotLoadedError{edge: "subtasks"}
 }
 
-// ModIdeasOrErr returns the ModIdeas value or an error if the edge
+// ModsOrErr returns the Mods value or an error if the edge
 // was not loaded in eager-loading.
-func (e TaskEdges) ModIdeasOrErr() ([]*ModIdea, error) {
+func (e TaskEdges) ModsOrErr() ([]*Mod, error) {
 	if e.loadedTypes[3] {
-		return e.ModIdeas, nil
+		return e.Mods, nil
 	}
-	return nil, &NotLoadedError{edge: "mod_ideas"}
+	return nil, &NotLoadedError{edge: "mods"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -279,9 +279,9 @@ func (t *Task) QuerySubtasks() *TaskQuery {
 	return NewTaskClient(t.config).QuerySubtasks(t)
 }
 
-// QueryModIdeas queries the "mod_ideas" edge of the Task entity.
-func (t *Task) QueryModIdeas() *ModIdeaQuery {
-	return NewTaskClient(t.config).QueryModIdeas(t)
+// QueryMods queries the "mods" edge of the Task entity.
+func (t *Task) QueryMods() *ModQuery {
+	return NewTaskClient(t.config).QueryMods(t)
 }
 
 // Update returns a builder for updating this Task.
@@ -389,27 +389,27 @@ func (t *Task) appendNamedSubtasks(name string, edges ...*Task) {
 	}
 }
 
-// NamedModIdeas returns the ModIdeas named value or an error if the edge was not
+// NamedMods returns the Mods named value or an error if the edge was not
 // loaded in eager-loading with this name.
-func (t *Task) NamedModIdeas(name string) ([]*ModIdea, error) {
-	if t.Edges.namedModIdeas == nil {
+func (t *Task) NamedMods(name string) ([]*Mod, error) {
+	if t.Edges.namedMods == nil {
 		return nil, &NotLoadedError{edge: name}
 	}
-	nodes, ok := t.Edges.namedModIdeas[name]
+	nodes, ok := t.Edges.namedMods[name]
 	if !ok {
 		return nil, &NotLoadedError{edge: name}
 	}
 	return nodes, nil
 }
 
-func (t *Task) appendNamedModIdeas(name string, edges ...*ModIdea) {
-	if t.Edges.namedModIdeas == nil {
-		t.Edges.namedModIdeas = make(map[string][]*ModIdea)
+func (t *Task) appendNamedMods(name string, edges ...*Mod) {
+	if t.Edges.namedMods == nil {
+		t.Edges.namedMods = make(map[string][]*Mod)
 	}
 	if len(edges) == 0 {
-		t.Edges.namedModIdeas[name] = []*ModIdea{}
+		t.Edges.namedMods[name] = []*Mod{}
 	} else {
-		t.Edges.namedModIdeas[name] = append(t.Edges.namedModIdeas[name], edges...)
+		t.Edges.namedMods[name] = append(t.Edges.namedMods[name], edges...)
 	}
 }
 

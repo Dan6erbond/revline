@@ -55,6 +55,7 @@ func (User) Edges() []ent.Edge {
 			Unique(),
 		edge.To("subscriptions", Subscription.Type),
 		edge.To("checkout_sessions", CheckoutSession.Type),
+		edge.To("media", Media.Type),
 	}
 }
 

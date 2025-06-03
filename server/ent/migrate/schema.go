@@ -326,6 +326,8 @@ var (
 		{Name: "title", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "car_media", Type: field.TypeUUID, Nullable: true},
+		{Name: "mod_product_option_media", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_media", Type: field.TypeUUID, Nullable: true},
 	}
 	// MediaTable holds the schema information for the "media" table.
 	MediaTable = &schema.Table{
@@ -339,28 +341,41 @@ var (
 				RefColumns: []*schema.Column{CarsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
+			{
+				Symbol:     "media_mod_product_options_media",
+				Columns:    []*schema.Column{MediaColumns[6]},
+				RefColumns: []*schema.Column{ModProductOptionsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "media_users_media",
+				Columns:    []*schema.Column{MediaColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
 		},
 	}
-	// ModIdeasColumns holds the columns for the "mod_ideas" table.
-	ModIdeasColumns = []*schema.Column{
+	// ModsColumns holds the columns for the "mods" table.
+	ModsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "title", Type: field.TypeString},
 		{Name: "category", Type: field.TypeEnum, Enums: []string{"performance", "aesthetic", "utility"}},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"idea", "planned", "completed"}, Default: "idea"},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "stage", Type: field.TypeString, Nullable: true},
-		{Name: "car_mod_ideas", Type: field.TypeUUID},
+		{Name: "car_mods", Type: field.TypeUUID},
 	}
-	// ModIdeasTable holds the schema information for the "mod_ideas" table.
-	ModIdeasTable = &schema.Table{
-		Name:       "mod_ideas",
-		Columns:    ModIdeasColumns,
-		PrimaryKey: []*schema.Column{ModIdeasColumns[0]},
+	// ModsTable holds the schema information for the "mods" table.
+	ModsTable = &schema.Table{
+		Name:       "mods",
+		Columns:    ModsColumns,
+		PrimaryKey: []*schema.Column{ModsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "mod_ideas_cars_mod_ideas",
-				Columns:    []*schema.Column{ModIdeasColumns[7]},
+				Symbol:     "mods_cars_mods",
+				Columns:    []*schema.Column{ModsColumns[8]},
 				RefColumns: []*schema.Column{CarsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -379,7 +394,7 @@ var (
 		{Name: "pros", Type: field.TypeJSON, Nullable: true},
 		{Name: "cons", Type: field.TypeJSON, Nullable: true},
 		{Name: "specs", Type: field.TypeJSON, Nullable: true},
-		{Name: "mod_idea_product_options", Type: field.TypeUUID},
+		{Name: "mod_product_options", Type: field.TypeUUID},
 	}
 	// ModProductOptionsTable holds the schema information for the "mod_product_options" table.
 	ModProductOptionsTable = &schema.Table{
@@ -388,9 +403,9 @@ var (
 		PrimaryKey: []*schema.Column{ModProductOptionsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "mod_product_options_mod_ideas_product_options",
+				Symbol:     "mod_product_options_mods_product_options",
 				Columns:    []*schema.Column{ModProductOptionsColumns[11]},
-				RefColumns: []*schema.Column{ModIdeasColumns[0]},
+				RefColumns: []*schema.Column{ModsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -734,27 +749,27 @@ var (
 			},
 		},
 	}
-	// TaskModIdeasColumns holds the columns for the "task_mod_ideas" table.
-	TaskModIdeasColumns = []*schema.Column{
+	// TaskModsColumns holds the columns for the "task_mods" table.
+	TaskModsColumns = []*schema.Column{
 		{Name: "task_id", Type: field.TypeUUID},
-		{Name: "mod_idea_id", Type: field.TypeUUID},
+		{Name: "mod_id", Type: field.TypeUUID},
 	}
-	// TaskModIdeasTable holds the schema information for the "task_mod_ideas" table.
-	TaskModIdeasTable = &schema.Table{
-		Name:       "task_mod_ideas",
-		Columns:    TaskModIdeasColumns,
-		PrimaryKey: []*schema.Column{TaskModIdeasColumns[0], TaskModIdeasColumns[1]},
+	// TaskModsTable holds the schema information for the "task_mods" table.
+	TaskModsTable = &schema.Table{
+		Name:       "task_mods",
+		Columns:    TaskModsColumns,
+		PrimaryKey: []*schema.Column{TaskModsColumns[0], TaskModsColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "task_mod_ideas_task_id",
-				Columns:    []*schema.Column{TaskModIdeasColumns[0]},
+				Symbol:     "task_mods_task_id",
+				Columns:    []*schema.Column{TaskModsColumns[0]},
 				RefColumns: []*schema.Column{TasksColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "task_mod_ideas_mod_idea_id",
-				Columns:    []*schema.Column{TaskModIdeasColumns[1]},
-				RefColumns: []*schema.Column{ModIdeasColumns[0]},
+				Symbol:     "task_mods_mod_id",
+				Columns:    []*schema.Column{TaskModsColumns[1]},
+				RefColumns: []*schema.Column{ModsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -772,7 +787,7 @@ var (
 		ExpensesTable,
 		FuelUpsTable,
 		MediaTable,
-		ModIdeasTable,
+		ModsTable,
 		ModProductOptionsTable,
 		OdometerReadingsTable,
 		ProfilesTable,
@@ -786,7 +801,7 @@ var (
 		AlbumMediaTable,
 		ServiceLogItemsTable,
 		ServiceScheduleItemsTable,
-		TaskModIdeasTable,
+		TaskModsTable,
 	}
 )
 
@@ -811,8 +826,10 @@ func init() {
 	FuelUpsTable.ForeignKeys[0].RefTable = CarsTable
 	FuelUpsTable.ForeignKeys[1].RefTable = OdometerReadingsTable
 	MediaTable.ForeignKeys[0].RefTable = CarsTable
-	ModIdeasTable.ForeignKeys[0].RefTable = CarsTable
-	ModProductOptionsTable.ForeignKeys[0].RefTable = ModIdeasTable
+	MediaTable.ForeignKeys[1].RefTable = ModProductOptionsTable
+	MediaTable.ForeignKeys[2].RefTable = UsersTable
+	ModsTable.ForeignKeys[0].RefTable = CarsTable
+	ModProductOptionsTable.ForeignKeys[0].RefTable = ModsTable
 	OdometerReadingsTable.ForeignKeys[0].RefTable = CarsTable
 	ProfilesTable.ForeignKeys[0].RefTable = UsersTable
 	ServiceItemsTable.ForeignKeys[0].RefTable = CarsTable
@@ -831,6 +848,6 @@ func init() {
 	ServiceLogItemsTable.ForeignKeys[1].RefTable = ServiceItemsTable
 	ServiceScheduleItemsTable.ForeignKeys[0].RefTable = ServiceSchedulesTable
 	ServiceScheduleItemsTable.ForeignKeys[1].RefTable = ServiceItemsTable
-	TaskModIdeasTable.ForeignKeys[0].RefTable = TasksTable
-	TaskModIdeasTable.ForeignKeys[1].RefTable = ModIdeasTable
+	TaskModsTable.ForeignKeys[0].RefTable = TasksTable
+	TaskModsTable.ForeignKeys[1].RefTable = ModsTable
 }

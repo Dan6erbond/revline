@@ -10,7 +10,8 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/google/uuid"
 )
@@ -152,15 +153,30 @@ func (mpoc *ModProductOptionCreate) SetNillableID(u *uuid.UUID) *ModProductOptio
 	return mpoc
 }
 
-// SetIdeaID sets the "idea" edge to the ModIdea entity by ID.
-func (mpoc *ModProductOptionCreate) SetIdeaID(id uuid.UUID) *ModProductOptionCreate {
-	mpoc.mutation.SetIdeaID(id)
+// SetModID sets the "mod" edge to the Mod entity by ID.
+func (mpoc *ModProductOptionCreate) SetModID(id uuid.UUID) *ModProductOptionCreate {
+	mpoc.mutation.SetModID(id)
 	return mpoc
 }
 
-// SetIdea sets the "idea" edge to the ModIdea entity.
-func (mpoc *ModProductOptionCreate) SetIdea(m *ModIdea) *ModProductOptionCreate {
-	return mpoc.SetIdeaID(m.ID)
+// SetMod sets the "mod" edge to the Mod entity.
+func (mpoc *ModProductOptionCreate) SetMod(m *Mod) *ModProductOptionCreate {
+	return mpoc.SetModID(m.ID)
+}
+
+// AddMediumIDs adds the "media" edge to the Media entity by IDs.
+func (mpoc *ModProductOptionCreate) AddMediumIDs(ids ...uuid.UUID) *ModProductOptionCreate {
+	mpoc.mutation.AddMediumIDs(ids...)
+	return mpoc
+}
+
+// AddMedia adds the "media" edges to the Media entity.
+func (mpoc *ModProductOptionCreate) AddMedia(m ...*Media) *ModProductOptionCreate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return mpoc.AddMediumIDs(ids...)
 }
 
 // Mutation returns the ModProductOptionMutation object of the builder.
@@ -220,8 +236,8 @@ func (mpoc *ModProductOptionCreate) check() error {
 	if _, ok := mpoc.mutation.UpdateTime(); !ok {
 		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "ModProductOption.update_time"`)}
 	}
-	if len(mpoc.mutation.IdeaIDs()) == 0 {
-		return &ValidationError{Name: "idea", err: errors.New(`ent: missing required edge "ModProductOption.idea"`)}
+	if len(mpoc.mutation.ModIDs()) == 0 {
+		return &ValidationError{Name: "mod", err: errors.New(`ent: missing required edge "ModProductOption.mod"`)}
 	}
 	return nil
 }
@@ -298,21 +314,37 @@ func (mpoc *ModProductOptionCreate) createSpec() (*ModProductOption, *sqlgraph.C
 		_spec.SetField(modproductoption.FieldSpecs, field.TypeJSON, value)
 		_node.Specs = value
 	}
-	if nodes := mpoc.mutation.IdeaIDs(); len(nodes) > 0 {
+	if nodes := mpoc.mutation.ModIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   modproductoption.IdeaTable,
-			Columns: []string{modproductoption.IdeaColumn},
+			Table:   modproductoption.ModTable,
+			Columns: []string{modproductoption.ModColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(modidea.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.mod_idea_product_options = &nodes[0]
+		_node.mod_product_options = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := mpoc.mutation.MediaIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.MediaTable,
+			Columns: []string{modproductoption.MediaColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

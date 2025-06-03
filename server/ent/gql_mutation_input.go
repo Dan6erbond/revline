@@ -8,7 +8,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/dragresult"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
-	"github.com/Dan6erbond/revline/ent/modidea"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/usersettings"
@@ -113,7 +113,7 @@ type CreateCarInput struct {
 	ExpenseIDs         []uuid.UUID
 	BannerImageID      *uuid.UUID
 	TaskIDs            []uuid.UUID
-	ModIdeaIDs         []uuid.UUID
+	ModIDs             []uuid.UUID
 }
 
 // Mutate applies the CreateCarInput on the CarMutation builder.
@@ -182,8 +182,8 @@ func (i *CreateCarInput) Mutate(m *CarMutation) {
 	if v := i.TaskIDs; len(v) > 0 {
 		m.AddTaskIDs(v...)
 	}
-	if v := i.ModIdeaIDs; len(v) > 0 {
-		m.AddModIdeaIDs(v...)
+	if v := i.ModIDs; len(v) > 0 {
+		m.AddModIDs(v...)
 	}
 }
 
@@ -247,9 +247,9 @@ type UpdateCarInput struct {
 	ClearTasks               bool
 	AddTaskIDs               []uuid.UUID
 	RemoveTaskIDs            []uuid.UUID
-	ClearModIdeas            bool
-	AddModIdeaIDs            []uuid.UUID
-	RemoveModIdeaIDs         []uuid.UUID
+	ClearMods                bool
+	AddModIDs                []uuid.UUID
+	RemoveModIDs             []uuid.UUID
 }
 
 // Mutate applies the UpdateCarInput on the CarMutation builder.
@@ -410,14 +410,14 @@ func (i *UpdateCarInput) Mutate(m *CarMutation) {
 	if v := i.RemoveTaskIDs; len(v) > 0 {
 		m.RemoveTaskIDs(v...)
 	}
-	if i.ClearModIdeas {
-		m.ClearModIdeas()
+	if i.ClearMods {
+		m.ClearMods()
 	}
-	if v := i.AddModIdeaIDs; len(v) > 0 {
-		m.AddModIdeaIDs(v...)
+	if v := i.AddModIDs; len(v) > 0 {
+		m.AddModIDs(v...)
 	}
-	if v := i.RemoveModIdeaIDs; len(v) > 0 {
-		m.RemoveModIdeaIDs(v...)
+	if v := i.RemoveModIDs; len(v) > 0 {
+		m.RemoveModIDs(v...)
 	}
 }
 
@@ -1197,12 +1197,14 @@ func (c *FuelUpUpdateOne) SetInput(i UpdateFuelUpInput) *FuelUpUpdateOne {
 
 // CreateMediaInput represents a mutation input for creating mediaslice.
 type CreateMediaInput struct {
-	CreateTime  *time.Time
-	UpdateTime  *time.Time
-	Title       *string
-	Description *string
-	CarID       *uuid.UUID
-	AlbumIDs    []uuid.UUID
+	CreateTime         *time.Time
+	UpdateTime         *time.Time
+	Title              *string
+	Description        *string
+	UserID             *uuid.UUID
+	CarID              *uuid.UUID
+	ModProductOptionID *uuid.UUID
+	AlbumIDs           []uuid.UUID
 }
 
 // Mutate applies the CreateMediaInput on the MediaMutation builder.
@@ -1219,8 +1221,14 @@ func (i *CreateMediaInput) Mutate(m *MediaMutation) {
 	if v := i.Description; v != nil {
 		m.SetDescription(*v)
 	}
+	if v := i.UserID; v != nil {
+		m.SetUserID(*v)
+	}
 	if v := i.CarID; v != nil {
 		m.SetCarID(*v)
+	}
+	if v := i.ModProductOptionID; v != nil {
+		m.SetModProductOptionID(*v)
 	}
 	if v := i.AlbumIDs; len(v) > 0 {
 		m.AddAlbumIDs(v...)
@@ -1235,16 +1243,20 @@ func (c *MediaCreate) SetInput(i CreateMediaInput) *MediaCreate {
 
 // UpdateMediaInput represents a mutation input for updating mediaslice.
 type UpdateMediaInput struct {
-	UpdateTime       *time.Time
-	ClearTitle       bool
-	Title            *string
-	ClearDescription bool
-	Description      *string
-	ClearCar         bool
-	CarID            *uuid.UUID
-	ClearAlbums      bool
-	AddAlbumIDs      []uuid.UUID
-	RemoveAlbumIDs   []uuid.UUID
+	UpdateTime            *time.Time
+	ClearTitle            bool
+	Title                 *string
+	ClearDescription      bool
+	Description           *string
+	ClearUser             bool
+	UserID                *uuid.UUID
+	ClearCar              bool
+	CarID                 *uuid.UUID
+	ClearModProductOption bool
+	ModProductOptionID    *uuid.UUID
+	ClearAlbums           bool
+	AddAlbumIDs           []uuid.UUID
+	RemoveAlbumIDs        []uuid.UUID
 }
 
 // Mutate applies the UpdateMediaInput on the MediaMutation builder.
@@ -1264,11 +1276,23 @@ func (i *UpdateMediaInput) Mutate(m *MediaMutation) {
 	if v := i.Description; v != nil {
 		m.SetDescription(*v)
 	}
+	if i.ClearUser {
+		m.ClearUser()
+	}
+	if v := i.UserID; v != nil {
+		m.SetUserID(*v)
+	}
 	if i.ClearCar {
 		m.ClearCar()
 	}
 	if v := i.CarID; v != nil {
 		m.SetCarID(*v)
+	}
+	if i.ClearModProductOption {
+		m.ClearModProductOption()
+	}
+	if v := i.ModProductOptionID; v != nil {
+		m.SetModProductOptionID(*v)
 	}
 	if i.ClearAlbums {
 		m.ClearAlbums()
@@ -1293,12 +1317,13 @@ func (c *MediaUpdateOne) SetInput(i UpdateMediaInput) *MediaUpdateOne {
 	return c
 }
 
-// CreateModIdeaInput represents a mutation input for creating modideas.
-type CreateModIdeaInput struct {
+// CreateModInput represents a mutation input for creating mods.
+type CreateModInput struct {
 	CreateTime       *time.Time
 	UpdateTime       *time.Time
 	Title            string
-	Category         modidea.Category
+	Category         mod.Category
+	Status           *mod.Status
 	Description      *string
 	Stage            *string
 	CarID            uuid.UUID
@@ -1306,8 +1331,8 @@ type CreateModIdeaInput struct {
 	ProductOptionIDs []uuid.UUID
 }
 
-// Mutate applies the CreateModIdeaInput on the ModIdeaMutation builder.
-func (i *CreateModIdeaInput) Mutate(m *ModIdeaMutation) {
+// Mutate applies the CreateModInput on the ModMutation builder.
+func (i *CreateModInput) Mutate(m *ModMutation) {
 	if v := i.CreateTime; v != nil {
 		m.SetCreateTime(*v)
 	}
@@ -1316,6 +1341,9 @@ func (i *CreateModIdeaInput) Mutate(m *ModIdeaMutation) {
 	}
 	m.SetTitle(i.Title)
 	m.SetCategory(i.Category)
+	if v := i.Status; v != nil {
+		m.SetStatus(*v)
+	}
 	if v := i.Description; v != nil {
 		m.SetDescription(*v)
 	}
@@ -1331,17 +1359,18 @@ func (i *CreateModIdeaInput) Mutate(m *ModIdeaMutation) {
 	}
 }
 
-// SetInput applies the change-set in the CreateModIdeaInput on the ModIdeaCreate builder.
-func (c *ModIdeaCreate) SetInput(i CreateModIdeaInput) *ModIdeaCreate {
+// SetInput applies the change-set in the CreateModInput on the ModCreate builder.
+func (c *ModCreate) SetInput(i CreateModInput) *ModCreate {
 	i.Mutate(c.Mutation())
 	return c
 }
 
-// UpdateModIdeaInput represents a mutation input for updating modideas.
-type UpdateModIdeaInput struct {
+// UpdateModInput represents a mutation input for updating mods.
+type UpdateModInput struct {
 	UpdateTime             *time.Time
 	Title                  *string
-	Category               *modidea.Category
+	Category               *mod.Category
+	Status                 *mod.Status
 	ClearDescription       bool
 	Description            *string
 	ClearStage             bool
@@ -1355,8 +1384,8 @@ type UpdateModIdeaInput struct {
 	RemoveProductOptionIDs []uuid.UUID
 }
 
-// Mutate applies the UpdateModIdeaInput on the ModIdeaMutation builder.
-func (i *UpdateModIdeaInput) Mutate(m *ModIdeaMutation) {
+// Mutate applies the UpdateModInput on the ModMutation builder.
+func (i *UpdateModInput) Mutate(m *ModMutation) {
 	if v := i.UpdateTime; v != nil {
 		m.SetUpdateTime(*v)
 	}
@@ -1365,6 +1394,9 @@ func (i *UpdateModIdeaInput) Mutate(m *ModIdeaMutation) {
 	}
 	if v := i.Category; v != nil {
 		m.SetCategory(*v)
+	}
+	if v := i.Status; v != nil {
+		m.SetStatus(*v)
 	}
 	if i.ClearDescription {
 		m.ClearDescription()
@@ -1401,14 +1433,14 @@ func (i *UpdateModIdeaInput) Mutate(m *ModIdeaMutation) {
 	}
 }
 
-// SetInput applies the change-set in the UpdateModIdeaInput on the ModIdeaUpdate builder.
-func (c *ModIdeaUpdate) SetInput(i UpdateModIdeaInput) *ModIdeaUpdate {
+// SetInput applies the change-set in the UpdateModInput on the ModUpdate builder.
+func (c *ModUpdate) SetInput(i UpdateModInput) *ModUpdate {
 	i.Mutate(c.Mutation())
 	return c
 }
 
-// SetInput applies the change-set in the UpdateModIdeaInput on the ModIdeaUpdateOne builder.
-func (c *ModIdeaUpdateOne) SetInput(i UpdateModIdeaInput) *ModIdeaUpdateOne {
+// SetInput applies the change-set in the UpdateModInput on the ModUpdateOne builder.
+func (c *ModUpdateOne) SetInput(i UpdateModInput) *ModUpdateOne {
 	i.Mutate(c.Mutation())
 	return c
 }
@@ -1425,7 +1457,8 @@ type CreateModProductOptionInput struct {
 	Pros       []string
 	Cons       []string
 	Specs      map[string]string
-	IdeaID     uuid.UUID
+	ModID      uuid.UUID
+	MediumIDs  []uuid.UUID
 }
 
 // Mutate applies the CreateModProductOptionInput on the ModProductOptionMutation builder.
@@ -1460,7 +1493,10 @@ func (i *CreateModProductOptionInput) Mutate(m *ModProductOptionMutation) {
 	if v := i.Specs; v != nil {
 		m.SetSpecs(v)
 	}
-	m.SetIdeaID(i.IdeaID)
+	m.SetModID(i.ModID)
+	if v := i.MediumIDs; len(v) > 0 {
+		m.AddMediumIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateModProductOptionInput on the ModProductOptionCreate builder.
@@ -1471,26 +1507,29 @@ func (c *ModProductOptionCreate) SetInput(i CreateModProductOptionInput) *ModPro
 
 // UpdateModProductOptionInput represents a mutation input for updating modproductoptions.
 type UpdateModProductOptionInput struct {
-	UpdateTime  *time.Time
-	ClearVendor bool
-	Vendor      *string
-	ClearName   bool
-	Name        *string
-	ClearLink   bool
-	Link        *string
-	ClearPrice  bool
-	Price       *float64
-	ClearNotes  bool
-	Notes       *string
-	ClearPros   bool
-	Pros        []string
-	AppendPros  []string
-	ClearCons   bool
-	Cons        []string
-	AppendCons  []string
-	ClearSpecs  bool
-	Specs       map[string]string
-	IdeaID      *uuid.UUID
+	UpdateTime      *time.Time
+	ClearVendor     bool
+	Vendor          *string
+	ClearName       bool
+	Name            *string
+	ClearLink       bool
+	Link            *string
+	ClearPrice      bool
+	Price           *float64
+	ClearNotes      bool
+	Notes           *string
+	ClearPros       bool
+	Pros            []string
+	AppendPros      []string
+	ClearCons       bool
+	Cons            []string
+	AppendCons      []string
+	ClearSpecs      bool
+	Specs           map[string]string
+	ModID           *uuid.UUID
+	ClearMedia      bool
+	AddMediumIDs    []uuid.UUID
+	RemoveMediumIDs []uuid.UUID
 }
 
 // Mutate applies the UpdateModProductOptionInput on the ModProductOptionMutation builder.
@@ -1552,8 +1591,17 @@ func (i *UpdateModProductOptionInput) Mutate(m *ModProductOptionMutation) {
 	if v := i.Specs; v != nil {
 		m.SetSpecs(v)
 	}
-	if v := i.IdeaID; v != nil {
-		m.SetIdeaID(*v)
+	if v := i.ModID; v != nil {
+		m.SetModID(*v)
+	}
+	if i.ClearMedia {
+		m.ClearMedia()
+	}
+	if v := i.AddMediumIDs; len(v) > 0 {
+		m.AddMediumIDs(v...)
+	}
+	if v := i.RemoveMediumIDs; len(v) > 0 {
+		m.RemoveMediumIDs(v...)
 	}
 }
 
@@ -2241,7 +2289,7 @@ type CreateTaskInput struct {
 	CarID       uuid.UUID
 	ParentID    *uuid.UUID
 	SubtaskIDs  []uuid.UUID
-	ModIdeaIDs  []uuid.UUID
+	ModIDs      []uuid.UUID
 }
 
 // Mutate applies the CreateTaskInput on the TaskMutation builder.
@@ -2288,8 +2336,8 @@ func (i *CreateTaskInput) Mutate(m *TaskMutation) {
 	if v := i.SubtaskIDs; len(v) > 0 {
 		m.AddSubtaskIDs(v...)
 	}
-	if v := i.ModIdeaIDs; len(v) > 0 {
-		m.AddModIdeaIDs(v...)
+	if v := i.ModIDs; len(v) > 0 {
+		m.AddModIDs(v...)
 	}
 }
 
@@ -2327,9 +2375,9 @@ type UpdateTaskInput struct {
 	ClearSubtasks    bool
 	AddSubtaskIDs    []uuid.UUID
 	RemoveSubtaskIDs []uuid.UUID
-	ClearModIdeas    bool
-	AddModIdeaIDs    []uuid.UUID
-	RemoveModIdeaIDs []uuid.UUID
+	ClearMods        bool
+	AddModIDs        []uuid.UUID
+	RemoveModIDs     []uuid.UUID
 }
 
 // Mutate applies the UpdateTaskInput on the TaskMutation builder.
@@ -2412,14 +2460,14 @@ func (i *UpdateTaskInput) Mutate(m *TaskMutation) {
 	if v := i.RemoveSubtaskIDs; len(v) > 0 {
 		m.RemoveSubtaskIDs(v...)
 	}
-	if i.ClearModIdeas {
-		m.ClearModIdeas()
+	if i.ClearMods {
+		m.ClearMods()
 	}
-	if v := i.AddModIdeaIDs; len(v) > 0 {
-		m.AddModIdeaIDs(v...)
+	if v := i.AddModIDs; len(v) > 0 {
+		m.AddModIDs(v...)
 	}
-	if v := i.RemoveModIdeaIDs; len(v) > 0 {
-		m.RemoveModIdeaIDs(v...)
+	if v := i.RemoveModIDs; len(v) > 0 {
+		m.RemoveModIDs(v...)
 	}
 }
 
@@ -2450,6 +2498,7 @@ type CreateUserInput struct {
 	SettingsID                *uuid.UUID
 	SubscriptionIDs           []uuid.UUID
 	CheckoutSessionIDs        []uuid.UUID
+	MediumIDs                 []uuid.UUID
 }
 
 // Mutate applies the CreateUserInput on the UserMutation builder.
@@ -2491,6 +2540,9 @@ func (i *CreateUserInput) Mutate(m *UserMutation) {
 	if v := i.CheckoutSessionIDs; len(v) > 0 {
 		m.AddCheckoutSessionIDs(v...)
 	}
+	if v := i.MediumIDs; len(v) > 0 {
+		m.AddMediumIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateUserInput on the UserCreate builder.
@@ -2526,6 +2578,9 @@ type UpdateUserInput struct {
 	ClearCheckoutSessions          bool
 	AddCheckoutSessionIDs          []uuid.UUID
 	RemoveCheckoutSessionIDs       []uuid.UUID
+	ClearMedia                     bool
+	AddMediumIDs                   []uuid.UUID
+	RemoveMediumIDs                []uuid.UUID
 }
 
 // Mutate applies the UpdateUserInput on the UserMutation builder.
@@ -2604,6 +2659,15 @@ func (i *UpdateUserInput) Mutate(m *UserMutation) {
 	}
 	if v := i.RemoveCheckoutSessionIDs; len(v) > 0 {
 		m.RemoveCheckoutSessionIDs(v...)
+	}
+	if i.ClearMedia {
+		m.ClearMedia()
+	}
+	if v := i.AddMediumIDs; len(v) > 0 {
+		m.AddMediumIDs(v...)
+	}
+	if v := i.RemoveMediumIDs; len(v) > 0 {
+		m.RemoveMediumIDs(v...)
 	}
 }
 
