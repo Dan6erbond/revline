@@ -27,7 +27,7 @@ const getModProductOption = graphql(`
       }
     }
     modProductOption(id: $id) {
-      ...ModProductOptionDetails
+      id
       name
       mod {
         id
@@ -37,6 +37,7 @@ const getModProductOption = graphql(`
         id
         ...MediaItem
       }
+      ...ModProductOptionDetails
     }
   }
 `);
@@ -201,6 +202,7 @@ export default function ProductOption() {
           currencyCode={currencyCode}
           modId={getQueryParam(router.query["mod-id"]) as string}
           id="product-option"
+          key={data.modProductOption.id}
         />
       )}
 

@@ -66,13 +66,14 @@ export default function ProductOptionForm({
 } & ComponentProps<"form">) {
   const po = useFragment(ModProductOptionDetails, productOption);
 
-  const { register, handleSubmit, control, reset, watch } = useForm<Inputs>({
-    defaultValues: {
-      pros: [{ value: "" }],
-      cons: [{ value: "" }],
-      specs: [{ key: "", value: "" }],
-    },
-  });
+  const { register, handleSubmit, control, reset, watch } =
+    useForm<Inputs>({
+      defaultValues: {
+        pros: [{ value: "" }],
+        cons: [{ value: "" }],
+        specs: [{ key: "", value: "" }],
+      },
+    });
 
   const [link] = watch(["link"]);
 
@@ -188,12 +189,7 @@ export default function ProductOptionForm({
       <div className="flex gap-4">
         <Input label="Link" {...register("link")} />
         {link && (
-          <Link
-            href={link}
-            isExternal
-            color="secondary"
-            showAnchorIcon
-          />
+          <Link href={link} isExternal color="secondary" showAnchorIcon />
         )}
       </div>
       <Input
