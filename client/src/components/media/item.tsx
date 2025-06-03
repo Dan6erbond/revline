@@ -15,6 +15,7 @@ import {
   Spinner,
   Tooltip,
   addToast,
+  cn,
   useDisclosure,
 } from "@heroui/react";
 import { Copy, Link, MoreHorizontal } from "lucide-react";
@@ -62,12 +63,14 @@ export default function MediaItem({
   item,
   dropdownMenuChildren,
   onAction: onActionParent,
+  className,
 }: {
   item: FragmentType<typeof MediaItemFields>;
   dropdownMenuChildren?:
     | CollectionElement<object>
     | CollectionElement<object>[];
   onAction?(key: Key): void;
+  className?: string;
 }) {
   const href = useHref();
 
@@ -155,11 +158,14 @@ export default function MediaItem({
   return (
     <>
       <Card
-        className="relative h-[150px] md:h-[200px] lg:h-[250px]"
+        className={cn(
+          "relative h-[150px] md:h-[200px] lg:h-[250px]",
+          className
+        )}
         isPressable
         onPress={onOpen}
       >
-        <div className="absolute top-6 right-6 z-20">
+        <div className="absolute top-2 right-2 sm:top-4 sm:right-4 md:top-6 md:right-6 z-20">
           <Dropdown onClick={(e) => e.stopPropagation()}>
             <DropdownTrigger asChild>
               <Button
@@ -253,20 +259,24 @@ export function SelectableMediaItem({
   item,
   selected,
   onSelect,
+  className,
 }: {
   item: FragmentType<typeof MediaItemFields>;
   selected: boolean;
   onSelect(id: string): void;
+  className?: string;
 }) {
   const m = useFragment(MediaItemFields, item);
 
   return (
     <label
-      className={`relative h-[150px] md:h-[200px] lg:h-[250px] cursor-pointer rounded-xl overflow-hidden border-2 transition duration-200 ${
+      className={cn(
+        "relative h-[150px] md:h-[200px] lg:h-[250px] cursor-pointer rounded-xl overflow-hidden border-2 transition duration-200",
         selected
           ? "border-primary-600 ring-2 ring-primary-400"
-          : "border-transparent"
-      }`}
+          : "border-transparent",
+        className
+      )}
     >
       <input
         type="checkbox"

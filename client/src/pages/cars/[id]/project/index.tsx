@@ -1,4 +1,4 @@
-import { KanbanIcon, Lightbulb } from "lucide-react";
+import { KanbanIcon, Lightbulb, WrenchIcon } from "lucide-react";
 import { Tab, Tabs } from "@heroui/react";
 
 import CarLayout from "@/components/layout/car-layout";
@@ -43,6 +43,17 @@ export default function Project() {
             </div>
           }
           href={`/cars/${router.query.id}/project/mods`}
+        />
+        <Tab
+          key="build-log"
+          title={
+            <div className="flex items-center space-x-2">
+              <WrenchIcon />
+              <span>Build Log</span>
+            </div>
+          }
+          href={`/cars/${router.query.id}/project/build-log`}
+          className="flex-1 flex flex-col gap-4"
         />
       </Tabs>
     </CarLayout>
