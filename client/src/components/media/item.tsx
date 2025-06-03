@@ -24,6 +24,7 @@ import { Key, useState } from "react";
 import { CollectionElement } from "@react-types/shared";
 import { MediaItemFields } from "./shared";
 import NextImage from "next/image";
+import { useConfig } from "@/contexts/config";
 import useDebounce from "@/hooks/use-debounce";
 import { useHref } from "@/utils/use-href";
 import { useMutation } from "@apollo/client";
@@ -35,6 +36,27 @@ const updateMedia = graphql(`
     }
   }
 `);
+
+function Preview({ item }: { item: FragmentType<typeof MediaItemFields> }) {
+  const config = useConfig();
+
+  const m = useFragment(MediaItemFields, item);
+  const isVideo = m.metadata?.contentType.startsWith("video/");
+
+  return isVideo ? (
+    <video className="h-full w-full object-cover">
+      <source src={m.url} type={m.metadata?.contentType ?? "video/mp4"} />
+    </video>
+  ) : (
+    <NextImage
+      src={new URL(`/media/${m.id}`, config.serverUrl).toString()}
+      alt={`Shared media ${m.id}`}
+      className="object-cover h-full w-full"
+      sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 20vw"
+      fill
+    />
+  );
+}
 
 export default function MediaItem({
   item,
@@ -158,19 +180,7 @@ export default function MediaItem({
           </Dropdown>
         </div>
 
-        {isVideo ? (
-          <video className="h-full w-full object-cover">
-            <source src={m.url} type="video/mp4" />
-          </video>
-        ) : (
-          <NextImage
-            src={m.url}
-            alt={`Shared media ${m.id}`}
-            className="object-cover h-full w-full"
-            sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 20vw"
-            fill
-          />
-        )}
+        <Preview item={item} />
       </Card>
 
       <Modal
@@ -198,7 +208,10 @@ export default function MediaItem({
               <ModalBody>
                 {isVideo ? (
                   <video className="h-full w-full object-cover" controls>
-                    <source src={m.url} type="video/mp4" />
+                    <source
+                      src={m.url}
+                      type={m.metadata?.contentType ?? "video/mp4"}
+                    />
                   </video>
                 ) : (
                   <Image
