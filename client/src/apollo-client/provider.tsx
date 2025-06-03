@@ -34,7 +34,7 @@ const AuthenticatedApolloProvider = ({
   const client = useMemo(
     () =>
       buildClient({ getSessionRef, accessToken: session?.accessToken, url }),
-    [getSessionRef]
+    [getSessionRef, session, url]
   );
 
   return <ApolloProvider client={client}>{children}</ApolloProvider>;

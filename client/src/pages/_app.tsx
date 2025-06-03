@@ -5,6 +5,7 @@ import "react-pdf/dist/Page/TextLayer.css";
 import type { AppContext, AppInitialProps, AppProps } from "next/app";
 import { HeroUIProvider, ToastProvider } from "@heroui/react";
 import { SessionProvider, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 import App from "next/app";
 import AuthenticatedApolloProvider from "@/apollo-client/provider";
@@ -15,7 +16,6 @@ import Script from "next/script";
 import { Session } from "next-auth";
 import { getQueryParam } from "../utils/router";
 import { pdfjs } from "react-pdf";
-import { useEffect } from "react";
 import { useHref } from "@/utils/use-href";
 import { useRouter } from "next/router";
 import usertour from "usertour.js";
@@ -54,6 +54,8 @@ export default function CustomApp({
 }: CustomAppProps & AppProps) {
   const router = useRouter();
   const href = useHref();
+
+  const [url] = useState(serverUrl);
 
   useEffect(() => {
     if (getQueryParam(router.query.affiliate)) {
@@ -99,8 +101,8 @@ export default function CustomApp({
         session={session}
         basePath={router.basePath ? router.basePath + "/api/auth" : undefined}
       >
-        <ConfigProvider basePath={router.basePath} serverUrl={serverUrl}>
-          <AuthenticatedApolloProvider url={serverUrl}>
+        <ConfigProvider basePath={router.basePath} serverUrl={url}>
+          <AuthenticatedApolloProvider url={url}>
             <UserTour />
             <Component {...pageProps} />
           </AuthenticatedApolloProvider>

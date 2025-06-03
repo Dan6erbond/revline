@@ -2,7 +2,7 @@ import React from "react";
 
 const ConfigContext = React.createContext({
   basePath: "",
-  serverUrl: "http://localhost:4000",
+  serverUrl: "",
 });
 
 export const useConfig = () => React.useContext(ConfigContext);
@@ -17,7 +17,7 @@ const ConfigProvider = ({
   children?: React.ReactNode;
 }) => {
   return (
-    <ConfigContext.Provider value={{ ...props, serverUrl: serverUrl ?? "http://localhost:4000" }}>
+    <ConfigContext.Provider value={{ ...props, serverUrl }}>
       {children}
     </ConfigContext.Provider>
   );
