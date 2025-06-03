@@ -53,6 +53,7 @@ export default function ModsPicker({
 
           onChange([...(value ?? []), key]);
         }}
+        filterMods={(m) => !value || !value.includes(m.id)}
       />
       <div className="flex flex-wrap gap-2 mt-2">
         {value?.map((id) => {
