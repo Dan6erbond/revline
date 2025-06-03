@@ -12219,9 +12219,9 @@ func (ec *executionContext) _Media_buildLog(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*ent.BuildLog)
+	res := resTmp.([]*ent.BuildLog)
 	fc.Result = res
-	return ec.marshalOBuildLog2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLog(ctx, field.Selections, res)
+	return ec.marshalOBuildLog2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Media_buildLog(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -30283,7 +30283,7 @@ func (ec *executionContext) unmarshalInputCreateMediaInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "description", "userID", "carID", "modProductOptionID", "buildLogID", "albumIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "description", "userID", "carID", "modProductOptionID", "buildLogIDs", "albumIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -30339,13 +30339,13 @@ func (ec *executionContext) unmarshalInputCreateMediaInput(ctx context.Context, 
 				return it, err
 			}
 			it.ModProductOptionID = data
-		case "buildLogID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("buildLogID"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+		case "buildLogIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("buildLogIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.BuildLogID = data
+			it.BuildLogIDs = data
 		case "albumIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("albumIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
@@ -42289,7 +42289,7 @@ func (ec *executionContext) unmarshalInputUpdateMediaInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "title", "clearTitle", "description", "clearDescription", "userID", "clearUser", "carID", "clearCar", "modProductOptionID", "clearModProductOption", "buildLogID", "clearBuildLog", "addAlbumIDs", "removeAlbumIDs", "clearAlbums"}
+	fieldsInOrder := [...]string{"updateTime", "title", "clearTitle", "description", "clearDescription", "userID", "clearUser", "carID", "clearCar", "modProductOptionID", "clearModProductOption", "addBuildLogIDs", "removeBuildLogIDs", "clearBuildLog", "addAlbumIDs", "removeAlbumIDs", "clearAlbums"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -42373,13 +42373,20 @@ func (ec *executionContext) unmarshalInputUpdateMediaInput(ctx context.Context, 
 				return it, err
 			}
 			it.ClearModProductOption = data
-		case "buildLogID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("buildLogID"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+		case "addBuildLogIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addBuildLogIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.BuildLogID = data
+			it.AddBuildLogIDs = data
+		case "removeBuildLogIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeBuildLogIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveBuildLogIDs = data
 		case "clearBuildLog":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearBuildLog"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
@@ -53110,13 +53117,6 @@ func (ec *executionContext) marshalOBuildLog2ᚕᚖgithubᚗcomᚋDan6erbondᚋr
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalOBuildLog2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLog(ctx context.Context, sel ast.SelectionSet, v *ent.BuildLog) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._BuildLog(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOBuildLogWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogWhereInputᚄ(ctx context.Context, v any) ([]*ent.BuildLogWhereInput, error) {
