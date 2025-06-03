@@ -39,6 +39,7 @@ import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
 import { EnumSelect } from "../enum-select";
 import { Key } from "react";
 import Link from "next/link";
+import ModsPicker from "../../mods/picker";
 import { TaskFields } from "./task";
 import { getQueryParam } from "@/utils/router";
 import { getTasksByRank } from "./column";
@@ -60,25 +61,6 @@ const getTask = graphql(`
   }
 `);
 
-const getMods = graphql(`
-  query Mods($id: ID!) {
-    car(id: $id) {
-      id
-      mods {
-        id
-        title
-        stage
-        category
-        status
-        description
-        productOptions {
-          id
-        }
-      }
-    }
-  }
-`);
-
 type Inputs = {
   title: string;
   status: TaskStatus;
@@ -92,7 +74,7 @@ type Inputs = {
   priority: TaskPriority | null;
   parentId?: string | null;
   subTaskIds?: string[] | null;
-  modIds?: string[] | null;
+  modIds: string[];
 };
 
 const updateTaskDetails = graphql(`
@@ -159,11 +141,6 @@ export default function TaskDrawerContent({
       },
     },
     fetchPolicy: "cache-and-network",
-    skip: !getQueryParam(router.query.id),
-  });
-
-  const { data: modsData } = useQuery(getMods, {
-    variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
   });
 
@@ -521,81 +498,11 @@ export default function TaskDrawerContent({
                 control={control}
                 name="modIds"
                 render={({ field: { value, onChange } }) => (
-                  <div className="flex flex-col gap-4">
-                    <p>Mods</p>
+                  <fieldset className="space-y-4">
+                    <legend>Mods</legend>
 
-                    <Select
-                      placeholder="Add Mod"
-                      classNames={{ innerWrapper: "py-4" }}
-                      items={
-                        modsData?.car.mods?.filter(
-                          (mod) =>
-                            !(modIds ?? []).some((id) => id === mod.id)
-                        ) ?? []
-                      }
-                      selectedKeys={new Set()}
-                      onSelectionChange={(keys) => {
-                        const key = Array.from(keys)[0];
-                        if (!key) return;
-
-                        onChange([...(value ?? []), key]);
-                      }}
-                    >
-                      {({ id, title, category, stage, productOptions }) => (
-                        <SelectItem key={id} textValue={title}>
-                          <div className="flex flex-col gap-1">
-                            <span className="text-sm font-medium">{title}</span>
-                            <div className="text-xs text-default-500 flex flex-wrap gap-3">
-                              {category && <span>Category: {category}</span>}
-                              {stage && <span>Stage: {stage}</span>}
-                              <span>{productOptions?.length || 0} Options</span>
-                            </div>
-                          </div>
-                        </SelectItem>
-                      )}
-                    </Select>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {value?.map((id) => {
-                        const mod = modsData?.car.mods?.find(
-                          (mod) => mod.id === id
-                        );
-
-                        if (!mod) return null;
-
-                        return (
-                          <Chip
-                            key={id}
-                            endContent={
-                              <Button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                }}
-                                onPress={() =>
-                                  onChange(
-                                    value?.filter((id) => id !== mod.id)
-                                  )
-                                }
-                                isIconOnly
-                                color="danger"
-                                variant="light"
-                                size="sm"
-                                radius="full"
-                                className="h-6"
-                              >
-                                <X size={12} />
-                              </Button>
-                            }
-                            as={Link}
-                            href={`/cars/${router.query.id}/project/mods/${mod.id}`}
-                            variant="faded"
-                          >
-                            {mod.title}
-                          </Chip>
-                        );
-                      })}
-                    </div>
-                  </div>
+                    <ModsPicker value={value} onChange={onChange} />
+                  </fieldset>
                 )}
               />
             </form>
