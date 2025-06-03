@@ -1,9 +1,9 @@
 import { Button, Input, Link, Textarea } from "@heroui/react";
-import { ComponentProps, useEffect } from "react";
 import { FragmentType, graphql, useFragment } from "@/gql";
 import { MinusCircle, PlusCircle } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 
+import { ComponentProps } from "react";
 import { ModProductOptionDetails } from "./shared";
 import { ModProductOptionDetailsFragment } from "@/gql/graphql";
 import { getMod } from "..";
@@ -66,12 +66,28 @@ export default function ProductOptionForm({
 } & ComponentProps<"form">) {
   const po = useFragment(ModProductOptionDetails, productOption);
 
-  const { register, handleSubmit, control, reset, watch } = useForm<Inputs>({
-    defaultValues: {
-      pros: [{ value: "" }],
-      cons: [{ value: "" }],
-      specs: [{ key: "", value: "" }],
-    },
+  const { register, handleSubmit, control, watch } = useForm<Inputs>({
+    defaultValues: po
+      ? {
+          vendor: po.vendor || "",
+          name: po.name || "",
+          link: po.link || "",
+          price: po.price || null,
+          notes: po.notes || "",
+          pros: ((po.pros as string[]) || []).map((p) => ({ value: p })),
+          cons: ((po.cons as string[]) || []).map((c) => ({ value: c })),
+          specs: po.specs
+            ? Object.entries(po.specs).map(([key, value]) => ({
+                key,
+                value: value as string,
+              }))
+            : [],
+        }
+      : {
+          pros: [{ value: "" }],
+          cons: [{ value: "" }],
+          specs: [{ key: "", value: "" }],
+        },
   });
 
   const [link] = watch(["link"]);
@@ -120,42 +136,6 @@ export default function ProductOptionForm({
     },
   });
   const [update] = useMutation(updateModProductOption);
-
-  useEffect(() => {
-    if (!po) return;
-
-    console.log({
-      vendor: po.vendor || "",
-      name: po.name || "",
-      link: po.link || "",
-      price: po.price || null,
-      notes: po.notes || "",
-      pros: ((po.pros as string[]) || []).map((p) => ({ value: p })),
-      cons: ((po.cons as string[]) || []).map((c) => ({ value: c })),
-      specs: po.specs
-        ? Object.entries(po.specs).map(([key, value]) => ({
-            key,
-            value: value as string,
-          }))
-        : [],
-    });
-
-    reset({
-      vendor: po.vendor || "",
-      name: po.name || "",
-      link: po.link || "",
-      price: po.price || null,
-      notes: po.notes || "",
-      pros: ((po.pros as string[]) || []).map((p) => ({ value: p })),
-      cons: ((po.cons as string[]) || []).map((c) => ({ value: c })),
-      specs: po.specs
-        ? Object.entries(po.specs).map(([key, value]) => ({
-            key,
-            value: value as string,
-          }))
-        : [],
-    });
-  }, [po, reset]);
 
   const onFormSubmit = async (data: Inputs) => {
     const input = {
