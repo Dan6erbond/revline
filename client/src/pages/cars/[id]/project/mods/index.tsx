@@ -8,7 +8,14 @@ import {
   Tabs,
 } from "@heroui/react";
 import { KanbanIcon, Lightbulb, Plus } from "lucide-react";
-import { categoryColors, categoryIcons, categoryLabels } from "@/mods/shared";
+import {
+  categoryColors,
+  categoryIcons,
+  categoryLabels,
+  statusColors,
+  statusIcons,
+  statusLabels,
+} from "@/mods/shared";
 
 import CarLayout from "@/components/layout/car-layout";
 import Link from "next/link";
@@ -19,15 +26,16 @@ import { graphql } from "@/gql";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
 
-const getModIdeas = graphql(`
-  query ModIdeas($id: ID!) {
+const getMods = graphql(`
+  query Mods($id: ID!) {
     car(id: $id) {
       id
-      modIdeas {
+      mods {
         id
         title
         stage
         category
+        status
         description
         productOptions {
           id
@@ -40,12 +48,12 @@ const getModIdeas = graphql(`
 export default function Mods() {
   const router = useRouter();
 
-  const { data, loading, error } = useQuery(getModIdeas, {
+  const { data, loading, error } = useQuery(getMods, {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
   });
 
-  const ideas = data?.car?.modIdeas ?? [];
+  const mods = data?.car?.mods ?? [];
 
   return (
     <CarLayout
@@ -92,39 +100,52 @@ export default function Mods() {
           </div>
 
           {loading && <p>Loading...</p>}
-          {error && <p>Error loading mod ideas.</p>}
+          {error && <p>Error loading mods.</p>}
 
           <div className="flex flex-col gap-3">
-            {ideas.map((idea) => {
-              const Icon = categoryIcons[idea.category];
+            {mods.map((mod) => {
+              const CategoryIcon = categoryIcons[mod.category];
+              const StatusIcon = statusIcons[mod.status];
 
               return (
                 <Card
-                  key={idea.id}
+                  key={mod.id}
                   as={Link}
                   isPressable
-                  href={`/cars/${router.query.id}/project/mods/${idea.id}`}
+                  href={`/cars/${router.query.id}/project/mods/${mod.id}`}
                 >
                   <CardHeader className="flex justify-between">
                     <div className="flex flex-col gap-1">
-                      <div className="text-md font-medium">{idea.title}</div>
+                      <div className="text-md font-medium">{mod.title}</div>
                       <div className="text-xs text-default-500">
-                        Stage: {idea.stage}
+                        Stage: {mod.stage}
                       </div>
                     </div>
-                    <Chip
-                      startContent={<Icon className="h-3.5 w-3.5 ml-1" />}
-                      color={categoryColors[idea.category]}
-                    >
-                      {categoryLabels[idea.category]}
-                    </Chip>
+                    <div className="flex flex-col gap-2 items-end">
+                      <Chip
+                        startContent={
+                          <CategoryIcon className="h-3.5 w-3.5 ml-1" />
+                        }
+                        color={categoryColors[mod.category]}
+                      >
+                        {categoryLabels[mod.category]}
+                      </Chip>
+                      <Chip
+                        startContent={
+                          <StatusIcon className="h-3.5 w-3.5 ml-1" />
+                        }
+                        color={statusColors[mod.status]}
+                      >
+                        {statusLabels[mod.status]}
+                      </Chip>
+                    </div>
                   </CardHeader>
                   <CardBody className="flex flex-col gap-1">
                     <div className="text-sm text-content4-foreground">
-                      {idea.description}
+                      {mod.description}
                     </div>
                     <div className="text-sm text-content4">
-                      {idea.productOptions?.length} Options
+                      {mod.productOptions?.length} Options
                     </div>
                   </CardBody>
                 </Card>

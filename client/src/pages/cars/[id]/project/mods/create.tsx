@@ -18,8 +18,8 @@ type Inputs = {
   stage?: string | null;
 };
 
-const NewModIdea = graphql(`
-  fragment NewModIdea on ModIdea {
+const NewMod = graphql(`
+  fragment NewMod on Mod {
     id
     car {
       id
@@ -27,11 +27,11 @@ const NewModIdea = graphql(`
   }
 `);
 
-const createModIdea = graphql(`
-  mutation CreateModIdea($input: CreateModIdeaInput!) {
-    createModIdea(input: $input) {
+const createMod = graphql(`
+  mutation CreateMod($input: CreateModInput!) {
+    createMod(input: $input) {
       id
-      ...NewModIdea
+      ...NewMod
     }
   }
 `);
@@ -42,21 +42,21 @@ export default function Create() {
 
   const carId = getQueryParam(router.query.id);
 
-  const [mutate] = useMutation(createModIdea, {
+  const [mutate] = useMutation(createMod, {
     update: (cache, { data }) => {
-      if (!data?.createModIdea) return;
+      if (!data?.createMod) return;
 
-      const newIdeaRef = cache.writeFragment({
-        data: data.createModIdea,
-        fragment: NewModIdea,
-        fragmentName: "NewModIdea",
+      const newModRef = cache.writeFragment({
+        data: data.createMod,
+        fragment: NewMod,
+        fragmentName: "NewMod",
       });
 
       cache.modify({
-        id: cache.identify(data.createModIdea.car),
+        id: cache.identify(data.createMod.car),
         fields: {
-          modIdeas(existingRefs = []) {
-            return [...existingRefs, newIdeaRef];
+          mods(existingRefs = []) {
+            return [...existingRefs, newModRef];
           },
         },
       });
@@ -75,7 +75,7 @@ export default function Create() {
       },
     }).then(({ data }) => {
       if (!data) return;
-      router.push(`/cars/${carId}/project/mods/${data.createModIdea.id}`);
+      router.push(`/cars/${carId}/project/mods/${data.createMod.id}`);
     });
   };
 
@@ -89,7 +89,7 @@ export default function Create() {
       <SubscriptionOverlay requiredTiers={[SubscriptionTier.Enthusiast]} />
 
       <div className="flex flex-col gap-4 p-4 container mx-auto">
-        <h1 className="text-2xl">Create Mod Idea</h1>
+        <h1 className="text-2xl">Create Mod</h1>
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col gap-4 p-4"

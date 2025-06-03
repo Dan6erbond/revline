@@ -1,10 +1,12 @@
 import CarLayout from "@/components/layout/car-layout";
-import ModIdea from "@/mods";
 import SubscriptionOverlay from "@/components/subscription-overlay";
 import { SubscriptionTier } from "@/gql/graphql";
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { getQueryParam } from "@/utils/router";
 import { useRouter } from "next/router";
+
+const ModView = dynamic(() => import("@/mods"), { ssr: false });
 
 export default function Mod() {
   const router = useRouter();
@@ -19,7 +21,7 @@ export default function Mod() {
     >
       <SubscriptionOverlay requiredTiers={[SubscriptionTier.Enthusiast]} />
 
-      <Suspense fallback="Loading...">{id && <ModIdea id={id} />}</Suspense>
+      <Suspense fallback="Loading...">{id && <ModView id={id} />}</Suspense>
     </CarLayout>
   );
 }

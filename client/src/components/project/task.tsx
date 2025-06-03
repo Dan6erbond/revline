@@ -67,7 +67,7 @@ export const TaskFields = graphql(`
       partsNeeded
       budget
     }
-    modIdeas {
+    mods {
       id
       title
       stage

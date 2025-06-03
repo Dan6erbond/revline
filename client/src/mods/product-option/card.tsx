@@ -6,27 +6,33 @@ import {
   CardHeader,
   CardProps,
   Link,
-  useDisclosure,
 } from "@heroui/react";
-import { FragmentType, useFragment } from "../../gql";
-import ProductOptionModal, { ModProductOptionDetails } from "./modal";
+import { FragmentType, useFragment } from "@/gql";
+
+import { ModProductOptionDetails } from "./shared";
+import NextLink from "next/link";
+import { useRouter } from "next/router";
 
 export function ProductOptionCard({
   option,
   currencyCode,
-  ideaId,
+  modId,
   ...props
 }: {
   option: FragmentType<typeof ModProductOptionDetails>;
   currencyCode: string;
-  ideaId: string;
+  modId: string;
 } & CardProps) {
+  const router = useRouter();
   const o = useFragment(ModProductOptionDetails, option);
 
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-
   return (
-    <Card isPressable onPress={onOpen} {...props}>
+    <Card
+      isPressable
+      as={NextLink}
+      href={`/cars/${router.query.id}/project/mods/${modId}/product-options/${o.id}`}
+      {...props}
+    >
       <CardHeader className="flex justify-between items-center text-sm text-muted-foreground pb-0">
         <div className="flex items-center gap-2">
           <Wrench className="w-4 h-4 text-primary-500" />
@@ -111,14 +117,6 @@ export function ProductOptionCard({
       <CardFooter className="text-xs text-muted-foreground text-right pt-2">
         Product ID: {o.id.slice(0, 8)}
       </CardFooter>
-
-      <ProductOptionModal
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        ideaId={ideaId}
-        productOption={option}
-        currencyCode={currencyCode}
-      />
     </Card>
   );
 }

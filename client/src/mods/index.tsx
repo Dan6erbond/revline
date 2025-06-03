@@ -1,26 +1,37 @@
+import { ArrowLeft, Plus } from "lucide-react";
 import { Button, Input, Textarea, useDisclosure } from "@heroui/react";
-import { categoryColors, categoryIcons, categoryLabels } from "@/mods/shared";
+import { ModCategory, ModStatus } from "@/gql/graphql";
+import {
+  categoryColors,
+  categoryIcons,
+  categoryLabels,
+  statusColors,
+  statusIcons,
+  statusLabels,
+} from "@/mods/shared";
 import { useMutation, useSuspenseQuery } from "@apollo/client";
 
-import { EnumSelect } from "../components/enum-select";
-import { ModCategory } from "@/gql/graphql";
-import { Plus } from "lucide-react";
+import { EnumSelect } from "@/components/enum-select";
+import Link from "next/link";
 import { ProductOptionCard } from "./product-option/card";
 import ProductOptionModal from "./product-option/modal";
-import { TaskCard } from "../components/project/task";
+import { TaskCard } from "@/components/project/task";
+import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useForm } from "react-hook-form";
-import { withNotification } from "../utils/with-notification";
+import { useRouter } from "next/router";
+import { withNotification } from "@/utils/with-notification";
 
 type Inputs = {
   title: string;
   category: ModCategory;
+  status: ModStatus;
   description?: string | null;
   stage?: string | null;
 };
 
-export const getModIdea = graphql(`
-  query GetModIdea($id: ID!) {
+export const getMod = graphql(`
+  query GetMod($id: ID!) {
     me {
       id
       settings {
@@ -28,10 +39,11 @@ export const getModIdea = graphql(`
         currencyCode
       }
     }
-    modIdea(id: $id) {
+    mod(id: $id) {
       id
       title
       category
+      status
       description
       stage
       productOptions {
@@ -46,31 +58,35 @@ export const getModIdea = graphql(`
   }
 `);
 
-const updateModIdea = graphql(`
-  mutation UpdateModIdea($id: ID!, $input: UpdateModIdeaInput!) {
-    updateModIdea(id: $id, input: $input) {
+const updateMod = graphql(`
+  mutation UpdateMod($id: ID!, $input: UpdateModInput!) {
+    updateMod(id: $id, input: $input) {
       id
     }
   }
 `);
-export default function ModIdea({ id }: { id: string }) {
-  const { data } = useSuspenseQuery(getModIdea, { variables: { id } });
+
+export default function Mod({ id }: { id: string }) {
+  const router = useRouter();
+
+  const { data } = useSuspenseQuery(getMod, { variables: { id } });
 
   const currencyCode = data?.me?.settings?.currencyCode ?? "USD";
 
-  const [mutate] = useMutation(updateModIdea);
+  const [mutate] = useMutation(updateMod);
 
   const { register, handleSubmit } = useForm<Inputs>({
     defaultValues: {
-      title: data.modIdea.title,
-      category: data.modIdea.category,
-      description: data.modIdea.description ?? "",
-      stage: data.modIdea.stage ?? "",
+      title: data.mod.title,
+      category: data.mod.category,
+      status: data.mod.status,
+      description: data.mod.description ?? "",
+      stage: data.mod.stage ?? "",
     },
   });
 
   const onSubmit = withNotification(
-    { title: "Saving mod idea..." },
+    { title: "Saving mod ..." },
     (values: Inputs) =>
       mutate({
         variables: {
@@ -84,7 +100,18 @@ export default function ModIdea({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-4 p-4 container mx-auto">
-      <h1 className="text-2xl">Edit Mod Idea</h1>
+      <div className="flex gap-4 items-center">
+        <Button
+          as={Link}
+          href={`/cars/${getQueryParam(router.query.id)}/project/mods`}
+          size="sm"
+          isIconOnly
+          variant="ghost"
+        >
+          <ArrowLeft className="size-5" />
+        </Button>
+        <h1 className="text-2xl">Edit Mod </h1>
+      </div>
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col gap-4 p-4"
@@ -99,6 +126,16 @@ export default function ModIdea({ id }: { id: string }) {
           chipColor={(c) => categoryColors[c]}
           variant="bordered"
           {...register("category", { required: true })}
+        />
+
+        <EnumSelect
+          label="Status"
+          enumValues={ModStatus}
+          labels={statusLabels}
+          icons={statusIcons}
+          chipColor={(s) => statusColors[s]}
+          variant="bordered"
+          {...register("status", { required: true })}
         />
 
         <Textarea
@@ -122,15 +159,14 @@ export default function ModIdea({ id }: { id: string }) {
             Add
           </Button>
         </div>
-        {data.modIdea.productOptions &&
-        data.modIdea.productOptions.length > 0 ? (
+        {data.mod.productOptions && data.mod.productOptions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {data.modIdea.productOptions.map((option) => (
+            {data.mod.productOptions.map((option) => (
               <ProductOptionCard
                 key={option.id}
                 option={option}
                 currencyCode={currencyCode}
-                ideaId={id}
+                modId={id}
               />
             ))}
           </div>
@@ -143,9 +179,9 @@ export default function ModIdea({ id }: { id: string }) {
         <div className="flex justify-between">
           <h2 className="text-xl font-semibold mb-2">Tasks</h2>
         </div>
-        {data.modIdea.tasks && data.modIdea.tasks.length > 0 ? (
+        {data.mod.tasks && data.mod.tasks.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {data.modIdea.tasks.map((task) => (
+            {data.mod.tasks.map((task) => (
               <TaskCard key={task.id} task={task} />
             ))}
           </div>
@@ -157,7 +193,7 @@ export default function ModIdea({ id }: { id: string }) {
       <ProductOptionModal
         isOpen={isOpen}
         onOpenChange={onOpenChange}
-        ideaId={id}
+        modId={id}
         currencyCode={currencyCode}
       />
     </div>
