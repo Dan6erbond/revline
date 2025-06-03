@@ -56,7 +56,6 @@ import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
 import DocumentChip from "@/components/documents/chip";
 import FancySwitch from "@/components/fancy-switch";
 import FileIcon from "@/components/file-icon";
-import { JSONContent } from "@tiptap/react";
 import { MinimalTiptapEditor } from "@/components/minimal-tiptap";
 import type { Payload } from "recharts/types/component/DefaultLegendContent";
 import { getQueryParam } from "@/utils/router";
@@ -169,8 +168,6 @@ export default function Session() {
       id: router.query.tab![1],
     },
   });
-
-  const [notes, setNotes] = useState<JSONContent>(data.dynoSession.notes);
 
   const { data: documentsData } = useQuery(getDocuments, {
     variables: { id: getQueryParam(router.query.id) as string },
