@@ -99,4 +99,11 @@ extend type Mutation {
     id: ID!
     input: UpdateModProductOptionInput!
   ): ModProductOption! @loggedIn
+  createBuildLog(
+    input: CreateBuildLogInput!
+  ): BuildLog! @loggedIn
+  updateBuildLog(
+    id: ID!
+    input: UpdateBuildLogInput!
+  ): BuildLog! @loggedIn
 }

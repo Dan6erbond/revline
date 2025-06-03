@@ -135,6 +135,30 @@ func (f AlbumMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation)
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AlbumMutation", m)
 }
 
+// The BuildLogQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type BuildLogQueryRuleFunc func(context.Context, *ent.BuildLogQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f BuildLogQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.BuildLogQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.BuildLogQuery", q)
+}
+
+// The BuildLogMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type BuildLogMutationRuleFunc func(context.Context, *ent.BuildLogMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f BuildLogMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.BuildLogMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.BuildLogMutation", m)
+}
+
 // The CarQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type CarQueryRuleFunc func(context.Context, *ent.CarQuery) error
@@ -676,6 +700,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
 	case *ent.AlbumQuery:
 		return q.Filter(), nil
+	case *ent.BuildLogQuery:
+		return q.Filter(), nil
 	case *ent.CarQuery:
 		return q.Filter(), nil
 	case *ent.CheckoutSessionQuery:
@@ -726,6 +752,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
 	case *ent.AlbumMutation:
+		return m.Filter(), nil
+	case *ent.BuildLogMutation:
 		return m.Filter(), nil
 	case *ent.CarMutation:
 		return m.Filter(), nil

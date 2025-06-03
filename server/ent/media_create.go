@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/album"
+	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
@@ -150,6 +151,25 @@ func (mc *MediaCreate) SetNillableModProductOptionID(id *uuid.UUID) *MediaCreate
 // SetModProductOption sets the "mod_product_option" edge to the ModProductOption entity.
 func (mc *MediaCreate) SetModProductOption(m *ModProductOption) *MediaCreate {
 	return mc.SetModProductOptionID(m.ID)
+}
+
+// SetBuildLogID sets the "build_log" edge to the BuildLog entity by ID.
+func (mc *MediaCreate) SetBuildLogID(id uuid.UUID) *MediaCreate {
+	mc.mutation.SetBuildLogID(id)
+	return mc
+}
+
+// SetNillableBuildLogID sets the "build_log" edge to the BuildLog entity by ID if the given value is not nil.
+func (mc *MediaCreate) SetNillableBuildLogID(id *uuid.UUID) *MediaCreate {
+	if id != nil {
+		mc = mc.SetBuildLogID(*id)
+	}
+	return mc
+}
+
+// SetBuildLog sets the "build_log" edge to the BuildLog entity.
+func (mc *MediaCreate) SetBuildLog(b *BuildLog) *MediaCreate {
+	return mc.SetBuildLogID(b.ID)
 }
 
 // AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
@@ -324,6 +344,23 @@ func (mc *MediaCreate) createSpec() (*Media, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.mod_product_option_media = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := mc.mutation.BuildLogIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.BuildLogTable,
+			Columns: []string{media.BuildLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.build_log_media = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := mc.mutation.AlbumsIDs(); len(nodes) > 0 {

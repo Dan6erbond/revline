@@ -17,6 +17,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/Dan6erbond/revline/ent/album"
+	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
@@ -49,6 +50,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Album is the client for interacting with the Album builders.
 	Album *AlbumClient
+	// BuildLog is the client for interacting with the BuildLog builders.
+	BuildLog *BuildLogClient
 	// Car is the client for interacting with the Car builders.
 	Car *CarClient
 	// CheckoutSession is the client for interacting with the CheckoutSession builders.
@@ -103,6 +106,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Album = NewAlbumClient(c.config)
+	c.BuildLog = NewBuildLogClient(c.config)
 	c.Car = NewCarClient(c.config)
 	c.CheckoutSession = NewCheckoutSessionClient(c.config)
 	c.Document = NewDocumentClient(c.config)
@@ -217,6 +221,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:              ctx,
 		config:           cfg,
 		Album:            NewAlbumClient(cfg),
+		BuildLog:         NewBuildLogClient(cfg),
 		Car:              NewCarClient(cfg),
 		CheckoutSession:  NewCheckoutSessionClient(cfg),
 		Document:         NewDocumentClient(cfg),
@@ -258,6 +263,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:              ctx,
 		config:           cfg,
 		Album:            NewAlbumClient(cfg),
+		BuildLog:         NewBuildLogClient(cfg),
 		Car:              NewCarClient(cfg),
 		CheckoutSession:  NewCheckoutSessionClient(cfg),
 		Document:         NewDocumentClient(cfg),
@@ -308,10 +314,11 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Album, c.Car, c.CheckoutSession, c.Document, c.DragResult, c.DragSession,
-		c.DynoResult, c.DynoSession, c.Expense, c.FuelUp, c.Media, c.Mod,
-		c.ModProductOption, c.OdometerReading, c.Profile, c.ServiceItem, c.ServiceLog,
-		c.ServiceSchedule, c.Subscription, c.Task, c.User, c.UserSettings,
+		c.Album, c.BuildLog, c.Car, c.CheckoutSession, c.Document, c.DragResult,
+		c.DragSession, c.DynoResult, c.DynoSession, c.Expense, c.FuelUp, c.Media,
+		c.Mod, c.ModProductOption, c.OdometerReading, c.Profile, c.ServiceItem,
+		c.ServiceLog, c.ServiceSchedule, c.Subscription, c.Task, c.User,
+		c.UserSettings,
 	} {
 		n.Use(hooks...)
 	}
@@ -321,10 +328,11 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Album, c.Car, c.CheckoutSession, c.Document, c.DragResult, c.DragSession,
-		c.DynoResult, c.DynoSession, c.Expense, c.FuelUp, c.Media, c.Mod,
-		c.ModProductOption, c.OdometerReading, c.Profile, c.ServiceItem, c.ServiceLog,
-		c.ServiceSchedule, c.Subscription, c.Task, c.User, c.UserSettings,
+		c.Album, c.BuildLog, c.Car, c.CheckoutSession, c.Document, c.DragResult,
+		c.DragSession, c.DynoResult, c.DynoSession, c.Expense, c.FuelUp, c.Media,
+		c.Mod, c.ModProductOption, c.OdometerReading, c.Profile, c.ServiceItem,
+		c.ServiceLog, c.ServiceSchedule, c.Subscription, c.Task, c.User,
+		c.UserSettings,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -335,6 +343,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AlbumMutation:
 		return c.Album.mutate(ctx, m)
+	case *BuildLogMutation:
+		return c.BuildLog.mutate(ctx, m)
 	case *CarMutation:
 		return c.Car.mutate(ctx, m)
 	case *CheckoutSessionMutation:
@@ -544,6 +554,187 @@ func (c *AlbumClient) mutate(ctx context.Context, m *AlbumMutation) (Value, erro
 		return (&AlbumDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Album mutation op: %q", m.Op())
+	}
+}
+
+// BuildLogClient is a client for the BuildLog schema.
+type BuildLogClient struct {
+	config
+}
+
+// NewBuildLogClient returns a client for the BuildLog from the given config.
+func NewBuildLogClient(c config) *BuildLogClient {
+	return &BuildLogClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `buildlog.Hooks(f(g(h())))`.
+func (c *BuildLogClient) Use(hooks ...Hook) {
+	c.hooks.BuildLog = append(c.hooks.BuildLog, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `buildlog.Intercept(f(g(h())))`.
+func (c *BuildLogClient) Intercept(interceptors ...Interceptor) {
+	c.inters.BuildLog = append(c.inters.BuildLog, interceptors...)
+}
+
+// Create returns a builder for creating a BuildLog entity.
+func (c *BuildLogClient) Create() *BuildLogCreate {
+	mutation := newBuildLogMutation(c.config, OpCreate)
+	return &BuildLogCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of BuildLog entities.
+func (c *BuildLogClient) CreateBulk(builders ...*BuildLogCreate) *BuildLogCreateBulk {
+	return &BuildLogCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *BuildLogClient) MapCreateBulk(slice any, setFunc func(*BuildLogCreate, int)) *BuildLogCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &BuildLogCreateBulk{err: fmt.Errorf("calling to BuildLogClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*BuildLogCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &BuildLogCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for BuildLog.
+func (c *BuildLogClient) Update() *BuildLogUpdate {
+	mutation := newBuildLogMutation(c.config, OpUpdate)
+	return &BuildLogUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *BuildLogClient) UpdateOne(bl *BuildLog) *BuildLogUpdateOne {
+	mutation := newBuildLogMutation(c.config, OpUpdateOne, withBuildLog(bl))
+	return &BuildLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *BuildLogClient) UpdateOneID(id uuid.UUID) *BuildLogUpdateOne {
+	mutation := newBuildLogMutation(c.config, OpUpdateOne, withBuildLogID(id))
+	return &BuildLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for BuildLog.
+func (c *BuildLogClient) Delete() *BuildLogDelete {
+	mutation := newBuildLogMutation(c.config, OpDelete)
+	return &BuildLogDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *BuildLogClient) DeleteOne(bl *BuildLog) *BuildLogDeleteOne {
+	return c.DeleteOneID(bl.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *BuildLogClient) DeleteOneID(id uuid.UUID) *BuildLogDeleteOne {
+	builder := c.Delete().Where(buildlog.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &BuildLogDeleteOne{builder}
+}
+
+// Query returns a query builder for BuildLog.
+func (c *BuildLogClient) Query() *BuildLogQuery {
+	return &BuildLogQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeBuildLog},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a BuildLog entity by its id.
+func (c *BuildLogClient) Get(ctx context.Context, id uuid.UUID) (*BuildLog, error) {
+	return c.Query().Where(buildlog.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *BuildLogClient) GetX(ctx context.Context, id uuid.UUID) *BuildLog {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryCar queries the car edge of a BuildLog.
+func (c *BuildLogClient) QueryCar(bl *BuildLog) *CarQuery {
+	query := (&CarClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := bl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(buildlog.Table, buildlog.FieldID, id),
+			sqlgraph.To(car.Table, car.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, buildlog.CarTable, buildlog.CarColumn),
+		)
+		fromV = sqlgraph.Neighbors(bl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMods queries the mods edge of a BuildLog.
+func (c *BuildLogClient) QueryMods(bl *BuildLog) *ModQuery {
+	query := (&ModClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := bl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(buildlog.Table, buildlog.FieldID, id),
+			sqlgraph.To(mod.Table, mod.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, buildlog.ModsTable, buildlog.ModsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(bl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMedia queries the media edge of a BuildLog.
+func (c *BuildLogClient) QueryMedia(bl *BuildLog) *MediaQuery {
+	query := (&MediaClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := bl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(buildlog.Table, buildlog.FieldID, id),
+			sqlgraph.To(media.Table, media.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, buildlog.MediaTable, buildlog.MediaColumn),
+		)
+		fromV = sqlgraph.Neighbors(bl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *BuildLogClient) Hooks() []Hook {
+	return c.hooks.BuildLog
+}
+
+// Interceptors returns the client interceptors.
+func (c *BuildLogClient) Interceptors() []Interceptor {
+	return c.inters.BuildLog
+}
+
+func (c *BuildLogClient) mutate(ctx context.Context, m *BuildLogMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&BuildLogCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&BuildLogUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&BuildLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&BuildLogDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown BuildLog mutation op: %q", m.Op())
 	}
 }
 
@@ -840,6 +1031,22 @@ func (c *CarClient) QueryExpenses(ca *Car) *ExpenseQuery {
 			sqlgraph.From(car.Table, car.FieldID, id),
 			sqlgraph.To(expense.Table, expense.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, car.ExpensesTable, car.ExpensesColumn),
+		)
+		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBuildLogs queries the build_logs edge of a Car.
+func (c *CarClient) QueryBuildLogs(ca *Car) *BuildLogQuery {
+	query := (&BuildLogClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ca.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(car.Table, car.FieldID, id),
+			sqlgraph.To(buildlog.Table, buildlog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, car.BuildLogsTable, car.BuildLogsColumn),
 		)
 		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
 		return fromV, nil
@@ -2524,6 +2731,22 @@ func (c *MediaClient) QueryModProductOption(m *Media) *ModProductOptionQuery {
 	return query
 }
 
+// QueryBuildLog queries the build_log edge of a Media.
+func (c *MediaClient) QueryBuildLog(m *Media) *BuildLogQuery {
+	query := (&BuildLogClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(media.Table, media.FieldID, id),
+			sqlgraph.To(buildlog.Table, buildlog.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, media.BuildLogTable, media.BuildLogColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryAlbums queries the albums edge of a Media.
 func (c *MediaClient) QueryAlbums(m *Media) *AlbumQuery {
 	query := (&AlbumClient{config: c.config}).Query()
@@ -2714,6 +2937,22 @@ func (c *ModClient) QueryProductOptions(m *Mod) *ModProductOptionQuery {
 			sqlgraph.From(mod.Table, mod.FieldID, id),
 			sqlgraph.To(modproductoption.Table, modproductoption.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, mod.ProductOptionsTable, mod.ProductOptionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBuildLogs queries the build_logs edge of a Mod.
+func (c *ModClient) QueryBuildLogs(m *Mod) *BuildLogQuery {
+	query := (&BuildLogClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(mod.Table, mod.FieldID, id),
+			sqlgraph.To(buildlog.Table, buildlog.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, mod.BuildLogsTable, mod.BuildLogsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
 		return fromV, nil
@@ -4575,16 +4814,16 @@ func (c *UserSettingsClient) mutate(ctx context.Context, m *UserSettingsMutation
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Album, Car, CheckoutSession, Document, DragResult, DragSession, DynoResult,
-		DynoSession, Expense, FuelUp, Media, Mod, ModProductOption, OdometerReading,
-		Profile, ServiceItem, ServiceLog, ServiceSchedule, Subscription, Task, User,
-		UserSettings []ent.Hook
+		Album, BuildLog, Car, CheckoutSession, Document, DragResult, DragSession,
+		DynoResult, DynoSession, Expense, FuelUp, Media, Mod, ModProductOption,
+		OdometerReading, Profile, ServiceItem, ServiceLog, ServiceSchedule,
+		Subscription, Task, User, UserSettings []ent.Hook
 	}
 	inters struct {
-		Album, Car, CheckoutSession, Document, DragResult, DragSession, DynoResult,
-		DynoSession, Expense, FuelUp, Media, Mod, ModProductOption, OdometerReading,
-		Profile, ServiceItem, ServiceLog, ServiceSchedule, Subscription, Task, User,
-		UserSettings []ent.Interceptor
+		Album, BuildLog, Car, CheckoutSession, Document, DragResult, DragSession,
+		DynoResult, DynoSession, Expense, FuelUp, Media, Mod, ModProductOption,
+		OdometerReading, Profile, ServiceItem, ServiceLog, ServiceSchedule,
+		Subscription, Task, User, UserSettings []ent.Interceptor
 	}
 )
 

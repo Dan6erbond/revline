@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/Dan6erbond/revline/ent/album"
+	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
@@ -47,6 +48,7 @@ const (
 
 	// Node types.
 	TypeAlbum            = "Album"
+	TypeBuildLog         = "BuildLog"
 	TypeCar              = "Car"
 	TypeCheckoutSession  = "CheckoutSession"
 	TypeDocument         = "Document"
@@ -662,6 +664,811 @@ func (m *AlbumMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Album edge %s", name)
 }
 
+// BuildLogMutation represents an operation that mutates the BuildLog nodes in the graph.
+type BuildLogMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	create_time   *time.Time
+	update_time   *time.Time
+	title         *string
+	notes         *map[string]interface{}
+	log_time      *time.Time
+	clearedFields map[string]struct{}
+	car           *uuid.UUID
+	clearedcar    bool
+	mods          map[uuid.UUID]struct{}
+	removedmods   map[uuid.UUID]struct{}
+	clearedmods   bool
+	media         map[uuid.UUID]struct{}
+	removedmedia  map[uuid.UUID]struct{}
+	clearedmedia  bool
+	done          bool
+	oldValue      func(context.Context) (*BuildLog, error)
+	predicates    []predicate.BuildLog
+}
+
+var _ ent.Mutation = (*BuildLogMutation)(nil)
+
+// buildlogOption allows management of the mutation configuration using functional options.
+type buildlogOption func(*BuildLogMutation)
+
+// newBuildLogMutation creates new mutation for the BuildLog entity.
+func newBuildLogMutation(c config, op Op, opts ...buildlogOption) *BuildLogMutation {
+	m := &BuildLogMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeBuildLog,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withBuildLogID sets the ID field of the mutation.
+func withBuildLogID(id uuid.UUID) buildlogOption {
+	return func(m *BuildLogMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *BuildLog
+		)
+		m.oldValue = func(ctx context.Context) (*BuildLog, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().BuildLog.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withBuildLog sets the old BuildLog of the mutation.
+func withBuildLog(node *BuildLog) buildlogOption {
+	return func(m *BuildLogMutation) {
+		m.oldValue = func(context.Context) (*BuildLog, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m BuildLogMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m BuildLogMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of BuildLog entities.
+func (m *BuildLogMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *BuildLogMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *BuildLogMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().BuildLog.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *BuildLogMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *BuildLogMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the BuildLog entity.
+// If the BuildLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildLogMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *BuildLogMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *BuildLogMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *BuildLogMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the BuildLog entity.
+// If the BuildLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildLogMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *BuildLogMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetTitle sets the "title" field.
+func (m *BuildLogMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *BuildLogMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the BuildLog entity.
+// If the BuildLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildLogMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *BuildLogMutation) ResetTitle() {
+	m.title = nil
+}
+
+// SetNotes sets the "notes" field.
+func (m *BuildLogMutation) SetNotes(value map[string]interface{}) {
+	m.notes = &value
+}
+
+// Notes returns the value of the "notes" field in the mutation.
+func (m *BuildLogMutation) Notes() (r map[string]interface{}, exists bool) {
+	v := m.notes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotes returns the old "notes" field's value of the BuildLog entity.
+// If the BuildLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildLogMutation) OldNotes(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotes: %w", err)
+	}
+	return oldValue.Notes, nil
+}
+
+// ClearNotes clears the value of the "notes" field.
+func (m *BuildLogMutation) ClearNotes() {
+	m.notes = nil
+	m.clearedFields[buildlog.FieldNotes] = struct{}{}
+}
+
+// NotesCleared returns if the "notes" field was cleared in this mutation.
+func (m *BuildLogMutation) NotesCleared() bool {
+	_, ok := m.clearedFields[buildlog.FieldNotes]
+	return ok
+}
+
+// ResetNotes resets all changes to the "notes" field.
+func (m *BuildLogMutation) ResetNotes() {
+	m.notes = nil
+	delete(m.clearedFields, buildlog.FieldNotes)
+}
+
+// SetLogTime sets the "log_time" field.
+func (m *BuildLogMutation) SetLogTime(t time.Time) {
+	m.log_time = &t
+}
+
+// LogTime returns the value of the "log_time" field in the mutation.
+func (m *BuildLogMutation) LogTime() (r time.Time, exists bool) {
+	v := m.log_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLogTime returns the old "log_time" field's value of the BuildLog entity.
+// If the BuildLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildLogMutation) OldLogTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLogTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLogTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLogTime: %w", err)
+	}
+	return oldValue.LogTime, nil
+}
+
+// ResetLogTime resets all changes to the "log_time" field.
+func (m *BuildLogMutation) ResetLogTime() {
+	m.log_time = nil
+}
+
+// SetCarID sets the "car" edge to the Car entity by id.
+func (m *BuildLogMutation) SetCarID(id uuid.UUID) {
+	m.car = &id
+}
+
+// ClearCar clears the "car" edge to the Car entity.
+func (m *BuildLogMutation) ClearCar() {
+	m.clearedcar = true
+}
+
+// CarCleared reports if the "car" edge to the Car entity was cleared.
+func (m *BuildLogMutation) CarCleared() bool {
+	return m.clearedcar
+}
+
+// CarID returns the "car" edge ID in the mutation.
+func (m *BuildLogMutation) CarID() (id uuid.UUID, exists bool) {
+	if m.car != nil {
+		return *m.car, true
+	}
+	return
+}
+
+// CarIDs returns the "car" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CarID instead. It exists only for internal usage by the builders.
+func (m *BuildLogMutation) CarIDs() (ids []uuid.UUID) {
+	if id := m.car; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCar resets all changes to the "car" edge.
+func (m *BuildLogMutation) ResetCar() {
+	m.car = nil
+	m.clearedcar = false
+}
+
+// AddModIDs adds the "mods" edge to the Mod entity by ids.
+func (m *BuildLogMutation) AddModIDs(ids ...uuid.UUID) {
+	if m.mods == nil {
+		m.mods = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.mods[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMods clears the "mods" edge to the Mod entity.
+func (m *BuildLogMutation) ClearMods() {
+	m.clearedmods = true
+}
+
+// ModsCleared reports if the "mods" edge to the Mod entity was cleared.
+func (m *BuildLogMutation) ModsCleared() bool {
+	return m.clearedmods
+}
+
+// RemoveModIDs removes the "mods" edge to the Mod entity by IDs.
+func (m *BuildLogMutation) RemoveModIDs(ids ...uuid.UUID) {
+	if m.removedmods == nil {
+		m.removedmods = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.mods, ids[i])
+		m.removedmods[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMods returns the removed IDs of the "mods" edge to the Mod entity.
+func (m *BuildLogMutation) RemovedModsIDs() (ids []uuid.UUID) {
+	for id := range m.removedmods {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ModsIDs returns the "mods" edge IDs in the mutation.
+func (m *BuildLogMutation) ModsIDs() (ids []uuid.UUID) {
+	for id := range m.mods {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMods resets all changes to the "mods" edge.
+func (m *BuildLogMutation) ResetMods() {
+	m.mods = nil
+	m.clearedmods = false
+	m.removedmods = nil
+}
+
+// AddMediumIDs adds the "media" edge to the Media entity by ids.
+func (m *BuildLogMutation) AddMediumIDs(ids ...uuid.UUID) {
+	if m.media == nil {
+		m.media = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.media[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMedia clears the "media" edge to the Media entity.
+func (m *BuildLogMutation) ClearMedia() {
+	m.clearedmedia = true
+}
+
+// MediaCleared reports if the "media" edge to the Media entity was cleared.
+func (m *BuildLogMutation) MediaCleared() bool {
+	return m.clearedmedia
+}
+
+// RemoveMediumIDs removes the "media" edge to the Media entity by IDs.
+func (m *BuildLogMutation) RemoveMediumIDs(ids ...uuid.UUID) {
+	if m.removedmedia == nil {
+		m.removedmedia = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.media, ids[i])
+		m.removedmedia[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMedia returns the removed IDs of the "media" edge to the Media entity.
+func (m *BuildLogMutation) RemovedMediaIDs() (ids []uuid.UUID) {
+	for id := range m.removedmedia {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MediaIDs returns the "media" edge IDs in the mutation.
+func (m *BuildLogMutation) MediaIDs() (ids []uuid.UUID) {
+	for id := range m.media {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMedia resets all changes to the "media" edge.
+func (m *BuildLogMutation) ResetMedia() {
+	m.media = nil
+	m.clearedmedia = false
+	m.removedmedia = nil
+}
+
+// Where appends a list predicates to the BuildLogMutation builder.
+func (m *BuildLogMutation) Where(ps ...predicate.BuildLog) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the BuildLogMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *BuildLogMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.BuildLog, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *BuildLogMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *BuildLogMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (BuildLog).
+func (m *BuildLogMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *BuildLogMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.create_time != nil {
+		fields = append(fields, buildlog.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, buildlog.FieldUpdateTime)
+	}
+	if m.title != nil {
+		fields = append(fields, buildlog.FieldTitle)
+	}
+	if m.notes != nil {
+		fields = append(fields, buildlog.FieldNotes)
+	}
+	if m.log_time != nil {
+		fields = append(fields, buildlog.FieldLogTime)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *BuildLogMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case buildlog.FieldCreateTime:
+		return m.CreateTime()
+	case buildlog.FieldUpdateTime:
+		return m.UpdateTime()
+	case buildlog.FieldTitle:
+		return m.Title()
+	case buildlog.FieldNotes:
+		return m.Notes()
+	case buildlog.FieldLogTime:
+		return m.LogTime()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *BuildLogMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case buildlog.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case buildlog.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case buildlog.FieldTitle:
+		return m.OldTitle(ctx)
+	case buildlog.FieldNotes:
+		return m.OldNotes(ctx)
+	case buildlog.FieldLogTime:
+		return m.OldLogTime(ctx)
+	}
+	return nil, fmt.Errorf("unknown BuildLog field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BuildLogMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case buildlog.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case buildlog.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case buildlog.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	case buildlog.FieldNotes:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotes(v)
+		return nil
+	case buildlog.FieldLogTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLogTime(v)
+		return nil
+	}
+	return fmt.Errorf("unknown BuildLog field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *BuildLogMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *BuildLogMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BuildLogMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown BuildLog numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *BuildLogMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(buildlog.FieldNotes) {
+		fields = append(fields, buildlog.FieldNotes)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *BuildLogMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *BuildLogMutation) ClearField(name string) error {
+	switch name {
+	case buildlog.FieldNotes:
+		m.ClearNotes()
+		return nil
+	}
+	return fmt.Errorf("unknown BuildLog nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *BuildLogMutation) ResetField(name string) error {
+	switch name {
+	case buildlog.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case buildlog.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case buildlog.FieldTitle:
+		m.ResetTitle()
+		return nil
+	case buildlog.FieldNotes:
+		m.ResetNotes()
+		return nil
+	case buildlog.FieldLogTime:
+		m.ResetLogTime()
+		return nil
+	}
+	return fmt.Errorf("unknown BuildLog field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *BuildLogMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.car != nil {
+		edges = append(edges, buildlog.EdgeCar)
+	}
+	if m.mods != nil {
+		edges = append(edges, buildlog.EdgeMods)
+	}
+	if m.media != nil {
+		edges = append(edges, buildlog.EdgeMedia)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *BuildLogMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case buildlog.EdgeCar:
+		if id := m.car; id != nil {
+			return []ent.Value{*id}
+		}
+	case buildlog.EdgeMods:
+		ids := make([]ent.Value, 0, len(m.mods))
+		for id := range m.mods {
+			ids = append(ids, id)
+		}
+		return ids
+	case buildlog.EdgeMedia:
+		ids := make([]ent.Value, 0, len(m.media))
+		for id := range m.media {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *BuildLogMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removedmods != nil {
+		edges = append(edges, buildlog.EdgeMods)
+	}
+	if m.removedmedia != nil {
+		edges = append(edges, buildlog.EdgeMedia)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *BuildLogMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case buildlog.EdgeMods:
+		ids := make([]ent.Value, 0, len(m.removedmods))
+		for id := range m.removedmods {
+			ids = append(ids, id)
+		}
+		return ids
+	case buildlog.EdgeMedia:
+		ids := make([]ent.Value, 0, len(m.removedmedia))
+		for id := range m.removedmedia {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *BuildLogMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedcar {
+		edges = append(edges, buildlog.EdgeCar)
+	}
+	if m.clearedmods {
+		edges = append(edges, buildlog.EdgeMods)
+	}
+	if m.clearedmedia {
+		edges = append(edges, buildlog.EdgeMedia)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *BuildLogMutation) EdgeCleared(name string) bool {
+	switch name {
+	case buildlog.EdgeCar:
+		return m.clearedcar
+	case buildlog.EdgeMods:
+		return m.clearedmods
+	case buildlog.EdgeMedia:
+		return m.clearedmedia
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *BuildLogMutation) ClearEdge(name string) error {
+	switch name {
+	case buildlog.EdgeCar:
+		m.ClearCar()
+		return nil
+	}
+	return fmt.Errorf("unknown BuildLog unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *BuildLogMutation) ResetEdge(name string) error {
+	switch name {
+	case buildlog.EdgeCar:
+		m.ResetCar()
+		return nil
+	case buildlog.EdgeMods:
+		m.ResetMods()
+		return nil
+	case buildlog.EdgeMedia:
+		m.ResetMedia()
+		return nil
+	}
+	return fmt.Errorf("unknown BuildLog edge %s", name)
+}
+
 // CarMutation represents an operation that mutates the Car nodes in the graph.
 type CarMutation struct {
 	config
@@ -713,6 +1520,9 @@ type CarMutation struct {
 	expenses                 map[uuid.UUID]struct{}
 	removedexpenses          map[uuid.UUID]struct{}
 	clearedexpenses          bool
+	build_logs               map[uuid.UUID]struct{}
+	removedbuild_logs        map[uuid.UUID]struct{}
+	clearedbuild_logs        bool
 	banner_image             *uuid.UUID
 	clearedbanner_image      bool
 	tasks                    map[uuid.UUID]struct{}
@@ -1837,6 +2647,60 @@ func (m *CarMutation) ResetExpenses() {
 	m.removedexpenses = nil
 }
 
+// AddBuildLogIDs adds the "build_logs" edge to the BuildLog entity by ids.
+func (m *CarMutation) AddBuildLogIDs(ids ...uuid.UUID) {
+	if m.build_logs == nil {
+		m.build_logs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.build_logs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearBuildLogs clears the "build_logs" edge to the BuildLog entity.
+func (m *CarMutation) ClearBuildLogs() {
+	m.clearedbuild_logs = true
+}
+
+// BuildLogsCleared reports if the "build_logs" edge to the BuildLog entity was cleared.
+func (m *CarMutation) BuildLogsCleared() bool {
+	return m.clearedbuild_logs
+}
+
+// RemoveBuildLogIDs removes the "build_logs" edge to the BuildLog entity by IDs.
+func (m *CarMutation) RemoveBuildLogIDs(ids ...uuid.UUID) {
+	if m.removedbuild_logs == nil {
+		m.removedbuild_logs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.build_logs, ids[i])
+		m.removedbuild_logs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBuildLogs returns the removed IDs of the "build_logs" edge to the BuildLog entity.
+func (m *CarMutation) RemovedBuildLogsIDs() (ids []uuid.UUID) {
+	for id := range m.removedbuild_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// BuildLogsIDs returns the "build_logs" edge IDs in the mutation.
+func (m *CarMutation) BuildLogsIDs() (ids []uuid.UUID) {
+	for id := range m.build_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetBuildLogs resets all changes to the "build_logs" edge.
+func (m *CarMutation) ResetBuildLogs() {
+	m.build_logs = nil
+	m.clearedbuild_logs = false
+	m.removedbuild_logs = nil
+}
+
 // SetBannerImageID sets the "banner_image" edge to the Media entity by id.
 func (m *CarMutation) SetBannerImageID(id uuid.UUID) {
 	m.banner_image = &id
@@ -2284,7 +3148,7 @@ func (m *CarMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *CarMutation) AddedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 16)
 	if m.owner != nil {
 		edges = append(edges, car.EdgeOwner)
 	}
@@ -2320,6 +3184,9 @@ func (m *CarMutation) AddedEdges() []string {
 	}
 	if m.expenses != nil {
 		edges = append(edges, car.EdgeExpenses)
+	}
+	if m.build_logs != nil {
+		edges = append(edges, car.EdgeBuildLogs)
 	}
 	if m.banner_image != nil {
 		edges = append(edges, car.EdgeBannerImage)
@@ -2407,6 +3274,12 @@ func (m *CarMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case car.EdgeBuildLogs:
+		ids := make([]ent.Value, 0, len(m.build_logs))
+		for id := range m.build_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	case car.EdgeBannerImage:
 		if id := m.banner_image; id != nil {
 			return []ent.Value{*id}
@@ -2429,7 +3302,7 @@ func (m *CarMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *CarMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 16)
 	if m.removeddrag_sessions != nil {
 		edges = append(edges, car.EdgeDragSessions)
 	}
@@ -2462,6 +3335,9 @@ func (m *CarMutation) RemovedEdges() []string {
 	}
 	if m.removedexpenses != nil {
 		edges = append(edges, car.EdgeExpenses)
+	}
+	if m.removedbuild_logs != nil {
+		edges = append(edges, car.EdgeBuildLogs)
 	}
 	if m.removedtasks != nil {
 		edges = append(edges, car.EdgeTasks)
@@ -2542,6 +3418,12 @@ func (m *CarMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case car.EdgeBuildLogs:
+		ids := make([]ent.Value, 0, len(m.removedbuild_logs))
+		for id := range m.removedbuild_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	case car.EdgeTasks:
 		ids := make([]ent.Value, 0, len(m.removedtasks))
 		for id := range m.removedtasks {
@@ -2560,7 +3442,7 @@ func (m *CarMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *CarMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 16)
 	if m.clearedowner {
 		edges = append(edges, car.EdgeOwner)
 	}
@@ -2596,6 +3478,9 @@ func (m *CarMutation) ClearedEdges() []string {
 	}
 	if m.clearedexpenses {
 		edges = append(edges, car.EdgeExpenses)
+	}
+	if m.clearedbuild_logs {
+		edges = append(edges, car.EdgeBuildLogs)
 	}
 	if m.clearedbanner_image {
 		edges = append(edges, car.EdgeBannerImage)
@@ -2637,6 +3522,8 @@ func (m *CarMutation) EdgeCleared(name string) bool {
 		return m.cleareddyno_sessions
 	case car.EdgeExpenses:
 		return m.clearedexpenses
+	case car.EdgeBuildLogs:
+		return m.clearedbuild_logs
 	case car.EdgeBannerImage:
 		return m.clearedbanner_image
 	case car.EdgeTasks:
@@ -2700,6 +3587,9 @@ func (m *CarMutation) ResetEdge(name string) error {
 		return nil
 	case car.EdgeExpenses:
 		m.ResetExpenses()
+		return nil
+	case car.EdgeBuildLogs:
+		m.ResetBuildLogs()
 		return nil
 	case car.EdgeBannerImage:
 		m.ResetBannerImage()
@@ -9559,6 +10449,8 @@ type MediaMutation struct {
 	clearedcar                bool
 	mod_product_option        *uuid.UUID
 	clearedmod_product_option bool
+	build_log                 *uuid.UUID
+	clearedbuild_log          bool
 	albums                    map[uuid.UUID]struct{}
 	removedalbums             map[uuid.UUID]struct{}
 	clearedalbums             bool
@@ -9958,6 +10850,45 @@ func (m *MediaMutation) ResetModProductOption() {
 	m.clearedmod_product_option = false
 }
 
+// SetBuildLogID sets the "build_log" edge to the BuildLog entity by id.
+func (m *MediaMutation) SetBuildLogID(id uuid.UUID) {
+	m.build_log = &id
+}
+
+// ClearBuildLog clears the "build_log" edge to the BuildLog entity.
+func (m *MediaMutation) ClearBuildLog() {
+	m.clearedbuild_log = true
+}
+
+// BuildLogCleared reports if the "build_log" edge to the BuildLog entity was cleared.
+func (m *MediaMutation) BuildLogCleared() bool {
+	return m.clearedbuild_log
+}
+
+// BuildLogID returns the "build_log" edge ID in the mutation.
+func (m *MediaMutation) BuildLogID() (id uuid.UUID, exists bool) {
+	if m.build_log != nil {
+		return *m.build_log, true
+	}
+	return
+}
+
+// BuildLogIDs returns the "build_log" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BuildLogID instead. It exists only for internal usage by the builders.
+func (m *MediaMutation) BuildLogIDs() (ids []uuid.UUID) {
+	if id := m.build_log; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetBuildLog resets all changes to the "build_log" edge.
+func (m *MediaMutation) ResetBuildLog() {
+	m.build_log = nil
+	m.clearedbuild_log = false
+}
+
 // AddAlbumIDs adds the "albums" edge to the Album entity by ids.
 func (m *MediaMutation) AddAlbumIDs(ids ...uuid.UUID) {
 	if m.albums == nil {
@@ -10211,7 +11142,7 @@ func (m *MediaMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *MediaMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.user != nil {
 		edges = append(edges, media.EdgeUser)
 	}
@@ -10220,6 +11151,9 @@ func (m *MediaMutation) AddedEdges() []string {
 	}
 	if m.mod_product_option != nil {
 		edges = append(edges, media.EdgeModProductOption)
+	}
+	if m.build_log != nil {
+		edges = append(edges, media.EdgeBuildLog)
 	}
 	if m.albums != nil {
 		edges = append(edges, media.EdgeAlbums)
@@ -10243,6 +11177,10 @@ func (m *MediaMutation) AddedIDs(name string) []ent.Value {
 		if id := m.mod_product_option; id != nil {
 			return []ent.Value{*id}
 		}
+	case media.EdgeBuildLog:
+		if id := m.build_log; id != nil {
+			return []ent.Value{*id}
+		}
 	case media.EdgeAlbums:
 		ids := make([]ent.Value, 0, len(m.albums))
 		for id := range m.albums {
@@ -10255,7 +11193,7 @@ func (m *MediaMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *MediaMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedalbums != nil {
 		edges = append(edges, media.EdgeAlbums)
 	}
@@ -10278,7 +11216,7 @@ func (m *MediaMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *MediaMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.cleareduser {
 		edges = append(edges, media.EdgeUser)
 	}
@@ -10287,6 +11225,9 @@ func (m *MediaMutation) ClearedEdges() []string {
 	}
 	if m.clearedmod_product_option {
 		edges = append(edges, media.EdgeModProductOption)
+	}
+	if m.clearedbuild_log {
+		edges = append(edges, media.EdgeBuildLog)
 	}
 	if m.clearedalbums {
 		edges = append(edges, media.EdgeAlbums)
@@ -10304,6 +11245,8 @@ func (m *MediaMutation) EdgeCleared(name string) bool {
 		return m.clearedcar
 	case media.EdgeModProductOption:
 		return m.clearedmod_product_option
+	case media.EdgeBuildLog:
+		return m.clearedbuild_log
 	case media.EdgeAlbums:
 		return m.clearedalbums
 	}
@@ -10323,6 +11266,9 @@ func (m *MediaMutation) ClearEdge(name string) error {
 	case media.EdgeModProductOption:
 		m.ClearModProductOption()
 		return nil
+	case media.EdgeBuildLog:
+		m.ClearBuildLog()
+		return nil
 	}
 	return fmt.Errorf("unknown Media unique edge %s", name)
 }
@@ -10339,6 +11285,9 @@ func (m *MediaMutation) ResetEdge(name string) error {
 		return nil
 	case media.EdgeModProductOption:
 		m.ResetModProductOption()
+		return nil
+	case media.EdgeBuildLog:
+		m.ResetBuildLog()
 		return nil
 	case media.EdgeAlbums:
 		m.ResetAlbums()
@@ -10369,6 +11318,9 @@ type ModMutation struct {
 	product_options        map[uuid.UUID]struct{}
 	removedproduct_options map[uuid.UUID]struct{}
 	clearedproduct_options bool
+	build_logs             map[uuid.UUID]struct{}
+	removedbuild_logs      map[uuid.UUID]struct{}
+	clearedbuild_logs      bool
 	done                   bool
 	oldValue               func(context.Context) (*Mod, error)
 	predicates             []predicate.Mod
@@ -10903,6 +11855,60 @@ func (m *ModMutation) ResetProductOptions() {
 	m.removedproduct_options = nil
 }
 
+// AddBuildLogIDs adds the "build_logs" edge to the BuildLog entity by ids.
+func (m *ModMutation) AddBuildLogIDs(ids ...uuid.UUID) {
+	if m.build_logs == nil {
+		m.build_logs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.build_logs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearBuildLogs clears the "build_logs" edge to the BuildLog entity.
+func (m *ModMutation) ClearBuildLogs() {
+	m.clearedbuild_logs = true
+}
+
+// BuildLogsCleared reports if the "build_logs" edge to the BuildLog entity was cleared.
+func (m *ModMutation) BuildLogsCleared() bool {
+	return m.clearedbuild_logs
+}
+
+// RemoveBuildLogIDs removes the "build_logs" edge to the BuildLog entity by IDs.
+func (m *ModMutation) RemoveBuildLogIDs(ids ...uuid.UUID) {
+	if m.removedbuild_logs == nil {
+		m.removedbuild_logs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.build_logs, ids[i])
+		m.removedbuild_logs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBuildLogs returns the removed IDs of the "build_logs" edge to the BuildLog entity.
+func (m *ModMutation) RemovedBuildLogsIDs() (ids []uuid.UUID) {
+	for id := range m.removedbuild_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// BuildLogsIDs returns the "build_logs" edge IDs in the mutation.
+func (m *ModMutation) BuildLogsIDs() (ids []uuid.UUID) {
+	for id := range m.build_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetBuildLogs resets all changes to the "build_logs" edge.
+func (m *ModMutation) ResetBuildLogs() {
+	m.build_logs = nil
+	m.clearedbuild_logs = false
+	m.removedbuild_logs = nil
+}
+
 // Where appends a list predicates to the ModMutation builder.
 func (m *ModMutation) Where(ps ...predicate.Mod) {
 	m.predicates = append(m.predicates, ps...)
@@ -11153,7 +12159,7 @@ func (m *ModMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ModMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.car != nil {
 		edges = append(edges, mod.EdgeCar)
 	}
@@ -11162,6 +12168,9 @@ func (m *ModMutation) AddedEdges() []string {
 	}
 	if m.product_options != nil {
 		edges = append(edges, mod.EdgeProductOptions)
+	}
+	if m.build_logs != nil {
+		edges = append(edges, mod.EdgeBuildLogs)
 	}
 	return edges
 }
@@ -11186,18 +12195,27 @@ func (m *ModMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case mod.EdgeBuildLogs:
+		ids := make([]ent.Value, 0, len(m.build_logs))
+		for id := range m.build_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ModMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedtasks != nil {
 		edges = append(edges, mod.EdgeTasks)
 	}
 	if m.removedproduct_options != nil {
 		edges = append(edges, mod.EdgeProductOptions)
+	}
+	if m.removedbuild_logs != nil {
+		edges = append(edges, mod.EdgeBuildLogs)
 	}
 	return edges
 }
@@ -11218,13 +12236,19 @@ func (m *ModMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case mod.EdgeBuildLogs:
+		ids := make([]ent.Value, 0, len(m.removedbuild_logs))
+		for id := range m.removedbuild_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ModMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedcar {
 		edges = append(edges, mod.EdgeCar)
 	}
@@ -11233,6 +12257,9 @@ func (m *ModMutation) ClearedEdges() []string {
 	}
 	if m.clearedproduct_options {
 		edges = append(edges, mod.EdgeProductOptions)
+	}
+	if m.clearedbuild_logs {
+		edges = append(edges, mod.EdgeBuildLogs)
 	}
 	return edges
 }
@@ -11247,6 +12274,8 @@ func (m *ModMutation) EdgeCleared(name string) bool {
 		return m.clearedtasks
 	case mod.EdgeProductOptions:
 		return m.clearedproduct_options
+	case mod.EdgeBuildLogs:
+		return m.clearedbuild_logs
 	}
 	return false
 }
@@ -11274,6 +12303,9 @@ func (m *ModMutation) ResetEdge(name string) error {
 		return nil
 	case mod.EdgeProductOptions:
 		m.ResetProductOptions()
+		return nil
+	case mod.EdgeBuildLogs:
+		m.ResetBuildLogs()
 		return nil
 	}
 	return fmt.Errorf("unknown Mod edge %s", name)

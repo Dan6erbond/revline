@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/album"
+	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragsession"
@@ -354,6 +355,21 @@ func (cu *CarUpdate) AddExpenses(e ...*Expense) *CarUpdate {
 	return cu.AddExpenseIDs(ids...)
 }
 
+// AddBuildLogIDs adds the "build_logs" edge to the BuildLog entity by IDs.
+func (cu *CarUpdate) AddBuildLogIDs(ids ...uuid.UUID) *CarUpdate {
+	cu.mutation.AddBuildLogIDs(ids...)
+	return cu
+}
+
+// AddBuildLogs adds the "build_logs" edges to the BuildLog entity.
+func (cu *CarUpdate) AddBuildLogs(b ...*BuildLog) *CarUpdate {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return cu.AddBuildLogIDs(ids...)
+}
+
 // SetBannerImageID sets the "banner_image" edge to the Media entity by ID.
 func (cu *CarUpdate) SetBannerImageID(id uuid.UUID) *CarUpdate {
 	cu.mutation.SetBannerImageID(id)
@@ -643,6 +659,27 @@ func (cu *CarUpdate) RemoveExpenses(e ...*Expense) *CarUpdate {
 		ids[i] = e[i].ID
 	}
 	return cu.RemoveExpenseIDs(ids...)
+}
+
+// ClearBuildLogs clears all "build_logs" edges to the BuildLog entity.
+func (cu *CarUpdate) ClearBuildLogs() *CarUpdate {
+	cu.mutation.ClearBuildLogs()
+	return cu
+}
+
+// RemoveBuildLogIDs removes the "build_logs" edge to BuildLog entities by IDs.
+func (cu *CarUpdate) RemoveBuildLogIDs(ids ...uuid.UUID) *CarUpdate {
+	cu.mutation.RemoveBuildLogIDs(ids...)
+	return cu
+}
+
+// RemoveBuildLogs removes "build_logs" edges to BuildLog entities.
+func (cu *CarUpdate) RemoveBuildLogs(b ...*BuildLog) *CarUpdate {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return cu.RemoveBuildLogIDs(ids...)
 }
 
 // ClearBannerImage clears the "banner_image" edge to the Media entity.
@@ -1301,6 +1338,51 @@ func (cu *CarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if cu.mutation.BuildLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.BuildLogsTable,
+			Columns: []string{car.BuildLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedBuildLogsIDs(); len(nodes) > 0 && !cu.mutation.BuildLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.BuildLogsTable,
+			Columns: []string{car.BuildLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.BuildLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.BuildLogsTable,
+			Columns: []string{car.BuildLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if cu.mutation.BannerImageCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -1751,6 +1833,21 @@ func (cuo *CarUpdateOne) AddExpenses(e ...*Expense) *CarUpdateOne {
 	return cuo.AddExpenseIDs(ids...)
 }
 
+// AddBuildLogIDs adds the "build_logs" edge to the BuildLog entity by IDs.
+func (cuo *CarUpdateOne) AddBuildLogIDs(ids ...uuid.UUID) *CarUpdateOne {
+	cuo.mutation.AddBuildLogIDs(ids...)
+	return cuo
+}
+
+// AddBuildLogs adds the "build_logs" edges to the BuildLog entity.
+func (cuo *CarUpdateOne) AddBuildLogs(b ...*BuildLog) *CarUpdateOne {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return cuo.AddBuildLogIDs(ids...)
+}
+
 // SetBannerImageID sets the "banner_image" edge to the Media entity by ID.
 func (cuo *CarUpdateOne) SetBannerImageID(id uuid.UUID) *CarUpdateOne {
 	cuo.mutation.SetBannerImageID(id)
@@ -2040,6 +2137,27 @@ func (cuo *CarUpdateOne) RemoveExpenses(e ...*Expense) *CarUpdateOne {
 		ids[i] = e[i].ID
 	}
 	return cuo.RemoveExpenseIDs(ids...)
+}
+
+// ClearBuildLogs clears all "build_logs" edges to the BuildLog entity.
+func (cuo *CarUpdateOne) ClearBuildLogs() *CarUpdateOne {
+	cuo.mutation.ClearBuildLogs()
+	return cuo
+}
+
+// RemoveBuildLogIDs removes the "build_logs" edge to BuildLog entities by IDs.
+func (cuo *CarUpdateOne) RemoveBuildLogIDs(ids ...uuid.UUID) *CarUpdateOne {
+	cuo.mutation.RemoveBuildLogIDs(ids...)
+	return cuo
+}
+
+// RemoveBuildLogs removes "build_logs" edges to BuildLog entities.
+func (cuo *CarUpdateOne) RemoveBuildLogs(b ...*BuildLog) *CarUpdateOne {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return cuo.RemoveBuildLogIDs(ids...)
 }
 
 // ClearBannerImage clears the "banner_image" edge to the Media entity.
@@ -2721,6 +2839,51 @@ func (cuo *CarUpdateOne) sqlSave(ctx context.Context) (_node *Car, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.BuildLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.BuildLogsTable,
+			Columns: []string{car.BuildLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedBuildLogsIDs(); len(nodes) > 0 && !cuo.mutation.BuildLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.BuildLogsTable,
+			Columns: []string{car.BuildLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.BuildLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.BuildLogsTable,
+			Columns: []string{car.BuildLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

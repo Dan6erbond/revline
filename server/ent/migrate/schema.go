@@ -30,6 +30,30 @@ var (
 			},
 		},
 	}
+	// BuildLogsColumns holds the columns for the "build_logs" table.
+	BuildLogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "title", Type: field.TypeString},
+		{Name: "notes", Type: field.TypeJSON, Nullable: true},
+		{Name: "log_time", Type: field.TypeTime},
+		{Name: "car_build_logs", Type: field.TypeUUID},
+	}
+	// BuildLogsTable holds the schema information for the "build_logs" table.
+	BuildLogsTable = &schema.Table{
+		Name:       "build_logs",
+		Columns:    BuildLogsColumns,
+		PrimaryKey: []*schema.Column{BuildLogsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "build_logs_cars_build_logs",
+				Columns:    []*schema.Column{BuildLogsColumns[6]},
+				RefColumns: []*schema.Column{CarsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// CarsColumns holds the columns for the "cars" table.
 	CarsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -325,6 +349,7 @@ var (
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "title", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "build_log_media", Type: field.TypeUUID, Nullable: true},
 		{Name: "car_media", Type: field.TypeUUID, Nullable: true},
 		{Name: "mod_product_option_media", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_media", Type: field.TypeUUID, Nullable: true},
@@ -336,20 +361,26 @@ var (
 		PrimaryKey: []*schema.Column{MediaColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "media_cars_media",
+				Symbol:     "media_build_logs_media",
 				Columns:    []*schema.Column{MediaColumns[5]},
+				RefColumns: []*schema.Column{BuildLogsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "media_cars_media",
+				Columns:    []*schema.Column{MediaColumns[6]},
 				RefColumns: []*schema.Column{CarsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "media_mod_product_options_media",
-				Columns:    []*schema.Column{MediaColumns[6]},
+				Columns:    []*schema.Column{MediaColumns[7]},
 				RefColumns: []*schema.Column{ModProductOptionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "media_users_media",
-				Columns:    []*schema.Column{MediaColumns[7]},
+				Columns:    []*schema.Column{MediaColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -699,6 +730,31 @@ var (
 			},
 		},
 	}
+	// ModBuildLogsColumns holds the columns for the "mod_build_logs" table.
+	ModBuildLogsColumns = []*schema.Column{
+		{Name: "mod_id", Type: field.TypeUUID},
+		{Name: "build_log_id", Type: field.TypeUUID},
+	}
+	// ModBuildLogsTable holds the schema information for the "mod_build_logs" table.
+	ModBuildLogsTable = &schema.Table{
+		Name:       "mod_build_logs",
+		Columns:    ModBuildLogsColumns,
+		PrimaryKey: []*schema.Column{ModBuildLogsColumns[0], ModBuildLogsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "mod_build_logs_mod_id",
+				Columns:    []*schema.Column{ModBuildLogsColumns[0]},
+				RefColumns: []*schema.Column{ModsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "mod_build_logs_build_log_id",
+				Columns:    []*schema.Column{ModBuildLogsColumns[1]},
+				RefColumns: []*schema.Column{BuildLogsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// ServiceLogItemsColumns holds the columns for the "service_log_items" table.
 	ServiceLogItemsColumns = []*schema.Column{
 		{Name: "service_log_id", Type: field.TypeUUID},
@@ -777,6 +833,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AlbumsTable,
+		BuildLogsTable,
 		CarsTable,
 		CheckoutSessionsTable,
 		DocumentsTable,
@@ -799,6 +856,7 @@ var (
 		UsersTable,
 		UserSettingsTable,
 		AlbumMediaTable,
+		ModBuildLogsTable,
 		ServiceLogItemsTable,
 		ServiceScheduleItemsTable,
 		TaskModsTable,
@@ -807,6 +865,7 @@ var (
 
 func init() {
 	AlbumsTable.ForeignKeys[0].RefTable = CarsTable
+	BuildLogsTable.ForeignKeys[0].RefTable = CarsTable
 	CarsTable.ForeignKeys[0].RefTable = MediaTable
 	CarsTable.ForeignKeys[1].RefTable = UsersTable
 	CheckoutSessionsTable.ForeignKeys[0].RefTable = UsersTable
@@ -825,9 +884,10 @@ func init() {
 	ExpensesTable.ForeignKeys[2].RefTable = ServiceLogsTable
 	FuelUpsTable.ForeignKeys[0].RefTable = CarsTable
 	FuelUpsTable.ForeignKeys[1].RefTable = OdometerReadingsTable
-	MediaTable.ForeignKeys[0].RefTable = CarsTable
-	MediaTable.ForeignKeys[1].RefTable = ModProductOptionsTable
-	MediaTable.ForeignKeys[2].RefTable = UsersTable
+	MediaTable.ForeignKeys[0].RefTable = BuildLogsTable
+	MediaTable.ForeignKeys[1].RefTable = CarsTable
+	MediaTable.ForeignKeys[2].RefTable = ModProductOptionsTable
+	MediaTable.ForeignKeys[3].RefTable = UsersTable
 	ModsTable.ForeignKeys[0].RefTable = CarsTable
 	ModProductOptionsTable.ForeignKeys[0].RefTable = ModsTable
 	OdometerReadingsTable.ForeignKeys[0].RefTable = CarsTable
@@ -844,6 +904,8 @@ func init() {
 	UserSettingsTable.ForeignKeys[0].RefTable = UsersTable
 	AlbumMediaTable.ForeignKeys[0].RefTable = AlbumsTable
 	AlbumMediaTable.ForeignKeys[1].RefTable = MediaTable
+	ModBuildLogsTable.ForeignKeys[0].RefTable = ModsTable
+	ModBuildLogsTable.ForeignKeys[1].RefTable = BuildLogsTable
 	ServiceLogItemsTable.ForeignKeys[0].RefTable = ServiceLogsTable
 	ServiceLogItemsTable.ForeignKeys[1].RefTable = ServiceItemsTable
 	ServiceScheduleItemsTable.ForeignKeys[0].RefTable = ServiceSchedulesTable

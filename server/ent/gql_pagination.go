@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/Dan6erbond/revline/ent/album"
+	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
@@ -366,6 +367,255 @@ func (a *Album) ToEdge(order *AlbumOrder) *AlbumEdge {
 	return &AlbumEdge{
 		Node:   a,
 		Cursor: order.Field.toCursor(a),
+	}
+}
+
+// BuildLogEdge is the edge representation of BuildLog.
+type BuildLogEdge struct {
+	Node   *BuildLog `json:"node"`
+	Cursor Cursor    `json:"cursor"`
+}
+
+// BuildLogConnection is the connection containing edges to BuildLog.
+type BuildLogConnection struct {
+	Edges      []*BuildLogEdge `json:"edges"`
+	PageInfo   PageInfo        `json:"pageInfo"`
+	TotalCount int             `json:"totalCount"`
+}
+
+func (c *BuildLogConnection) build(nodes []*BuildLog, pager *buildlogPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *BuildLog
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *BuildLog {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *BuildLog {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*BuildLogEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &BuildLogEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// BuildLogPaginateOption enables pagination customization.
+type BuildLogPaginateOption func(*buildlogPager) error
+
+// WithBuildLogOrder configures pagination ordering.
+func WithBuildLogOrder(order *BuildLogOrder) BuildLogPaginateOption {
+	if order == nil {
+		order = DefaultBuildLogOrder
+	}
+	o := *order
+	return func(pager *buildlogPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultBuildLogOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithBuildLogFilter configures pagination filter.
+func WithBuildLogFilter(filter func(*BuildLogQuery) (*BuildLogQuery, error)) BuildLogPaginateOption {
+	return func(pager *buildlogPager) error {
+		if filter == nil {
+			return errors.New("BuildLogQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type buildlogPager struct {
+	reverse bool
+	order   *BuildLogOrder
+	filter  func(*BuildLogQuery) (*BuildLogQuery, error)
+}
+
+func newBuildLogPager(opts []BuildLogPaginateOption, reverse bool) (*buildlogPager, error) {
+	pager := &buildlogPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultBuildLogOrder
+	}
+	return pager, nil
+}
+
+func (p *buildlogPager) applyFilter(query *BuildLogQuery) (*BuildLogQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *buildlogPager) toCursor(bl *BuildLog) Cursor {
+	return p.order.Field.toCursor(bl)
+}
+
+func (p *buildlogPager) applyCursors(query *BuildLogQuery, after, before *Cursor) (*BuildLogQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultBuildLogOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *buildlogPager) applyOrder(query *BuildLogQuery) *BuildLogQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultBuildLogOrder.Field {
+		query = query.Order(DefaultBuildLogOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *buildlogPager) orderExpr(query *BuildLogQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultBuildLogOrder.Field {
+			b.Comma().Ident(DefaultBuildLogOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to BuildLog.
+func (bl *BuildLogQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...BuildLogPaginateOption,
+) (*BuildLogConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newBuildLogPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if bl, err = pager.applyFilter(bl); err != nil {
+		return nil, err
+	}
+	conn := &BuildLogConnection{Edges: []*BuildLogEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := bl.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if bl, err = pager.applyCursors(bl, after, before); err != nil {
+		return nil, err
+	}
+	limit := paginateLimit(first, last)
+	if limit != 0 {
+		bl.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := bl.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	bl = pager.applyOrder(bl)
+	nodes, err := bl.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// BuildLogOrderField defines the ordering field of BuildLog.
+type BuildLogOrderField struct {
+	// Value extracts the ordering value from the given BuildLog.
+	Value    func(*BuildLog) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) buildlog.OrderOption
+	toCursor func(*BuildLog) Cursor
+}
+
+// BuildLogOrder defines the ordering of BuildLog.
+type BuildLogOrder struct {
+	Direction OrderDirection      `json:"direction"`
+	Field     *BuildLogOrderField `json:"field"`
+}
+
+// DefaultBuildLogOrder is the default ordering of BuildLog.
+var DefaultBuildLogOrder = &BuildLogOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &BuildLogOrderField{
+		Value: func(bl *BuildLog) (ent.Value, error) {
+			return bl.ID, nil
+		},
+		column: buildlog.FieldID,
+		toTerm: buildlog.ByID,
+		toCursor: func(bl *BuildLog) Cursor {
+			return Cursor{ID: bl.ID}
+		},
+	},
+}
+
+// ToEdge converts BuildLog into BuildLogEdge.
+func (bl *BuildLog) ToEdge(order *BuildLogOrder) *BuildLogEdge {
+	if order == nil {
+		order = DefaultBuildLogOrder
+	}
+	return &BuildLogEdge{
+		Node:   bl,
+		Cursor: order.Field.toCursor(bl),
 	}
 }
 

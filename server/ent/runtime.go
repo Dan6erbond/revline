@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Dan6erbond/revline/ent/album"
+	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
@@ -54,6 +55,25 @@ func init() {
 	albumDescID := albumFields[0].Descriptor()
 	// album.DefaultID holds the default value on creation for the id field.
 	album.DefaultID = albumDescID.Default.(func() uuid.UUID)
+	buildlogMixin := schema.BuildLog{}.Mixin()
+	buildlogMixinFields0 := buildlogMixin[0].Fields()
+	_ = buildlogMixinFields0
+	buildlogFields := schema.BuildLog{}.Fields()
+	_ = buildlogFields
+	// buildlogDescCreateTime is the schema descriptor for create_time field.
+	buildlogDescCreateTime := buildlogMixinFields0[0].Descriptor()
+	// buildlog.DefaultCreateTime holds the default value on creation for the create_time field.
+	buildlog.DefaultCreateTime = buildlogDescCreateTime.Default.(func() time.Time)
+	// buildlogDescUpdateTime is the schema descriptor for update_time field.
+	buildlogDescUpdateTime := buildlogMixinFields0[1].Descriptor()
+	// buildlog.DefaultUpdateTime holds the default value on creation for the update_time field.
+	buildlog.DefaultUpdateTime = buildlogDescUpdateTime.Default.(func() time.Time)
+	// buildlog.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	buildlog.UpdateDefaultUpdateTime = buildlogDescUpdateTime.UpdateDefault.(func() time.Time)
+	// buildlogDescID is the schema descriptor for id field.
+	buildlogDescID := buildlogFields[0].Descriptor()
+	// buildlog.DefaultID holds the default value on creation for the id field.
+	buildlog.DefaultID = buildlogDescID.Default.(func() uuid.UUID)
 	carMixin := schema.Car{}.Mixin()
 	carMixinFields0 := carMixin[0].Fields()
 	_ = carMixinFields0

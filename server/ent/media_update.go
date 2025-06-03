@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/album"
+	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
@@ -136,6 +137,25 @@ func (mu *MediaUpdate) SetModProductOption(m *ModProductOption) *MediaUpdate {
 	return mu.SetModProductOptionID(m.ID)
 }
 
+// SetBuildLogID sets the "build_log" edge to the BuildLog entity by ID.
+func (mu *MediaUpdate) SetBuildLogID(id uuid.UUID) *MediaUpdate {
+	mu.mutation.SetBuildLogID(id)
+	return mu
+}
+
+// SetNillableBuildLogID sets the "build_log" edge to the BuildLog entity by ID if the given value is not nil.
+func (mu *MediaUpdate) SetNillableBuildLogID(id *uuid.UUID) *MediaUpdate {
+	if id != nil {
+		mu = mu.SetBuildLogID(*id)
+	}
+	return mu
+}
+
+// SetBuildLog sets the "build_log" edge to the BuildLog entity.
+func (mu *MediaUpdate) SetBuildLog(b *BuildLog) *MediaUpdate {
+	return mu.SetBuildLogID(b.ID)
+}
+
 // AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
 func (mu *MediaUpdate) AddAlbumIDs(ids ...uuid.UUID) *MediaUpdate {
 	mu.mutation.AddAlbumIDs(ids...)
@@ -171,6 +191,12 @@ func (mu *MediaUpdate) ClearCar() *MediaUpdate {
 // ClearModProductOption clears the "mod_product_option" edge to the ModProductOption entity.
 func (mu *MediaUpdate) ClearModProductOption() *MediaUpdate {
 	mu.mutation.ClearModProductOption()
+	return mu
+}
+
+// ClearBuildLog clears the "build_log" edge to the BuildLog entity.
+func (mu *MediaUpdate) ClearBuildLog() *MediaUpdate {
+	mu.mutation.ClearBuildLog()
 	return mu
 }
 
@@ -335,6 +361,35 @@ func (mu *MediaUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(modproductoption.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if mu.mutation.BuildLogCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.BuildLogTable,
+			Columns: []string{media.BuildLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.BuildLogIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.BuildLogTable,
+			Columns: []string{media.BuildLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -510,6 +565,25 @@ func (muo *MediaUpdateOne) SetModProductOption(m *ModProductOption) *MediaUpdate
 	return muo.SetModProductOptionID(m.ID)
 }
 
+// SetBuildLogID sets the "build_log" edge to the BuildLog entity by ID.
+func (muo *MediaUpdateOne) SetBuildLogID(id uuid.UUID) *MediaUpdateOne {
+	muo.mutation.SetBuildLogID(id)
+	return muo
+}
+
+// SetNillableBuildLogID sets the "build_log" edge to the BuildLog entity by ID if the given value is not nil.
+func (muo *MediaUpdateOne) SetNillableBuildLogID(id *uuid.UUID) *MediaUpdateOne {
+	if id != nil {
+		muo = muo.SetBuildLogID(*id)
+	}
+	return muo
+}
+
+// SetBuildLog sets the "build_log" edge to the BuildLog entity.
+func (muo *MediaUpdateOne) SetBuildLog(b *BuildLog) *MediaUpdateOne {
+	return muo.SetBuildLogID(b.ID)
+}
+
 // AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
 func (muo *MediaUpdateOne) AddAlbumIDs(ids ...uuid.UUID) *MediaUpdateOne {
 	muo.mutation.AddAlbumIDs(ids...)
@@ -545,6 +619,12 @@ func (muo *MediaUpdateOne) ClearCar() *MediaUpdateOne {
 // ClearModProductOption clears the "mod_product_option" edge to the ModProductOption entity.
 func (muo *MediaUpdateOne) ClearModProductOption() *MediaUpdateOne {
 	muo.mutation.ClearModProductOption()
+	return muo
+}
+
+// ClearBuildLog clears the "build_log" edge to the BuildLog entity.
+func (muo *MediaUpdateOne) ClearBuildLog() *MediaUpdateOne {
+	muo.mutation.ClearBuildLog()
 	return muo
 }
 
@@ -739,6 +819,35 @@ func (muo *MediaUpdateOne) sqlSave(ctx context.Context) (_node *Media, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(modproductoption.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if muo.mutation.BuildLogCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.BuildLogTable,
+			Columns: []string{media.BuildLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.BuildLogIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   media.BuildLogTable,
+			Columns: []string{media.BuildLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

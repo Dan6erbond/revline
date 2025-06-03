@@ -9,6 +9,9 @@ import (
 // Album is the predicate function for album builders.
 type Album func(*sql.Selector)
 
+// BuildLog is the predicate function for buildlog builders.
+type BuildLog func(*sql.Selector)
+
 // Car is the predicate function for car builders.
 type Car func(*sql.Selector)
 

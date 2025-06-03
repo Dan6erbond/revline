@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/album"
+	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dragsession"
@@ -335,6 +336,21 @@ func (cc *CarCreate) AddExpenses(e ...*Expense) *CarCreate {
 		ids[i] = e[i].ID
 	}
 	return cc.AddExpenseIDs(ids...)
+}
+
+// AddBuildLogIDs adds the "build_logs" edge to the BuildLog entity by IDs.
+func (cc *CarCreate) AddBuildLogIDs(ids ...uuid.UUID) *CarCreate {
+	cc.mutation.AddBuildLogIDs(ids...)
+	return cc
+}
+
+// AddBuildLogs adds the "build_logs" edges to the BuildLog entity.
+func (cc *CarCreate) AddBuildLogs(b ...*BuildLog) *CarCreate {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return cc.AddBuildLogIDs(ids...)
 }
 
 // SetBannerImageID sets the "banner_image" edge to the Media entity by ID.
@@ -699,6 +715,22 @@ func (cc *CarCreate) createSpec() (*Car, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(expense.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.BuildLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   car.BuildLogsTable,
+			Columns: []string{car.BuildLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

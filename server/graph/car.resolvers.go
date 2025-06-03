@@ -673,6 +673,22 @@ func (r *mutationResolver) UpdateModProductOption(ctx context.Context, id string
 	return r.entClient.ModProductOption.UpdateOneID(uid).SetInput(input).Save(ctx)
 }
 
+// CreateBuildLog is the resolver for the createBuildLog field.
+func (r *mutationResolver) CreateBuildLog(ctx context.Context, input ent.CreateBuildLogInput) (*ent.BuildLog, error) {
+	return r.entClient.BuildLog.Create().SetInput(input).Save(ctx)
+}
+
+// UpdateBuildLog is the resolver for the updateBuildLog field.
+func (r *mutationResolver) UpdateBuildLog(ctx context.Context, id string, input ent.UpdateBuildLogInput) (*ent.BuildLog, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.BuildLog.UpdateOneID(uid).SetInput(input).Save(ctx)
+}
+
 // Car is the resolver for the car field.
 func (r *queryResolver) Car(ctx context.Context, id string) (*ent.Car, error) {
 	uid, err := uuid.Parse(id)

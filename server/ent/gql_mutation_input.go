@@ -89,6 +89,114 @@ func (c *AlbumUpdateOne) SetInput(i UpdateAlbumInput) *AlbumUpdateOne {
 	return c
 }
 
+// CreateBuildLogInput represents a mutation input for creating buildlogs.
+type CreateBuildLogInput struct {
+	CreateTime *time.Time
+	UpdateTime *time.Time
+	Title      string
+	Notes      map[string]interface{}
+	LogTime    time.Time
+	CarID      uuid.UUID
+	ModIDs     []uuid.UUID
+	MediumIDs  []uuid.UUID
+}
+
+// Mutate applies the CreateBuildLogInput on the BuildLogMutation builder.
+func (i *CreateBuildLogInput) Mutate(m *BuildLogMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	m.SetTitle(i.Title)
+	if v := i.Notes; v != nil {
+		m.SetNotes(v)
+	}
+	m.SetLogTime(i.LogTime)
+	m.SetCarID(i.CarID)
+	if v := i.ModIDs; len(v) > 0 {
+		m.AddModIDs(v...)
+	}
+	if v := i.MediumIDs; len(v) > 0 {
+		m.AddMediumIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the CreateBuildLogInput on the BuildLogCreate builder.
+func (c *BuildLogCreate) SetInput(i CreateBuildLogInput) *BuildLogCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateBuildLogInput represents a mutation input for updating buildlogs.
+type UpdateBuildLogInput struct {
+	UpdateTime      *time.Time
+	Title           *string
+	ClearNotes      bool
+	Notes           map[string]interface{}
+	LogTime         *time.Time
+	CarID           *uuid.UUID
+	ClearMods       bool
+	AddModIDs       []uuid.UUID
+	RemoveModIDs    []uuid.UUID
+	ClearMedia      bool
+	AddMediumIDs    []uuid.UUID
+	RemoveMediumIDs []uuid.UUID
+}
+
+// Mutate applies the UpdateBuildLogInput on the BuildLogMutation builder.
+func (i *UpdateBuildLogInput) Mutate(m *BuildLogMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.Title; v != nil {
+		m.SetTitle(*v)
+	}
+	if i.ClearNotes {
+		m.ClearNotes()
+	}
+	if v := i.Notes; v != nil {
+		m.SetNotes(v)
+	}
+	if v := i.LogTime; v != nil {
+		m.SetLogTime(*v)
+	}
+	if v := i.CarID; v != nil {
+		m.SetCarID(*v)
+	}
+	if i.ClearMods {
+		m.ClearMods()
+	}
+	if v := i.AddModIDs; len(v) > 0 {
+		m.AddModIDs(v...)
+	}
+	if v := i.RemoveModIDs; len(v) > 0 {
+		m.RemoveModIDs(v...)
+	}
+	if i.ClearMedia {
+		m.ClearMedia()
+	}
+	if v := i.AddMediumIDs; len(v) > 0 {
+		m.AddMediumIDs(v...)
+	}
+	if v := i.RemoveMediumIDs; len(v) > 0 {
+		m.RemoveMediumIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the UpdateBuildLogInput on the BuildLogUpdate builder.
+func (c *BuildLogUpdate) SetInput(i UpdateBuildLogInput) *BuildLogUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateBuildLogInput on the BuildLogUpdateOne builder.
+func (c *BuildLogUpdateOne) SetInput(i UpdateBuildLogInput) *BuildLogUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
 // CreateCarInput represents a mutation input for creating cars.
 type CreateCarInput struct {
 	CreateTime         *time.Time
@@ -111,6 +219,7 @@ type CreateCarInput struct {
 	DocumentIDs        []uuid.UUID
 	DynoSessionIDs     []uuid.UUID
 	ExpenseIDs         []uuid.UUID
+	BuildLogIDs        []uuid.UUID
 	BannerImageID      *uuid.UUID
 	TaskIDs            []uuid.UUID
 	ModIDs             []uuid.UUID
@@ -175,6 +284,9 @@ func (i *CreateCarInput) Mutate(m *CarMutation) {
 	}
 	if v := i.ExpenseIDs; len(v) > 0 {
 		m.AddExpenseIDs(v...)
+	}
+	if v := i.BuildLogIDs; len(v) > 0 {
+		m.AddBuildLogIDs(v...)
 	}
 	if v := i.BannerImageID; v != nil {
 		m.SetBannerImageID(*v)
@@ -242,6 +354,9 @@ type UpdateCarInput struct {
 	ClearExpenses            bool
 	AddExpenseIDs            []uuid.UUID
 	RemoveExpenseIDs         []uuid.UUID
+	ClearBuildLogs           bool
+	AddBuildLogIDs           []uuid.UUID
+	RemoveBuildLogIDs        []uuid.UUID
 	ClearBannerImage         bool
 	BannerImageID            *uuid.UUID
 	ClearTasks               bool
@@ -394,6 +509,15 @@ func (i *UpdateCarInput) Mutate(m *CarMutation) {
 	}
 	if v := i.RemoveExpenseIDs; len(v) > 0 {
 		m.RemoveExpenseIDs(v...)
+	}
+	if i.ClearBuildLogs {
+		m.ClearBuildLogs()
+	}
+	if v := i.AddBuildLogIDs; len(v) > 0 {
+		m.AddBuildLogIDs(v...)
+	}
+	if v := i.RemoveBuildLogIDs; len(v) > 0 {
+		m.RemoveBuildLogIDs(v...)
 	}
 	if i.ClearBannerImage {
 		m.ClearBannerImage()
@@ -1204,6 +1328,7 @@ type CreateMediaInput struct {
 	UserID             *uuid.UUID
 	CarID              *uuid.UUID
 	ModProductOptionID *uuid.UUID
+	BuildLogID         *uuid.UUID
 	AlbumIDs           []uuid.UUID
 }
 
@@ -1230,6 +1355,9 @@ func (i *CreateMediaInput) Mutate(m *MediaMutation) {
 	if v := i.ModProductOptionID; v != nil {
 		m.SetModProductOptionID(*v)
 	}
+	if v := i.BuildLogID; v != nil {
+		m.SetBuildLogID(*v)
+	}
 	if v := i.AlbumIDs; len(v) > 0 {
 		m.AddAlbumIDs(v...)
 	}
@@ -1254,6 +1382,8 @@ type UpdateMediaInput struct {
 	CarID                 *uuid.UUID
 	ClearModProductOption bool
 	ModProductOptionID    *uuid.UUID
+	ClearBuildLog         bool
+	BuildLogID            *uuid.UUID
 	ClearAlbums           bool
 	AddAlbumIDs           []uuid.UUID
 	RemoveAlbumIDs        []uuid.UUID
@@ -1294,6 +1424,12 @@ func (i *UpdateMediaInput) Mutate(m *MediaMutation) {
 	if v := i.ModProductOptionID; v != nil {
 		m.SetModProductOptionID(*v)
 	}
+	if i.ClearBuildLog {
+		m.ClearBuildLog()
+	}
+	if v := i.BuildLogID; v != nil {
+		m.SetBuildLogID(*v)
+	}
 	if i.ClearAlbums {
 		m.ClearAlbums()
 	}
@@ -1329,6 +1465,7 @@ type CreateModInput struct {
 	CarID            uuid.UUID
 	TaskIDs          []uuid.UUID
 	ProductOptionIDs []uuid.UUID
+	BuildLogIDs      []uuid.UUID
 }
 
 // Mutate applies the CreateModInput on the ModMutation builder.
@@ -1357,6 +1494,9 @@ func (i *CreateModInput) Mutate(m *ModMutation) {
 	if v := i.ProductOptionIDs; len(v) > 0 {
 		m.AddProductOptionIDs(v...)
 	}
+	if v := i.BuildLogIDs; len(v) > 0 {
+		m.AddBuildLogIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateModInput on the ModCreate builder.
@@ -1382,6 +1522,9 @@ type UpdateModInput struct {
 	ClearProductOptions    bool
 	AddProductOptionIDs    []uuid.UUID
 	RemoveProductOptionIDs []uuid.UUID
+	ClearBuildLogs         bool
+	AddBuildLogIDs         []uuid.UUID
+	RemoveBuildLogIDs      []uuid.UUID
 }
 
 // Mutate applies the UpdateModInput on the ModMutation builder.
@@ -1430,6 +1573,15 @@ func (i *UpdateModInput) Mutate(m *ModMutation) {
 	}
 	if v := i.RemoveProductOptionIDs; len(v) > 0 {
 		m.RemoveProductOptionIDs(v...)
+	}
+	if i.ClearBuildLogs {
+		m.ClearBuildLogs()
+	}
+	if v := i.AddBuildLogIDs; len(v) > 0 {
+		m.AddBuildLogIDs(v...)
+	}
+	if v := i.RemoveBuildLogIDs; len(v) > 0 {
+		m.RemoveBuildLogIDs(v...)
 	}
 }
 

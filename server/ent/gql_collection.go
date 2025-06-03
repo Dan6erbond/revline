@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/Dan6erbond/revline/ent/album"
+	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
@@ -132,6 +133,130 @@ func newAlbumPaginateArgs(rv map[string]any) *albumPaginateArgs {
 	}
 	if v, ok := rv[whereField].(*AlbumWhereInput); ok {
 		args.opts = append(args.opts, WithAlbumFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (bl *BuildLogQuery) CollectFields(ctx context.Context, satisfies ...string) (*BuildLogQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return bl, nil
+	}
+	if err := bl.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return bl, nil
+}
+
+func (bl *BuildLogQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(buildlog.Columns))
+		selectedFields = []string{buildlog.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+
+		case "car":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&CarClient{config: bl.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, carImplementors)...); err != nil {
+				return err
+			}
+			bl.withCar = query
+
+		case "mods":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ModClient{config: bl.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, modImplementors)...); err != nil {
+				return err
+			}
+			bl.WithNamedMods(alias, func(wq *ModQuery) {
+				*wq = *query
+			})
+
+		case "media":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&MediaClient{config: bl.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, mediaImplementors)...); err != nil {
+				return err
+			}
+			bl.WithNamedMedia(alias, func(wq *MediaQuery) {
+				*wq = *query
+			})
+		case "createTime":
+			if _, ok := fieldSeen[buildlog.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, buildlog.FieldCreateTime)
+				fieldSeen[buildlog.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[buildlog.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, buildlog.FieldUpdateTime)
+				fieldSeen[buildlog.FieldUpdateTime] = struct{}{}
+			}
+		case "title":
+			if _, ok := fieldSeen[buildlog.FieldTitle]; !ok {
+				selectedFields = append(selectedFields, buildlog.FieldTitle)
+				fieldSeen[buildlog.FieldTitle] = struct{}{}
+			}
+		case "notes":
+			if _, ok := fieldSeen[buildlog.FieldNotes]; !ok {
+				selectedFields = append(selectedFields, buildlog.FieldNotes)
+				fieldSeen[buildlog.FieldNotes] = struct{}{}
+			}
+		case "logTime":
+			if _, ok := fieldSeen[buildlog.FieldLogTime]; !ok {
+				selectedFields = append(selectedFields, buildlog.FieldLogTime)
+				fieldSeen[buildlog.FieldLogTime] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		bl.Select(selectedFields...)
+	}
+	return nil
+}
+
+type buildlogPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []BuildLogPaginateOption
+}
+
+func newBuildLogPaginateArgs(rv map[string]any) *buildlogPaginateArgs {
+	args := &buildlogPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*BuildLogWhereInput); ok {
+		args.opts = append(args.opts, WithBuildLogFilter(v.Filter))
 	}
 	return args
 }
@@ -312,6 +437,19 @@ func (c *CarQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphq
 				*wq = *query
 			})
 
+		case "buildLogs":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BuildLogClient{config: c.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, buildlogImplementors)...); err != nil {
+				return err
+			}
+			c.WithNamedBuildLogs(alias, func(wq *BuildLogQuery) {
+				*wq = *query
+			})
+
 		case "bannerImage":
 			var (
 				alias = field.Alias
@@ -366,10 +504,10 @@ func (c *CarQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphq
 						}
 						for i := range nodes {
 							n := m[nodes[i].ID]
-							if nodes[i].Edges.totalCount[13] == nil {
-								nodes[i].Edges.totalCount[13] = make(map[string]int)
+							if nodes[i].Edges.totalCount[14] == nil {
+								nodes[i].Edges.totalCount[14] = make(map[string]int)
 							}
-							nodes[i].Edges.totalCount[13][alias] = n
+							nodes[i].Edges.totalCount[14][alias] = n
 						}
 						return nil
 					})
@@ -377,10 +515,10 @@ func (c *CarQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphq
 					c.loadTotal = append(c.loadTotal, func(_ context.Context, nodes []*Car) error {
 						for i := range nodes {
 							n := len(nodes[i].Edges.Tasks)
-							if nodes[i].Edges.totalCount[13] == nil {
-								nodes[i].Edges.totalCount[13] = make(map[string]int)
+							if nodes[i].Edges.totalCount[14] == nil {
+								nodes[i].Edges.totalCount[14] = make(map[string]int)
 							}
-							nodes[i].Edges.totalCount[13][alias] = n
+							nodes[i].Edges.totalCount[14][alias] = n
 						}
 						return nil
 					})
@@ -1562,6 +1700,17 @@ func (m *MediaQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 			}
 			m.withModProductOption = query
 
+		case "buildLog":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BuildLogClient{config: m.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, buildlogImplementors)...); err != nil {
+				return err
+			}
+			m.withBuildLog = query
+
 		case "albums":
 			var (
 				alias = field.Alias
@@ -1691,6 +1840,19 @@ func (m *ModQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphq
 				return err
 			}
 			m.WithNamedProductOptions(alias, func(wq *ModProductOptionQuery) {
+				*wq = *query
+			})
+
+		case "buildLogs":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BuildLogClient{config: m.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, buildlogImplementors)...); err != nil {
+				return err
+			}
+			m.WithNamedBuildLogs(alias, func(wq *BuildLogQuery) {
 				*wq = *query
 			})
 		case "createTime":

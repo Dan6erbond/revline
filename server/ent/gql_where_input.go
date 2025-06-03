@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Dan6erbond/revline/ent/album"
+	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/checkoutsession"
 	"github.com/Dan6erbond/revline/ent/document"
@@ -323,6 +324,352 @@ func (i *AlbumWhereInput) P() (predicate.Album, error) {
 	}
 }
 
+// BuildLogWhereInput represents a where input for filtering BuildLog queries.
+type BuildLogWhereInput struct {
+	Predicates []predicate.BuildLog  `json:"-"`
+	Not        *BuildLogWhereInput   `json:"not,omitempty"`
+	Or         []*BuildLogWhereInput `json:"or,omitempty"`
+	And        []*BuildLogWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *uuid.UUID  `json:"id,omitempty"`
+	IDNEQ   *uuid.UUID  `json:"idNEQ,omitempty"`
+	IDIn    []uuid.UUID `json:"idIn,omitempty"`
+	IDNotIn []uuid.UUID `json:"idNotIn,omitempty"`
+	IDGT    *uuid.UUID  `json:"idGT,omitempty"`
+	IDGTE   *uuid.UUID  `json:"idGTE,omitempty"`
+	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
+	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
+
+	// "create_time" field predicates.
+	CreateTime      *time.Time  `json:"createTime,omitempty"`
+	CreateTimeNEQ   *time.Time  `json:"createTimeNEQ,omitempty"`
+	CreateTimeIn    []time.Time `json:"createTimeIn,omitempty"`
+	CreateTimeNotIn []time.Time `json:"createTimeNotIn,omitempty"`
+	CreateTimeGT    *time.Time  `json:"createTimeGT,omitempty"`
+	CreateTimeGTE   *time.Time  `json:"createTimeGTE,omitempty"`
+	CreateTimeLT    *time.Time  `json:"createTimeLT,omitempty"`
+	CreateTimeLTE   *time.Time  `json:"createTimeLTE,omitempty"`
+
+	// "update_time" field predicates.
+	UpdateTime      *time.Time  `json:"updateTime,omitempty"`
+	UpdateTimeNEQ   *time.Time  `json:"updateTimeNEQ,omitempty"`
+	UpdateTimeIn    []time.Time `json:"updateTimeIn,omitempty"`
+	UpdateTimeNotIn []time.Time `json:"updateTimeNotIn,omitempty"`
+	UpdateTimeGT    *time.Time  `json:"updateTimeGT,omitempty"`
+	UpdateTimeGTE   *time.Time  `json:"updateTimeGTE,omitempty"`
+	UpdateTimeLT    *time.Time  `json:"updateTimeLT,omitempty"`
+	UpdateTimeLTE   *time.Time  `json:"updateTimeLTE,omitempty"`
+
+	// "title" field predicates.
+	Title             *string  `json:"title,omitempty"`
+	TitleNEQ          *string  `json:"titleNEQ,omitempty"`
+	TitleIn           []string `json:"titleIn,omitempty"`
+	TitleNotIn        []string `json:"titleNotIn,omitempty"`
+	TitleGT           *string  `json:"titleGT,omitempty"`
+	TitleGTE          *string  `json:"titleGTE,omitempty"`
+	TitleLT           *string  `json:"titleLT,omitempty"`
+	TitleLTE          *string  `json:"titleLTE,omitempty"`
+	TitleContains     *string  `json:"titleContains,omitempty"`
+	TitleHasPrefix    *string  `json:"titleHasPrefix,omitempty"`
+	TitleHasSuffix    *string  `json:"titleHasSuffix,omitempty"`
+	TitleEqualFold    *string  `json:"titleEqualFold,omitempty"`
+	TitleContainsFold *string  `json:"titleContainsFold,omitempty"`
+
+	// "log_time" field predicates.
+	LogTime      *time.Time  `json:"logTime,omitempty"`
+	LogTimeNEQ   *time.Time  `json:"logTimeNEQ,omitempty"`
+	LogTimeIn    []time.Time `json:"logTimeIn,omitempty"`
+	LogTimeNotIn []time.Time `json:"logTimeNotIn,omitempty"`
+	LogTimeGT    *time.Time  `json:"logTimeGT,omitempty"`
+	LogTimeGTE   *time.Time  `json:"logTimeGTE,omitempty"`
+	LogTimeLT    *time.Time  `json:"logTimeLT,omitempty"`
+	LogTimeLTE   *time.Time  `json:"logTimeLTE,omitempty"`
+
+	// "car" edge predicates.
+	HasCar     *bool            `json:"hasCar,omitempty"`
+	HasCarWith []*CarWhereInput `json:"hasCarWith,omitempty"`
+
+	// "mods" edge predicates.
+	HasMods     *bool            `json:"hasMods,omitempty"`
+	HasModsWith []*ModWhereInput `json:"hasModsWith,omitempty"`
+
+	// "media" edge predicates.
+	HasMedia     *bool              `json:"hasMedia,omitempty"`
+	HasMediaWith []*MediaWhereInput `json:"hasMediaWith,omitempty"`
+}
+
+// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
+func (i *BuildLogWhereInput) AddPredicates(predicates ...predicate.BuildLog) {
+	i.Predicates = append(i.Predicates, predicates...)
+}
+
+// Filter applies the BuildLogWhereInput filter on the BuildLogQuery builder.
+func (i *BuildLogWhereInput) Filter(q *BuildLogQuery) (*BuildLogQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		if err == ErrEmptyBuildLogWhereInput {
+			return q, nil
+		}
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// ErrEmptyBuildLogWhereInput is returned in case the BuildLogWhereInput is empty.
+var ErrEmptyBuildLogWhereInput = errors.New("ent: empty predicate BuildLogWhereInput")
+
+// P returns a predicate for filtering buildlogs.
+// An error is returned if the input is empty or invalid.
+func (i *BuildLogWhereInput) P() (predicate.BuildLog, error) {
+	var predicates []predicate.BuildLog
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'not'", err)
+		}
+		predicates = append(predicates, buildlog.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'or'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.BuildLog, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'or'", err)
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, buildlog.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'and'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.BuildLog, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'and'", err)
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, buildlog.And(and...))
+	}
+	predicates = append(predicates, i.Predicates...)
+	if i.ID != nil {
+		predicates = append(predicates, buildlog.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, buildlog.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, buildlog.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, buildlog.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, buildlog.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, buildlog.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, buildlog.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, buildlog.IDLTE(*i.IDLTE))
+	}
+	if i.CreateTime != nil {
+		predicates = append(predicates, buildlog.CreateTimeEQ(*i.CreateTime))
+	}
+	if i.CreateTimeNEQ != nil {
+		predicates = append(predicates, buildlog.CreateTimeNEQ(*i.CreateTimeNEQ))
+	}
+	if len(i.CreateTimeIn) > 0 {
+		predicates = append(predicates, buildlog.CreateTimeIn(i.CreateTimeIn...))
+	}
+	if len(i.CreateTimeNotIn) > 0 {
+		predicates = append(predicates, buildlog.CreateTimeNotIn(i.CreateTimeNotIn...))
+	}
+	if i.CreateTimeGT != nil {
+		predicates = append(predicates, buildlog.CreateTimeGT(*i.CreateTimeGT))
+	}
+	if i.CreateTimeGTE != nil {
+		predicates = append(predicates, buildlog.CreateTimeGTE(*i.CreateTimeGTE))
+	}
+	if i.CreateTimeLT != nil {
+		predicates = append(predicates, buildlog.CreateTimeLT(*i.CreateTimeLT))
+	}
+	if i.CreateTimeLTE != nil {
+		predicates = append(predicates, buildlog.CreateTimeLTE(*i.CreateTimeLTE))
+	}
+	if i.UpdateTime != nil {
+		predicates = append(predicates, buildlog.UpdateTimeEQ(*i.UpdateTime))
+	}
+	if i.UpdateTimeNEQ != nil {
+		predicates = append(predicates, buildlog.UpdateTimeNEQ(*i.UpdateTimeNEQ))
+	}
+	if len(i.UpdateTimeIn) > 0 {
+		predicates = append(predicates, buildlog.UpdateTimeIn(i.UpdateTimeIn...))
+	}
+	if len(i.UpdateTimeNotIn) > 0 {
+		predicates = append(predicates, buildlog.UpdateTimeNotIn(i.UpdateTimeNotIn...))
+	}
+	if i.UpdateTimeGT != nil {
+		predicates = append(predicates, buildlog.UpdateTimeGT(*i.UpdateTimeGT))
+	}
+	if i.UpdateTimeGTE != nil {
+		predicates = append(predicates, buildlog.UpdateTimeGTE(*i.UpdateTimeGTE))
+	}
+	if i.UpdateTimeLT != nil {
+		predicates = append(predicates, buildlog.UpdateTimeLT(*i.UpdateTimeLT))
+	}
+	if i.UpdateTimeLTE != nil {
+		predicates = append(predicates, buildlog.UpdateTimeLTE(*i.UpdateTimeLTE))
+	}
+	if i.Title != nil {
+		predicates = append(predicates, buildlog.TitleEQ(*i.Title))
+	}
+	if i.TitleNEQ != nil {
+		predicates = append(predicates, buildlog.TitleNEQ(*i.TitleNEQ))
+	}
+	if len(i.TitleIn) > 0 {
+		predicates = append(predicates, buildlog.TitleIn(i.TitleIn...))
+	}
+	if len(i.TitleNotIn) > 0 {
+		predicates = append(predicates, buildlog.TitleNotIn(i.TitleNotIn...))
+	}
+	if i.TitleGT != nil {
+		predicates = append(predicates, buildlog.TitleGT(*i.TitleGT))
+	}
+	if i.TitleGTE != nil {
+		predicates = append(predicates, buildlog.TitleGTE(*i.TitleGTE))
+	}
+	if i.TitleLT != nil {
+		predicates = append(predicates, buildlog.TitleLT(*i.TitleLT))
+	}
+	if i.TitleLTE != nil {
+		predicates = append(predicates, buildlog.TitleLTE(*i.TitleLTE))
+	}
+	if i.TitleContains != nil {
+		predicates = append(predicates, buildlog.TitleContains(*i.TitleContains))
+	}
+	if i.TitleHasPrefix != nil {
+		predicates = append(predicates, buildlog.TitleHasPrefix(*i.TitleHasPrefix))
+	}
+	if i.TitleHasSuffix != nil {
+		predicates = append(predicates, buildlog.TitleHasSuffix(*i.TitleHasSuffix))
+	}
+	if i.TitleEqualFold != nil {
+		predicates = append(predicates, buildlog.TitleEqualFold(*i.TitleEqualFold))
+	}
+	if i.TitleContainsFold != nil {
+		predicates = append(predicates, buildlog.TitleContainsFold(*i.TitleContainsFold))
+	}
+	if i.LogTime != nil {
+		predicates = append(predicates, buildlog.LogTimeEQ(*i.LogTime))
+	}
+	if i.LogTimeNEQ != nil {
+		predicates = append(predicates, buildlog.LogTimeNEQ(*i.LogTimeNEQ))
+	}
+	if len(i.LogTimeIn) > 0 {
+		predicates = append(predicates, buildlog.LogTimeIn(i.LogTimeIn...))
+	}
+	if len(i.LogTimeNotIn) > 0 {
+		predicates = append(predicates, buildlog.LogTimeNotIn(i.LogTimeNotIn...))
+	}
+	if i.LogTimeGT != nil {
+		predicates = append(predicates, buildlog.LogTimeGT(*i.LogTimeGT))
+	}
+	if i.LogTimeGTE != nil {
+		predicates = append(predicates, buildlog.LogTimeGTE(*i.LogTimeGTE))
+	}
+	if i.LogTimeLT != nil {
+		predicates = append(predicates, buildlog.LogTimeLT(*i.LogTimeLT))
+	}
+	if i.LogTimeLTE != nil {
+		predicates = append(predicates, buildlog.LogTimeLTE(*i.LogTimeLTE))
+	}
+
+	if i.HasCar != nil {
+		p := buildlog.HasCar()
+		if !*i.HasCar {
+			p = buildlog.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasCarWith) > 0 {
+		with := make([]predicate.Car, 0, len(i.HasCarWith))
+		for _, w := range i.HasCarWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasCarWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, buildlog.HasCarWith(with...))
+	}
+	if i.HasMods != nil {
+		p := buildlog.HasMods()
+		if !*i.HasMods {
+			p = buildlog.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasModsWith) > 0 {
+		with := make([]predicate.Mod, 0, len(i.HasModsWith))
+		for _, w := range i.HasModsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasModsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, buildlog.HasModsWith(with...))
+	}
+	if i.HasMedia != nil {
+		p := buildlog.HasMedia()
+		if !*i.HasMedia {
+			p = buildlog.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasMediaWith) > 0 {
+		with := make([]predicate.Media, 0, len(i.HasMediaWith))
+		for _, w := range i.HasMediaWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasMediaWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, buildlog.HasMediaWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, ErrEmptyBuildLogWhereInput
+	case 1:
+		return predicates[0], nil
+	default:
+		return buildlog.And(predicates...), nil
+	}
+}
+
 // CarWhereInput represents a where input for filtering Car queries.
 type CarWhereInput struct {
 	Predicates []predicate.Car  `json:"-"`
@@ -502,6 +849,10 @@ type CarWhereInput struct {
 	// "expenses" edge predicates.
 	HasExpenses     *bool                `json:"hasExpenses,omitempty"`
 	HasExpensesWith []*ExpenseWhereInput `json:"hasExpensesWith,omitempty"`
+
+	// "build_logs" edge predicates.
+	HasBuildLogs     *bool                 `json:"hasBuildLogs,omitempty"`
+	HasBuildLogsWith []*BuildLogWhereInput `json:"hasBuildLogsWith,omitempty"`
 
 	// "banner_image" edge predicates.
 	HasBannerImage     *bool              `json:"hasBannerImage,omitempty"`
@@ -1124,6 +1475,24 @@ func (i *CarWhereInput) P() (predicate.Car, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, car.HasExpensesWith(with...))
+	}
+	if i.HasBuildLogs != nil {
+		p := car.HasBuildLogs()
+		if !*i.HasBuildLogs {
+			p = car.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasBuildLogsWith) > 0 {
+		with := make([]predicate.BuildLog, 0, len(i.HasBuildLogsWith))
+		for _, w := range i.HasBuildLogsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasBuildLogsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, car.HasBuildLogsWith(with...))
 	}
 	if i.HasBannerImage != nil {
 		p := car.HasBannerImage()
@@ -4398,6 +4767,10 @@ type MediaWhereInput struct {
 	HasModProductOption     *bool                         `json:"hasModProductOption,omitempty"`
 	HasModProductOptionWith []*ModProductOptionWhereInput `json:"hasModProductOptionWith,omitempty"`
 
+	// "build_log" edge predicates.
+	HasBuildLog     *bool                 `json:"hasBuildLog,omitempty"`
+	HasBuildLogWith []*BuildLogWhereInput `json:"hasBuildLogWith,omitempty"`
+
 	// "albums" edge predicates.
 	HasAlbums     *bool              `json:"hasAlbums,omitempty"`
 	HasAlbumsWith []*AlbumWhereInput `json:"hasAlbumsWith,omitempty"`
@@ -4691,6 +5064,24 @@ func (i *MediaWhereInput) P() (predicate.Media, error) {
 		}
 		predicates = append(predicates, media.HasModProductOptionWith(with...))
 	}
+	if i.HasBuildLog != nil {
+		p := media.HasBuildLog()
+		if !*i.HasBuildLog {
+			p = media.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasBuildLogWith) > 0 {
+		with := make([]predicate.BuildLog, 0, len(i.HasBuildLogWith))
+		for _, w := range i.HasBuildLogWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasBuildLogWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, media.HasBuildLogWith(with...))
+	}
 	if i.HasAlbums != nil {
 		p := media.HasAlbums()
 		if !*i.HasAlbums {
@@ -4828,6 +5219,10 @@ type ModWhereInput struct {
 	// "product_options" edge predicates.
 	HasProductOptions     *bool                         `json:"hasProductOptions,omitempty"`
 	HasProductOptionsWith []*ModProductOptionWhereInput `json:"hasProductOptionsWith,omitempty"`
+
+	// "build_logs" edge predicates.
+	HasBuildLogs     *bool                 `json:"hasBuildLogs,omitempty"`
+	HasBuildLogsWith []*BuildLogWhereInput `json:"hasBuildLogsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -5180,6 +5575,24 @@ func (i *ModWhereInput) P() (predicate.Mod, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, mod.HasProductOptionsWith(with...))
+	}
+	if i.HasBuildLogs != nil {
+		p := mod.HasBuildLogs()
+		if !*i.HasBuildLogs {
+			p = mod.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasBuildLogsWith) > 0 {
+		with := make([]predicate.BuildLog, 0, len(i.HasBuildLogsWith))
+		for _, w := range i.HasBuildLogsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasBuildLogsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, mod.HasBuildLogsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

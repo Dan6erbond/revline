@@ -38,6 +38,8 @@ const (
 	EdgeTasks = "tasks"
 	// EdgeProductOptions holds the string denoting the product_options edge name in mutations.
 	EdgeProductOptions = "product_options"
+	// EdgeBuildLogs holds the string denoting the build_logs edge name in mutations.
+	EdgeBuildLogs = "build_logs"
 	// Table holds the table name of the mod in the database.
 	Table = "mods"
 	// CarTable is the table that holds the car relation/edge.
@@ -59,6 +61,11 @@ const (
 	ProductOptionsInverseTable = "mod_product_options"
 	// ProductOptionsColumn is the table column denoting the product_options relation/edge.
 	ProductOptionsColumn = "mod_product_options"
+	// BuildLogsTable is the table that holds the build_logs relation/edge. The primary key declared below.
+	BuildLogsTable = "mod_build_logs"
+	// BuildLogsInverseTable is the table name for the BuildLog entity.
+	// It exists in this package in order to avoid circular dependency with the "buildlog" package.
+	BuildLogsInverseTable = "build_logs"
 )
 
 // Columns holds all SQL columns for mod fields.
@@ -83,6 +90,9 @@ var (
 	// TasksPrimaryKey and TasksColumn2 are the table columns denoting the
 	// primary key for the tasks relation (M2M).
 	TasksPrimaryKey = []string{"task_id", "mod_id"}
+	// BuildLogsPrimaryKey and BuildLogsColumn2 are the table columns denoting the
+	// primary key for the build_logs relation (M2M).
+	BuildLogsPrimaryKey = []string{"mod_id", "build_log_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -239,6 +249,20 @@ func ByProductOptions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newProductOptionsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByBuildLogsCount orders the results by build_logs count.
+func ByBuildLogsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newBuildLogsStep(), opts...)
+	}
+}
+
+// ByBuildLogs orders the results by build_logs terms.
+func ByBuildLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newBuildLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newCarStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -258,6 +282,13 @@ func newProductOptionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ProductOptionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ProductOptionsTable, ProductOptionsColumn),
+	)
+}
+func newBuildLogsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(BuildLogsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, BuildLogsTable, BuildLogsPrimaryKey...),
 	)
 }
 

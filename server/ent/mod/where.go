@@ -485,6 +485,29 @@ func HasProductOptionsWith(preds ...predicate.ModProductOption) predicate.Mod {
 	})
 }
 
+// HasBuildLogs applies the HasEdge predicate on the "build_logs" edge.
+func HasBuildLogs() predicate.Mod {
+	return predicate.Mod(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, BuildLogsTable, BuildLogsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBuildLogsWith applies the HasEdge predicate on the "build_logs" edge with a given conditions (other predicates).
+func HasBuildLogsWith(preds ...predicate.BuildLog) predicate.Mod {
+	return predicate.Mod(func(s *sql.Selector) {
+		step := newBuildLogsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Mod) predicate.Mod {
 	return predicate.Mod(sql.AndPredicates(predicates...))

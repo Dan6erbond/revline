@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
@@ -161,6 +162,21 @@ func (mu *ModUpdate) AddProductOptions(m ...*ModProductOption) *ModUpdate {
 	return mu.AddProductOptionIDs(ids...)
 }
 
+// AddBuildLogIDs adds the "build_logs" edge to the BuildLog entity by IDs.
+func (mu *ModUpdate) AddBuildLogIDs(ids ...uuid.UUID) *ModUpdate {
+	mu.mutation.AddBuildLogIDs(ids...)
+	return mu
+}
+
+// AddBuildLogs adds the "build_logs" edges to the BuildLog entity.
+func (mu *ModUpdate) AddBuildLogs(b ...*BuildLog) *ModUpdate {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return mu.AddBuildLogIDs(ids...)
+}
+
 // Mutation returns the ModMutation object of the builder.
 func (mu *ModUpdate) Mutation() *ModMutation {
 	return mu.mutation
@@ -212,6 +228,27 @@ func (mu *ModUpdate) RemoveProductOptions(m ...*ModProductOption) *ModUpdate {
 		ids[i] = m[i].ID
 	}
 	return mu.RemoveProductOptionIDs(ids...)
+}
+
+// ClearBuildLogs clears all "build_logs" edges to the BuildLog entity.
+func (mu *ModUpdate) ClearBuildLogs() *ModUpdate {
+	mu.mutation.ClearBuildLogs()
+	return mu
+}
+
+// RemoveBuildLogIDs removes the "build_logs" edge to BuildLog entities by IDs.
+func (mu *ModUpdate) RemoveBuildLogIDs(ids ...uuid.UUID) *ModUpdate {
+	mu.mutation.RemoveBuildLogIDs(ids...)
+	return mu
+}
+
+// RemoveBuildLogs removes "build_logs" edges to BuildLog entities.
+func (mu *ModUpdate) RemoveBuildLogs(b ...*BuildLog) *ModUpdate {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return mu.RemoveBuildLogIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -423,6 +460,51 @@ func (mu *ModUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if mu.mutation.BuildLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   mod.BuildLogsTable,
+			Columns: mod.BuildLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.RemovedBuildLogsIDs(); len(nodes) > 0 && !mu.mutation.BuildLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   mod.BuildLogsTable,
+			Columns: mod.BuildLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.BuildLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   mod.BuildLogsTable,
+			Columns: mod.BuildLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, mu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{mod.Label}
@@ -572,6 +654,21 @@ func (muo *ModUpdateOne) AddProductOptions(m ...*ModProductOption) *ModUpdateOne
 	return muo.AddProductOptionIDs(ids...)
 }
 
+// AddBuildLogIDs adds the "build_logs" edge to the BuildLog entity by IDs.
+func (muo *ModUpdateOne) AddBuildLogIDs(ids ...uuid.UUID) *ModUpdateOne {
+	muo.mutation.AddBuildLogIDs(ids...)
+	return muo
+}
+
+// AddBuildLogs adds the "build_logs" edges to the BuildLog entity.
+func (muo *ModUpdateOne) AddBuildLogs(b ...*BuildLog) *ModUpdateOne {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return muo.AddBuildLogIDs(ids...)
+}
+
 // Mutation returns the ModMutation object of the builder.
 func (muo *ModUpdateOne) Mutation() *ModMutation {
 	return muo.mutation
@@ -623,6 +720,27 @@ func (muo *ModUpdateOne) RemoveProductOptions(m ...*ModProductOption) *ModUpdate
 		ids[i] = m[i].ID
 	}
 	return muo.RemoveProductOptionIDs(ids...)
+}
+
+// ClearBuildLogs clears all "build_logs" edges to the BuildLog entity.
+func (muo *ModUpdateOne) ClearBuildLogs() *ModUpdateOne {
+	muo.mutation.ClearBuildLogs()
+	return muo
+}
+
+// RemoveBuildLogIDs removes the "build_logs" edge to BuildLog entities by IDs.
+func (muo *ModUpdateOne) RemoveBuildLogIDs(ids ...uuid.UUID) *ModUpdateOne {
+	muo.mutation.RemoveBuildLogIDs(ids...)
+	return muo
+}
+
+// RemoveBuildLogs removes "build_logs" edges to BuildLog entities.
+func (muo *ModUpdateOne) RemoveBuildLogs(b ...*BuildLog) *ModUpdateOne {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return muo.RemoveBuildLogIDs(ids...)
 }
 
 // Where appends a list predicates to the ModUpdate builder.
@@ -857,6 +975,51 @@ func (muo *ModUpdateOne) sqlSave(ctx context.Context) (_node *Mod, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(modproductoption.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if muo.mutation.BuildLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   mod.BuildLogsTable,
+			Columns: mod.BuildLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.RemovedBuildLogsIDs(); len(nodes) > 0 && !muo.mutation.BuildLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   mod.BuildLogsTable,
+			Columns: mod.BuildLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.BuildLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   mod.BuildLogsTable,
+			Columns: mod.BuildLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

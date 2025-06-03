@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/album"
+	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
@@ -31,6 +32,7 @@ type MediaQuery struct {
 	withUser             *UserQuery
 	withCar              *CarQuery
 	withModProductOption *ModProductOptionQuery
+	withBuildLog         *BuildLogQuery
 	withAlbums           *AlbumQuery
 	withFKs              bool
 	modifiers            []func(*sql.Selector)
@@ -131,6 +133,28 @@ func (mq *MediaQuery) QueryModProductOption() *ModProductOptionQuery {
 			sqlgraph.From(media.Table, media.FieldID, selector),
 			sqlgraph.To(modproductoption.Table, modproductoption.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, media.ModProductOptionTable, media.ModProductOptionColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBuildLog chains the current query on the "build_log" edge.
+func (mq *MediaQuery) QueryBuildLog() *BuildLogQuery {
+	query := (&BuildLogClient{config: mq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := mq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := mq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(media.Table, media.FieldID, selector),
+			sqlgraph.To(buildlog.Table, buildlog.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, media.BuildLogTable, media.BuildLogColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
 		return fromU, nil
@@ -355,6 +379,7 @@ func (mq *MediaQuery) Clone() *MediaQuery {
 		withUser:             mq.withUser.Clone(),
 		withCar:              mq.withCar.Clone(),
 		withModProductOption: mq.withModProductOption.Clone(),
+		withBuildLog:         mq.withBuildLog.Clone(),
 		withAlbums:           mq.withAlbums.Clone(),
 		// clone intermediate query.
 		sql:  mq.sql.Clone(),
@@ -392,6 +417,17 @@ func (mq *MediaQuery) WithModProductOption(opts ...func(*ModProductOptionQuery))
 		opt(query)
 	}
 	mq.withModProductOption = query
+	return mq
+}
+
+// WithBuildLog tells the query-builder to eager-load the nodes that are connected to
+// the "build_log" edge. The optional arguments are used to configure the query builder of the edge.
+func (mq *MediaQuery) WithBuildLog(opts ...func(*BuildLogQuery)) *MediaQuery {
+	query := (&BuildLogClient{config: mq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	mq.withBuildLog = query
 	return mq
 }
 
@@ -485,14 +521,15 @@ func (mq *MediaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Media,
 		nodes       = []*Media{}
 		withFKs     = mq.withFKs
 		_spec       = mq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			mq.withUser != nil,
 			mq.withCar != nil,
 			mq.withModProductOption != nil,
+			mq.withBuildLog != nil,
 			mq.withAlbums != nil,
 		}
 	)
-	if mq.withUser != nil || mq.withCar != nil || mq.withModProductOption != nil {
+	if mq.withUser != nil || mq.withCar != nil || mq.withModProductOption != nil || mq.withBuildLog != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -534,6 +571,12 @@ func (mq *MediaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Media,
 	if query := mq.withModProductOption; query != nil {
 		if err := mq.loadModProductOption(ctx, query, nodes, nil,
 			func(n *Media, e *ModProductOption) { n.Edges.ModProductOption = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := mq.withBuildLog; query != nil {
+		if err := mq.loadBuildLog(ctx, query, nodes, nil,
+			func(n *Media, e *BuildLog) { n.Edges.BuildLog = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -648,6 +691,38 @@ func (mq *MediaQuery) loadModProductOption(ctx context.Context, query *ModProduc
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "mod_product_option_media" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (mq *MediaQuery) loadBuildLog(ctx context.Context, query *BuildLogQuery, nodes []*Media, init func(*Media), assign func(*Media, *BuildLog)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Media)
+	for i := range nodes {
+		if nodes[i].build_log_media == nil {
+			continue
+		}
+		fk := *nodes[i].build_log_media
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(buildlog.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "build_log_media" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

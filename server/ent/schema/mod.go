@@ -53,6 +53,7 @@ func (Mod) Edges() []ent.Edge {
 		edge.From("tasks", Task.Type).
 			Ref("mods"),
 		edge.To("product_options", ModProductOption.Type),
+		edge.To("build_logs", BuildLog.Type),
 		/* edge.To("gains", ModGain.Type), */
 	}
 }

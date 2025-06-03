@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
@@ -159,6 +160,21 @@ func (mc *ModCreate) AddProductOptions(m ...*ModProductOption) *ModCreate {
 		ids[i] = m[i].ID
 	}
 	return mc.AddProductOptionIDs(ids...)
+}
+
+// AddBuildLogIDs adds the "build_logs" edge to the BuildLog entity by IDs.
+func (mc *ModCreate) AddBuildLogIDs(ids ...uuid.UUID) *ModCreate {
+	mc.mutation.AddBuildLogIDs(ids...)
+	return mc
+}
+
+// AddBuildLogs adds the "build_logs" edges to the BuildLog entity.
+func (mc *ModCreate) AddBuildLogs(b ...*BuildLog) *ModCreate {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return mc.AddBuildLogIDs(ids...)
 }
 
 // Mutation returns the ModMutation object of the builder.
@@ -349,6 +365,22 @@ func (mc *ModCreate) createSpec() (*Mod, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(modproductoption.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := mc.mutation.BuildLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   mod.BuildLogsTable,
+			Columns: mod.BuildLogsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -48,14 +48,17 @@ type ModEdges struct {
 	Tasks []*Task `json:"tasks,omitempty"`
 	// ProductOptions holds the value of the product_options edge.
 	ProductOptions []*ModProductOption `json:"product_options,omitempty"`
+	// BuildLogs holds the value of the build_logs edge.
+	BuildLogs []*BuildLog `json:"build_logs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 	// totalCount holds the count of the edges above.
-	totalCount [3]map[string]int
+	totalCount [4]map[string]int
 
 	namedTasks          map[string][]*Task
 	namedProductOptions map[string][]*ModProductOption
+	namedBuildLogs      map[string][]*BuildLog
 }
 
 // CarOrErr returns the Car value or an error if the edge
@@ -85,6 +88,15 @@ func (e ModEdges) ProductOptionsOrErr() ([]*ModProductOption, error) {
 		return e.ProductOptions, nil
 	}
 	return nil, &NotLoadedError{edge: "product_options"}
+}
+
+// BuildLogsOrErr returns the BuildLogs value or an error if the edge
+// was not loaded in eager-loading.
+func (e ModEdges) BuildLogsOrErr() ([]*BuildLog, error) {
+	if e.loadedTypes[3] {
+		return e.BuildLogs, nil
+	}
+	return nil, &NotLoadedError{edge: "build_logs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -200,6 +212,11 @@ func (m *Mod) QueryProductOptions() *ModProductOptionQuery {
 	return NewModClient(m.config).QueryProductOptions(m)
 }
 
+// QueryBuildLogs queries the "build_logs" edge of the Mod entity.
+func (m *Mod) QueryBuildLogs() *BuildLogQuery {
+	return NewModClient(m.config).QueryBuildLogs(m)
+}
+
 // Update returns a builder for updating this Mod.
 // Note that you need to call Mod.Unwrap() before calling this method if this Mod
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -296,6 +313,30 @@ func (m *Mod) appendNamedProductOptions(name string, edges ...*ModProductOption)
 		m.Edges.namedProductOptions[name] = []*ModProductOption{}
 	} else {
 		m.Edges.namedProductOptions[name] = append(m.Edges.namedProductOptions[name], edges...)
+	}
+}
+
+// NamedBuildLogs returns the BuildLogs named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (m *Mod) NamedBuildLogs(name string) ([]*BuildLog, error) {
+	if m.Edges.namedBuildLogs == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := m.Edges.namedBuildLogs[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (m *Mod) appendNamedBuildLogs(name string, edges ...*BuildLog) {
+	if m.Edges.namedBuildLogs == nil {
+		m.Edges.namedBuildLogs = make(map[string][]*BuildLog)
+	}
+	if len(edges) == 0 {
+		m.Edges.namedBuildLogs[name] = []*BuildLog{}
+	} else {
+		m.Edges.namedBuildLogs[name] = append(m.Edges.namedBuildLogs[name], edges...)
 	}
 }
 

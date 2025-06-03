@@ -375,6 +375,29 @@ func HasModProductOptionWith(preds ...predicate.ModProductOption) predicate.Medi
 	})
 }
 
+// HasBuildLog applies the HasEdge predicate on the "build_log" edge.
+func HasBuildLog() predicate.Media {
+	return predicate.Media(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, BuildLogTable, BuildLogColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBuildLogWith applies the HasEdge predicate on the "build_log" edge with a given conditions (other predicates).
+func HasBuildLogWith(preds ...predicate.BuildLog) predicate.Media {
+	return predicate.Media(func(s *sql.Selector) {
+		step := newBuildLogStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasAlbums applies the HasEdge predicate on the "albums" edge.
 func HasAlbums() predicate.Media {
 	return predicate.Media(func(s *sql.Selector) {

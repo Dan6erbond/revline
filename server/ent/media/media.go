@@ -29,6 +29,8 @@ const (
 	EdgeCar = "car"
 	// EdgeModProductOption holds the string denoting the mod_product_option edge name in mutations.
 	EdgeModProductOption = "mod_product_option"
+	// EdgeBuildLog holds the string denoting the build_log edge name in mutations.
+	EdgeBuildLog = "build_log"
 	// EdgeAlbums holds the string denoting the albums edge name in mutations.
 	EdgeAlbums = "albums"
 	// Table holds the table name of the media in the database.
@@ -54,6 +56,13 @@ const (
 	ModProductOptionInverseTable = "mod_product_options"
 	// ModProductOptionColumn is the table column denoting the mod_product_option relation/edge.
 	ModProductOptionColumn = "mod_product_option_media"
+	// BuildLogTable is the table that holds the build_log relation/edge.
+	BuildLogTable = "media"
+	// BuildLogInverseTable is the table name for the BuildLog entity.
+	// It exists in this package in order to avoid circular dependency with the "buildlog" package.
+	BuildLogInverseTable = "build_logs"
+	// BuildLogColumn is the table column denoting the build_log relation/edge.
+	BuildLogColumn = "build_log_media"
 	// AlbumsTable is the table that holds the albums relation/edge. The primary key declared below.
 	AlbumsTable = "album_media"
 	// AlbumsInverseTable is the table name for the Album entity.
@@ -73,6 +82,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "media"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
+	"build_log_media",
 	"car_media",
 	"mod_product_option_media",
 	"user_media",
@@ -159,6 +169,13 @@ func ByModProductOptionField(field string, opts ...sql.OrderTermOption) OrderOpt
 	}
 }
 
+// ByBuildLogField orders the results by build_log field.
+func ByBuildLogField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newBuildLogStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByAlbumsCount orders the results by albums count.
 func ByAlbumsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -191,6 +208,13 @@ func newModProductOptionStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ModProductOptionInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, ModProductOptionTable, ModProductOptionColumn),
+	)
+}
+func newBuildLogStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(BuildLogInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, BuildLogTable, BuildLogColumn),
 	)
 }
 func newAlbumsStep() *sqlgraph.Step {

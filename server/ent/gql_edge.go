@@ -28,6 +28,38 @@ func (a *Album) Media(ctx context.Context) (result []*Media, err error) {
 	return result, err
 }
 
+func (bl *BuildLog) Car(ctx context.Context) (*Car, error) {
+	result, err := bl.Edges.CarOrErr()
+	if IsNotLoaded(err) {
+		result, err = bl.QueryCar().Only(ctx)
+	}
+	return result, err
+}
+
+func (bl *BuildLog) Mods(ctx context.Context) (result []*Mod, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = bl.NamedMods(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = bl.Edges.ModsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = bl.QueryMods().All(ctx)
+	}
+	return result, err
+}
+
+func (bl *BuildLog) Media(ctx context.Context) (result []*Media, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = bl.NamedMedia(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = bl.Edges.MediaOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = bl.QueryMedia().All(ctx)
+	}
+	return result, err
+}
+
 func (c *Car) Owner(ctx context.Context) (*User, error) {
 	result, err := c.Edges.OwnerOrErr()
 	if IsNotLoaded(err) {
@@ -168,6 +200,18 @@ func (c *Car) Expenses(ctx context.Context) (result []*Expense, err error) {
 	return result, err
 }
 
+func (c *Car) BuildLogs(ctx context.Context) (result []*BuildLog, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = c.NamedBuildLogs(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = c.Edges.BuildLogsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = c.QueryBuildLogs().All(ctx)
+	}
+	return result, err
+}
+
 func (c *Car) BannerImage(ctx context.Context) (*Media, error) {
 	result, err := c.Edges.BannerImageOrErr()
 	if IsNotLoaded(err) {
@@ -184,7 +228,7 @@ func (c *Car) Tasks(
 		WithTaskFilter(where.Filter),
 	}
 	alias := graphql.GetFieldContext(ctx).Field.Alias
-	totalCount, hasTotalCount := c.Edges.totalCount[13][alias]
+	totalCount, hasTotalCount := c.Edges.totalCount[14][alias]
 	if nodes, err := c.NamedTasks(alias); err == nil || hasTotalCount {
 		pager, err := newTaskPager(opts, last != nil)
 		if err != nil {
@@ -449,6 +493,14 @@ func (m *Media) ModProductOption(ctx context.Context) (*ModProductOption, error)
 	return result, MaskNotFound(err)
 }
 
+func (m *Media) BuildLog(ctx context.Context) (*BuildLog, error) {
+	result, err := m.Edges.BuildLogOrErr()
+	if IsNotLoaded(err) {
+		result, err = m.QueryBuildLog().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (m *Media) Albums(ctx context.Context) (result []*Album, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = m.NamedAlbums(graphql.GetFieldContext(ctx).Field.Alias)
@@ -489,6 +541,18 @@ func (m *Mod) ProductOptions(ctx context.Context) (result []*ModProductOption, e
 	}
 	if IsNotLoaded(err) {
 		result, err = m.QueryProductOptions().All(ctx)
+	}
+	return result, err
+}
+
+func (m *Mod) BuildLogs(ctx context.Context) (result []*BuildLog, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = m.NamedBuildLogs(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = m.Edges.BuildLogsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = m.QueryBuildLogs().All(ctx)
 	}
 	return result, err
 }

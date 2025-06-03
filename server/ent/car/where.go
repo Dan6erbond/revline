@@ -867,6 +867,29 @@ func HasExpensesWith(preds ...predicate.Expense) predicate.Car {
 	})
 }
 
+// HasBuildLogs applies the HasEdge predicate on the "build_logs" edge.
+func HasBuildLogs() predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, BuildLogsTable, BuildLogsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBuildLogsWith applies the HasEdge predicate on the "build_logs" edge with a given conditions (other predicates).
+func HasBuildLogsWith(preds ...predicate.BuildLog) predicate.Car {
+	return predicate.Car(func(s *sql.Selector) {
+		step := newBuildLogsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasBannerImage applies the HasEdge predicate on the "banner_image" edge.
 func HasBannerImage() predicate.Car {
 	return predicate.Car(func(s *sql.Selector) {

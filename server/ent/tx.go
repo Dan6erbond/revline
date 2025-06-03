@@ -16,6 +16,8 @@ type Tx struct {
 	config
 	// Album is the client for interacting with the Album builders.
 	Album *AlbumClient
+	// BuildLog is the client for interacting with the BuildLog builders.
+	BuildLog *BuildLogClient
 	// Car is the client for interacting with the Car builders.
 	Car *CarClient
 	// CheckoutSession is the client for interacting with the CheckoutSession builders.
@@ -190,6 +192,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Album = NewAlbumClient(tx.config)
+	tx.BuildLog = NewBuildLogClient(tx.config)
 	tx.Car = NewCarClient(tx.config)
 	tx.CheckoutSession = NewCheckoutSessionClient(tx.config)
 	tx.Document = NewDocumentClient(tx.config)

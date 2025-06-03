@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
@@ -32,6 +33,7 @@ type Media struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MediaQuery when eager-loading is set.
 	Edges                    MediaEdges `json:"edges"`
+	build_log_media          *uuid.UUID
 	car_media                *uuid.UUID
 	mod_product_option_media *uuid.UUID
 	user_media               *uuid.UUID
@@ -46,13 +48,15 @@ type MediaEdges struct {
 	Car *Car `json:"car,omitempty"`
 	// ModProductOption holds the value of the mod_product_option edge.
 	ModProductOption *ModProductOption `json:"mod_product_option,omitempty"`
+	// BuildLog holds the value of the build_log edge.
+	BuildLog *BuildLog `json:"build_log,omitempty"`
 	// Albums holds the value of the albums edge.
 	Albums []*Album `json:"albums,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 	// totalCount holds the count of the edges above.
-	totalCount [4]map[string]int
+	totalCount [5]map[string]int
 
 	namedAlbums map[string][]*Album
 }
@@ -90,10 +94,21 @@ func (e MediaEdges) ModProductOptionOrErr() (*ModProductOption, error) {
 	return nil, &NotLoadedError{edge: "mod_product_option"}
 }
 
+// BuildLogOrErr returns the BuildLog value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e MediaEdges) BuildLogOrErr() (*BuildLog, error) {
+	if e.BuildLog != nil {
+		return e.BuildLog, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: buildlog.Label}
+	}
+	return nil, &NotLoadedError{edge: "build_log"}
+}
+
 // AlbumsOrErr returns the Albums value or an error if the edge
 // was not loaded in eager-loading.
 func (e MediaEdges) AlbumsOrErr() ([]*Album, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Albums, nil
 	}
 	return nil, &NotLoadedError{edge: "albums"}
@@ -110,11 +125,13 @@ func (*Media) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case media.FieldID:
 			values[i] = new(uuid.UUID)
-		case media.ForeignKeys[0]: // car_media
+		case media.ForeignKeys[0]: // build_log_media
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case media.ForeignKeys[1]: // mod_product_option_media
+		case media.ForeignKeys[1]: // car_media
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case media.ForeignKeys[2]: // user_media
+		case media.ForeignKeys[2]: // mod_product_option_media
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case media.ForeignKeys[3]: // user_media
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -165,19 +182,26 @@ func (m *Media) assignValues(columns []string, values []any) error {
 			}
 		case media.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field build_log_media", values[i])
+			} else if value.Valid {
+				m.build_log_media = new(uuid.UUID)
+				*m.build_log_media = *value.S.(*uuid.UUID)
+			}
+		case media.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field car_media", values[i])
 			} else if value.Valid {
 				m.car_media = new(uuid.UUID)
 				*m.car_media = *value.S.(*uuid.UUID)
 			}
-		case media.ForeignKeys[1]:
+		case media.ForeignKeys[2]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field mod_product_option_media", values[i])
 			} else if value.Valid {
 				m.mod_product_option_media = new(uuid.UUID)
 				*m.mod_product_option_media = *value.S.(*uuid.UUID)
 			}
-		case media.ForeignKeys[2]:
+		case media.ForeignKeys[3]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field user_media", values[i])
 			} else if value.Valid {
@@ -210,6 +234,11 @@ func (m *Media) QueryCar() *CarQuery {
 // QueryModProductOption queries the "mod_product_option" edge of the Media entity.
 func (m *Media) QueryModProductOption() *ModProductOptionQuery {
 	return NewMediaClient(m.config).QueryModProductOption(m)
+}
+
+// QueryBuildLog queries the "build_log" edge of the Media entity.
+func (m *Media) QueryBuildLog() *BuildLogQuery {
+	return NewMediaClient(m.config).QueryBuildLog(m)
 }
 
 // QueryAlbums queries the "albums" edge of the Media entity.

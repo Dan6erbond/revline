@@ -55,6 +55,8 @@ const (
 	EdgeDynoSessions = "dyno_sessions"
 	// EdgeExpenses holds the string denoting the expenses edge name in mutations.
 	EdgeExpenses = "expenses"
+	// EdgeBuildLogs holds the string denoting the build_logs edge name in mutations.
+	EdgeBuildLogs = "build_logs"
 	// EdgeBannerImage holds the string denoting the banner_image edge name in mutations.
 	EdgeBannerImage = "banner_image"
 	// EdgeTasks holds the string denoting the tasks edge name in mutations.
@@ -147,6 +149,13 @@ const (
 	ExpensesInverseTable = "expenses"
 	// ExpensesColumn is the table column denoting the expenses relation/edge.
 	ExpensesColumn = "car_expenses"
+	// BuildLogsTable is the table that holds the build_logs relation/edge.
+	BuildLogsTable = "build_logs"
+	// BuildLogsInverseTable is the table name for the BuildLog entity.
+	// It exists in this package in order to avoid circular dependency with the "buildlog" package.
+	BuildLogsInverseTable = "build_logs"
+	// BuildLogsColumn is the table column denoting the build_logs relation/edge.
+	BuildLogsColumn = "car_build_logs"
 	// BannerImageTable is the table that holds the banner_image relation/edge.
 	BannerImageTable = "cars"
 	// BannerImageInverseTable is the table name for the Media entity.
@@ -425,6 +434,20 @@ func ByExpenses(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByBuildLogsCount orders the results by build_logs count.
+func ByBuildLogsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newBuildLogsStep(), opts...)
+	}
+}
+
+// ByBuildLogs orders the results by build_logs terms.
+func ByBuildLogs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newBuildLogsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByBannerImageField orders the results by banner_image field.
 func ByBannerImageField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -541,6 +564,13 @@ func newExpensesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ExpensesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ExpensesTable, ExpensesColumn),
+	)
+}
+func newBuildLogsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(BuildLogsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, BuildLogsTable, BuildLogsColumn),
 	)
 }
 func newBannerImageStep() *sqlgraph.Step {

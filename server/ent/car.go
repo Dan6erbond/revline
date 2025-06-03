@@ -70,6 +70,8 @@ type CarEdges struct {
 	DynoSessions []*DynoSession `json:"dyno_sessions,omitempty"`
 	// Expenses holds the value of the expenses edge.
 	Expenses []*Expense `json:"expenses,omitempty"`
+	// BuildLogs holds the value of the build_logs edge.
+	BuildLogs []*BuildLog `json:"build_logs,omitempty"`
 	// BannerImage holds the value of the banner_image edge.
 	BannerImage *Media `json:"banner_image,omitempty"`
 	// Tasks holds the value of the tasks edge.
@@ -78,9 +80,9 @@ type CarEdges struct {
 	Mods []*Mod `json:"mods,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [15]bool
+	loadedTypes [16]bool
 	// totalCount holds the count of the edges above.
-	totalCount [15]map[string]int
+	totalCount [16]map[string]int
 
 	namedDragSessions     map[string][]*DragSession
 	namedFuelUps          map[string][]*FuelUp
@@ -93,6 +95,7 @@ type CarEdges struct {
 	namedDocuments        map[string][]*Document
 	namedDynoSessions     map[string][]*DynoSession
 	namedExpenses         map[string][]*Expense
+	namedBuildLogs        map[string][]*BuildLog
 	namedTasks            map[string][]*Task
 	namedMods             map[string][]*Mod
 }
@@ -207,12 +210,21 @@ func (e CarEdges) ExpensesOrErr() ([]*Expense, error) {
 	return nil, &NotLoadedError{edge: "expenses"}
 }
 
+// BuildLogsOrErr returns the BuildLogs value or an error if the edge
+// was not loaded in eager-loading.
+func (e CarEdges) BuildLogsOrErr() ([]*BuildLog, error) {
+	if e.loadedTypes[12] {
+		return e.BuildLogs, nil
+	}
+	return nil, &NotLoadedError{edge: "build_logs"}
+}
+
 // BannerImageOrErr returns the BannerImage value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e CarEdges) BannerImageOrErr() (*Media, error) {
 	if e.BannerImage != nil {
 		return e.BannerImage, nil
-	} else if e.loadedTypes[12] {
+	} else if e.loadedTypes[13] {
 		return nil, &NotFoundError{label: media.Label}
 	}
 	return nil, &NotLoadedError{edge: "banner_image"}
@@ -221,7 +233,7 @@ func (e CarEdges) BannerImageOrErr() (*Media, error) {
 // TasksOrErr returns the Tasks value or an error if the edge
 // was not loaded in eager-loading.
 func (e CarEdges) TasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[13] {
+	if e.loadedTypes[14] {
 		return e.Tasks, nil
 	}
 	return nil, &NotLoadedError{edge: "tasks"}
@@ -230,7 +242,7 @@ func (e CarEdges) TasksOrErr() ([]*Task, error) {
 // ModsOrErr returns the Mods value or an error if the edge
 // was not loaded in eager-loading.
 func (e CarEdges) ModsOrErr() ([]*Mod, error) {
-	if e.loadedTypes[14] {
+	if e.loadedTypes[15] {
 		return e.Mods, nil
 	}
 	return nil, &NotLoadedError{edge: "mods"}
@@ -412,6 +424,11 @@ func (c *Car) QueryDynoSessions() *DynoSessionQuery {
 // QueryExpenses queries the "expenses" edge of the Car entity.
 func (c *Car) QueryExpenses() *ExpenseQuery {
 	return NewCarClient(c.config).QueryExpenses(c)
+}
+
+// QueryBuildLogs queries the "build_logs" edge of the Car entity.
+func (c *Car) QueryBuildLogs() *BuildLogQuery {
+	return NewCarClient(c.config).QueryBuildLogs(c)
 }
 
 // QueryBannerImage queries the "banner_image" edge of the Car entity.
@@ -750,6 +767,30 @@ func (c *Car) appendNamedExpenses(name string, edges ...*Expense) {
 		c.Edges.namedExpenses[name] = []*Expense{}
 	} else {
 		c.Edges.namedExpenses[name] = append(c.Edges.namedExpenses[name], edges...)
+	}
+}
+
+// NamedBuildLogs returns the BuildLogs named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (c *Car) NamedBuildLogs(name string) ([]*BuildLog, error) {
+	if c.Edges.namedBuildLogs == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := c.Edges.namedBuildLogs[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (c *Car) appendNamedBuildLogs(name string, edges ...*BuildLog) {
+	if c.Edges.namedBuildLogs == nil {
+		c.Edges.namedBuildLogs = make(map[string][]*BuildLog)
+	}
+	if len(edges) == 0 {
+		c.Edges.namedBuildLogs[name] = []*BuildLog{}
+	} else {
+		c.Edges.namedBuildLogs[name] = append(c.Edges.namedBuildLogs[name], edges...)
 	}
 }
 
