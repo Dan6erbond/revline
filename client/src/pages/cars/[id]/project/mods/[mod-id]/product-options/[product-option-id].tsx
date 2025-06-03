@@ -1,13 +1,14 @@
 import { ArrowLeft, ImageUp, Trash } from "lucide-react";
 import { Button, DropdownItem, Progress, Skeleton } from "@heroui/react";
 import { Key, useCallback, useState } from "react";
+import MediaItem, { SelectableMediaItem } from "@/components/media/item";
 import { ModProductOption, SubscriptionTier } from "@/gql/graphql";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
 import CarLayout from "@/components/layout/car-layout";
 import Dropzone from "@/components/dropzone";
+import Image from "next/image";
 import Link from "next/link";
-import MediaItem from "@/components/media/item";
 import ProductOptionForm from "@/mods/product-option/form";
 import SubscriptionOverlay from "@/components/subscription-overlay";
 import { getQueryParam } from "@/utils/router";
@@ -33,6 +34,18 @@ const getModProductOption = graphql(`
         id
         title
       }
+      media {
+        id
+        ...MediaItem
+      }
+    }
+  }
+`);
+
+const getGallery = graphql(`
+  query GetGallery($id: ID!) {
+    car(id: $id) {
+      id
       media {
         id
         ...MediaItem
@@ -85,6 +98,17 @@ export default function ProductOption() {
   });
 
   const currencyCode = data?.me?.settings?.currencyCode ?? "USD";
+
+  const { data: galleryData } = useQuery(getGallery, {
+    variables: { id: getQueryParam(router.query.id) as string },
+    skip: !getQueryParam(router.query.id),
+  });
+
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const handleSelect = (id: string) => {
+    setSelectedId(id);
+  };
 
   const [mutate] = useMutation(updateModProductOption);
 
@@ -244,6 +268,55 @@ export default function ProductOption() {
           files.forEach(handleFileUpload);
         }}
       />
+
+      <h3 className="text-2xl font-semibold">Preview</h3>
+
+      <div className="bg-content3 text-content3-foreground border border-primary-800 rounded-xl p-4">
+        <h2 className="text-lg font-semibold mb-2">How It Works</h2>
+        <p className="text-sm mb-2">
+          Select a photo of your car, and we&apos;ll use AI to generate a
+          preview showing it with the{" "}
+          <span className="font-medium text-primary">
+            {data?.modProductOption.name} {data?.modProductOption.mod.title}
+          </span>{" "}
+          applied.
+        </p>
+        <p className="text-xs italic">
+          🔒 Your photo stays private and is only used to generate the preview.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-h-[250px] sm:max-h-[300px] md:max-h-[350px] lg:max-h-[400px] overflow-x-auto">
+        {galleryData?.car?.media?.map((m) => (
+          <SelectableMediaItem
+            key={m.id}
+            item={m}
+            selected={selectedId === m.id}
+            onSelect={handleSelect}
+          />
+        ))}
+      </div>
+
+      <div className="border rounded-2xl p-4 bg-content1 shadow">
+        <p className="text-sm text-content1-foreground mb-2">
+          AI-Generated Preview
+        </p>
+        <div className="w-full aspect-video relative bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center">
+          {/* <Skeleton className="w-full h-full" /> */}
+          <Image
+            src="/ai-wrap-preview.png"
+            fill
+            className="object-cover"
+            alt="AI Preview"
+          />
+        </div>
+      </div>
+
+      <div className="text-center">
+        <Button size="lg" className="px-8">
+          Generate Preview
+        </Button>
+      </div>
     </CarLayout>
   );
 }
