@@ -62,6 +62,11 @@ const updateMod = graphql(`
   mutation UpdateMod($id: ID!, $input: UpdateModInput!) {
     updateMod(id: $id, input: $input) {
       id
+      title
+      category
+      status
+      description
+      stage
     }
   }
 `);
@@ -110,11 +115,11 @@ export default function Mod({ id }: { id: string }) {
         >
           <ArrowLeft className="size-5" />
         </Button>
-        <h1 className="text-2xl">Edit Mod </h1>
+        <h1 className="text-2xl">Edit Mod</h1>
       </div>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col gap-4 p-4"
+        className="flex flex-col gap-4"
       >
         <Input label="Title" variant="bordered" {...register("title")} />
 
