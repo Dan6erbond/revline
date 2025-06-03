@@ -19,7 +19,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  useDisclosure
+  useDisclosure,
 } from "@heroui/react";
 import { ComponentProps, useCallback, useState } from "react";
 import { DistanceUnit, FuelConsumptionUnit } from "@/gql/graphql";
@@ -35,6 +35,7 @@ import { getFuelConsumption } from "@/utils/fuel-consumption";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { uploadFile } from "@/utils/upload-file";
+import { useConfig } from "@/contexts/config";
 import { useHref } from "@/utils/use-href";
 import { useRouter } from "next/router";
 
@@ -51,7 +52,9 @@ const getCarBanner = graphql(`
     car(id: $id) {
       id
       name
-      bannerImageUrl
+      bannerImage {
+        id
+      }
       averageConsumptionLitersPerKm
       odometerKm
     }
@@ -74,6 +77,7 @@ const MotionLink = motion.create(Link);
 export default function CarLayout(props: ComponentProps<"main">) {
   const router = useRouter();
   const href = useHref();
+  const config = useConfig();
 
   const menuItems = [
     {
@@ -170,7 +174,14 @@ export default function CarLayout(props: ComponentProps<"main">) {
       <div className="h-[30vh] relative">
         <Image
           className="h-full w-full rounded-none object-cover"
-          src={data?.car?.bannerImageUrl ?? href("/placeholder.png")}
+          src={
+            data?.car?.bannerImage?.id
+              ? new URL(
+                  `/media/${data.car.bannerImage.id}`,
+                  config.serverUrl
+                ).toString()
+              : href("/placeholder.png")
+          }
           alt={data?.car?.name ?? "Car banner"}
           fill
         />

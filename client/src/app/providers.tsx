@@ -23,7 +23,7 @@ export function Providers({
   const router = useRouter();
 
   return (
-    <ConfigProvider basePath={basePath}>
+    <ConfigProvider basePath={basePath} serverUrl={serverUrl}>
       <AuthenticatedApolloNextAppProvider session={session} url={serverUrl}>
         <HeroUIProvider navigate={router.push}>
           <Suspense>

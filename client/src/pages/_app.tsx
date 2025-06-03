@@ -99,7 +99,7 @@ export default function CustomApp({
         session={session}
         basePath={router.basePath ? router.basePath + "/api/auth" : undefined}
       >
-        <ConfigProvider basePath={router.basePath}>
+        <ConfigProvider basePath={router.basePath} serverUrl={serverUrl}>
           <AuthenticatedApolloProvider url={serverUrl}>
             <UserTour />
             <Component {...pageProps} />
