@@ -248,3 +248,46 @@ export default function MediaItem({
     </>
   );
 }
+
+export function SelectableMediaItem({
+  item,
+  selected,
+  onSelect,
+}: {
+  item: FragmentType<typeof MediaItemFields>;
+  selected: boolean;
+  onSelect(id: string): void;
+}) {
+  const m = useFragment(MediaItemFields, item);
+
+  return (
+    <label
+      className={`relative h-[150px] md:h-[200px] lg:h-[250px] cursor-pointer rounded-xl overflow-hidden border-2 transition duration-200 ${
+        selected
+          ? "border-primary-600 ring-2 ring-primary-400"
+          : "border-transparent"
+      }`}
+    >
+      <input
+        type="checkbox"
+        checked={selected}
+        onChange={() => onSelect(m.id)}
+        className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+        aria-label={`Select media ${m.id}`}
+      />
+
+      <div className="absolute top-2 right-2 z-10">
+        <div
+          className={`w-5 h-5 rounded-full border border-white flex items-center justify-center text-xs font-semibold ${
+            selected ? "bg-primary-50 text-primary" : "bg-white text-white"
+          }`}
+          aria-hidden="true"
+        >
+          ✓
+        </div>
+      </div>
+
+      <Preview item={item} />
+    </label>
+  );
+}
