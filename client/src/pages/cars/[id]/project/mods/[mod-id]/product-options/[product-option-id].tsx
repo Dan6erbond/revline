@@ -197,11 +197,18 @@ export default function ProductOption() {
 
       {data?.modProductOption && (
         <ProductOptionForm
-          productOption={data?.modProductOption}
+          productOption={data.modProductOption}
           currencyCode={currencyCode}
           modId={getQueryParam(router.query["mod-id"]) as string}
+          id="product-option"
         />
       )}
+
+      <div className="flex justify-end">
+        <Button color="primary" type="submit" form="product-option">
+          Save
+        </Button>
+      </div>
 
       <h3 className="font-medium">Media</h3>
 
