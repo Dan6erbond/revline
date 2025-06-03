@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"math"
 	"slices"
-	"strings"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
