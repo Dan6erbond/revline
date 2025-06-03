@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
@@ -33,7 +32,6 @@ type Media struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MediaQuery when eager-loading is set.
 	Edges                    MediaEdges `json:"edges"`
-	build_log_media          *uuid.UUID
 	car_media                *uuid.UUID
 	mod_product_option_media *uuid.UUID
 	user_media               *uuid.UUID
@@ -49,7 +47,7 @@ type MediaEdges struct {
 	// ModProductOption holds the value of the mod_product_option edge.
 	ModProductOption *ModProductOption `json:"mod_product_option,omitempty"`
 	// BuildLog holds the value of the build_log edge.
-	BuildLog *BuildLog `json:"build_log,omitempty"`
+	BuildLog []*BuildLog `json:"build_log,omitempty"`
 	// Albums holds the value of the albums edge.
 	Albums []*Album `json:"albums,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -58,7 +56,8 @@ type MediaEdges struct {
 	// totalCount holds the count of the edges above.
 	totalCount [5]map[string]int
 
-	namedAlbums map[string][]*Album
+	namedBuildLog map[string][]*BuildLog
+	namedAlbums   map[string][]*Album
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -95,12 +94,10 @@ func (e MediaEdges) ModProductOptionOrErr() (*ModProductOption, error) {
 }
 
 // BuildLogOrErr returns the BuildLog value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e MediaEdges) BuildLogOrErr() (*BuildLog, error) {
-	if e.BuildLog != nil {
+// was not loaded in eager-loading.
+func (e MediaEdges) BuildLogOrErr() ([]*BuildLog, error) {
+	if e.loadedTypes[3] {
 		return e.BuildLog, nil
-	} else if e.loadedTypes[3] {
-		return nil, &NotFoundError{label: buildlog.Label}
 	}
 	return nil, &NotLoadedError{edge: "build_log"}
 }
@@ -125,13 +122,11 @@ func (*Media) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case media.FieldID:
 			values[i] = new(uuid.UUID)
-		case media.ForeignKeys[0]: // build_log_media
+		case media.ForeignKeys[0]: // car_media
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case media.ForeignKeys[1]: // car_media
+		case media.ForeignKeys[1]: // mod_product_option_media
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case media.ForeignKeys[2]: // mod_product_option_media
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case media.ForeignKeys[3]: // user_media
+		case media.ForeignKeys[2]: // user_media
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -182,26 +177,19 @@ func (m *Media) assignValues(columns []string, values []any) error {
 			}
 		case media.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field build_log_media", values[i])
-			} else if value.Valid {
-				m.build_log_media = new(uuid.UUID)
-				*m.build_log_media = *value.S.(*uuid.UUID)
-			}
-		case media.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field car_media", values[i])
 			} else if value.Valid {
 				m.car_media = new(uuid.UUID)
 				*m.car_media = *value.S.(*uuid.UUID)
 			}
-		case media.ForeignKeys[2]:
+		case media.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field mod_product_option_media", values[i])
 			} else if value.Valid {
 				m.mod_product_option_media = new(uuid.UUID)
 				*m.mod_product_option_media = *value.S.(*uuid.UUID)
 			}
-		case media.ForeignKeys[3]:
+		case media.ForeignKeys[2]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field user_media", values[i])
 			} else if value.Valid {
@@ -286,6 +274,30 @@ func (m *Media) String() string {
 	}
 	builder.WriteByte(')')
 	return builder.String()
+}
+
+// NamedBuildLog returns the BuildLog named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (m *Media) NamedBuildLog(name string) ([]*BuildLog, error) {
+	if m.Edges.namedBuildLog == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := m.Edges.namedBuildLog[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (m *Media) appendNamedBuildLog(name string, edges ...*BuildLog) {
+	if m.Edges.namedBuildLog == nil {
+		m.Edges.namedBuildLog = make(map[string][]*BuildLog)
+	}
+	if len(edges) == 0 {
+		m.Edges.namedBuildLog[name] = []*BuildLog{}
+	} else {
+		m.Edges.namedBuildLog[name] = append(m.Edges.namedBuildLog[name], edges...)
+	}
 }
 
 // NamedAlbums returns the Albums named value or an error if the edge was not

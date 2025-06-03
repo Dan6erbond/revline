@@ -380,7 +380,7 @@ func HasBuildLog() predicate.Media {
 	return predicate.Media(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, BuildLogTable, BuildLogColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, BuildLogTable, BuildLogPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

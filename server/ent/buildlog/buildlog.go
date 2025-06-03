@@ -45,13 +45,11 @@ const (
 	// ModsInverseTable is the table name for the Mod entity.
 	// It exists in this package in order to avoid circular dependency with the "mod" package.
 	ModsInverseTable = "mods"
-	// MediaTable is the table that holds the media relation/edge.
-	MediaTable = "media"
+	// MediaTable is the table that holds the media relation/edge. The primary key declared below.
+	MediaTable = "build_log_media"
 	// MediaInverseTable is the table name for the Media entity.
 	// It exists in this package in order to avoid circular dependency with the "media" package.
 	MediaInverseTable = "media"
-	// MediaColumn is the table column denoting the media relation/edge.
-	MediaColumn = "build_log_media"
 )
 
 // Columns holds all SQL columns for buildlog fields.
@@ -74,6 +72,9 @@ var (
 	// ModsPrimaryKey and ModsColumn2 are the table columns denoting the
 	// primary key for the mods relation (M2M).
 	ModsPrimaryKey = []string{"mod_id", "build_log_id"}
+	// MediaPrimaryKey and MediaColumn2 are the table columns denoting the
+	// primary key for the media relation (M2M).
+	MediaPrimaryKey = []string{"build_log_id", "media_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -182,6 +183,6 @@ func newMediaStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MediaInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, MediaTable, MediaColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, MediaTable, MediaPrimaryKey...),
 	)
 }

@@ -544,10 +544,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph.MustAddE(
 		"media",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   buildlog.MediaTable,
-			Columns: []string{buildlog.MediaColumn},
+			Columns: buildlog.MediaPrimaryKey,
 			Bidi:    false,
 		},
 		"BuildLog",
@@ -1072,10 +1072,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph.MustAddE(
 		"build_log",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
 			Table:   media.BuildLogTable,
-			Columns: []string{media.BuildLogColumn},
+			Columns: media.BuildLogPrimaryKey,
 			Bidi:    false,
 		},
 		"Media",

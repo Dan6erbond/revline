@@ -56,13 +56,11 @@ const (
 	ModProductOptionInverseTable = "mod_product_options"
 	// ModProductOptionColumn is the table column denoting the mod_product_option relation/edge.
 	ModProductOptionColumn = "mod_product_option_media"
-	// BuildLogTable is the table that holds the build_log relation/edge.
-	BuildLogTable = "media"
+	// BuildLogTable is the table that holds the build_log relation/edge. The primary key declared below.
+	BuildLogTable = "build_log_media"
 	// BuildLogInverseTable is the table name for the BuildLog entity.
 	// It exists in this package in order to avoid circular dependency with the "buildlog" package.
 	BuildLogInverseTable = "build_logs"
-	// BuildLogColumn is the table column denoting the build_log relation/edge.
-	BuildLogColumn = "build_log_media"
 	// AlbumsTable is the table that holds the albums relation/edge. The primary key declared below.
 	AlbumsTable = "album_media"
 	// AlbumsInverseTable is the table name for the Album entity.
@@ -82,13 +80,15 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "media"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"build_log_media",
 	"car_media",
 	"mod_product_option_media",
 	"user_media",
 }
 
 var (
+	// BuildLogPrimaryKey and BuildLogColumn2 are the table columns denoting the
+	// primary key for the build_log relation (M2M).
+	BuildLogPrimaryKey = []string{"build_log_id", "media_id"}
 	// AlbumsPrimaryKey and AlbumsColumn2 are the table columns denoting the
 	// primary key for the albums relation (M2M).
 	AlbumsPrimaryKey = []string{"album_id", "media_id"}
@@ -169,10 +169,17 @@ func ByModProductOptionField(field string, opts ...sql.OrderTermOption) OrderOpt
 	}
 }
 
-// ByBuildLogField orders the results by build_log field.
-func ByBuildLogField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByBuildLogCount orders the results by build_log count.
+func ByBuildLogCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newBuildLogStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborsCount(s, newBuildLogStep(), opts...)
+	}
+}
+
+// ByBuildLog orders the results by build_log terms.
+func ByBuildLog(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newBuildLogStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -214,7 +221,7 @@ func newBuildLogStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(BuildLogInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, BuildLogTable, BuildLogColumn),
+		sqlgraph.Edge(sqlgraph.M2M, true, BuildLogTable, BuildLogPrimaryKey...),
 	)
 }
 func newAlbumsStep() *sqlgraph.Step {

@@ -705,7 +705,7 @@ func (c *BuildLogClient) QueryMedia(bl *BuildLog) *MediaQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(buildlog.Table, buildlog.FieldID, id),
 			sqlgraph.To(media.Table, media.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, buildlog.MediaTable, buildlog.MediaColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, buildlog.MediaTable, buildlog.MediaPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(bl.driver.Dialect(), step)
 		return fromV, nil
@@ -2739,7 +2739,7 @@ func (c *MediaClient) QueryBuildLog(m *Media) *BuildLogQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(media.Table, media.FieldID, id),
 			sqlgraph.To(buildlog.Table, buildlog.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, media.BuildLogTable, media.BuildLogColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, media.BuildLogTable, media.BuildLogPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
 		return fromV, nil

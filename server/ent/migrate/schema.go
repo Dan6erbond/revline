@@ -349,7 +349,6 @@ var (
 		{Name: "update_time", Type: field.TypeTime},
 		{Name: "title", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "build_log_media", Type: field.TypeUUID, Nullable: true},
 		{Name: "car_media", Type: field.TypeUUID, Nullable: true},
 		{Name: "mod_product_option_media", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_media", Type: field.TypeUUID, Nullable: true},
@@ -361,26 +360,20 @@ var (
 		PrimaryKey: []*schema.Column{MediaColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "media_build_logs_media",
-				Columns:    []*schema.Column{MediaColumns[5]},
-				RefColumns: []*schema.Column{BuildLogsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "media_cars_media",
-				Columns:    []*schema.Column{MediaColumns[6]},
+				Columns:    []*schema.Column{MediaColumns[5]},
 				RefColumns: []*schema.Column{CarsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "media_mod_product_options_media",
-				Columns:    []*schema.Column{MediaColumns[7]},
+				Columns:    []*schema.Column{MediaColumns[6]},
 				RefColumns: []*schema.Column{ModProductOptionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "media_users_media",
-				Columns:    []*schema.Column{MediaColumns[8]},
+				Columns:    []*schema.Column{MediaColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -730,6 +723,31 @@ var (
 			},
 		},
 	}
+	// BuildLogMediaColumns holds the columns for the "build_log_media" table.
+	BuildLogMediaColumns = []*schema.Column{
+		{Name: "build_log_id", Type: field.TypeUUID},
+		{Name: "media_id", Type: field.TypeUUID},
+	}
+	// BuildLogMediaTable holds the schema information for the "build_log_media" table.
+	BuildLogMediaTable = &schema.Table{
+		Name:       "build_log_media",
+		Columns:    BuildLogMediaColumns,
+		PrimaryKey: []*schema.Column{BuildLogMediaColumns[0], BuildLogMediaColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "build_log_media_build_log_id",
+				Columns:    []*schema.Column{BuildLogMediaColumns[0]},
+				RefColumns: []*schema.Column{BuildLogsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "build_log_media_media_id",
+				Columns:    []*schema.Column{BuildLogMediaColumns[1]},
+				RefColumns: []*schema.Column{MediaColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// ModBuildLogsColumns holds the columns for the "mod_build_logs" table.
 	ModBuildLogsColumns = []*schema.Column{
 		{Name: "mod_id", Type: field.TypeUUID},
@@ -856,6 +874,7 @@ var (
 		UsersTable,
 		UserSettingsTable,
 		AlbumMediaTable,
+		BuildLogMediaTable,
 		ModBuildLogsTable,
 		ServiceLogItemsTable,
 		ServiceScheduleItemsTable,
@@ -884,10 +903,9 @@ func init() {
 	ExpensesTable.ForeignKeys[2].RefTable = ServiceLogsTable
 	FuelUpsTable.ForeignKeys[0].RefTable = CarsTable
 	FuelUpsTable.ForeignKeys[1].RefTable = OdometerReadingsTable
-	MediaTable.ForeignKeys[0].RefTable = BuildLogsTable
-	MediaTable.ForeignKeys[1].RefTable = CarsTable
-	MediaTable.ForeignKeys[2].RefTable = ModProductOptionsTable
-	MediaTable.ForeignKeys[3].RefTable = UsersTable
+	MediaTable.ForeignKeys[0].RefTable = CarsTable
+	MediaTable.ForeignKeys[1].RefTable = ModProductOptionsTable
+	MediaTable.ForeignKeys[2].RefTable = UsersTable
 	ModsTable.ForeignKeys[0].RefTable = CarsTable
 	ModProductOptionsTable.ForeignKeys[0].RefTable = ModsTable
 	OdometerReadingsTable.ForeignKeys[0].RefTable = CarsTable
@@ -904,6 +922,8 @@ func init() {
 	UserSettingsTable.ForeignKeys[0].RefTable = UsersTable
 	AlbumMediaTable.ForeignKeys[0].RefTable = AlbumsTable
 	AlbumMediaTable.ForeignKeys[1].RefTable = MediaTable
+	BuildLogMediaTable.ForeignKeys[0].RefTable = BuildLogsTable
+	BuildLogMediaTable.ForeignKeys[1].RefTable = MediaTable
 	ModBuildLogsTable.ForeignKeys[0].RefTable = ModsTable
 	ModBuildLogsTable.ForeignKeys[1].RefTable = BuildLogsTable
 	ServiceLogItemsTable.ForeignKeys[0].RefTable = ServiceLogsTable

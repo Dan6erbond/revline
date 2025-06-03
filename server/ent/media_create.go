@@ -153,23 +153,19 @@ func (mc *MediaCreate) SetModProductOption(m *ModProductOption) *MediaCreate {
 	return mc.SetModProductOptionID(m.ID)
 }
 
-// SetBuildLogID sets the "build_log" edge to the BuildLog entity by ID.
-func (mc *MediaCreate) SetBuildLogID(id uuid.UUID) *MediaCreate {
-	mc.mutation.SetBuildLogID(id)
+// AddBuildLogIDs adds the "build_log" edge to the BuildLog entity by IDs.
+func (mc *MediaCreate) AddBuildLogIDs(ids ...uuid.UUID) *MediaCreate {
+	mc.mutation.AddBuildLogIDs(ids...)
 	return mc
 }
 
-// SetNillableBuildLogID sets the "build_log" edge to the BuildLog entity by ID if the given value is not nil.
-func (mc *MediaCreate) SetNillableBuildLogID(id *uuid.UUID) *MediaCreate {
-	if id != nil {
-		mc = mc.SetBuildLogID(*id)
+// AddBuildLog adds the "build_log" edges to the BuildLog entity.
+func (mc *MediaCreate) AddBuildLog(b ...*BuildLog) *MediaCreate {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return mc
-}
-
-// SetBuildLog sets the "build_log" edge to the BuildLog entity.
-func (mc *MediaCreate) SetBuildLog(b *BuildLog) *MediaCreate {
-	return mc.SetBuildLogID(b.ID)
+	return mc.AddBuildLogIDs(ids...)
 }
 
 // AddAlbumIDs adds the "albums" edge to the Album entity by IDs.
@@ -348,10 +344,10 @@ func (mc *MediaCreate) createSpec() (*Media, *sqlgraph.CreateSpec) {
 	}
 	if nodes := mc.mutation.BuildLogIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
 			Table:   media.BuildLogTable,
-			Columns: []string{media.BuildLogColumn},
+			Columns: media.BuildLogPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(buildlog.FieldID, field.TypeUUID),
@@ -360,7 +356,6 @@ func (mc *MediaCreate) createSpec() (*Media, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.build_log_media = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := mc.mutation.AlbumsIDs(); len(nodes) > 0 {

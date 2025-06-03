@@ -493,12 +493,16 @@ func (m *Media) ModProductOption(ctx context.Context) (*ModProductOption, error)
 	return result, MaskNotFound(err)
 }
 
-func (m *Media) BuildLog(ctx context.Context) (*BuildLog, error) {
-	result, err := m.Edges.BuildLogOrErr()
-	if IsNotLoaded(err) {
-		result, err = m.QueryBuildLog().Only(ctx)
+func (m *Media) BuildLog(ctx context.Context) (result []*BuildLog, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = m.NamedBuildLog(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = m.Edges.BuildLogOrErr()
 	}
-	return result, MaskNotFound(err)
+	if IsNotLoaded(err) {
+		result, err = m.QueryBuildLog().All(ctx)
+	}
+	return result, err
 }
 
 func (m *Media) Albums(ctx context.Context) (result []*Album, err error) {

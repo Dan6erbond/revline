@@ -322,7 +322,7 @@ func HasMedia() predicate.BuildLog {
 	return predicate.BuildLog(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, MediaTable, MediaColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, MediaTable, MediaPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

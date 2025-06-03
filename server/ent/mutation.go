@@ -10449,7 +10449,8 @@ type MediaMutation struct {
 	clearedcar                bool
 	mod_product_option        *uuid.UUID
 	clearedmod_product_option bool
-	build_log                 *uuid.UUID
+	build_log                 map[uuid.UUID]struct{}
+	removedbuild_log          map[uuid.UUID]struct{}
 	clearedbuild_log          bool
 	albums                    map[uuid.UUID]struct{}
 	removedalbums             map[uuid.UUID]struct{}
@@ -10850,9 +10851,14 @@ func (m *MediaMutation) ResetModProductOption() {
 	m.clearedmod_product_option = false
 }
 
-// SetBuildLogID sets the "build_log" edge to the BuildLog entity by id.
-func (m *MediaMutation) SetBuildLogID(id uuid.UUID) {
-	m.build_log = &id
+// AddBuildLogIDs adds the "build_log" edge to the BuildLog entity by ids.
+func (m *MediaMutation) AddBuildLogIDs(ids ...uuid.UUID) {
+	if m.build_log == nil {
+		m.build_log = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.build_log[ids[i]] = struct{}{}
+	}
 }
 
 // ClearBuildLog clears the "build_log" edge to the BuildLog entity.
@@ -10865,20 +10871,29 @@ func (m *MediaMutation) BuildLogCleared() bool {
 	return m.clearedbuild_log
 }
 
-// BuildLogID returns the "build_log" edge ID in the mutation.
-func (m *MediaMutation) BuildLogID() (id uuid.UUID, exists bool) {
-	if m.build_log != nil {
-		return *m.build_log, true
+// RemoveBuildLogIDs removes the "build_log" edge to the BuildLog entity by IDs.
+func (m *MediaMutation) RemoveBuildLogIDs(ids ...uuid.UUID) {
+	if m.removedbuild_log == nil {
+		m.removedbuild_log = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.build_log, ids[i])
+		m.removedbuild_log[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBuildLog returns the removed IDs of the "build_log" edge to the BuildLog entity.
+func (m *MediaMutation) RemovedBuildLogIDs() (ids []uuid.UUID) {
+	for id := range m.removedbuild_log {
+		ids = append(ids, id)
 	}
 	return
 }
 
 // BuildLogIDs returns the "build_log" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// BuildLogID instead. It exists only for internal usage by the builders.
 func (m *MediaMutation) BuildLogIDs() (ids []uuid.UUID) {
-	if id := m.build_log; id != nil {
-		ids = append(ids, *id)
+	for id := range m.build_log {
+		ids = append(ids, id)
 	}
 	return
 }
@@ -10887,6 +10902,7 @@ func (m *MediaMutation) BuildLogIDs() (ids []uuid.UUID) {
 func (m *MediaMutation) ResetBuildLog() {
 	m.build_log = nil
 	m.clearedbuild_log = false
+	m.removedbuild_log = nil
 }
 
 // AddAlbumIDs adds the "albums" edge to the Album entity by ids.
@@ -11178,9 +11194,11 @@ func (m *MediaMutation) AddedIDs(name string) []ent.Value {
 			return []ent.Value{*id}
 		}
 	case media.EdgeBuildLog:
-		if id := m.build_log; id != nil {
-			return []ent.Value{*id}
+		ids := make([]ent.Value, 0, len(m.build_log))
+		for id := range m.build_log {
+			ids = append(ids, id)
 		}
+		return ids
 	case media.EdgeAlbums:
 		ids := make([]ent.Value, 0, len(m.albums))
 		for id := range m.albums {
@@ -11194,6 +11212,9 @@ func (m *MediaMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *MediaMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 5)
+	if m.removedbuild_log != nil {
+		edges = append(edges, media.EdgeBuildLog)
+	}
 	if m.removedalbums != nil {
 		edges = append(edges, media.EdgeAlbums)
 	}
@@ -11204,6 +11225,12 @@ func (m *MediaMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *MediaMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case media.EdgeBuildLog:
+		ids := make([]ent.Value, 0, len(m.removedbuild_log))
+		for id := range m.removedbuild_log {
+			ids = append(ids, id)
+		}
+		return ids
 	case media.EdgeAlbums:
 		ids := make([]ent.Value, 0, len(m.removedalbums))
 		for id := range m.removedalbums {
@@ -11265,9 +11292,6 @@ func (m *MediaMutation) ClearEdge(name string) error {
 		return nil
 	case media.EdgeModProductOption:
 		m.ClearModProductOption()
-		return nil
-	case media.EdgeBuildLog:
-		m.ClearBuildLog()
 		return nil
 	}
 	return fmt.Errorf("unknown Media unique edge %s", name)

@@ -1706,10 +1706,12 @@ func (m *MediaQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 				path  = append(path, alias)
 				query = (&BuildLogClient{config: m.config}).Query()
 			)
-			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, buildlogImplementors)...); err != nil {
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, buildlogImplementors)...); err != nil {
 				return err
 			}
-			m.withBuildLog = query
+			m.WithNamedBuildLog(alias, func(wq *BuildLogQuery) {
+				*wq = *query
+			})
 
 		case "albums":
 			var (

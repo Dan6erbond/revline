@@ -38,8 +38,7 @@ func (Media) Edges() []ent.Edge {
 			Ref("media").
 			Unique(),
 		edge.From("build_log", BuildLog.Type).
-			Ref("media").
-			Unique(),
+			Ref("media"),
 		edge.From("albums", Album.Type).
 			Ref("media"),
 	}

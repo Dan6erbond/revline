@@ -319,10 +319,10 @@ func (blu *BuildLogUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if blu.mutation.MediaCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   buildlog.MediaTable,
-			Columns: []string{buildlog.MediaColumn},
+			Columns: buildlog.MediaPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
@@ -332,10 +332,10 @@ func (blu *BuildLogUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := blu.mutation.RemovedMediaIDs(); len(nodes) > 0 && !blu.mutation.MediaCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   buildlog.MediaTable,
-			Columns: []string{buildlog.MediaColumn},
+			Columns: buildlog.MediaPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
@@ -348,10 +348,10 @@ func (blu *BuildLogUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := blu.mutation.MediaIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   buildlog.MediaTable,
-			Columns: []string{buildlog.MediaColumn},
+			Columns: buildlog.MediaPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
@@ -699,10 +699,10 @@ func (bluo *BuildLogUpdateOne) sqlSave(ctx context.Context) (_node *BuildLog, er
 	}
 	if bluo.mutation.MediaCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   buildlog.MediaTable,
-			Columns: []string{buildlog.MediaColumn},
+			Columns: buildlog.MediaPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
@@ -712,10 +712,10 @@ func (bluo *BuildLogUpdateOne) sqlSave(ctx context.Context) (_node *BuildLog, er
 	}
 	if nodes := bluo.mutation.RemovedMediaIDs(); len(nodes) > 0 && !bluo.mutation.MediaCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   buildlog.MediaTable,
-			Columns: []string{buildlog.MediaColumn},
+			Columns: buildlog.MediaPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
@@ -728,10 +728,10 @@ func (bluo *BuildLogUpdateOne) sqlSave(ctx context.Context) (_node *BuildLog, er
 	}
 	if nodes := bluo.mutation.MediaIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   buildlog.MediaTable,
-			Columns: []string{buildlog.MediaColumn},
+			Columns: buildlog.MediaPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),

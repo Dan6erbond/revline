@@ -37,6 +37,7 @@ type MediaQuery struct {
 	withFKs              bool
 	modifiers            []func(*sql.Selector)
 	loadTotal            []func(context.Context, []*Media) error
+	withNamedBuildLog    map[string]*BuildLogQuery
 	withNamedAlbums      map[string]*AlbumQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -154,7 +155,7 @@ func (mq *MediaQuery) QueryBuildLog() *BuildLogQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(media.Table, media.FieldID, selector),
 			sqlgraph.To(buildlog.Table, buildlog.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, media.BuildLogTable, media.BuildLogColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, media.BuildLogTable, media.BuildLogPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
 		return fromU, nil
@@ -529,7 +530,7 @@ func (mq *MediaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Media,
 			mq.withAlbums != nil,
 		}
 	)
-	if mq.withUser != nil || mq.withCar != nil || mq.withModProductOption != nil || mq.withBuildLog != nil {
+	if mq.withUser != nil || mq.withCar != nil || mq.withModProductOption != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -575,8 +576,9 @@ func (mq *MediaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Media,
 		}
 	}
 	if query := mq.withBuildLog; query != nil {
-		if err := mq.loadBuildLog(ctx, query, nodes, nil,
-			func(n *Media, e *BuildLog) { n.Edges.BuildLog = e }); err != nil {
+		if err := mq.loadBuildLog(ctx, query, nodes,
+			func(n *Media) { n.Edges.BuildLog = []*BuildLog{} },
+			func(n *Media, e *BuildLog) { n.Edges.BuildLog = append(n.Edges.BuildLog, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -584,6 +586,13 @@ func (mq *MediaQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Media,
 		if err := mq.loadAlbums(ctx, query, nodes,
 			func(n *Media) { n.Edges.Albums = []*Album{} },
 			func(n *Media, e *Album) { n.Edges.Albums = append(n.Edges.Albums, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range mq.withNamedBuildLog {
+		if err := mq.loadBuildLog(ctx, query, nodes,
+			func(n *Media) { n.appendNamedBuildLog(name) },
+			func(n *Media, e *BuildLog) { n.appendNamedBuildLog(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -699,33 +708,62 @@ func (mq *MediaQuery) loadModProductOption(ctx context.Context, query *ModProduc
 	return nil
 }
 func (mq *MediaQuery) loadBuildLog(ctx context.Context, query *BuildLogQuery, nodes []*Media, init func(*Media), assign func(*Media, *BuildLog)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Media)
-	for i := range nodes {
-		if nodes[i].build_log_media == nil {
-			continue
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Media)
+	nids := make(map[uuid.UUID]map[*Media]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
 		}
-		fk := *nodes[i].build_log_media
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	if len(ids) == 0 {
-		return nil
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(media.BuildLogTable)
+		s.Join(joinT).On(s.C(buildlog.FieldID), joinT.C(media.BuildLogPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(media.BuildLogPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(media.BuildLogPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
 	}
-	query.Where(buildlog.IDIn(ids...))
-	neighbors, err := query.All(ctx)
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Media]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*BuildLog](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "build_log_media" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "build_log" node returned %v`, n.ID)
 		}
-		for i := range nodes {
-			assign(nodes[i], n)
+		for kn := range nodes {
+			assign(kn, n)
 		}
 	}
 	return nil
@@ -874,6 +912,20 @@ func (mq *MediaQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedBuildLog tells the query-builder to eager-load the nodes that are connected to the "build_log"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (mq *MediaQuery) WithNamedBuildLog(name string, opts ...func(*BuildLogQuery)) *MediaQuery {
+	query := (&BuildLogClient{config: mq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if mq.withNamedBuildLog == nil {
+		mq.withNamedBuildLog = make(map[string]*BuildLogQuery)
+	}
+	mq.withNamedBuildLog[name] = query
+	return mq
 }
 
 // WithNamedAlbums tells the query-builder to eager-load the nodes that are connected to the "albums"

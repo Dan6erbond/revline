@@ -788,7 +788,7 @@ input CreateMediaInput {
   userID: ID
   carID: ID
   modProductOptionID: ID
-  buildLogID: ID
+  buildLogIDs: [ID!]
   albumIDs: [ID!]
 }
 """
@@ -1765,7 +1765,7 @@ type Media implements Node {
   user: User
   car: Car
   modProductOption: ModProductOption
-  buildLog: BuildLog
+  buildLog: [BuildLog!]
   albums: [Album!]
 }
 """
@@ -3708,7 +3708,8 @@ input UpdateMediaInput {
   clearCar: Boolean
   modProductOptionID: ID
   clearModProductOption: Boolean
-  buildLogID: ID
+  addBuildLogIDs: [ID!]
+  removeBuildLogIDs: [ID!]
   clearBuildLog: Boolean
   addAlbumIDs: [ID!]
   removeAlbumIDs: [ID!]

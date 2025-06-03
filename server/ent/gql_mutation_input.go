@@ -1328,7 +1328,7 @@ type CreateMediaInput struct {
 	UserID             *uuid.UUID
 	CarID              *uuid.UUID
 	ModProductOptionID *uuid.UUID
-	BuildLogID         *uuid.UUID
+	BuildLogIDs        []uuid.UUID
 	AlbumIDs           []uuid.UUID
 }
 
@@ -1355,8 +1355,8 @@ func (i *CreateMediaInput) Mutate(m *MediaMutation) {
 	if v := i.ModProductOptionID; v != nil {
 		m.SetModProductOptionID(*v)
 	}
-	if v := i.BuildLogID; v != nil {
-		m.SetBuildLogID(*v)
+	if v := i.BuildLogIDs; len(v) > 0 {
+		m.AddBuildLogIDs(v...)
 	}
 	if v := i.AlbumIDs; len(v) > 0 {
 		m.AddAlbumIDs(v...)
@@ -1383,7 +1383,8 @@ type UpdateMediaInput struct {
 	ClearModProductOption bool
 	ModProductOptionID    *uuid.UUID
 	ClearBuildLog         bool
-	BuildLogID            *uuid.UUID
+	AddBuildLogIDs        []uuid.UUID
+	RemoveBuildLogIDs     []uuid.UUID
 	ClearAlbums           bool
 	AddAlbumIDs           []uuid.UUID
 	RemoveAlbumIDs        []uuid.UUID
@@ -1427,8 +1428,11 @@ func (i *UpdateMediaInput) Mutate(m *MediaMutation) {
 	if i.ClearBuildLog {
 		m.ClearBuildLog()
 	}
-	if v := i.BuildLogID; v != nil {
-		m.SetBuildLogID(*v)
+	if v := i.AddBuildLogIDs; len(v) > 0 {
+		m.AddBuildLogIDs(v...)
+	}
+	if v := i.RemoveBuildLogIDs; len(v) > 0 {
+		m.RemoveBuildLogIDs(v...)
 	}
 	if i.ClearAlbums {
 		m.ClearAlbums()

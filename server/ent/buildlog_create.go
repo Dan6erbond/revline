@@ -281,10 +281,10 @@ func (blc *BuildLogCreate) createSpec() (*BuildLog, *sqlgraph.CreateSpec) {
 	}
 	if nodes := blc.mutation.MediaIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   buildlog.MediaTable,
-			Columns: []string{buildlog.MediaColumn},
+			Columns: buildlog.MediaPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
