@@ -29,6 +29,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
+	"github.com/Dan6erbond/revline/ent/modproductoptionpreview"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/serviceitem"
@@ -73,6 +74,8 @@ type Client struct {
 	Mod *ModClient
 	// ModProductOption is the client for interacting with the ModProductOption builders.
 	ModProductOption *ModProductOptionClient
+	// ModProductOptionPreview is the client for interacting with the ModProductOptionPreview builders.
+	ModProductOptionPreview *ModProductOptionPreviewClient
 	// OdometerReading is the client for interacting with the OdometerReading builders.
 	OdometerReading *OdometerReadingClient
 	// Profile is the client for interacting with the Profile builders.
@@ -115,6 +118,7 @@ func (c *Client) init() {
 	c.Media = NewMediaClient(c.config)
 	c.Mod = NewModClient(c.config)
 	c.ModProductOption = NewModProductOptionClient(c.config)
+	c.ModProductOptionPreview = NewModProductOptionPreviewClient(c.config)
 	c.OdometerReading = NewOdometerReadingClient(c.config)
 	c.Profile = NewProfileClient(c.config)
 	c.ServiceItem = NewServiceItemClient(c.config)
@@ -214,30 +218,31 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:              ctx,
-		config:           cfg,
-		Album:            NewAlbumClient(cfg),
-		Car:              NewCarClient(cfg),
-		CheckoutSession:  NewCheckoutSessionClient(cfg),
-		Document:         NewDocumentClient(cfg),
-		DragResult:       NewDragResultClient(cfg),
-		DragSession:      NewDragSessionClient(cfg),
-		DynoResult:       NewDynoResultClient(cfg),
-		DynoSession:      NewDynoSessionClient(cfg),
-		Expense:          NewExpenseClient(cfg),
-		FuelUp:           NewFuelUpClient(cfg),
-		Media:            NewMediaClient(cfg),
-		Mod:              NewModClient(cfg),
-		ModProductOption: NewModProductOptionClient(cfg),
-		OdometerReading:  NewOdometerReadingClient(cfg),
-		Profile:          NewProfileClient(cfg),
-		ServiceItem:      NewServiceItemClient(cfg),
-		ServiceLog:       NewServiceLogClient(cfg),
-		ServiceSchedule:  NewServiceScheduleClient(cfg),
-		Subscription:     NewSubscriptionClient(cfg),
-		Task:             NewTaskClient(cfg),
-		User:             NewUserClient(cfg),
-		UserSettings:     NewUserSettingsClient(cfg),
+		ctx:                     ctx,
+		config:                  cfg,
+		Album:                   NewAlbumClient(cfg),
+		Car:                     NewCarClient(cfg),
+		CheckoutSession:         NewCheckoutSessionClient(cfg),
+		Document:                NewDocumentClient(cfg),
+		DragResult:              NewDragResultClient(cfg),
+		DragSession:             NewDragSessionClient(cfg),
+		DynoResult:              NewDynoResultClient(cfg),
+		DynoSession:             NewDynoSessionClient(cfg),
+		Expense:                 NewExpenseClient(cfg),
+		FuelUp:                  NewFuelUpClient(cfg),
+		Media:                   NewMediaClient(cfg),
+		Mod:                     NewModClient(cfg),
+		ModProductOption:        NewModProductOptionClient(cfg),
+		ModProductOptionPreview: NewModProductOptionPreviewClient(cfg),
+		OdometerReading:         NewOdometerReadingClient(cfg),
+		Profile:                 NewProfileClient(cfg),
+		ServiceItem:             NewServiceItemClient(cfg),
+		ServiceLog:              NewServiceLogClient(cfg),
+		ServiceSchedule:         NewServiceScheduleClient(cfg),
+		Subscription:            NewSubscriptionClient(cfg),
+		Task:                    NewTaskClient(cfg),
+		User:                    NewUserClient(cfg),
+		UserSettings:            NewUserSettingsClient(cfg),
 	}, nil
 }
 
@@ -255,30 +260,31 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:              ctx,
-		config:           cfg,
-		Album:            NewAlbumClient(cfg),
-		Car:              NewCarClient(cfg),
-		CheckoutSession:  NewCheckoutSessionClient(cfg),
-		Document:         NewDocumentClient(cfg),
-		DragResult:       NewDragResultClient(cfg),
-		DragSession:      NewDragSessionClient(cfg),
-		DynoResult:       NewDynoResultClient(cfg),
-		DynoSession:      NewDynoSessionClient(cfg),
-		Expense:          NewExpenseClient(cfg),
-		FuelUp:           NewFuelUpClient(cfg),
-		Media:            NewMediaClient(cfg),
-		Mod:              NewModClient(cfg),
-		ModProductOption: NewModProductOptionClient(cfg),
-		OdometerReading:  NewOdometerReadingClient(cfg),
-		Profile:          NewProfileClient(cfg),
-		ServiceItem:      NewServiceItemClient(cfg),
-		ServiceLog:       NewServiceLogClient(cfg),
-		ServiceSchedule:  NewServiceScheduleClient(cfg),
-		Subscription:     NewSubscriptionClient(cfg),
-		Task:             NewTaskClient(cfg),
-		User:             NewUserClient(cfg),
-		UserSettings:     NewUserSettingsClient(cfg),
+		ctx:                     ctx,
+		config:                  cfg,
+		Album:                   NewAlbumClient(cfg),
+		Car:                     NewCarClient(cfg),
+		CheckoutSession:         NewCheckoutSessionClient(cfg),
+		Document:                NewDocumentClient(cfg),
+		DragResult:              NewDragResultClient(cfg),
+		DragSession:             NewDragSessionClient(cfg),
+		DynoResult:              NewDynoResultClient(cfg),
+		DynoSession:             NewDynoSessionClient(cfg),
+		Expense:                 NewExpenseClient(cfg),
+		FuelUp:                  NewFuelUpClient(cfg),
+		Media:                   NewMediaClient(cfg),
+		Mod:                     NewModClient(cfg),
+		ModProductOption:        NewModProductOptionClient(cfg),
+		ModProductOptionPreview: NewModProductOptionPreviewClient(cfg),
+		OdometerReading:         NewOdometerReadingClient(cfg),
+		Profile:                 NewProfileClient(cfg),
+		ServiceItem:             NewServiceItemClient(cfg),
+		ServiceLog:              NewServiceLogClient(cfg),
+		ServiceSchedule:         NewServiceScheduleClient(cfg),
+		Subscription:            NewSubscriptionClient(cfg),
+		Task:                    NewTaskClient(cfg),
+		User:                    NewUserClient(cfg),
+		UserSettings:            NewUserSettingsClient(cfg),
 	}, nil
 }
 
@@ -310,8 +316,9 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Album, c.Car, c.CheckoutSession, c.Document, c.DragResult, c.DragSession,
 		c.DynoResult, c.DynoSession, c.Expense, c.FuelUp, c.Media, c.Mod,
-		c.ModProductOption, c.OdometerReading, c.Profile, c.ServiceItem, c.ServiceLog,
-		c.ServiceSchedule, c.Subscription, c.Task, c.User, c.UserSettings,
+		c.ModProductOption, c.ModProductOptionPreview, c.OdometerReading, c.Profile,
+		c.ServiceItem, c.ServiceLog, c.ServiceSchedule, c.Subscription, c.Task, c.User,
+		c.UserSettings,
 	} {
 		n.Use(hooks...)
 	}
@@ -323,8 +330,9 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Album, c.Car, c.CheckoutSession, c.Document, c.DragResult, c.DragSession,
 		c.DynoResult, c.DynoSession, c.Expense, c.FuelUp, c.Media, c.Mod,
-		c.ModProductOption, c.OdometerReading, c.Profile, c.ServiceItem, c.ServiceLog,
-		c.ServiceSchedule, c.Subscription, c.Task, c.User, c.UserSettings,
+		c.ModProductOption, c.ModProductOptionPreview, c.OdometerReading, c.Profile,
+		c.ServiceItem, c.ServiceLog, c.ServiceSchedule, c.Subscription, c.Task, c.User,
+		c.UserSettings,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -359,6 +367,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Mod.mutate(ctx, m)
 	case *ModProductOptionMutation:
 		return c.ModProductOption.mutate(ctx, m)
+	case *ModProductOptionPreviewMutation:
+		return c.ModProductOptionPreview.mutate(ctx, m)
 	case *OdometerReadingMutation:
 		return c.OdometerReading.mutate(ctx, m)
 	case *ProfileMutation:
@@ -2886,6 +2896,22 @@ func (c *ModProductOptionClient) QueryMedia(mpo *ModProductOption) *MediaQuery {
 	return query
 }
 
+// QueryPreviews queries the previews edge of a ModProductOption.
+func (c *ModProductOptionClient) QueryPreviews(mpo *ModProductOption) *ModProductOptionPreviewQuery {
+	query := (&ModProductOptionPreviewClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := mpo.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(modproductoption.Table, modproductoption.FieldID, id),
+			sqlgraph.To(modproductoptionpreview.Table, modproductoptionpreview.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, modproductoption.PreviewsTable, modproductoption.PreviewsColumn),
+		)
+		fromV = sqlgraph.Neighbors(mpo.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ModProductOptionClient) Hooks() []Hook {
 	return c.hooks.ModProductOption
@@ -2908,6 +2934,155 @@ func (c *ModProductOptionClient) mutate(ctx context.Context, m *ModProductOption
 		return (&ModProductOptionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ModProductOption mutation op: %q", m.Op())
+	}
+}
+
+// ModProductOptionPreviewClient is a client for the ModProductOptionPreview schema.
+type ModProductOptionPreviewClient struct {
+	config
+}
+
+// NewModProductOptionPreviewClient returns a client for the ModProductOptionPreview from the given config.
+func NewModProductOptionPreviewClient(c config) *ModProductOptionPreviewClient {
+	return &ModProductOptionPreviewClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `modproductoptionpreview.Hooks(f(g(h())))`.
+func (c *ModProductOptionPreviewClient) Use(hooks ...Hook) {
+	c.hooks.ModProductOptionPreview = append(c.hooks.ModProductOptionPreview, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `modproductoptionpreview.Intercept(f(g(h())))`.
+func (c *ModProductOptionPreviewClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ModProductOptionPreview = append(c.inters.ModProductOptionPreview, interceptors...)
+}
+
+// Create returns a builder for creating a ModProductOptionPreview entity.
+func (c *ModProductOptionPreviewClient) Create() *ModProductOptionPreviewCreate {
+	mutation := newModProductOptionPreviewMutation(c.config, OpCreate)
+	return &ModProductOptionPreviewCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ModProductOptionPreview entities.
+func (c *ModProductOptionPreviewClient) CreateBulk(builders ...*ModProductOptionPreviewCreate) *ModProductOptionPreviewCreateBulk {
+	return &ModProductOptionPreviewCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ModProductOptionPreviewClient) MapCreateBulk(slice any, setFunc func(*ModProductOptionPreviewCreate, int)) *ModProductOptionPreviewCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ModProductOptionPreviewCreateBulk{err: fmt.Errorf("calling to ModProductOptionPreviewClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ModProductOptionPreviewCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ModProductOptionPreviewCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ModProductOptionPreview.
+func (c *ModProductOptionPreviewClient) Update() *ModProductOptionPreviewUpdate {
+	mutation := newModProductOptionPreviewMutation(c.config, OpUpdate)
+	return &ModProductOptionPreviewUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ModProductOptionPreviewClient) UpdateOne(mpop *ModProductOptionPreview) *ModProductOptionPreviewUpdateOne {
+	mutation := newModProductOptionPreviewMutation(c.config, OpUpdateOne, withModProductOptionPreview(mpop))
+	return &ModProductOptionPreviewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ModProductOptionPreviewClient) UpdateOneID(id uuid.UUID) *ModProductOptionPreviewUpdateOne {
+	mutation := newModProductOptionPreviewMutation(c.config, OpUpdateOne, withModProductOptionPreviewID(id))
+	return &ModProductOptionPreviewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ModProductOptionPreview.
+func (c *ModProductOptionPreviewClient) Delete() *ModProductOptionPreviewDelete {
+	mutation := newModProductOptionPreviewMutation(c.config, OpDelete)
+	return &ModProductOptionPreviewDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ModProductOptionPreviewClient) DeleteOne(mpop *ModProductOptionPreview) *ModProductOptionPreviewDeleteOne {
+	return c.DeleteOneID(mpop.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ModProductOptionPreviewClient) DeleteOneID(id uuid.UUID) *ModProductOptionPreviewDeleteOne {
+	builder := c.Delete().Where(modproductoptionpreview.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ModProductOptionPreviewDeleteOne{builder}
+}
+
+// Query returns a query builder for ModProductOptionPreview.
+func (c *ModProductOptionPreviewClient) Query() *ModProductOptionPreviewQuery {
+	return &ModProductOptionPreviewQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeModProductOptionPreview},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ModProductOptionPreview entity by its id.
+func (c *ModProductOptionPreviewClient) Get(ctx context.Context, id uuid.UUID) (*ModProductOptionPreview, error) {
+	return c.Query().Where(modproductoptionpreview.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ModProductOptionPreviewClient) GetX(ctx context.Context, id uuid.UUID) *ModProductOptionPreview {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProductOption queries the product_option edge of a ModProductOptionPreview.
+func (c *ModProductOptionPreviewClient) QueryProductOption(mpop *ModProductOptionPreview) *ModProductOptionQuery {
+	query := (&ModProductOptionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := mpop.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(modproductoptionpreview.Table, modproductoptionpreview.FieldID, id),
+			sqlgraph.To(modproductoption.Table, modproductoption.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, modproductoptionpreview.ProductOptionTable, modproductoptionpreview.ProductOptionColumn),
+		)
+		fromV = sqlgraph.Neighbors(mpop.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ModProductOptionPreviewClient) Hooks() []Hook {
+	return c.hooks.ModProductOptionPreview
+}
+
+// Interceptors returns the client interceptors.
+func (c *ModProductOptionPreviewClient) Interceptors() []Interceptor {
+	return c.inters.ModProductOptionPreview
+}
+
+func (c *ModProductOptionPreviewClient) mutate(ctx context.Context, m *ModProductOptionPreviewMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ModProductOptionPreviewCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ModProductOptionPreviewUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ModProductOptionPreviewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ModProductOptionPreviewDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ModProductOptionPreview mutation op: %q", m.Op())
 	}
 }
 
@@ -4576,15 +4751,15 @@ func (c *UserSettingsClient) mutate(ctx context.Context, m *UserSettingsMutation
 type (
 	hooks struct {
 		Album, Car, CheckoutSession, Document, DragResult, DragSession, DynoResult,
-		DynoSession, Expense, FuelUp, Media, Mod, ModProductOption, OdometerReading,
-		Profile, ServiceItem, ServiceLog, ServiceSchedule, Subscription, Task, User,
-		UserSettings []ent.Hook
+		DynoSession, Expense, FuelUp, Media, Mod, ModProductOption,
+		ModProductOptionPreview, OdometerReading, Profile, ServiceItem, ServiceLog,
+		ServiceSchedule, Subscription, Task, User, UserSettings []ent.Hook
 	}
 	inters struct {
 		Album, Car, CheckoutSession, Document, DragResult, DragSession, DynoResult,
-		DynoSession, Expense, FuelUp, Media, Mod, ModProductOption, OdometerReading,
-		Profile, ServiceItem, ServiceLog, ServiceSchedule, Subscription, Task, User,
-		UserSettings []ent.Interceptor
+		DynoSession, Expense, FuelUp, Media, Mod, ModProductOption,
+		ModProductOptionPreview, OdometerReading, Profile, ServiceItem, ServiceLog,
+		ServiceSchedule, Subscription, Task, User, UserSettings []ent.Interceptor
 	}
 )
 

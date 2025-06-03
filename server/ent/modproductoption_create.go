@@ -13,6 +13,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
+	"github.com/Dan6erbond/revline/ent/modproductoptionpreview"
 	"github.com/google/uuid"
 )
 
@@ -179,6 +180,21 @@ func (mpoc *ModProductOptionCreate) AddMedia(m ...*Media) *ModProductOptionCreat
 	return mpoc.AddMediumIDs(ids...)
 }
 
+// AddPreviewIDs adds the "previews" edge to the ModProductOptionPreview entity by IDs.
+func (mpoc *ModProductOptionCreate) AddPreviewIDs(ids ...uuid.UUID) *ModProductOptionCreate {
+	mpoc.mutation.AddPreviewIDs(ids...)
+	return mpoc
+}
+
+// AddPreviews adds the "previews" edges to the ModProductOptionPreview entity.
+func (mpoc *ModProductOptionCreate) AddPreviews(m ...*ModProductOptionPreview) *ModProductOptionCreate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return mpoc.AddPreviewIDs(ids...)
+}
+
 // Mutation returns the ModProductOptionMutation object of the builder.
 func (mpoc *ModProductOptionCreate) Mutation() *ModProductOptionMutation {
 	return mpoc.mutation
@@ -340,6 +356,22 @@ func (mpoc *ModProductOptionCreate) createSpec() (*ModProductOption, *sqlgraph.C
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := mpoc.mutation.PreviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.PreviewsTable,
+			Columns: []string{modproductoption.PreviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modproductoptionpreview.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

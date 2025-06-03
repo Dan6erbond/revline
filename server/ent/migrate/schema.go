@@ -410,6 +410,28 @@ var (
 			},
 		},
 	}
+	// ModProductOptionPreviewsColumns holds the columns for the "mod_product_option_previews" table.
+	ModProductOptionPreviewsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"generating", "completed", "failed"}, Default: "generating"},
+		{Name: "mod_product_option_previews", Type: field.TypeUUID},
+	}
+	// ModProductOptionPreviewsTable holds the schema information for the "mod_product_option_previews" table.
+	ModProductOptionPreviewsTable = &schema.Table{
+		Name:       "mod_product_option_previews",
+		Columns:    ModProductOptionPreviewsColumns,
+		PrimaryKey: []*schema.Column{ModProductOptionPreviewsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "mod_product_option_previews_mod_product_options_previews",
+				Columns:    []*schema.Column{ModProductOptionPreviewsColumns[4]},
+				RefColumns: []*schema.Column{ModProductOptionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// OdometerReadingsColumns holds the columns for the "odometer_readings" table.
 	OdometerReadingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -789,6 +811,7 @@ var (
 		MediaTable,
 		ModsTable,
 		ModProductOptionsTable,
+		ModProductOptionPreviewsTable,
 		OdometerReadingsTable,
 		ProfilesTable,
 		ServiceItemsTable,
@@ -830,6 +853,7 @@ func init() {
 	MediaTable.ForeignKeys[2].RefTable = UsersTable
 	ModsTable.ForeignKeys[0].RefTable = CarsTable
 	ModProductOptionsTable.ForeignKeys[0].RefTable = ModsTable
+	ModProductOptionPreviewsTable.ForeignKeys[0].RefTable = ModProductOptionsTable
 	OdometerReadingsTable.ForeignKeys[0].RefTable = CarsTable
 	ProfilesTable.ForeignKeys[0].RefTable = UsersTable
 	ServiceItemsTable.ForeignKeys[0].RefTable = CarsTable

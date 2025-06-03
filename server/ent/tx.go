@@ -40,6 +40,8 @@ type Tx struct {
 	Mod *ModClient
 	// ModProductOption is the client for interacting with the ModProductOption builders.
 	ModProductOption *ModProductOptionClient
+	// ModProductOptionPreview is the client for interacting with the ModProductOptionPreview builders.
+	ModProductOptionPreview *ModProductOptionPreviewClient
 	// OdometerReading is the client for interacting with the OdometerReading builders.
 	OdometerReading *OdometerReadingClient
 	// Profile is the client for interacting with the Profile builders.
@@ -202,6 +204,7 @@ func (tx *Tx) init() {
 	tx.Media = NewMediaClient(tx.config)
 	tx.Mod = NewModClient(tx.config)
 	tx.ModProductOption = NewModProductOptionClient(tx.config)
+	tx.ModProductOptionPreview = NewModProductOptionPreviewClient(tx.config)
 	tx.OdometerReading = NewOdometerReadingClient(tx.config)
 	tx.Profile = NewProfileClient(tx.config)
 	tx.ServiceItem = NewServiceItemClient(tx.config)

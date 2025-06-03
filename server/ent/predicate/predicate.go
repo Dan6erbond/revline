@@ -45,6 +45,9 @@ type Mod func(*sql.Selector)
 // ModProductOption is the predicate function for modproductoption builders.
 type ModProductOption func(*sql.Selector)
 
+// ModProductOptionPreview is the predicate function for modproductoptionpreview builders.
+type ModProductOptionPreview func(*sql.Selector)
+
 // OdometerReading is the predicate function for odometerreading builders.
 type OdometerReading func(*sql.Selector)
 

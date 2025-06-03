@@ -18,6 +18,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
+	"github.com/Dan6erbond/revline/ent/modproductoptionpreview"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/schema"
@@ -302,6 +303,25 @@ func init() {
 	modproductoptionDescID := modproductoptionFields[0].Descriptor()
 	// modproductoption.DefaultID holds the default value on creation for the id field.
 	modproductoption.DefaultID = modproductoptionDescID.Default.(func() uuid.UUID)
+	modproductoptionpreviewMixin := schema.ModProductOptionPreview{}.Mixin()
+	modproductoptionpreviewMixinFields0 := modproductoptionpreviewMixin[0].Fields()
+	_ = modproductoptionpreviewMixinFields0
+	modproductoptionpreviewFields := schema.ModProductOptionPreview{}.Fields()
+	_ = modproductoptionpreviewFields
+	// modproductoptionpreviewDescCreateTime is the schema descriptor for create_time field.
+	modproductoptionpreviewDescCreateTime := modproductoptionpreviewMixinFields0[0].Descriptor()
+	// modproductoptionpreview.DefaultCreateTime holds the default value on creation for the create_time field.
+	modproductoptionpreview.DefaultCreateTime = modproductoptionpreviewDescCreateTime.Default.(func() time.Time)
+	// modproductoptionpreviewDescUpdateTime is the schema descriptor for update_time field.
+	modproductoptionpreviewDescUpdateTime := modproductoptionpreviewMixinFields0[1].Descriptor()
+	// modproductoptionpreview.DefaultUpdateTime holds the default value on creation for the update_time field.
+	modproductoptionpreview.DefaultUpdateTime = modproductoptionpreviewDescUpdateTime.Default.(func() time.Time)
+	// modproductoptionpreview.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	modproductoptionpreview.UpdateDefaultUpdateTime = modproductoptionpreviewDescUpdateTime.UpdateDefault.(func() time.Time)
+	// modproductoptionpreviewDescID is the schema descriptor for id field.
+	modproductoptionpreviewDescID := modproductoptionpreviewFields[0].Descriptor()
+	// modproductoptionpreview.DefaultID holds the default value on creation for the id field.
+	modproductoptionpreview.DefaultID = modproductoptionpreviewDescID.Default.(func() uuid.UUID)
 	odometerreadingMixin := schema.OdometerReading{}.Mixin()
 	odometerreadingMixinFields0 := odometerreadingMixin[0].Fields()
 	_ = odometerreadingMixinFields0

@@ -53,13 +53,16 @@ type ModProductOptionEdges struct {
 	Mod *Mod `json:"mod,omitempty"`
 	// Media holds the value of the media edge.
 	Media []*Media `json:"media,omitempty"`
+	// Previews holds the value of the previews edge.
+	Previews []*ModProductOptionPreview `json:"previews,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 	// totalCount holds the count of the edges above.
-	totalCount [2]map[string]int
+	totalCount [3]map[string]int
 
-	namedMedia map[string][]*Media
+	namedMedia    map[string][]*Media
+	namedPreviews map[string][]*ModProductOptionPreview
 }
 
 // ModOrErr returns the Mod value or an error if the edge
@@ -80,6 +83,15 @@ func (e ModProductOptionEdges) MediaOrErr() ([]*Media, error) {
 		return e.Media, nil
 	}
 	return nil, &NotLoadedError{edge: "media"}
+}
+
+// PreviewsOrErr returns the Previews value or an error if the edge
+// was not loaded in eager-loading.
+func (e ModProductOptionEdges) PreviewsOrErr() ([]*ModProductOptionPreview, error) {
+	if e.loadedTypes[2] {
+		return e.Previews, nil
+	}
+	return nil, &NotLoadedError{edge: "previews"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -221,6 +233,11 @@ func (mpo *ModProductOption) QueryMedia() *MediaQuery {
 	return NewModProductOptionClient(mpo.config).QueryMedia(mpo)
 }
 
+// QueryPreviews queries the "previews" edge of the ModProductOption entity.
+func (mpo *ModProductOption) QueryPreviews() *ModProductOptionPreviewQuery {
+	return NewModProductOptionClient(mpo.config).QueryPreviews(mpo)
+}
+
 // Update returns a builder for updating this ModProductOption.
 // Note that you need to call ModProductOption.Unwrap() before calling this method if this ModProductOption
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -308,6 +325,30 @@ func (mpo *ModProductOption) appendNamedMedia(name string, edges ...*Media) {
 		mpo.Edges.namedMedia[name] = []*Media{}
 	} else {
 		mpo.Edges.namedMedia[name] = append(mpo.Edges.namedMedia[name], edges...)
+	}
+}
+
+// NamedPreviews returns the Previews named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (mpo *ModProductOption) NamedPreviews(name string) ([]*ModProductOptionPreview, error) {
+	if mpo.Edges.namedPreviews == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := mpo.Edges.namedPreviews[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (mpo *ModProductOption) appendNamedPreviews(name string, edges ...*ModProductOptionPreview) {
+	if mpo.Edges.namedPreviews == nil {
+		mpo.Edges.namedPreviews = make(map[string][]*ModProductOptionPreview)
+	}
+	if len(edges) == 0 {
+		mpo.Edges.namedPreviews[name] = []*ModProductOptionPreview{}
+	} else {
+		mpo.Edges.namedPreviews[name] = append(mpo.Edges.namedPreviews[name], edges...)
 	}
 }
 

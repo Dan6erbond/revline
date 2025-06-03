@@ -19,6 +19,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jackc/pgx/v5 v5.7.4
 	github.com/minio/minio-go/v7 v7.0.91
+	github.com/openai/openai-go v1.2.1
 	github.com/spf13/cast v1.7.1
 	github.com/spf13/viper v1.20.1
 	github.com/stripe/stripe-go/v82 v82.1.0
@@ -67,6 +68,10 @@ require (
 	github.com/spf13/afero v1.12.0 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	github.com/tidwall/gjson v1.18.0 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/tidwall/sjson v1.2.5 // indirect
 	github.com/urfave/cli/v2 v2.27.6 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect

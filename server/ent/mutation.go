@@ -24,6 +24,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
+	"github.com/Dan6erbond/revline/ent/modproductoptionpreview"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/Dan6erbond/revline/ent/profile"
@@ -46,28 +47,29 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAlbum            = "Album"
-	TypeCar              = "Car"
-	TypeCheckoutSession  = "CheckoutSession"
-	TypeDocument         = "Document"
-	TypeDragResult       = "DragResult"
-	TypeDragSession      = "DragSession"
-	TypeDynoResult       = "DynoResult"
-	TypeDynoSession      = "DynoSession"
-	TypeExpense          = "Expense"
-	TypeFuelUp           = "FuelUp"
-	TypeMedia            = "Media"
-	TypeMod              = "Mod"
-	TypeModProductOption = "ModProductOption"
-	TypeOdometerReading  = "OdometerReading"
-	TypeProfile          = "Profile"
-	TypeServiceItem      = "ServiceItem"
-	TypeServiceLog       = "ServiceLog"
-	TypeServiceSchedule  = "ServiceSchedule"
-	TypeSubscription     = "Subscription"
-	TypeTask             = "Task"
-	TypeUser             = "User"
-	TypeUserSettings     = "UserSettings"
+	TypeAlbum                   = "Album"
+	TypeCar                     = "Car"
+	TypeCheckoutSession         = "CheckoutSession"
+	TypeDocument                = "Document"
+	TypeDragResult              = "DragResult"
+	TypeDragSession             = "DragSession"
+	TypeDynoResult              = "DynoResult"
+	TypeDynoSession             = "DynoSession"
+	TypeExpense                 = "Expense"
+	TypeFuelUp                  = "FuelUp"
+	TypeMedia                   = "Media"
+	TypeMod                     = "Mod"
+	TypeModProductOption        = "ModProductOption"
+	TypeModProductOptionPreview = "ModProductOptionPreview"
+	TypeOdometerReading         = "OdometerReading"
+	TypeProfile                 = "Profile"
+	TypeServiceItem             = "ServiceItem"
+	TypeServiceLog              = "ServiceLog"
+	TypeServiceSchedule         = "ServiceSchedule"
+	TypeSubscription            = "Subscription"
+	TypeTask                    = "Task"
+	TypeUser                    = "User"
+	TypeUserSettings            = "UserSettings"
 )
 
 // AlbumMutation represents an operation that mutates the Album nodes in the graph.
@@ -11282,31 +11284,34 @@ func (m *ModMutation) ResetEdge(name string) error {
 // ModProductOptionMutation represents an operation that mutates the ModProductOption nodes in the graph.
 type ModProductOptionMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	create_time   *time.Time
-	update_time   *time.Time
-	vendor        *string
-	name          *string
-	link          *string
-	price         *float64
-	addprice      *float64
-	notes         *string
-	pros          *[]string
-	appendpros    []string
-	cons          *[]string
-	appendcons    []string
-	specs         *map[string]string
-	clearedFields map[string]struct{}
-	mod           *uuid.UUID
-	clearedmod    bool
-	media         map[uuid.UUID]struct{}
-	removedmedia  map[uuid.UUID]struct{}
-	clearedmedia  bool
-	done          bool
-	oldValue      func(context.Context) (*ModProductOption, error)
-	predicates    []predicate.ModProductOption
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	create_time     *time.Time
+	update_time     *time.Time
+	vendor          *string
+	name            *string
+	link            *string
+	price           *float64
+	addprice        *float64
+	notes           *string
+	pros            *[]string
+	appendpros      []string
+	cons            *[]string
+	appendcons      []string
+	specs           *map[string]string
+	clearedFields   map[string]struct{}
+	mod             *uuid.UUID
+	clearedmod      bool
+	media           map[uuid.UUID]struct{}
+	removedmedia    map[uuid.UUID]struct{}
+	clearedmedia    bool
+	previews        map[uuid.UUID]struct{}
+	removedpreviews map[uuid.UUID]struct{}
+	clearedpreviews bool
+	done            bool
+	oldValue        func(context.Context) (*ModProductOption, error)
+	predicates      []predicate.ModProductOption
 }
 
 var _ ent.Mutation = (*ModProductOptionMutation)(nil)
@@ -12023,6 +12028,60 @@ func (m *ModProductOptionMutation) ResetMedia() {
 	m.removedmedia = nil
 }
 
+// AddPreviewIDs adds the "previews" edge to the ModProductOptionPreview entity by ids.
+func (m *ModProductOptionMutation) AddPreviewIDs(ids ...uuid.UUID) {
+	if m.previews == nil {
+		m.previews = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.previews[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPreviews clears the "previews" edge to the ModProductOptionPreview entity.
+func (m *ModProductOptionMutation) ClearPreviews() {
+	m.clearedpreviews = true
+}
+
+// PreviewsCleared reports if the "previews" edge to the ModProductOptionPreview entity was cleared.
+func (m *ModProductOptionMutation) PreviewsCleared() bool {
+	return m.clearedpreviews
+}
+
+// RemovePreviewIDs removes the "previews" edge to the ModProductOptionPreview entity by IDs.
+func (m *ModProductOptionMutation) RemovePreviewIDs(ids ...uuid.UUID) {
+	if m.removedpreviews == nil {
+		m.removedpreviews = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.previews, ids[i])
+		m.removedpreviews[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPreviews returns the removed IDs of the "previews" edge to the ModProductOptionPreview entity.
+func (m *ModProductOptionMutation) RemovedPreviewsIDs() (ids []uuid.UUID) {
+	for id := range m.removedpreviews {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PreviewsIDs returns the "previews" edge IDs in the mutation.
+func (m *ModProductOptionMutation) PreviewsIDs() (ids []uuid.UUID) {
+	for id := range m.previews {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPreviews resets all changes to the "previews" edge.
+func (m *ModProductOptionMutation) ResetPreviews() {
+	m.previews = nil
+	m.clearedpreviews = false
+	m.removedpreviews = nil
+}
+
 // Where appends a list predicates to the ModProductOptionMutation builder.
 func (m *ModProductOptionMutation) Where(ps ...predicate.ModProductOption) {
 	m.predicates = append(m.predicates, ps...)
@@ -12375,12 +12434,15 @@ func (m *ModProductOptionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ModProductOptionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.mod != nil {
 		edges = append(edges, modproductoption.EdgeMod)
 	}
 	if m.media != nil {
 		edges = append(edges, modproductoption.EdgeMedia)
+	}
+	if m.previews != nil {
+		edges = append(edges, modproductoption.EdgePreviews)
 	}
 	return edges
 }
@@ -12399,15 +12461,24 @@ func (m *ModProductOptionMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case modproductoption.EdgePreviews:
+		ids := make([]ent.Value, 0, len(m.previews))
+		for id := range m.previews {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ModProductOptionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedmedia != nil {
 		edges = append(edges, modproductoption.EdgeMedia)
+	}
+	if m.removedpreviews != nil {
+		edges = append(edges, modproductoption.EdgePreviews)
 	}
 	return edges
 }
@@ -12422,18 +12493,27 @@ func (m *ModProductOptionMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case modproductoption.EdgePreviews:
+		ids := make([]ent.Value, 0, len(m.removedpreviews))
+		for id := range m.removedpreviews {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ModProductOptionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedmod {
 		edges = append(edges, modproductoption.EdgeMod)
 	}
 	if m.clearedmedia {
 		edges = append(edges, modproductoption.EdgeMedia)
+	}
+	if m.clearedpreviews {
+		edges = append(edges, modproductoption.EdgePreviews)
 	}
 	return edges
 }
@@ -12446,6 +12526,8 @@ func (m *ModProductOptionMutation) EdgeCleared(name string) bool {
 		return m.clearedmod
 	case modproductoption.EdgeMedia:
 		return m.clearedmedia
+	case modproductoption.EdgePreviews:
+		return m.clearedpreviews
 	}
 	return false
 }
@@ -12471,8 +12553,518 @@ func (m *ModProductOptionMutation) ResetEdge(name string) error {
 	case modproductoption.EdgeMedia:
 		m.ResetMedia()
 		return nil
+	case modproductoption.EdgePreviews:
+		m.ResetPreviews()
+		return nil
 	}
 	return fmt.Errorf("unknown ModProductOption edge %s", name)
+}
+
+// ModProductOptionPreviewMutation represents an operation that mutates the ModProductOptionPreview nodes in the graph.
+type ModProductOptionPreviewMutation struct {
+	config
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	create_time           *time.Time
+	update_time           *time.Time
+	status                *modproductoptionpreview.Status
+	clearedFields         map[string]struct{}
+	product_option        *uuid.UUID
+	clearedproduct_option bool
+	done                  bool
+	oldValue              func(context.Context) (*ModProductOptionPreview, error)
+	predicates            []predicate.ModProductOptionPreview
+}
+
+var _ ent.Mutation = (*ModProductOptionPreviewMutation)(nil)
+
+// modproductoptionpreviewOption allows management of the mutation configuration using functional options.
+type modproductoptionpreviewOption func(*ModProductOptionPreviewMutation)
+
+// newModProductOptionPreviewMutation creates new mutation for the ModProductOptionPreview entity.
+func newModProductOptionPreviewMutation(c config, op Op, opts ...modproductoptionpreviewOption) *ModProductOptionPreviewMutation {
+	m := &ModProductOptionPreviewMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeModProductOptionPreview,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withModProductOptionPreviewID sets the ID field of the mutation.
+func withModProductOptionPreviewID(id uuid.UUID) modproductoptionpreviewOption {
+	return func(m *ModProductOptionPreviewMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ModProductOptionPreview
+		)
+		m.oldValue = func(ctx context.Context) (*ModProductOptionPreview, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ModProductOptionPreview.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withModProductOptionPreview sets the old ModProductOptionPreview of the mutation.
+func withModProductOptionPreview(node *ModProductOptionPreview) modproductoptionpreviewOption {
+	return func(m *ModProductOptionPreviewMutation) {
+		m.oldValue = func(context.Context) (*ModProductOptionPreview, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ModProductOptionPreviewMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ModProductOptionPreviewMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ModProductOptionPreview entities.
+func (m *ModProductOptionPreviewMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ModProductOptionPreviewMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ModProductOptionPreviewMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ModProductOptionPreview.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *ModProductOptionPreviewMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *ModProductOptionPreviewMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the ModProductOptionPreview entity.
+// If the ModProductOptionPreview object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ModProductOptionPreviewMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *ModProductOptionPreviewMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *ModProductOptionPreviewMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *ModProductOptionPreviewMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the ModProductOptionPreview entity.
+// If the ModProductOptionPreview object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ModProductOptionPreviewMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *ModProductOptionPreviewMutation) ResetUpdateTime() {
+	m.update_time = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *ModProductOptionPreviewMutation) SetStatus(value modproductoptionpreview.Status) {
+	m.status = &value
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *ModProductOptionPreviewMutation) Status() (r modproductoptionpreview.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the ModProductOptionPreview entity.
+// If the ModProductOptionPreview object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ModProductOptionPreviewMutation) OldStatus(ctx context.Context) (v modproductoptionpreview.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *ModProductOptionPreviewMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetProductOptionID sets the "product_option" edge to the ModProductOption entity by id.
+func (m *ModProductOptionPreviewMutation) SetProductOptionID(id uuid.UUID) {
+	m.product_option = &id
+}
+
+// ClearProductOption clears the "product_option" edge to the ModProductOption entity.
+func (m *ModProductOptionPreviewMutation) ClearProductOption() {
+	m.clearedproduct_option = true
+}
+
+// ProductOptionCleared reports if the "product_option" edge to the ModProductOption entity was cleared.
+func (m *ModProductOptionPreviewMutation) ProductOptionCleared() bool {
+	return m.clearedproduct_option
+}
+
+// ProductOptionID returns the "product_option" edge ID in the mutation.
+func (m *ModProductOptionPreviewMutation) ProductOptionID() (id uuid.UUID, exists bool) {
+	if m.product_option != nil {
+		return *m.product_option, true
+	}
+	return
+}
+
+// ProductOptionIDs returns the "product_option" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProductOptionID instead. It exists only for internal usage by the builders.
+func (m *ModProductOptionPreviewMutation) ProductOptionIDs() (ids []uuid.UUID) {
+	if id := m.product_option; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProductOption resets all changes to the "product_option" edge.
+func (m *ModProductOptionPreviewMutation) ResetProductOption() {
+	m.product_option = nil
+	m.clearedproduct_option = false
+}
+
+// Where appends a list predicates to the ModProductOptionPreviewMutation builder.
+func (m *ModProductOptionPreviewMutation) Where(ps ...predicate.ModProductOptionPreview) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ModProductOptionPreviewMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ModProductOptionPreviewMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ModProductOptionPreview, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ModProductOptionPreviewMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ModProductOptionPreviewMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ModProductOptionPreview).
+func (m *ModProductOptionPreviewMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ModProductOptionPreviewMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.create_time != nil {
+		fields = append(fields, modproductoptionpreview.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, modproductoptionpreview.FieldUpdateTime)
+	}
+	if m.status != nil {
+		fields = append(fields, modproductoptionpreview.FieldStatus)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ModProductOptionPreviewMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case modproductoptionpreview.FieldCreateTime:
+		return m.CreateTime()
+	case modproductoptionpreview.FieldUpdateTime:
+		return m.UpdateTime()
+	case modproductoptionpreview.FieldStatus:
+		return m.Status()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ModProductOptionPreviewMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case modproductoptionpreview.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case modproductoptionpreview.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
+	case modproductoptionpreview.FieldStatus:
+		return m.OldStatus(ctx)
+	}
+	return nil, fmt.Errorf("unknown ModProductOptionPreview field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ModProductOptionPreviewMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case modproductoptionpreview.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case modproductoptionpreview.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
+		return nil
+	case modproductoptionpreview.FieldStatus:
+		v, ok := value.(modproductoptionpreview.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ModProductOptionPreview field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ModProductOptionPreviewMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ModProductOptionPreviewMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ModProductOptionPreviewMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown ModProductOptionPreview numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ModProductOptionPreviewMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ModProductOptionPreviewMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ModProductOptionPreviewMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ModProductOptionPreview nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ModProductOptionPreviewMutation) ResetField(name string) error {
+	switch name {
+	case modproductoptionpreview.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case modproductoptionpreview.FieldUpdateTime:
+		m.ResetUpdateTime()
+		return nil
+	case modproductoptionpreview.FieldStatus:
+		m.ResetStatus()
+		return nil
+	}
+	return fmt.Errorf("unknown ModProductOptionPreview field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ModProductOptionPreviewMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.product_option != nil {
+		edges = append(edges, modproductoptionpreview.EdgeProductOption)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ModProductOptionPreviewMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case modproductoptionpreview.EdgeProductOption:
+		if id := m.product_option; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ModProductOptionPreviewMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ModProductOptionPreviewMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ModProductOptionPreviewMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedproduct_option {
+		edges = append(edges, modproductoptionpreview.EdgeProductOption)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ModProductOptionPreviewMutation) EdgeCleared(name string) bool {
+	switch name {
+	case modproductoptionpreview.EdgeProductOption:
+		return m.clearedproduct_option
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ModProductOptionPreviewMutation) ClearEdge(name string) error {
+	switch name {
+	case modproductoptionpreview.EdgeProductOption:
+		m.ClearProductOption()
+		return nil
+	}
+	return fmt.Errorf("unknown ModProductOptionPreview unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ModProductOptionPreviewMutation) ResetEdge(name string) error {
+	switch name {
+	case modproductoptionpreview.EdgeProductOption:
+		m.ResetProductOption()
+		return nil
+	}
+	return fmt.Errorf("unknown ModProductOptionPreview edge %s", name)
 }
 
 // OdometerReadingMutation represents an operation that mutates the OdometerReading nodes in the graph.

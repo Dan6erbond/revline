@@ -39,6 +39,8 @@ const (
 	EdgeMod = "mod"
 	// EdgeMedia holds the string denoting the media edge name in mutations.
 	EdgeMedia = "media"
+	// EdgePreviews holds the string denoting the previews edge name in mutations.
+	EdgePreviews = "previews"
 	// Table holds the table name of the modproductoption in the database.
 	Table = "mod_product_options"
 	// ModTable is the table that holds the mod relation/edge.
@@ -55,6 +57,13 @@ const (
 	MediaInverseTable = "media"
 	// MediaColumn is the table column denoting the media relation/edge.
 	MediaColumn = "mod_product_option_media"
+	// PreviewsTable is the table that holds the previews relation/edge.
+	PreviewsTable = "mod_product_option_previews"
+	// PreviewsInverseTable is the table name for the ModProductOptionPreview entity.
+	// It exists in this package in order to avoid circular dependency with the "modproductoptionpreview" package.
+	PreviewsInverseTable = "mod_product_option_previews"
+	// PreviewsColumn is the table column denoting the previews relation/edge.
+	PreviewsColumn = "mod_product_option_previews"
 )
 
 // Columns holds all SQL columns for modproductoption fields.
@@ -167,6 +176,20 @@ func ByMedia(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newMediaStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByPreviewsCount orders the results by previews count.
+func ByPreviewsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPreviewsStep(), opts...)
+	}
+}
+
+// ByPreviews orders the results by previews terms.
+func ByPreviews(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPreviewsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newModStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -179,5 +202,12 @@ func newMediaStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MediaInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, MediaTable, MediaColumn),
+	)
+}
+func newPreviewsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PreviewsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, PreviewsTable, PreviewsColumn),
 	)
 }

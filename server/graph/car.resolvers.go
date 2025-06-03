@@ -6,8 +6,10 @@ package graph
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"math"
+	"os"
 	"slices"
 	"time"
 
@@ -17,11 +19,16 @@ import (
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
+	"github.com/Dan6erbond/revline/ent/media"
+	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
 	"github.com/Dan6erbond/revline/graph/model"
 	"github.com/google/uuid"
 	minio "github.com/minio/minio-go/v7"
+	"github.com/openai/openai-go/packages/param"
+	"github.com/openai/openai-go/responses"
+	"github.com/spf13/cast"
 )
 
 // BannerImageURL is the resolver for the bannerImageUrl field.
@@ -671,6 +678,148 @@ func (r *mutationResolver) UpdateModProductOption(ctx context.Context, id string
 	}
 
 	return r.entClient.ModProductOption.UpdateOneID(uid).SetInput(input).Save(ctx)
+}
+
+// GenerateModProductOptionPreview is the resolver for the generateModProductOptionPreview field.
+func (r *mutationResolver) GenerateModProductOptionPreview(ctx context.Context, input model.GenerateModPreviewInput) (*ent.ModProductOptionPreview, error) {
+	uid, err := uuid.Parse(input.ModProductOptionID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	option, err := r.entClient.ModProductOption.Query().
+		WithMod().
+		WithMedia().
+		Where(modproductoption.ID(uid)).
+		First(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if uid, err = uuid.Parse(input.MediaID); err != nil {
+		return nil, err
+	}
+
+	media, err := r.entClient.Media.Query().
+		WithCar(func(cq *ent.CarQuery) {
+			cq.WithOwner()
+		}).
+		WithUser().
+		Where(media.ID(uid)).
+		First(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	prompt := fmt.Sprintf("Create a realistic image of the car in the first image with the mod '%s %s' by %s (category: %s) with all other images being reference images of the mod.",
+		cast.ToString(option.Name),
+		cast.ToString(option.Edges.Mod.Title),
+		cast.ToString(option.Vendor),
+		option.Edges.Mod.Category,
+	)
+
+	var objectName string
+
+	if media.Edges.Car != nil {
+		objectName = fmt.Sprintf("users/%s/cars/%s/media/%s", media.Edges.Car.Edges.Owner.ID, media.Edges.Car.ID, media.ID)
+	} else {
+		objectName = fmt.Sprintf("users/%s/media/%s", media.Edges.User.ID, media.ID)
+	}
+
+	url, err := r.s3Client.PresignedGetObject(ctx, r.config.S3.Bucket, objectName, time.Hour, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	urls := url.String()
+
+	paamsInput := responses.ResponseNewParamsInputUnion{
+		OfInputItemList: responses.ResponseInputParam{
+			{
+				OfInputMessage: &responses.ResponseInputItemMessageParam{
+					Content: responses.ResponseInputMessageContentListParam{
+						responses.ResponseInputContentUnionParam{
+							OfInputText: &responses.ResponseInputTextParam{
+								Text: prompt,
+							},
+						},
+					},
+				},
+			},
+			{
+				OfInputMessage: &responses.ResponseInputItemMessageParam{
+					Content: responses.ResponseInputMessageContentListParam{
+						responses.ResponseInputContentUnionParam{
+							OfInputImage: &responses.ResponseInputImageParam{ImageURL: param.NewOpt(urls)},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, m := range option.Edges.Media {
+		var objectName string
+
+		if m.Edges.Car != nil {
+			objectName = fmt.Sprintf("users/%s/cars/%s/media/%s", m.Edges.Car.Edges.Owner.ID, m.Edges.Car.ID, m.ID)
+		} else {
+			objectName = fmt.Sprintf("users/%s/media/%s", m.Edges.User.ID, m.ID)
+		}
+
+		url, err := r.s3Client.PresignedGetObject(ctx, r.config.S3.Bucket, objectName, time.Hour, nil)
+
+		if err != nil {
+			return nil, err
+		}
+
+		urls := url.String()
+
+		paamsInput.OfInputItemList = append(paamsInput.OfInputItemList,
+			responses.ResponseInputItemUnionParam{
+				OfInputMessage: &responses.ResponseInputItemMessageParam{
+					Content: responses.ResponseInputMessageContentListParam{
+						responses.ResponseInputContentUnionParam{
+							OfInputImage: &responses.ResponseInputImageParam{ImageURL: param.NewOpt(urls)},
+						},
+					},
+				},
+			})
+	}
+
+	resp, err := r.openaiClient.Responses.New(ctx, responses.ResponseNewParams{
+		Model: "gpt-4.1-mini",
+		Input: paamsInput,
+		Tools: []responses.ToolUnionParam{{OfImageGeneration: &responses.ToolImageGenerationParam{}}},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, o := range resp.Output {
+		if o.Type == "image_generation_call" {
+			f, err := os.Create(o.ID + ".png")
+
+			if err != nil {
+				return nil, err
+			}
+
+			bytes, err := base64.StdEncoding.DecodeString(o.Result)
+
+			if err != nil {
+				return nil, err
+			}
+
+			f.Write(bytes)
+		}
+	}
+
+	return nil, nil
 }
 
 // Car is the resolver for the car field.

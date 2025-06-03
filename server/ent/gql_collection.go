@@ -23,6 +23,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
+	"github.com/Dan6erbond/revline/ent/modproductoptionpreview"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/serviceitem"
@@ -1814,6 +1815,19 @@ func (mpo *ModProductOptionQuery) collectField(ctx context.Context, oneNode bool
 			mpo.WithNamedMedia(alias, func(wq *MediaQuery) {
 				*wq = *query
 			})
+
+		case "previews":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ModProductOptionPreviewClient{config: mpo.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, modproductoptionpreviewImplementors)...); err != nil {
+				return err
+			}
+			mpo.WithNamedPreviews(alias, func(wq *ModProductOptionPreviewQuery) {
+				*wq = *query
+			})
 		case "createTime":
 			if _, ok := fieldSeen[modproductoption.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, modproductoption.FieldCreateTime)
@@ -1901,6 +1915,94 @@ func newModProductOptionPaginateArgs(rv map[string]any) *modproductoptionPaginat
 	}
 	if v, ok := rv[whereField].(*ModProductOptionWhereInput); ok {
 		args.opts = append(args.opts, WithModProductOptionFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (mpop *ModProductOptionPreviewQuery) CollectFields(ctx context.Context, satisfies ...string) (*ModProductOptionPreviewQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return mpop, nil
+	}
+	if err := mpop.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return mpop, nil
+}
+
+func (mpop *ModProductOptionPreviewQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(modproductoptionpreview.Columns))
+		selectedFields = []string{modproductoptionpreview.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+
+		case "productOption":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ModProductOptionClient{config: mpop.config}).Query()
+			)
+			if err := query.collectField(ctx, oneNode, opCtx, field, path, mayAddCondition(satisfies, modproductoptionImplementors)...); err != nil {
+				return err
+			}
+			mpop.withProductOption = query
+		case "createTime":
+			if _, ok := fieldSeen[modproductoptionpreview.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, modproductoptionpreview.FieldCreateTime)
+				fieldSeen[modproductoptionpreview.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[modproductoptionpreview.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, modproductoptionpreview.FieldUpdateTime)
+				fieldSeen[modproductoptionpreview.FieldUpdateTime] = struct{}{}
+			}
+		case "status":
+			if _, ok := fieldSeen[modproductoptionpreview.FieldStatus]; !ok {
+				selectedFields = append(selectedFields, modproductoptionpreview.FieldStatus)
+				fieldSeen[modproductoptionpreview.FieldStatus] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		mpop.Select(selectedFields...)
+	}
+	return nil
+}
+
+type modproductoptionpreviewPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []ModProductOptionPreviewPaginateOption
+}
+
+func newModProductOptionPreviewPaginateArgs(rv map[string]any) *modproductoptionpreviewPaginateArgs {
+	args := &modproductoptionpreviewPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*ModProductOptionPreviewWhereInput); ok {
+		args.opts = append(args.opts, WithModProductOptionPreviewFilter(v.Filter))
 	}
 	return args
 }

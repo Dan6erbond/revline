@@ -27,6 +27,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
+	"github.com/Dan6erbond/revline/ent/modproductoptionpreview"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/serviceitem"
@@ -3354,6 +3355,255 @@ func (mpo *ModProductOption) ToEdge(order *ModProductOptionOrder) *ModProductOpt
 	return &ModProductOptionEdge{
 		Node:   mpo,
 		Cursor: order.Field.toCursor(mpo),
+	}
+}
+
+// ModProductOptionPreviewEdge is the edge representation of ModProductOptionPreview.
+type ModProductOptionPreviewEdge struct {
+	Node   *ModProductOptionPreview `json:"node"`
+	Cursor Cursor                   `json:"cursor"`
+}
+
+// ModProductOptionPreviewConnection is the connection containing edges to ModProductOptionPreview.
+type ModProductOptionPreviewConnection struct {
+	Edges      []*ModProductOptionPreviewEdge `json:"edges"`
+	PageInfo   PageInfo                       `json:"pageInfo"`
+	TotalCount int                            `json:"totalCount"`
+}
+
+func (c *ModProductOptionPreviewConnection) build(nodes []*ModProductOptionPreview, pager *modproductoptionpreviewPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *ModProductOptionPreview
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *ModProductOptionPreview {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *ModProductOptionPreview {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*ModProductOptionPreviewEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &ModProductOptionPreviewEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// ModProductOptionPreviewPaginateOption enables pagination customization.
+type ModProductOptionPreviewPaginateOption func(*modproductoptionpreviewPager) error
+
+// WithModProductOptionPreviewOrder configures pagination ordering.
+func WithModProductOptionPreviewOrder(order *ModProductOptionPreviewOrder) ModProductOptionPreviewPaginateOption {
+	if order == nil {
+		order = DefaultModProductOptionPreviewOrder
+	}
+	o := *order
+	return func(pager *modproductoptionpreviewPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultModProductOptionPreviewOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithModProductOptionPreviewFilter configures pagination filter.
+func WithModProductOptionPreviewFilter(filter func(*ModProductOptionPreviewQuery) (*ModProductOptionPreviewQuery, error)) ModProductOptionPreviewPaginateOption {
+	return func(pager *modproductoptionpreviewPager) error {
+		if filter == nil {
+			return errors.New("ModProductOptionPreviewQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type modproductoptionpreviewPager struct {
+	reverse bool
+	order   *ModProductOptionPreviewOrder
+	filter  func(*ModProductOptionPreviewQuery) (*ModProductOptionPreviewQuery, error)
+}
+
+func newModProductOptionPreviewPager(opts []ModProductOptionPreviewPaginateOption, reverse bool) (*modproductoptionpreviewPager, error) {
+	pager := &modproductoptionpreviewPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultModProductOptionPreviewOrder
+	}
+	return pager, nil
+}
+
+func (p *modproductoptionpreviewPager) applyFilter(query *ModProductOptionPreviewQuery) (*ModProductOptionPreviewQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *modproductoptionpreviewPager) toCursor(mpop *ModProductOptionPreview) Cursor {
+	return p.order.Field.toCursor(mpop)
+}
+
+func (p *modproductoptionpreviewPager) applyCursors(query *ModProductOptionPreviewQuery, after, before *Cursor) (*ModProductOptionPreviewQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultModProductOptionPreviewOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *modproductoptionpreviewPager) applyOrder(query *ModProductOptionPreviewQuery) *ModProductOptionPreviewQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultModProductOptionPreviewOrder.Field {
+		query = query.Order(DefaultModProductOptionPreviewOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *modproductoptionpreviewPager) orderExpr(query *ModProductOptionPreviewQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultModProductOptionPreviewOrder.Field {
+			b.Comma().Ident(DefaultModProductOptionPreviewOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to ModProductOptionPreview.
+func (mpop *ModProductOptionPreviewQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...ModProductOptionPreviewPaginateOption,
+) (*ModProductOptionPreviewConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newModProductOptionPreviewPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if mpop, err = pager.applyFilter(mpop); err != nil {
+		return nil, err
+	}
+	conn := &ModProductOptionPreviewConnection{Edges: []*ModProductOptionPreviewEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			c := mpop.Clone()
+			c.ctx.Fields = nil
+			if conn.TotalCount, err = c.Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if mpop, err = pager.applyCursors(mpop, after, before); err != nil {
+		return nil, err
+	}
+	limit := paginateLimit(first, last)
+	if limit != 0 {
+		mpop.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := mpop.collectField(ctx, limit == 1, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	mpop = pager.applyOrder(mpop)
+	nodes, err := mpop.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+// ModProductOptionPreviewOrderField defines the ordering field of ModProductOptionPreview.
+type ModProductOptionPreviewOrderField struct {
+	// Value extracts the ordering value from the given ModProductOptionPreview.
+	Value    func(*ModProductOptionPreview) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) modproductoptionpreview.OrderOption
+	toCursor func(*ModProductOptionPreview) Cursor
+}
+
+// ModProductOptionPreviewOrder defines the ordering of ModProductOptionPreview.
+type ModProductOptionPreviewOrder struct {
+	Direction OrderDirection                     `json:"direction"`
+	Field     *ModProductOptionPreviewOrderField `json:"field"`
+}
+
+// DefaultModProductOptionPreviewOrder is the default ordering of ModProductOptionPreview.
+var DefaultModProductOptionPreviewOrder = &ModProductOptionPreviewOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &ModProductOptionPreviewOrderField{
+		Value: func(mpop *ModProductOptionPreview) (ent.Value, error) {
+			return mpop.ID, nil
+		},
+		column: modproductoptionpreview.FieldID,
+		toTerm: modproductoptionpreview.ByID,
+		toCursor: func(mpop *ModProductOptionPreview) Cursor {
+			return Cursor{ID: mpop.ID}
+		},
+	},
+}
+
+// ToEdge converts ModProductOptionPreview into ModProductOptionPreviewEdge.
+func (mpop *ModProductOptionPreview) ToEdge(order *ModProductOptionPreviewOrder) *ModProductOptionPreviewEdge {
+	if order == nil {
+		order = DefaultModProductOptionPreviewOrder
+	}
+	return &ModProductOptionPreviewEdge{
+		Node:   mpop,
+		Cursor: order.Field.toCursor(mpop),
 	}
 }
 

@@ -21,6 +21,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
+	"github.com/Dan6erbond/revline/ent/modproductoptionpreview"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/serviceitem"
@@ -103,6 +104,11 @@ var modproductoptionImplementors = []string{"ModProductOption", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
 func (*ModProductOption) IsNode() {}
+
+var modproductoptionpreviewImplementors = []string{"ModProductOptionPreview", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*ModProductOptionPreview) IsNode() {}
 
 var odometerreadingImplementors = []string{"OdometerReading", "Node"}
 
@@ -320,6 +326,15 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 			Where(modproductoption.ID(id))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
 			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, modproductoptionImplementors...); err != nil {
+				return nil, err
+			}
+		}
+		return query.Only(ctx)
+	case modproductoptionpreview.Table:
+		query := c.ModProductOptionPreview.Query().
+			Where(modproductoptionpreview.ID(id))
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, modproductoptionpreviewImplementors...); err != nil {
 				return nil, err
 			}
 		}
@@ -674,6 +689,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		query := c.ModProductOption.Query().
 			Where(modproductoption.IDIn(ids...))
 		query, err := query.CollectFields(ctx, modproductoptionImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case modproductoptionpreview.Table:
+		query := c.ModProductOptionPreview.Query().
+			Where(modproductoptionpreview.IDIn(ids...))
+		query, err := query.CollectFields(ctx, modproductoptionpreviewImplementors...)
 		if err != nil {
 			return nil, err
 		}

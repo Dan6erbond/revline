@@ -15,6 +15,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
+	"github.com/Dan6erbond/revline/ent/modproductoptionpreview"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/google/uuid"
 )
@@ -219,6 +220,21 @@ func (mpou *ModProductOptionUpdate) AddMedia(m ...*Media) *ModProductOptionUpdat
 	return mpou.AddMediumIDs(ids...)
 }
 
+// AddPreviewIDs adds the "previews" edge to the ModProductOptionPreview entity by IDs.
+func (mpou *ModProductOptionUpdate) AddPreviewIDs(ids ...uuid.UUID) *ModProductOptionUpdate {
+	mpou.mutation.AddPreviewIDs(ids...)
+	return mpou
+}
+
+// AddPreviews adds the "previews" edges to the ModProductOptionPreview entity.
+func (mpou *ModProductOptionUpdate) AddPreviews(m ...*ModProductOptionPreview) *ModProductOptionUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return mpou.AddPreviewIDs(ids...)
+}
+
 // Mutation returns the ModProductOptionMutation object of the builder.
 func (mpou *ModProductOptionUpdate) Mutation() *ModProductOptionMutation {
 	return mpou.mutation
@@ -249,6 +265,27 @@ func (mpou *ModProductOptionUpdate) RemoveMedia(m ...*Media) *ModProductOptionUp
 		ids[i] = m[i].ID
 	}
 	return mpou.RemoveMediumIDs(ids...)
+}
+
+// ClearPreviews clears all "previews" edges to the ModProductOptionPreview entity.
+func (mpou *ModProductOptionUpdate) ClearPreviews() *ModProductOptionUpdate {
+	mpou.mutation.ClearPreviews()
+	return mpou
+}
+
+// RemovePreviewIDs removes the "previews" edge to ModProductOptionPreview entities by IDs.
+func (mpou *ModProductOptionUpdate) RemovePreviewIDs(ids ...uuid.UUID) *ModProductOptionUpdate {
+	mpou.mutation.RemovePreviewIDs(ids...)
+	return mpou
+}
+
+// RemovePreviews removes "previews" edges to ModProductOptionPreview entities.
+func (mpou *ModProductOptionUpdate) RemovePreviews(m ...*ModProductOptionPreview) *ModProductOptionUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return mpou.RemovePreviewIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -438,6 +475,51 @@ func (mpou *ModProductOptionUpdate) sqlSave(ctx context.Context) (n int, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if mpou.mutation.PreviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.PreviewsTable,
+			Columns: []string{modproductoption.PreviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modproductoptionpreview.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mpou.mutation.RemovedPreviewsIDs(); len(nodes) > 0 && !mpou.mutation.PreviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.PreviewsTable,
+			Columns: []string{modproductoption.PreviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modproductoptionpreview.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mpou.mutation.PreviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.PreviewsTable,
+			Columns: []string{modproductoption.PreviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modproductoptionpreview.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -652,6 +734,21 @@ func (mpouo *ModProductOptionUpdateOne) AddMedia(m ...*Media) *ModProductOptionU
 	return mpouo.AddMediumIDs(ids...)
 }
 
+// AddPreviewIDs adds the "previews" edge to the ModProductOptionPreview entity by IDs.
+func (mpouo *ModProductOptionUpdateOne) AddPreviewIDs(ids ...uuid.UUID) *ModProductOptionUpdateOne {
+	mpouo.mutation.AddPreviewIDs(ids...)
+	return mpouo
+}
+
+// AddPreviews adds the "previews" edges to the ModProductOptionPreview entity.
+func (mpouo *ModProductOptionUpdateOne) AddPreviews(m ...*ModProductOptionPreview) *ModProductOptionUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return mpouo.AddPreviewIDs(ids...)
+}
+
 // Mutation returns the ModProductOptionMutation object of the builder.
 func (mpouo *ModProductOptionUpdateOne) Mutation() *ModProductOptionMutation {
 	return mpouo.mutation
@@ -682,6 +779,27 @@ func (mpouo *ModProductOptionUpdateOne) RemoveMedia(m ...*Media) *ModProductOpti
 		ids[i] = m[i].ID
 	}
 	return mpouo.RemoveMediumIDs(ids...)
+}
+
+// ClearPreviews clears all "previews" edges to the ModProductOptionPreview entity.
+func (mpouo *ModProductOptionUpdateOne) ClearPreviews() *ModProductOptionUpdateOne {
+	mpouo.mutation.ClearPreviews()
+	return mpouo
+}
+
+// RemovePreviewIDs removes the "previews" edge to ModProductOptionPreview entities by IDs.
+func (mpouo *ModProductOptionUpdateOne) RemovePreviewIDs(ids ...uuid.UUID) *ModProductOptionUpdateOne {
+	mpouo.mutation.RemovePreviewIDs(ids...)
+	return mpouo
+}
+
+// RemovePreviews removes "previews" edges to ModProductOptionPreview entities.
+func (mpouo *ModProductOptionUpdateOne) RemovePreviews(m ...*ModProductOptionPreview) *ModProductOptionUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return mpouo.RemovePreviewIDs(ids...)
 }
 
 // Where appends a list predicates to the ModProductOptionUpdate builder.
@@ -901,6 +1019,51 @@ func (mpouo *ModProductOptionUpdateOne) sqlSave(ctx context.Context) (_node *Mod
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(media.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if mpouo.mutation.PreviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.PreviewsTable,
+			Columns: []string{modproductoption.PreviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modproductoptionpreview.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mpouo.mutation.RemovedPreviewsIDs(); len(nodes) > 0 && !mpouo.mutation.PreviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.PreviewsTable,
+			Columns: []string{modproductoption.PreviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modproductoptionpreview.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mpouo.mutation.PreviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.PreviewsTable,
+			Columns: []string{modproductoption.PreviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modproductoptionpreview.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -423,6 +423,30 @@ func (f ModProductOptionMutationRuleFunc) EvalMutation(ctx context.Context, m en
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ModProductOptionMutation", m)
 }
 
+// The ModProductOptionPreviewQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type ModProductOptionPreviewQueryRuleFunc func(context.Context, *ent.ModProductOptionPreviewQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f ModProductOptionPreviewQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ModProductOptionPreviewQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ModProductOptionPreviewQuery", q)
+}
+
+// The ModProductOptionPreviewMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type ModProductOptionPreviewMutationRuleFunc func(context.Context, *ent.ModProductOptionPreviewMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f ModProductOptionPreviewMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.ModProductOptionPreviewMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ModProductOptionPreviewMutation", m)
+}
+
 // The OdometerReadingQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type OdometerReadingQueryRuleFunc func(context.Context, *ent.OdometerReadingQuery) error
@@ -700,6 +724,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.ModProductOptionQuery:
 		return q.Filter(), nil
+	case *ent.ModProductOptionPreviewQuery:
+		return q.Filter(), nil
 	case *ent.OdometerReadingQuery:
 		return q.Filter(), nil
 	case *ent.ProfileQuery:
@@ -750,6 +776,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.ModMutation:
 		return m.Filter(), nil
 	case *ent.ModProductOptionMutation:
+		return m.Filter(), nil
+	case *ent.ModProductOptionPreviewMutation:
 		return m.Filter(), nil
 	case *ent.OdometerReadingMutation:
 		return m.Filter(), nil

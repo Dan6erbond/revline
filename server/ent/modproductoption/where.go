@@ -597,6 +597,29 @@ func HasMediaWith(preds ...predicate.Media) predicate.ModProductOption {
 	})
 }
 
+// HasPreviews applies the HasEdge predicate on the "previews" edge.
+func HasPreviews() predicate.ModProductOption {
+	return predicate.ModProductOption(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, PreviewsTable, PreviewsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPreviewsWith applies the HasEdge predicate on the "previews" edge with a given conditions (other predicates).
+func HasPreviewsWith(preds ...predicate.ModProductOptionPreview) predicate.ModProductOption {
+	return predicate.ModProductOption(func(s *sql.Selector) {
+		step := newPreviewsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.ModProductOption) predicate.ModProductOption {
 	return predicate.ModProductOption(sql.AndPredicates(predicates...))

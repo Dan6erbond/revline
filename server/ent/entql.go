@@ -16,6 +16,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
+	"github.com/Dan6erbond/revline/ent/modproductoptionpreview"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/Dan6erbond/revline/ent/profile"
@@ -35,7 +36,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 22)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 23)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   album.Table,
@@ -285,6 +286,22 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[13] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   modproductoptionpreview.Table,
+			Columns: modproductoptionpreview.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: modproductoptionpreview.FieldID,
+			},
+		},
+		Type: "ModProductOptionPreview",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			modproductoptionpreview.FieldCreateTime: {Type: field.TypeTime, Column: modproductoptionpreview.FieldCreateTime},
+			modproductoptionpreview.FieldUpdateTime: {Type: field.TypeTime, Column: modproductoptionpreview.FieldUpdateTime},
+			modproductoptionpreview.FieldStatus:     {Type: field.TypeEnum, Column: modproductoptionpreview.FieldStatus},
+		},
+	}
+	graph.Nodes[14] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   odometerreading.Table,
 			Columns: odometerreading.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -301,7 +318,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			odometerreading.FieldNotes:       {Type: field.TypeString, Column: odometerreading.FieldNotes},
 		},
 	}
-	graph.Nodes[14] = &sqlgraph.Node{
+	graph.Nodes[15] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   profile.Table,
 			Columns: profile.Columns,
@@ -321,7 +338,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			profile.FieldVisibility: {Type: field.TypeEnum, Column: profile.FieldVisibility},
 		},
 	}
-	graph.Nodes[15] = &sqlgraph.Node{
+	graph.Nodes[16] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   serviceitem.Table,
 			Columns: serviceitem.Columns,
@@ -342,7 +359,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			serviceitem.FieldTags:                  {Type: field.TypeJSON, Column: serviceitem.FieldTags},
 		},
 	}
-	graph.Nodes[16] = &sqlgraph.Node{
+	graph.Nodes[17] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   servicelog.Table,
 			Columns: servicelog.Columns,
@@ -360,7 +377,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			servicelog.FieldNotes:         {Type: field.TypeString, Column: servicelog.FieldNotes},
 		},
 	}
-	graph.Nodes[17] = &sqlgraph.Node{
+	graph.Nodes[18] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   serviceschedule.Table,
 			Columns: serviceschedule.Columns,
@@ -382,7 +399,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			serviceschedule.FieldArchived:          {Type: field.TypeBool, Column: serviceschedule.FieldArchived},
 		},
 	}
-	graph.Nodes[18] = &sqlgraph.Node{
+	graph.Nodes[19] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   subscription.Table,
 			Columns: subscription.Columns,
@@ -405,7 +422,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			subscription.FieldAffiliate12moCode:    {Type: field.TypeString, Column: subscription.FieldAffiliate12moCode},
 		},
 	}
-	graph.Nodes[19] = &sqlgraph.Node{
+	graph.Nodes[20] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   task.Table,
 			Columns: task.Columns,
@@ -431,7 +448,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			task.FieldPartsNeeded: {Type: field.TypeString, Column: task.FieldPartsNeeded},
 		},
 	}
-	graph.Nodes[20] = &sqlgraph.Node{
+	graph.Nodes[21] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
@@ -452,7 +469,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldAffiliate12moCode:         {Type: field.TypeString, Column: user.FieldAffiliate12moCode},
 		},
 	}
-	graph.Nodes[21] = &sqlgraph.Node{
+	graph.Nodes[22] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   usersettings.Table,
 			Columns: usersettings.Columns,
@@ -1073,6 +1090,30 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"ModProductOption",
 		"Media",
+	)
+	graph.MustAddE(
+		"previews",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   modproductoption.PreviewsTable,
+			Columns: []string{modproductoption.PreviewsColumn},
+			Bidi:    false,
+		},
+		"ModProductOption",
+		"ModProductOptionPreview",
+	)
+	graph.MustAddE(
+		"product_option",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   modproductoptionpreview.ProductOptionTable,
+			Columns: []string{modproductoptionpreview.ProductOptionColumn},
+			Bidi:    false,
+		},
+		"ModProductOptionPreview",
+		"ModProductOption",
 	)
 	graph.MustAddE(
 		"car",
@@ -3041,6 +3082,89 @@ func (f *ModProductOptionFilter) WhereHasMediaWith(preds ...predicate.Media) {
 	})))
 }
 
+// WhereHasPreviews applies a predicate to check if query has an edge previews.
+func (f *ModProductOptionFilter) WhereHasPreviews() {
+	f.Where(entql.HasEdge("previews"))
+}
+
+// WhereHasPreviewsWith applies a predicate to check if query has an edge previews with a given conditions (other predicates).
+func (f *ModProductOptionFilter) WhereHasPreviewsWith(preds ...predicate.ModProductOptionPreview) {
+	f.Where(entql.HasEdgeWith("previews", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (mpopq *ModProductOptionPreviewQuery) addPredicate(pred func(s *sql.Selector)) {
+	mpopq.predicates = append(mpopq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the ModProductOptionPreviewQuery builder.
+func (mpopq *ModProductOptionPreviewQuery) Filter() *ModProductOptionPreviewFilter {
+	return &ModProductOptionPreviewFilter{config: mpopq.config, predicateAdder: mpopq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *ModProductOptionPreviewMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the ModProductOptionPreviewMutation builder.
+func (m *ModProductOptionPreviewMutation) Filter() *ModProductOptionPreviewFilter {
+	return &ModProductOptionPreviewFilter{config: m.config, predicateAdder: m}
+}
+
+// ModProductOptionPreviewFilter provides a generic filtering capability at runtime for ModProductOptionPreviewQuery.
+type ModProductOptionPreviewFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *ModProductOptionPreviewFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[13].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *ModProductOptionPreviewFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(modproductoptionpreview.FieldID))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *ModProductOptionPreviewFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(modproductoptionpreview.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *ModProductOptionPreviewFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(modproductoptionpreview.FieldUpdateTime))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *ModProductOptionPreviewFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(modproductoptionpreview.FieldStatus))
+}
+
+// WhereHasProductOption applies a predicate to check if query has an edge product_option.
+func (f *ModProductOptionPreviewFilter) WhereHasProductOption() {
+	f.Where(entql.HasEdge("product_option"))
+}
+
+// WhereHasProductOptionWith applies a predicate to check if query has an edge product_option with a given conditions (other predicates).
+func (f *ModProductOptionPreviewFilter) WhereHasProductOptionWith(preds ...predicate.ModProductOption) {
+	f.Where(entql.HasEdgeWith("product_option", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (orq *OdometerReadingQuery) addPredicate(pred func(s *sql.Selector)) {
 	orq.predicates = append(orq.predicates, pred)
@@ -3070,7 +3194,7 @@ type OdometerReadingFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *OdometerReadingFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[13].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[14].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3177,7 +3301,7 @@ type ProfileFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ProfileFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[14].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[15].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3266,7 +3390,7 @@ type ServiceItemFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ServiceItemFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[15].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[16].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3388,7 +3512,7 @@ type ServiceLogFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ServiceLogFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[16].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[17].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3537,7 +3661,7 @@ type ServiceScheduleFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *ServiceScheduleFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[17].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[18].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3664,7 +3788,7 @@ type SubscriptionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SubscriptionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[18].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[19].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3782,7 +3906,7 @@ type TaskFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TaskFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[19].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[20].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -3943,7 +4067,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[20].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[21].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -4107,7 +4231,7 @@ type UserSettingsFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserSettingsFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[21].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[22].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

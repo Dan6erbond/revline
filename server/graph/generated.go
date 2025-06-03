@@ -22,6 +22,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/mod"
+	"github.com/Dan6erbond/revline/ent/modproductoptionpreview"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/subscription"
 	"github.com/Dan6erbond/revline/ent/task"
@@ -263,6 +264,7 @@ type ComplexityRoot struct {
 		Mod        func(childComplexity int) int
 		Name       func(childComplexity int) int
 		Notes      func(childComplexity int) int
+		Previews   func(childComplexity int) int
 		Price      func(childComplexity int) int
 		Pros       func(childComplexity int) int
 		Specs      func(childComplexity int) int
@@ -270,42 +272,51 @@ type ComplexityRoot struct {
 		Vendor     func(childComplexity int) int
 	}
 
+	ModProductOptionPreview struct {
+		CreateTime    func(childComplexity int) int
+		ID            func(childComplexity int) int
+		ProductOption func(childComplexity int) int
+		Status        func(childComplexity int) int
+		UpdateTime    func(childComplexity int) int
+	}
+
 	Mutation struct {
-		CreateAlbum                func(childComplexity int, input ent.CreateAlbumInput) int
-		CreateBillingPortalSession func(childComplexity int) int
-		CreateCar                  func(childComplexity int, input ent.CreateCarInput) int
-		CreateCheckoutSession      func(childComplexity int, input model.CreateCheckoutSessionInput) int
-		CreateConnectAccount       func(childComplexity int) int
-		CreateDragResult           func(childComplexity int, input ent.CreateDragResultInput) int
-		CreateDragSession          func(childComplexity int, input ent.CreateDragSessionInput) int
-		CreateDynoResult           func(childComplexity int, input ent.CreateDynoResultInput) int
-		CreateDynoSession          func(childComplexity int, input ent.CreateDynoSessionInput) int
-		CreateExpense              func(childComplexity int, input ent.CreateExpenseInput) int
-		CreateExpressLoginLink     func(childComplexity int) int
-		CreateFuelUp               func(childComplexity int, input ent.CreateFuelUpInput) int
-		CreateMod                  func(childComplexity int, input ent.CreateModInput) int
-		CreateModProductOption     func(childComplexity int, input ent.CreateModProductOptionInput) int
-		CreateOdometerReading      func(childComplexity int, input ent.CreateOdometerReadingInput) int
-		CreateServiceItem          func(childComplexity int, input ent.CreateServiceItemInput) int
-		CreateServiceLog           func(childComplexity int, input ent.CreateServiceLogInput) int
-		CreateServiceSchedule      func(childComplexity int, input ent.CreateServiceScheduleInput) int
-		CreateTask                 func(childComplexity int, input ent.CreateTaskInput) int
-		DeleteDynoResult           func(childComplexity int, id string) int
-		DeleteDynoResults          func(childComplexity int, ids []string) int
-		LinkConnectAccount         func(childComplexity int) int
-		UpdateAlbum                func(childComplexity int, id string, input ent.UpdateAlbumInput) int
-		UpdateDragSession          func(childComplexity int, id string, input ent.UpdateDragSessionInput) int
-		UpdateDynoSession          func(childComplexity int, id string, input ent.UpdateDynoSessionInput) int
-		UpdateMedia                func(childComplexity int, id string, input ent.UpdateMediaInput) int
-		UpdateMod                  func(childComplexity int, id string, input ent.UpdateModInput) int
-		UpdateModProductOption     func(childComplexity int, id string, input ent.UpdateModProductOptionInput) int
-		UpdateProfile              func(childComplexity int, input ent.UpdateProfileInput) int
-		UpdateSettings             func(childComplexity int, input ent.UpdateUserSettingsInput) int
-		UpdateTask                 func(childComplexity int, id string, input ent.UpdateTaskInput) int
-		UploadBannerImage          func(childComplexity int, input ent.CreateMediaInput) int
-		UploadDocument             func(childComplexity int, input ent.CreateDocumentInput) int
-		UploadMedia                func(childComplexity int, input ent.CreateMediaInput) int
-		UploadProfilePicture       func(childComplexity int, input *model.UploadProfilePictureInput) int
+		CreateAlbum                     func(childComplexity int, input ent.CreateAlbumInput) int
+		CreateBillingPortalSession      func(childComplexity int) int
+		CreateCar                       func(childComplexity int, input ent.CreateCarInput) int
+		CreateCheckoutSession           func(childComplexity int, input model.CreateCheckoutSessionInput) int
+		CreateConnectAccount            func(childComplexity int) int
+		CreateDragResult                func(childComplexity int, input ent.CreateDragResultInput) int
+		CreateDragSession               func(childComplexity int, input ent.CreateDragSessionInput) int
+		CreateDynoResult                func(childComplexity int, input ent.CreateDynoResultInput) int
+		CreateDynoSession               func(childComplexity int, input ent.CreateDynoSessionInput) int
+		CreateExpense                   func(childComplexity int, input ent.CreateExpenseInput) int
+		CreateExpressLoginLink          func(childComplexity int) int
+		CreateFuelUp                    func(childComplexity int, input ent.CreateFuelUpInput) int
+		CreateMod                       func(childComplexity int, input ent.CreateModInput) int
+		CreateModProductOption          func(childComplexity int, input ent.CreateModProductOptionInput) int
+		CreateOdometerReading           func(childComplexity int, input ent.CreateOdometerReadingInput) int
+		CreateServiceItem               func(childComplexity int, input ent.CreateServiceItemInput) int
+		CreateServiceLog                func(childComplexity int, input ent.CreateServiceLogInput) int
+		CreateServiceSchedule           func(childComplexity int, input ent.CreateServiceScheduleInput) int
+		CreateTask                      func(childComplexity int, input ent.CreateTaskInput) int
+		DeleteDynoResult                func(childComplexity int, id string) int
+		DeleteDynoResults               func(childComplexity int, ids []string) int
+		GenerateModProductOptionPreview func(childComplexity int, input model.GenerateModPreviewInput) int
+		LinkConnectAccount              func(childComplexity int) int
+		UpdateAlbum                     func(childComplexity int, id string, input ent.UpdateAlbumInput) int
+		UpdateDragSession               func(childComplexity int, id string, input ent.UpdateDragSessionInput) int
+		UpdateDynoSession               func(childComplexity int, id string, input ent.UpdateDynoSessionInput) int
+		UpdateMedia                     func(childComplexity int, id string, input ent.UpdateMediaInput) int
+		UpdateMod                       func(childComplexity int, id string, input ent.UpdateModInput) int
+		UpdateModProductOption          func(childComplexity int, id string, input ent.UpdateModProductOptionInput) int
+		UpdateProfile                   func(childComplexity int, input ent.UpdateProfileInput) int
+		UpdateSettings                  func(childComplexity int, input ent.UpdateUserSettingsInput) int
+		UpdateTask                      func(childComplexity int, id string, input ent.UpdateTaskInput) int
+		UploadBannerImage               func(childComplexity int, input ent.CreateMediaInput) int
+		UploadDocument                  func(childComplexity int, input ent.CreateDocumentInput) int
+		UploadMedia                     func(childComplexity int, input ent.CreateMediaInput) int
+		UploadProfilePicture            func(childComplexity int, input *model.UploadProfilePictureInput) int
 	}
 
 	OdometerReading struct {
@@ -550,6 +561,7 @@ type MutationResolver interface {
 	UpdateMod(ctx context.Context, id string, input ent.UpdateModInput) (*ent.Mod, error)
 	CreateModProductOption(ctx context.Context, input ent.CreateModProductOptionInput) (*ent.ModProductOption, error)
 	UpdateModProductOption(ctx context.Context, id string, input ent.UpdateModProductOptionInput) (*ent.ModProductOption, error)
+	GenerateModProductOptionPreview(ctx context.Context, input model.GenerateModPreviewInput) (*ent.ModProductOptionPreview, error)
 	CreateCheckoutSession(ctx context.Context, input model.CreateCheckoutSessionInput) (string, error)
 	CreateBillingPortalSession(ctx context.Context) (string, error)
 }
@@ -1666,6 +1678,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.ModProductOption.Notes(childComplexity), true
 
+	case "ModProductOption.previews":
+		if e.complexity.ModProductOption.Previews == nil {
+			break
+		}
+
+		return e.complexity.ModProductOption.Previews(childComplexity), true
+
 	case "ModProductOption.price":
 		if e.complexity.ModProductOption.Price == nil {
 			break
@@ -1700,6 +1719,41 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.ModProductOption.Vendor(childComplexity), true
+
+	case "ModProductOptionPreview.createTime":
+		if e.complexity.ModProductOptionPreview.CreateTime == nil {
+			break
+		}
+
+		return e.complexity.ModProductOptionPreview.CreateTime(childComplexity), true
+
+	case "ModProductOptionPreview.id":
+		if e.complexity.ModProductOptionPreview.ID == nil {
+			break
+		}
+
+		return e.complexity.ModProductOptionPreview.ID(childComplexity), true
+
+	case "ModProductOptionPreview.productOption":
+		if e.complexity.ModProductOptionPreview.ProductOption == nil {
+			break
+		}
+
+		return e.complexity.ModProductOptionPreview.ProductOption(childComplexity), true
+
+	case "ModProductOptionPreview.status":
+		if e.complexity.ModProductOptionPreview.Status == nil {
+			break
+		}
+
+		return e.complexity.ModProductOptionPreview.Status(childComplexity), true
+
+	case "ModProductOptionPreview.updateTime":
+		if e.complexity.ModProductOptionPreview.UpdateTime == nil {
+			break
+		}
+
+		return e.complexity.ModProductOptionPreview.UpdateTime(childComplexity), true
 
 	case "Mutation.createAlbum":
 		if e.complexity.Mutation.CreateAlbum == nil {
@@ -1937,6 +1991,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.DeleteDynoResults(childComplexity, args["ids"].([]string)), true
+
+	case "Mutation.generateModProductOptionPreview":
+		if e.complexity.Mutation.GenerateModProductOptionPreview == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_generateModProductOptionPreview_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.GenerateModProductOptionPreview(childComplexity, args["input"].(model.GenerateModPreviewInput)), true
 
 	case "Mutation.linkConnectAccount":
 		if e.complexity.Mutation.LinkConnectAccount == nil {
@@ -3174,6 +3240,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateMediaInput,
 		ec.unmarshalInputCreateModInput,
 		ec.unmarshalInputCreateModProductOptionInput,
+		ec.unmarshalInputCreateModProductOptionPreviewInput,
 		ec.unmarshalInputCreateOdometerReadingInput,
 		ec.unmarshalInputCreateProfileInput,
 		ec.unmarshalInputCreateServiceItemInput,
@@ -3189,7 +3256,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputDynoSessionWhereInput,
 		ec.unmarshalInputExpenseWhereInput,
 		ec.unmarshalInputFuelUpWhereInput,
+		ec.unmarshalInputGenerateModPreviewInput,
 		ec.unmarshalInputMediaWhereInput,
+		ec.unmarshalInputModProductOptionPreviewWhereInput,
 		ec.unmarshalInputModProductOptionWhereInput,
 		ec.unmarshalInputModWhereInput,
 		ec.unmarshalInputOdometerReadingWhereInput,
@@ -3212,6 +3281,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputUpdateMediaInput,
 		ec.unmarshalInputUpdateModInput,
 		ec.unmarshalInputUpdateModProductOptionInput,
+		ec.unmarshalInputUpdateModProductOptionPreviewInput,
 		ec.unmarshalInputUpdateOdometerReadingInput,
 		ec.unmarshalInputUpdateProfileInput,
 		ec.unmarshalInputUpdateServiceItemInput,
@@ -3867,6 +3937,29 @@ func (ec *executionContext) field_Mutation_deleteDynoResults_argsIds(
 	}
 
 	var zeroVal []string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_generateModProductOptionPreview_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_generateModProductOptionPreview_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_generateModProductOptionPreview_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (model.GenerateModPreviewInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNGenerateModPreviewInput2githubᚗcomᚋDan6erbondᚋrevlineᚋgraphᚋmodelᚐGenerateModPreviewInput(ctx, tmp)
+	}
+
+	var zeroVal model.GenerateModPreviewInput
 	return zeroVal, nil
 }
 
@@ -11413,6 +11506,8 @@ func (ec *executionContext) fieldContext_Media_modProductOption(_ context.Contex
 				return ec.fieldContext_ModProductOption_mod(ctx, field)
 			case "media":
 				return ec.fieldContext_ModProductOption_media(ctx, field)
+			case "previews":
+				return ec.fieldContext_ModProductOption_previews(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ModProductOption", field.Name)
 		},
@@ -12161,6 +12256,8 @@ func (ec *executionContext) fieldContext_Mod_productOptions(_ context.Context, f
 				return ec.fieldContext_ModProductOption_mod(ctx, field)
 			case "media":
 				return ec.fieldContext_ModProductOption_media(ctx, field)
+			case "previews":
+				return ec.fieldContext_ModProductOption_previews(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ModProductOption", field.Name)
 		},
@@ -12756,6 +12853,309 @@ func (ec *executionContext) fieldContext_ModProductOption_media(_ context.Contex
 				return ec.fieldContext_Media_metadata(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Media", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModProductOption_previews(ctx context.Context, field graphql.CollectedField, obj *ent.ModProductOption) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModProductOption_previews(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Previews(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.ModProductOptionPreview)
+	fc.Result = res
+	return ec.marshalOModProductOptionPreview2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionPreviewᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModProductOption_previews(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModProductOption",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ModProductOptionPreview_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_ModProductOptionPreview_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_ModProductOptionPreview_updateTime(ctx, field)
+			case "status":
+				return ec.fieldContext_ModProductOptionPreview_status(ctx, field)
+			case "productOption":
+				return ec.fieldContext_ModProductOptionPreview_productOption(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ModProductOptionPreview", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModProductOptionPreview_id(ctx context.Context, field graphql.CollectedField, obj *ent.ModProductOptionPreview) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModProductOptionPreview_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModProductOptionPreview_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModProductOptionPreview",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModProductOptionPreview_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.ModProductOptionPreview) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModProductOptionPreview_createTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModProductOptionPreview_createTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModProductOptionPreview",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModProductOptionPreview_updateTime(ctx context.Context, field graphql.CollectedField, obj *ent.ModProductOptionPreview) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModProductOptionPreview_updateTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdateTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModProductOptionPreview_updateTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModProductOptionPreview",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModProductOptionPreview_status(ctx context.Context, field graphql.CollectedField, obj *ent.ModProductOptionPreview) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModProductOptionPreview_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(modproductoptionpreview.Status)
+	fc.Result = res
+	return ec.marshalNModProductOptionPreviewStatus2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModProductOptionPreview_status(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModProductOptionPreview",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ModProductOptionPreviewStatus does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModProductOptionPreview_productOption(ctx context.Context, field graphql.CollectedField, obj *ent.ModProductOptionPreview) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModProductOptionPreview_productOption(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ProductOption(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ModProductOption)
+	fc.Result = res
+	return ec.marshalNModProductOption2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOption(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModProductOptionPreview_productOption(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModProductOptionPreview",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ModProductOption_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_ModProductOption_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_ModProductOption_updateTime(ctx, field)
+			case "vendor":
+				return ec.fieldContext_ModProductOption_vendor(ctx, field)
+			case "name":
+				return ec.fieldContext_ModProductOption_name(ctx, field)
+			case "link":
+				return ec.fieldContext_ModProductOption_link(ctx, field)
+			case "price":
+				return ec.fieldContext_ModProductOption_price(ctx, field)
+			case "notes":
+				return ec.fieldContext_ModProductOption_notes(ctx, field)
+			case "pros":
+				return ec.fieldContext_ModProductOption_pros(ctx, field)
+			case "cons":
+				return ec.fieldContext_ModProductOption_cons(ctx, field)
+			case "specs":
+				return ec.fieldContext_ModProductOption_specs(ctx, field)
+			case "mod":
+				return ec.fieldContext_ModProductOption_mod(ctx, field)
+			case "media":
+				return ec.fieldContext_ModProductOption_media(ctx, field)
+			case "previews":
+				return ec.fieldContext_ModProductOption_previews(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ModProductOption", field.Name)
 		},
 	}
 	return fc, nil
@@ -15766,6 +16166,8 @@ func (ec *executionContext) fieldContext_Mutation_createModProductOption(ctx con
 				return ec.fieldContext_ModProductOption_mod(ctx, field)
 			case "media":
 				return ec.fieldContext_ModProductOption_media(ctx, field)
+			case "previews":
+				return ec.fieldContext_ModProductOption_previews(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ModProductOption", field.Name)
 		},
@@ -15871,6 +16273,8 @@ func (ec *executionContext) fieldContext_Mutation_updateModProductOption(ctx con
 				return ec.fieldContext_ModProductOption_mod(ctx, field)
 			case "media":
 				return ec.fieldContext_ModProductOption_media(ctx, field)
+			case "previews":
+				return ec.fieldContext_ModProductOption_previews(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ModProductOption", field.Name)
 		},
@@ -15883,6 +16287,73 @@ func (ec *executionContext) fieldContext_Mutation_updateModProductOption(ctx con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_updateModProductOption_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_generateModProductOptionPreview(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_generateModProductOptionPreview(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().GenerateModProductOptionPreview(rctx, fc.Args["input"].(model.GenerateModPreviewInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ModProductOptionPreview)
+	fc.Result = res
+	return ec.marshalNModProductOptionPreview2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionPreview(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_generateModProductOptionPreview(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ModProductOptionPreview_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_ModProductOptionPreview_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_ModProductOptionPreview_updateTime(ctx, field)
+			case "status":
+				return ec.fieldContext_ModProductOptionPreview_status(ctx, field)
+			case "productOption":
+				return ec.fieldContext_ModProductOptionPreview_productOption(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ModProductOptionPreview", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_generateModProductOptionPreview_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -17955,6 +18426,8 @@ func (ec *executionContext) fieldContext_Query_modProductOption(ctx context.Cont
 				return ec.fieldContext_ModProductOption_mod(ctx, field)
 			case "media":
 				return ec.fieldContext_ModProductOption_media(ctx, field)
+			case "previews":
+				return ec.fieldContext_ModProductOption_previews(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ModProductOption", field.Name)
 		},
@@ -28824,7 +29297,7 @@ func (ec *executionContext) unmarshalInputCreateModProductOptionInput(ctx contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "vendor", "name", "link", "price", "notes", "pros", "cons", "specs", "modID", "mediumIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "vendor", "name", "link", "price", "notes", "pros", "cons", "specs", "modID", "mediumIDs", "previewIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -28917,6 +29390,61 @@ func (ec *executionContext) unmarshalInputCreateModProductOptionInput(ctx contex
 				return it, err
 			}
 			it.MediumIDs = data
+		case "previewIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("previewIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PreviewIDs = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateModProductOptionPreviewInput(ctx context.Context, obj any) (ent.CreateModProductOptionPreviewInput, error) {
+	var it ent.CreateModProductOptionPreviewInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"createTime", "updateTime", "status", "productOptionID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOModProductOptionPreviewStatus2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
+		case "productOptionID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("productOptionID"))
+			data, err := ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProductOptionID = data
 		}
 	}
 
@@ -32750,6 +33278,40 @@ func (ec *executionContext) unmarshalInputFuelUpWhereInput(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputGenerateModPreviewInput(ctx context.Context, obj any) (model.GenerateModPreviewInput, error) {
+	var it model.GenerateModPreviewInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"modProductOptionID", "mediaID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "modProductOptionID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modProductOptionID"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ModProductOptionID = data
+		case "mediaID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mediaID"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MediaID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputMediaWhereInput(ctx context.Context, obj any) (ent.MediaWhereInput, error) {
 	var it ent.MediaWhereInput
 	asMap := map[string]any{}
@@ -33225,6 +33787,257 @@ func (ec *executionContext) unmarshalInputMediaWhereInput(ctx context.Context, o
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputModProductOptionPreviewWhereInput(ctx context.Context, obj any) (ent.ModProductOptionPreviewWhereInput, error) {
+	var it ent.ModProductOptionPreviewWhereInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "status", "statusNEQ", "statusIn", "statusNotIn", "hasProductOption", "hasProductOptionWith"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "not":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
+			data, err := ec.unmarshalOModProductOptionPreviewWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionPreviewWhereInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Not = data
+		case "and":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
+			data, err := ec.unmarshalOModProductOptionPreviewWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionPreviewWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.And = data
+		case "or":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
+			data, err := ec.unmarshalOModProductOptionPreviewWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionPreviewWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Or = data
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "idNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDNEQ = data
+		case "idIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDIn = data
+		case "idNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDNotIn = data
+		case "idGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDGT = data
+		case "idGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDGTE = data
+		case "idLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDLT = data
+		case "idLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IDLTE = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOModProductOptionPreviewStatus2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
+		case "statusNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusNEQ"))
+			data, err := ec.unmarshalOModProductOptionPreviewStatus2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusNEQ = data
+		case "statusIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusIn"))
+			data, err := ec.unmarshalOModProductOptionPreviewStatus2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatusᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusIn = data
+		case "statusNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusNotIn"))
+			data, err := ec.unmarshalOModProductOptionPreviewStatus2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatusᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusNotIn = data
+		case "hasProductOption":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasProductOption"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasProductOption = data
+		case "hasProductOptionWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasProductOptionWith"))
+			data, err := ec.unmarshalOModProductOptionWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasProductOptionWith = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputModProductOptionWhereInput(ctx context.Context, obj any) (ent.ModProductOptionWhereInput, error) {
 	var it ent.ModProductOptionWhereInput
 	asMap := map[string]any{}
@@ -33232,7 +34045,7 @@ func (ec *executionContext) unmarshalInputModProductOptionWhereInput(ctx context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "vendor", "vendorNEQ", "vendorIn", "vendorNotIn", "vendorGT", "vendorGTE", "vendorLT", "vendorLTE", "vendorContains", "vendorHasPrefix", "vendorHasSuffix", "vendorIsNil", "vendorNotNil", "vendorEqualFold", "vendorContainsFold", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameIsNil", "nameNotNil", "nameEqualFold", "nameContainsFold", "link", "linkNEQ", "linkIn", "linkNotIn", "linkGT", "linkGTE", "linkLT", "linkLTE", "linkContains", "linkHasPrefix", "linkHasSuffix", "linkIsNil", "linkNotNil", "linkEqualFold", "linkContainsFold", "price", "priceNEQ", "priceIn", "priceNotIn", "priceGT", "priceGTE", "priceLT", "priceLTE", "priceIsNil", "priceNotNil", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasMod", "hasModWith", "hasMedia", "hasMediaWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "vendor", "vendorNEQ", "vendorIn", "vendorNotIn", "vendorGT", "vendorGTE", "vendorLT", "vendorLTE", "vendorContains", "vendorHasPrefix", "vendorHasSuffix", "vendorIsNil", "vendorNotNil", "vendorEqualFold", "vendorContainsFold", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameIsNil", "nameNotNil", "nameEqualFold", "nameContainsFold", "link", "linkNEQ", "linkIn", "linkNotIn", "linkGT", "linkGTE", "linkLT", "linkLTE", "linkContains", "linkHasPrefix", "linkHasSuffix", "linkIsNil", "linkNotNil", "linkEqualFold", "linkContainsFold", "price", "priceNEQ", "priceIn", "priceNotIn", "priceGT", "priceGTE", "priceLT", "priceLTE", "priceIsNil", "priceNotNil", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasMod", "hasModWith", "hasMedia", "hasMediaWith", "hasPreviews", "hasPreviewsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -33946,6 +34759,20 @@ func (ec *executionContext) unmarshalInputModProductOptionWhereInput(ctx context
 				return it, err
 			}
 			it.HasMediaWith = data
+		case "hasPreviews":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasPreviews"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasPreviews = data
+		case "hasPreviewsWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasPreviewsWith"))
+			data, err := ec.unmarshalOModProductOptionPreviewWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionPreviewWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasPreviewsWith = data
 		}
 	}
 
@@ -40740,7 +41567,7 @@ func (ec *executionContext) unmarshalInputUpdateModProductOptionInput(ctx contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "vendor", "clearVendor", "name", "clearName", "link", "clearLink", "price", "clearPrice", "notes", "clearNotes", "pros", "appendPros", "clearPros", "cons", "appendCons", "clearCons", "specs", "clearSpecs", "modID", "addMediumIDs", "removeMediumIDs", "clearMedia"}
+	fieldsInOrder := [...]string{"updateTime", "vendor", "clearVendor", "name", "clearName", "link", "clearLink", "price", "clearPrice", "notes", "clearNotes", "pros", "appendPros", "clearPros", "cons", "appendCons", "clearCons", "specs", "clearSpecs", "modID", "addMediumIDs", "removeMediumIDs", "clearMedia", "addPreviewIDs", "removePreviewIDs", "clearPreviews"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -40910,6 +41737,68 @@ func (ec *executionContext) unmarshalInputUpdateModProductOptionInput(ctx contex
 				return it, err
 			}
 			it.ClearMedia = data
+		case "addPreviewIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addPreviewIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddPreviewIDs = data
+		case "removePreviewIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removePreviewIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemovePreviewIDs = data
+		case "clearPreviews":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearPreviews"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearPreviews = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateModProductOptionPreviewInput(ctx context.Context, obj any) (ent.UpdateModProductOptionPreviewInput, error) {
+	var it ent.UpdateModProductOptionPreviewInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"updateTime", "status", "productOptionID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOModProductOptionPreviewStatus2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
+		case "productOptionID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("productOptionID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ProductOptionID = data
 		}
 	}
 
@@ -43592,6 +44481,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._OdometerReading(ctx, sel, obj)
+	case *ent.ModProductOptionPreview:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._ModProductOptionPreview(ctx, sel, obj)
 	case *ent.ModProductOption:
 		if obj == nil {
 			return graphql.Null
@@ -46505,6 +47399,129 @@ func (ec *executionContext) _ModProductOption(ctx context.Context, sel ast.Selec
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "previews":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ModProductOption_previews(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var modProductOptionPreviewImplementors = []string{"ModProductOptionPreview", "Node"}
+
+func (ec *executionContext) _ModProductOptionPreview(ctx context.Context, sel ast.SelectionSet, obj *ent.ModProductOptionPreview) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, modProductOptionPreviewImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ModProductOptionPreview")
+		case "id":
+			out.Values[i] = ec._ModProductOptionPreview_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "createTime":
+			out.Values[i] = ec._ModProductOptionPreview_createTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "updateTime":
+			out.Values[i] = ec._ModProductOptionPreview_updateTime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "status":
+			out.Values[i] = ec._ModProductOptionPreview_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "productOption":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ModProductOptionPreview_productOption(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -46774,6 +47791,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "updateModProductOption":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateModProductOption(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "generateModProductOptionPreview":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_generateModProductOptionPreview(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -49854,6 +50878,11 @@ func (ec *executionContext) marshalNFuelVolumeUnit2githubᚗcomᚋDan6erbondᚋr
 	return v
 }
 
+func (ec *executionContext) unmarshalNGenerateModPreviewInput2githubᚗcomᚋDan6erbondᚋrevlineᚋgraphᚋmodelᚐGenerateModPreviewInput(ctx context.Context, v any) (model.GenerateModPreviewInput, error) {
+	res, err := ec.unmarshalInputGenerateModPreviewInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v any) (uuid.UUID, error) {
 	res, err := graphql.UnmarshalUUID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -49999,6 +51028,35 @@ func (ec *executionContext) marshalNModProductOption2ᚖgithubᚗcomᚋDan6erbon
 		return graphql.Null
 	}
 	return ec._ModProductOption(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNModProductOptionPreview2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionPreview(ctx context.Context, sel ast.SelectionSet, v ent.ModProductOptionPreview) graphql.Marshaler {
+	return ec._ModProductOptionPreview(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNModProductOptionPreview2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionPreview(ctx context.Context, sel ast.SelectionSet, v *ent.ModProductOptionPreview) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ModProductOptionPreview(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNModProductOptionPreviewStatus2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatus(ctx context.Context, v any) (modproductoptionpreview.Status, error) {
+	var res modproductoptionpreview.Status
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNModProductOptionPreviewStatus2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatus(ctx context.Context, sel ast.SelectionSet, v modproductoptionpreview.Status) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNModProductOptionPreviewWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionPreviewWhereInput(ctx context.Context, v any) (*ent.ModProductOptionPreviewWhereInput, error) {
+	res, err := ec.unmarshalInputModProductOptionPreviewWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNModProductOptionWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionWhereInput(ctx context.Context, v any) (*ent.ModProductOptionWhereInput, error) {
@@ -52373,7 +53431,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]interface{}, error) {
+func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]any, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -52381,7 +53439,7 @@ func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[s
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
+func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -52649,6 +53707,160 @@ func (ec *executionContext) marshalOModProductOption2ᚖgithubᚗcomᚋDan6erbon
 		return graphql.Null
 	}
 	return ec._ModProductOption(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOModProductOptionPreview2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionPreviewᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.ModProductOptionPreview) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNModProductOptionPreview2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionPreview(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOModProductOptionPreviewStatus2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatusᚄ(ctx context.Context, v any) ([]modproductoptionpreview.Status, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]modproductoptionpreview.Status, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNModProductOptionPreviewStatus2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatus(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOModProductOptionPreviewStatus2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatusᚄ(ctx context.Context, sel ast.SelectionSet, v []modproductoptionpreview.Status) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNModProductOptionPreviewStatus2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatus(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOModProductOptionPreviewStatus2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatus(ctx context.Context, v any) (*modproductoptionpreview.Status, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(modproductoptionpreview.Status)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOModProductOptionPreviewStatus2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodproductoptionpreviewᚐStatus(ctx context.Context, sel ast.SelectionSet, v *modproductoptionpreview.Status) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOModProductOptionPreviewWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionPreviewWhereInputᚄ(ctx context.Context, v any) ([]*ent.ModProductOptionPreviewWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*ent.ModProductOptionPreviewWhereInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNModProductOptionPreviewWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionPreviewWhereInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOModProductOptionPreviewWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionPreviewWhereInput(ctx context.Context, v any) (*ent.ModProductOptionPreviewWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputModProductOptionPreviewWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOModProductOptionWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionWhereInputᚄ(ctx context.Context, v any) ([]*ent.ModProductOptionWhereInput, error) {

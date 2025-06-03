@@ -165,6 +165,18 @@ func (f ModProductOptionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.V
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ModProductOptionMutation", m)
 }
 
+// The ModProductOptionPreviewFunc type is an adapter to allow the use of ordinary
+// function as ModProductOptionPreview mutator.
+type ModProductOptionPreviewFunc func(context.Context, *ent.ModProductOptionPreviewMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ModProductOptionPreviewFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ModProductOptionPreviewMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ModProductOptionPreviewMutation", m)
+}
+
 // The OdometerReadingFunc type is an adapter to allow the use of ordinary
 // function as OdometerReading mutator.
 type OdometerReadingFunc func(context.Context, *ent.OdometerReadingMutation) (ent.Value, error)

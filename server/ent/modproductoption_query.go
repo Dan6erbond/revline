@@ -15,6 +15,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
+	"github.com/Dan6erbond/revline/ent/modproductoptionpreview"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/google/uuid"
 )
@@ -22,16 +23,18 @@ import (
 // ModProductOptionQuery is the builder for querying ModProductOption entities.
 type ModProductOptionQuery struct {
 	config
-	ctx            *QueryContext
-	order          []modproductoption.OrderOption
-	inters         []Interceptor
-	predicates     []predicate.ModProductOption
-	withMod        *ModQuery
-	withMedia      *MediaQuery
-	withFKs        bool
-	modifiers      []func(*sql.Selector)
-	loadTotal      []func(context.Context, []*ModProductOption) error
-	withNamedMedia map[string]*MediaQuery
+	ctx               *QueryContext
+	order             []modproductoption.OrderOption
+	inters            []Interceptor
+	predicates        []predicate.ModProductOption
+	withMod           *ModQuery
+	withMedia         *MediaQuery
+	withPreviews      *ModProductOptionPreviewQuery
+	withFKs           bool
+	modifiers         []func(*sql.Selector)
+	loadTotal         []func(context.Context, []*ModProductOption) error
+	withNamedMedia    map[string]*MediaQuery
+	withNamedPreviews map[string]*ModProductOptionPreviewQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -105,6 +108,28 @@ func (mpoq *ModProductOptionQuery) QueryMedia() *MediaQuery {
 			sqlgraph.From(modproductoption.Table, modproductoption.FieldID, selector),
 			sqlgraph.To(media.Table, media.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, modproductoption.MediaTable, modproductoption.MediaColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(mpoq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryPreviews chains the current query on the "previews" edge.
+func (mpoq *ModProductOptionQuery) QueryPreviews() *ModProductOptionPreviewQuery {
+	query := (&ModProductOptionPreviewClient{config: mpoq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := mpoq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := mpoq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(modproductoption.Table, modproductoption.FieldID, selector),
+			sqlgraph.To(modproductoptionpreview.Table, modproductoptionpreview.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, modproductoption.PreviewsTable, modproductoption.PreviewsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(mpoq.driver.Dialect(), step)
 		return fromU, nil
@@ -299,13 +324,14 @@ func (mpoq *ModProductOptionQuery) Clone() *ModProductOptionQuery {
 		return nil
 	}
 	return &ModProductOptionQuery{
-		config:     mpoq.config,
-		ctx:        mpoq.ctx.Clone(),
-		order:      append([]modproductoption.OrderOption{}, mpoq.order...),
-		inters:     append([]Interceptor{}, mpoq.inters...),
-		predicates: append([]predicate.ModProductOption{}, mpoq.predicates...),
-		withMod:    mpoq.withMod.Clone(),
-		withMedia:  mpoq.withMedia.Clone(),
+		config:       mpoq.config,
+		ctx:          mpoq.ctx.Clone(),
+		order:        append([]modproductoption.OrderOption{}, mpoq.order...),
+		inters:       append([]Interceptor{}, mpoq.inters...),
+		predicates:   append([]predicate.ModProductOption{}, mpoq.predicates...),
+		withMod:      mpoq.withMod.Clone(),
+		withMedia:    mpoq.withMedia.Clone(),
+		withPreviews: mpoq.withPreviews.Clone(),
 		// clone intermediate query.
 		sql:  mpoq.sql.Clone(),
 		path: mpoq.path,
@@ -331,6 +357,17 @@ func (mpoq *ModProductOptionQuery) WithMedia(opts ...func(*MediaQuery)) *ModProd
 		opt(query)
 	}
 	mpoq.withMedia = query
+	return mpoq
+}
+
+// WithPreviews tells the query-builder to eager-load the nodes that are connected to
+// the "previews" edge. The optional arguments are used to configure the query builder of the edge.
+func (mpoq *ModProductOptionQuery) WithPreviews(opts ...func(*ModProductOptionPreviewQuery)) *ModProductOptionQuery {
+	query := (&ModProductOptionPreviewClient{config: mpoq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	mpoq.withPreviews = query
 	return mpoq
 }
 
@@ -413,9 +450,10 @@ func (mpoq *ModProductOptionQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 		nodes       = []*ModProductOption{}
 		withFKs     = mpoq.withFKs
 		_spec       = mpoq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			mpoq.withMod != nil,
 			mpoq.withMedia != nil,
+			mpoq.withPreviews != nil,
 		}
 	)
 	if mpoq.withMod != nil {
@@ -458,10 +496,24 @@ func (mpoq *ModProductOptionQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 			return nil, err
 		}
 	}
+	if query := mpoq.withPreviews; query != nil {
+		if err := mpoq.loadPreviews(ctx, query, nodes,
+			func(n *ModProductOption) { n.Edges.Previews = []*ModProductOptionPreview{} },
+			func(n *ModProductOption, e *ModProductOptionPreview) { n.Edges.Previews = append(n.Edges.Previews, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range mpoq.withNamedMedia {
 		if err := mpoq.loadMedia(ctx, query, nodes,
 			func(n *ModProductOption) { n.appendNamedMedia(name) },
 			func(n *ModProductOption, e *Media) { n.appendNamedMedia(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range mpoq.withNamedPreviews {
+		if err := mpoq.loadPreviews(ctx, query, nodes,
+			func(n *ModProductOption) { n.appendNamedPreviews(name) },
+			func(n *ModProductOption, e *ModProductOptionPreview) { n.appendNamedPreviews(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -531,6 +583,37 @@ func (mpoq *ModProductOptionQuery) loadMedia(ctx context.Context, query *MediaQu
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "mod_product_option_media" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (mpoq *ModProductOptionQuery) loadPreviews(ctx context.Context, query *ModProductOptionPreviewQuery, nodes []*ModProductOption, init func(*ModProductOption), assign func(*ModProductOption, *ModProductOptionPreview)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*ModProductOption)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.ModProductOptionPreview(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(modproductoption.PreviewsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.mod_product_option_previews
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "mod_product_option_previews" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "mod_product_option_previews" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -632,6 +715,20 @@ func (mpoq *ModProductOptionQuery) WithNamedMedia(name string, opts ...func(*Med
 		mpoq.withNamedMedia = make(map[string]*MediaQuery)
 	}
 	mpoq.withNamedMedia[name] = query
+	return mpoq
+}
+
+// WithNamedPreviews tells the query-builder to eager-load the nodes that are connected to the "previews"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (mpoq *ModProductOptionQuery) WithNamedPreviews(name string, opts ...func(*ModProductOptionPreviewQuery)) *ModProductOptionQuery {
+	query := (&ModProductOptionPreviewClient{config: mpoq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if mpoq.withNamedPreviews == nil {
+		mpoq.withNamedPreviews = make(map[string]*ModProductOptionPreviewQuery)
+	}
+	mpoq.withNamedPreviews[name] = query
 	return mpoq
 }
 

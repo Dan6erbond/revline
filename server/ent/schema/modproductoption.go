@@ -61,7 +61,7 @@ func (ModProductOption) Edges() []ent.Edge {
 			Unique().
 			Required(),
 		edge.To("media", Media.Type),
-		/* edge.To("previews", ModProductOptionPreview.Type), */
+		edge.To("previews", ModProductOptionPreview.Type),
 	}
 }
 

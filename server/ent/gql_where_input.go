@@ -20,6 +20,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/media"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
+	"github.com/Dan6erbond/revline/ent/modproductoptionpreview"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/Dan6erbond/revline/ent/profile"
@@ -5315,6 +5316,10 @@ type ModProductOptionWhereInput struct {
 	// "media" edge predicates.
 	HasMedia     *bool              `json:"hasMedia,omitempty"`
 	HasMediaWith []*MediaWhereInput `json:"hasMediaWith,omitempty"`
+
+	// "previews" edge predicates.
+	HasPreviews     *bool                                `json:"hasPreviews,omitempty"`
+	HasPreviewsWith []*ModProductOptionPreviewWhereInput `json:"hasPreviewsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -5707,6 +5712,24 @@ func (i *ModProductOptionWhereInput) P() (predicate.ModProductOption, error) {
 		}
 		predicates = append(predicates, modproductoption.HasMediaWith(with...))
 	}
+	if i.HasPreviews != nil {
+		p := modproductoption.HasPreviews()
+		if !*i.HasPreviews {
+			p = modproductoption.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasPreviewsWith) > 0 {
+		with := make([]predicate.ModProductOptionPreview, 0, len(i.HasPreviewsWith))
+		for _, w := range i.HasPreviewsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasPreviewsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, modproductoption.HasPreviewsWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, ErrEmptyModProductOptionWhereInput
@@ -5714,6 +5737,238 @@ func (i *ModProductOptionWhereInput) P() (predicate.ModProductOption, error) {
 		return predicates[0], nil
 	default:
 		return modproductoption.And(predicates...), nil
+	}
+}
+
+// ModProductOptionPreviewWhereInput represents a where input for filtering ModProductOptionPreview queries.
+type ModProductOptionPreviewWhereInput struct {
+	Predicates []predicate.ModProductOptionPreview  `json:"-"`
+	Not        *ModProductOptionPreviewWhereInput   `json:"not,omitempty"`
+	Or         []*ModProductOptionPreviewWhereInput `json:"or,omitempty"`
+	And        []*ModProductOptionPreviewWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *uuid.UUID  `json:"id,omitempty"`
+	IDNEQ   *uuid.UUID  `json:"idNEQ,omitempty"`
+	IDIn    []uuid.UUID `json:"idIn,omitempty"`
+	IDNotIn []uuid.UUID `json:"idNotIn,omitempty"`
+	IDGT    *uuid.UUID  `json:"idGT,omitempty"`
+	IDGTE   *uuid.UUID  `json:"idGTE,omitempty"`
+	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
+	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
+
+	// "create_time" field predicates.
+	CreateTime      *time.Time  `json:"createTime,omitempty"`
+	CreateTimeNEQ   *time.Time  `json:"createTimeNEQ,omitempty"`
+	CreateTimeIn    []time.Time `json:"createTimeIn,omitempty"`
+	CreateTimeNotIn []time.Time `json:"createTimeNotIn,omitempty"`
+	CreateTimeGT    *time.Time  `json:"createTimeGT,omitempty"`
+	CreateTimeGTE   *time.Time  `json:"createTimeGTE,omitempty"`
+	CreateTimeLT    *time.Time  `json:"createTimeLT,omitempty"`
+	CreateTimeLTE   *time.Time  `json:"createTimeLTE,omitempty"`
+
+	// "update_time" field predicates.
+	UpdateTime      *time.Time  `json:"updateTime,omitempty"`
+	UpdateTimeNEQ   *time.Time  `json:"updateTimeNEQ,omitempty"`
+	UpdateTimeIn    []time.Time `json:"updateTimeIn,omitempty"`
+	UpdateTimeNotIn []time.Time `json:"updateTimeNotIn,omitempty"`
+	UpdateTimeGT    *time.Time  `json:"updateTimeGT,omitempty"`
+	UpdateTimeGTE   *time.Time  `json:"updateTimeGTE,omitempty"`
+	UpdateTimeLT    *time.Time  `json:"updateTimeLT,omitempty"`
+	UpdateTimeLTE   *time.Time  `json:"updateTimeLTE,omitempty"`
+
+	// "status" field predicates.
+	Status      *modproductoptionpreview.Status  `json:"status,omitempty"`
+	StatusNEQ   *modproductoptionpreview.Status  `json:"statusNEQ,omitempty"`
+	StatusIn    []modproductoptionpreview.Status `json:"statusIn,omitempty"`
+	StatusNotIn []modproductoptionpreview.Status `json:"statusNotIn,omitempty"`
+
+	// "product_option" edge predicates.
+	HasProductOption     *bool                         `json:"hasProductOption,omitempty"`
+	HasProductOptionWith []*ModProductOptionWhereInput `json:"hasProductOptionWith,omitempty"`
+}
+
+// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
+func (i *ModProductOptionPreviewWhereInput) AddPredicates(predicates ...predicate.ModProductOptionPreview) {
+	i.Predicates = append(i.Predicates, predicates...)
+}
+
+// Filter applies the ModProductOptionPreviewWhereInput filter on the ModProductOptionPreviewQuery builder.
+func (i *ModProductOptionPreviewWhereInput) Filter(q *ModProductOptionPreviewQuery) (*ModProductOptionPreviewQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		if err == ErrEmptyModProductOptionPreviewWhereInput {
+			return q, nil
+		}
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// ErrEmptyModProductOptionPreviewWhereInput is returned in case the ModProductOptionPreviewWhereInput is empty.
+var ErrEmptyModProductOptionPreviewWhereInput = errors.New("ent: empty predicate ModProductOptionPreviewWhereInput")
+
+// P returns a predicate for filtering modproductoptionpreviews.
+// An error is returned if the input is empty or invalid.
+func (i *ModProductOptionPreviewWhereInput) P() (predicate.ModProductOptionPreview, error) {
+	var predicates []predicate.ModProductOptionPreview
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'not'", err)
+		}
+		predicates = append(predicates, modproductoptionpreview.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'or'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.ModProductOptionPreview, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'or'", err)
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, modproductoptionpreview.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'and'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.ModProductOptionPreview, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'and'", err)
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, modproductoptionpreview.And(and...))
+	}
+	predicates = append(predicates, i.Predicates...)
+	if i.ID != nil {
+		predicates = append(predicates, modproductoptionpreview.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, modproductoptionpreview.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, modproductoptionpreview.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, modproductoptionpreview.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, modproductoptionpreview.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, modproductoptionpreview.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, modproductoptionpreview.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, modproductoptionpreview.IDLTE(*i.IDLTE))
+	}
+	if i.CreateTime != nil {
+		predicates = append(predicates, modproductoptionpreview.CreateTimeEQ(*i.CreateTime))
+	}
+	if i.CreateTimeNEQ != nil {
+		predicates = append(predicates, modproductoptionpreview.CreateTimeNEQ(*i.CreateTimeNEQ))
+	}
+	if len(i.CreateTimeIn) > 0 {
+		predicates = append(predicates, modproductoptionpreview.CreateTimeIn(i.CreateTimeIn...))
+	}
+	if len(i.CreateTimeNotIn) > 0 {
+		predicates = append(predicates, modproductoptionpreview.CreateTimeNotIn(i.CreateTimeNotIn...))
+	}
+	if i.CreateTimeGT != nil {
+		predicates = append(predicates, modproductoptionpreview.CreateTimeGT(*i.CreateTimeGT))
+	}
+	if i.CreateTimeGTE != nil {
+		predicates = append(predicates, modproductoptionpreview.CreateTimeGTE(*i.CreateTimeGTE))
+	}
+	if i.CreateTimeLT != nil {
+		predicates = append(predicates, modproductoptionpreview.CreateTimeLT(*i.CreateTimeLT))
+	}
+	if i.CreateTimeLTE != nil {
+		predicates = append(predicates, modproductoptionpreview.CreateTimeLTE(*i.CreateTimeLTE))
+	}
+	if i.UpdateTime != nil {
+		predicates = append(predicates, modproductoptionpreview.UpdateTimeEQ(*i.UpdateTime))
+	}
+	if i.UpdateTimeNEQ != nil {
+		predicates = append(predicates, modproductoptionpreview.UpdateTimeNEQ(*i.UpdateTimeNEQ))
+	}
+	if len(i.UpdateTimeIn) > 0 {
+		predicates = append(predicates, modproductoptionpreview.UpdateTimeIn(i.UpdateTimeIn...))
+	}
+	if len(i.UpdateTimeNotIn) > 0 {
+		predicates = append(predicates, modproductoptionpreview.UpdateTimeNotIn(i.UpdateTimeNotIn...))
+	}
+	if i.UpdateTimeGT != nil {
+		predicates = append(predicates, modproductoptionpreview.UpdateTimeGT(*i.UpdateTimeGT))
+	}
+	if i.UpdateTimeGTE != nil {
+		predicates = append(predicates, modproductoptionpreview.UpdateTimeGTE(*i.UpdateTimeGTE))
+	}
+	if i.UpdateTimeLT != nil {
+		predicates = append(predicates, modproductoptionpreview.UpdateTimeLT(*i.UpdateTimeLT))
+	}
+	if i.UpdateTimeLTE != nil {
+		predicates = append(predicates, modproductoptionpreview.UpdateTimeLTE(*i.UpdateTimeLTE))
+	}
+	if i.Status != nil {
+		predicates = append(predicates, modproductoptionpreview.StatusEQ(*i.Status))
+	}
+	if i.StatusNEQ != nil {
+		predicates = append(predicates, modproductoptionpreview.StatusNEQ(*i.StatusNEQ))
+	}
+	if len(i.StatusIn) > 0 {
+		predicates = append(predicates, modproductoptionpreview.StatusIn(i.StatusIn...))
+	}
+	if len(i.StatusNotIn) > 0 {
+		predicates = append(predicates, modproductoptionpreview.StatusNotIn(i.StatusNotIn...))
+	}
+
+	if i.HasProductOption != nil {
+		p := modproductoptionpreview.HasProductOption()
+		if !*i.HasProductOption {
+			p = modproductoptionpreview.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasProductOptionWith) > 0 {
+		with := make([]predicate.ModProductOption, 0, len(i.HasProductOptionWith))
+		for _, w := range i.HasProductOptionWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasProductOptionWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, modproductoptionpreview.HasProductOptionWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, ErrEmptyModProductOptionPreviewWhereInput
+	case 1:
+		return predicates[0], nil
+	default:
+		return modproductoptionpreview.And(predicates...), nil
 	}
 }
 

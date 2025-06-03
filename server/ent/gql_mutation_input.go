@@ -9,6 +9,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/expense"
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/mod"
+	"github.com/Dan6erbond/revline/ent/modproductoptionpreview"
 	"github.com/Dan6erbond/revline/ent/profile"
 	"github.com/Dan6erbond/revline/ent/task"
 	"github.com/Dan6erbond/revline/ent/usersettings"
@@ -1459,6 +1460,7 @@ type CreateModProductOptionInput struct {
 	Specs      map[string]string
 	ModID      uuid.UUID
 	MediumIDs  []uuid.UUID
+	PreviewIDs []uuid.UUID
 }
 
 // Mutate applies the CreateModProductOptionInput on the ModProductOptionMutation builder.
@@ -1497,6 +1499,9 @@ func (i *CreateModProductOptionInput) Mutate(m *ModProductOptionMutation) {
 	if v := i.MediumIDs; len(v) > 0 {
 		m.AddMediumIDs(v...)
 	}
+	if v := i.PreviewIDs; len(v) > 0 {
+		m.AddPreviewIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the CreateModProductOptionInput on the ModProductOptionCreate builder.
@@ -1507,29 +1512,32 @@ func (c *ModProductOptionCreate) SetInput(i CreateModProductOptionInput) *ModPro
 
 // UpdateModProductOptionInput represents a mutation input for updating modproductoptions.
 type UpdateModProductOptionInput struct {
-	UpdateTime      *time.Time
-	ClearVendor     bool
-	Vendor          *string
-	ClearName       bool
-	Name            *string
-	ClearLink       bool
-	Link            *string
-	ClearPrice      bool
-	Price           *float64
-	ClearNotes      bool
-	Notes           *string
-	ClearPros       bool
-	Pros            []string
-	AppendPros      []string
-	ClearCons       bool
-	Cons            []string
-	AppendCons      []string
-	ClearSpecs      bool
-	Specs           map[string]string
-	ModID           *uuid.UUID
-	ClearMedia      bool
-	AddMediumIDs    []uuid.UUID
-	RemoveMediumIDs []uuid.UUID
+	UpdateTime       *time.Time
+	ClearVendor      bool
+	Vendor           *string
+	ClearName        bool
+	Name             *string
+	ClearLink        bool
+	Link             *string
+	ClearPrice       bool
+	Price            *float64
+	ClearNotes       bool
+	Notes            *string
+	ClearPros        bool
+	Pros             []string
+	AppendPros       []string
+	ClearCons        bool
+	Cons             []string
+	AppendCons       []string
+	ClearSpecs       bool
+	Specs            map[string]string
+	ModID            *uuid.UUID
+	ClearMedia       bool
+	AddMediumIDs     []uuid.UUID
+	RemoveMediumIDs  []uuid.UUID
+	ClearPreviews    bool
+	AddPreviewIDs    []uuid.UUID
+	RemovePreviewIDs []uuid.UUID
 }
 
 // Mutate applies the UpdateModProductOptionInput on the ModProductOptionMutation builder.
@@ -1603,6 +1611,15 @@ func (i *UpdateModProductOptionInput) Mutate(m *ModProductOptionMutation) {
 	if v := i.RemoveMediumIDs; len(v) > 0 {
 		m.RemoveMediumIDs(v...)
 	}
+	if i.ClearPreviews {
+		m.ClearPreviews()
+	}
+	if v := i.AddPreviewIDs; len(v) > 0 {
+		m.AddPreviewIDs(v...)
+	}
+	if v := i.RemovePreviewIDs; len(v) > 0 {
+		m.RemovePreviewIDs(v...)
+	}
 }
 
 // SetInput applies the change-set in the UpdateModProductOptionInput on the ModProductOptionUpdate builder.
@@ -1613,6 +1630,66 @@ func (c *ModProductOptionUpdate) SetInput(i UpdateModProductOptionInput) *ModPro
 
 // SetInput applies the change-set in the UpdateModProductOptionInput on the ModProductOptionUpdateOne builder.
 func (c *ModProductOptionUpdateOne) SetInput(i UpdateModProductOptionInput) *ModProductOptionUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateModProductOptionPreviewInput represents a mutation input for creating modproductoptionpreviews.
+type CreateModProductOptionPreviewInput struct {
+	CreateTime      *time.Time
+	UpdateTime      *time.Time
+	Status          *modproductoptionpreview.Status
+	ProductOptionID uuid.UUID
+}
+
+// Mutate applies the CreateModProductOptionPreviewInput on the ModProductOptionPreviewMutation builder.
+func (i *CreateModProductOptionPreviewInput) Mutate(m *ModProductOptionPreviewMutation) {
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.Status; v != nil {
+		m.SetStatus(*v)
+	}
+	m.SetProductOptionID(i.ProductOptionID)
+}
+
+// SetInput applies the change-set in the CreateModProductOptionPreviewInput on the ModProductOptionPreviewCreate builder.
+func (c *ModProductOptionPreviewCreate) SetInput(i CreateModProductOptionPreviewInput) *ModProductOptionPreviewCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateModProductOptionPreviewInput represents a mutation input for updating modproductoptionpreviews.
+type UpdateModProductOptionPreviewInput struct {
+	UpdateTime      *time.Time
+	Status          *modproductoptionpreview.Status
+	ProductOptionID *uuid.UUID
+}
+
+// Mutate applies the UpdateModProductOptionPreviewInput on the ModProductOptionPreviewMutation builder.
+func (i *UpdateModProductOptionPreviewInput) Mutate(m *ModProductOptionPreviewMutation) {
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
+	}
+	if v := i.Status; v != nil {
+		m.SetStatus(*v)
+	}
+	if v := i.ProductOptionID; v != nil {
+		m.SetProductOptionID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateModProductOptionPreviewInput on the ModProductOptionPreviewUpdate builder.
+func (c *ModProductOptionPreviewUpdate) SetInput(i UpdateModProductOptionPreviewInput) *ModProductOptionPreviewUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateModProductOptionPreviewInput on the ModProductOptionPreviewUpdateOne builder.
+func (c *ModProductOptionPreviewUpdateOne) SetInput(i UpdateModProductOptionPreviewInput) *ModProductOptionPreviewUpdateOne {
 	i.Mutate(c.Mutation())
 	return c
 }

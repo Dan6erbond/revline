@@ -513,6 +513,26 @@ func (mpo *ModProductOption) Media(ctx context.Context) (result []*Media, err er
 	return result, err
 }
 
+func (mpo *ModProductOption) Previews(ctx context.Context) (result []*ModProductOptionPreview, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = mpo.NamedPreviews(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = mpo.Edges.PreviewsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = mpo.QueryPreviews().All(ctx)
+	}
+	return result, err
+}
+
+func (mpop *ModProductOptionPreview) ProductOption(ctx context.Context) (*ModProductOption, error) {
+	result, err := mpop.Edges.ProductOptionOrErr()
+	if IsNotLoaded(err) {
+		result, err = mpop.QueryProductOption().Only(ctx)
+	}
+	return result, err
+}
+
 func (or *OdometerReading) Car(ctx context.Context) (*Car, error) {
 	result, err := or.Edges.CarOrErr()
 	if IsNotLoaded(err) {

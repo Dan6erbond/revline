@@ -15,6 +15,11 @@ type CreateCheckoutSessionInput struct {
 	Affiliate *string           `json:"affiliate,omitempty"`
 }
 
+type GenerateModPreviewInput struct {
+	ModProductOptionID string `json:"modProductOptionID"`
+	MediaID            string `json:"mediaID"`
+}
+
 type UpcomingService struct {
 	Schedule    *ent.ServiceSchedule `json:"schedule"`
 	NextDueKm   *float64             `json:"nextDueKm,omitempty"`
