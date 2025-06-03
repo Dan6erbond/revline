@@ -60,15 +60,16 @@ const getTask = graphql(`
   }
 `);
 
-const getModIdeas = graphql(`
-  query ModIdeas($id: ID!) {
+const getMods = graphql(`
+  query Mods($id: ID!) {
     car(id: $id) {
       id
-      modIdeas {
+      mods {
         id
         title
         stage
         category
+        status
         description
         productOptions {
           id
@@ -91,7 +92,7 @@ type Inputs = {
   priority: TaskPriority | null;
   parentId?: string | null;
   subTaskIds?: string[] | null;
-  modIdeaIds?: string[] | null;
+  modIds?: string[] | null;
 };
 
 const updateTaskDetails = graphql(`
@@ -161,7 +162,7 @@ export default function TaskDrawerContent({
     skip: !getQueryParam(router.query.id),
   });
 
-  const { data: modIdeasData } = useQuery(getModIdeas, {
+  const { data: modsData } = useQuery(getMods, {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
   });
@@ -179,14 +180,14 @@ export default function TaskDrawerContent({
       ...task,
       parentId: task.parent?.id,
       subTaskIds: task.subtasks?.map((st) => st.id) ?? [],
-      modIdeaIds: task.modIdeas?.map((mi) => mi.id) ?? [],
+      modIds: task.mods?.map((mi) => mi.id) ?? [],
     },
   });
 
-  const [parentId, subTaskIds, modIdeaIds] = watch([
+  const [parentId, subTaskIds, modIds] = watch([
     "parentId",
     "subTaskIds",
-    "modIdeaIds",
+    "modIds",
   ]);
 
   const onSubmit: SubmitHandler<Inputs> = withNotification(
@@ -204,7 +205,7 @@ export default function TaskDrawerContent({
       partsNeeded,
       parentId,
       subTaskIds,
-      modIdeaIds,
+      modIds,
     }: Inputs) => {
       mutate({
         variables: {
@@ -228,11 +229,11 @@ export default function TaskDrawerContent({
             removeSubtaskIDs: task.subtasks
               ?.filter((st) => !subTaskIds?.includes(st.id))
               .map((st) => st.id),
-            addModIdeaIDs: modIdeaIds?.filter(
-              (id) => task.modIdeas?.findIndex((mi) => mi.id === id) === -1
+            addModIDs: modIds?.filter(
+              (id) => task.mods?.findIndex((mi) => mi.id === id) === -1
             ),
-            removeModIdeaIDs: task.modIdeas
-              ?.filter((mi) => !modIdeaIds?.includes(mi.id))
+            removeModIDs: task.mods
+              ?.filter((mi) => !modIds?.includes(mi.id))
               .map((st) => st.id),
           },
         },
@@ -518,18 +519,18 @@ export default function TaskDrawerContent({
 
               <Controller
                 control={control}
-                name="modIdeaIds"
+                name="modIds"
                 render={({ field: { value, onChange } }) => (
                   <div className="flex flex-col gap-4">
-                    <p>Mod Ideas</p>
+                    <p>Mods</p>
 
                     <Select
-                      placeholder="Add Mod Idea"
+                      placeholder="Add Mod"
                       classNames={{ innerWrapper: "py-4" }}
                       items={
-                        modIdeasData?.car.modIdeas?.filter(
-                          (idea) =>
-                            !(modIdeaIds ?? []).some((id) => id === idea.id)
+                        modsData?.car.mods?.filter(
+                          (mod) =>
+                            !(modIds ?? []).some((id) => id === mod.id)
                         ) ?? []
                       }
                       selectedKeys={new Set()}
@@ -555,11 +556,11 @@ export default function TaskDrawerContent({
                     </Select>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {value?.map((id) => {
-                        const idea = modIdeasData?.car.modIdeas?.find(
-                          (mi) => mi.id === id
+                        const mod = modsData?.car.mods?.find(
+                          (mod) => mod.id === id
                         );
 
-                        if (!idea) return null;
+                        if (!mod) return null;
 
                         return (
                           <Chip
@@ -572,7 +573,7 @@ export default function TaskDrawerContent({
                                 }}
                                 onPress={() =>
                                   onChange(
-                                    value?.filter((id) => id !== idea.id)
+                                    value?.filter((id) => id !== mod.id)
                                   )
                                 }
                                 isIconOnly
@@ -586,10 +587,10 @@ export default function TaskDrawerContent({
                               </Button>
                             }
                             as={Link}
-                            href={`/cars/${router.query.id}/project/mods/${idea.id}`}
+                            href={`/cars/${router.query.id}/project/mods/${mod.id}`}
                             variant="faded"
                           >
-                            {idea.title}
+                            {mod.title}
                           </Chip>
                         );
                       })}
