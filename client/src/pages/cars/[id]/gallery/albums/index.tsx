@@ -6,7 +6,7 @@ import {
   Tab,
   Tabs,
   Tooltip,
-  addToast
+  addToast,
 } from "@heroui/react";
 
 import CarLayout from "@/components/layout/car-layout";
@@ -16,6 +16,7 @@ import SubscriptionOverlay from "@/components/subscription-overlay";
 import { SubscriptionTier } from "@/gql/graphql";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
+import { useConfig } from "@/contexts/config";
 import { useHref } from "@/utils/use-href";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
@@ -40,6 +41,7 @@ const getAlbums = graphql(`
 export default function Albums() {
   const router = useRouter();
   const href = useHref();
+  const config = useConfig();
 
   const { data } = useQuery(getAlbums, {
     variables: { id: getQueryParam(router.query.id) as string },
@@ -109,7 +111,10 @@ export default function Albums() {
                     <div className="bg-secondary h-48 md:h-56 lg:h-64 xl:h-96 relative">
                       {cover ? (
                         <Image
-                          src={cover.url}
+                          src={new URL(
+                            `/media/${cover.id}`,
+                            config.serverUrl
+                          ).toString()}
                           alt={album.title}
                           className="object-cover rounded-none"
                           fill
