@@ -64,16 +64,13 @@ export default function ProductOptionForm({
       | undefined
   ): void;
 } & ComponentProps<"form">) {
-  const po = useFragment(ModProductOptionDetails, productOption);
-
-  const { register, handleSubmit, control, reset, watch } =
-    useForm<Inputs>({
-      defaultValues: {
-        pros: [{ value: "" }],
-        cons: [{ value: "" }],
-        specs: [{ key: "", value: "" }],
-      },
-    });
+  const { register, handleSubmit, control, reset, watch } = useForm<Inputs>({
+    defaultValues: {
+      pros: [{ value: "" }],
+      cons: [{ value: "" }],
+      specs: [{ key: "", value: "" }],
+    },
+  });
 
   const [link] = watch(["link"]);
 
@@ -123,7 +120,9 @@ export default function ProductOptionForm({
   const [update] = useMutation(updateModProductOption);
 
   useEffect(() => {
-    if (!po) return;
+    if (!productOption) return;
+
+    const po = useFragment(ModProductOptionDetails, productOption);
 
     reset({
       vendor: po.vendor || "",
@@ -140,9 +139,11 @@ export default function ProductOptionForm({
           }))
         : [],
     });
-  }, [po, reset]);
+  }, [productOption, reset]);
 
   const onFormSubmit = async (data: Inputs) => {
+    const po = useFragment(ModProductOptionDetails, productOption);
+
     const input = {
       ...data,
       pros: data.pros.map((p) => p.value).filter(Boolean),
