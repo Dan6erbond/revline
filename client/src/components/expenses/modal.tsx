@@ -11,16 +11,15 @@ import {
   Progress,
   Select,
   SelectItem,
-  Textarea,
 } from "@heroui/react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Expense, ExpenseType } from "@/gql/graphql";
 import { FragmentType, graphql, useFragment } from "@/gql";
 import {
   ZonedDateTime,
-  fromAbsolute,
   getLocalTimeZone,
   now,
+  parseAbsolute,
 } from "@internationalized/date";
 import { useApolloClient, useMutation } from "@apollo/client";
 
@@ -139,7 +138,7 @@ export default function ExpenseModal({
       files: [],
       ...ex,
       occurredAt: ex?.occurredAt
-        ? fromAbsolute(0, getLocalTimeZone())
+        ? parseAbsolute(ex.occurredAt, getLocalTimeZone())
         : now(getLocalTimeZone()),
     },
   });
@@ -174,16 +173,18 @@ export default function ExpenseModal({
   const onSubmit: SubmitHandler<Inputs> = withNotification(
     { title: "Saving expense..." },
     ({ occurredAt, type, amount, notes, files }) => {
+      const input = {
+        occurredAt: occurredAt.toDate().toISOString(),
+        type,
+        amount,
+        notes,
+      };
+
       if (ex) {
         return update({
           variables: {
             id: ex.id,
-            input: {
-              occurredAt: occurredAt.toDate().toISOString(),
-              type,
-              amount,
-              notes,
-            },
+            input: input,
           },
         }).then(props.onClose ?? (() => props.onOpenChange?.(false)));
       }
@@ -192,10 +193,7 @@ export default function ExpenseModal({
         variables: {
           input: {
             carID: getQueryParam(router.query.id)!,
-            occurredAt: occurredAt.toDate().toISOString(),
-            type,
-            amount,
-            notes,
+            ...input,
           },
         },
       })
