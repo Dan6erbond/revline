@@ -179,7 +179,7 @@ export default function Details({
             <p>Fuel-up</p>
             <FuelUpChip
               fuelUp={data.document.fuelUp}
-              href={`/cars/${router.query.id}`}
+              href={`/cars/${router.query.id}/fuelups`}
               fuelVolumeUnit={data.me.settings?.fuelVolumeUnit}
               distanceUnit={data.me.settings?.distanceUnit}
             />
@@ -190,7 +190,7 @@ export default function Details({
             <p>Service log</p>
             <ServiceLogChip
               log={data.document.serviceLog}
-              href={`/cars/${router.query.id}`}
+              href={`/cars/${router.query.id}/maintenance`}
               distanceUnit={data.me.settings?.distanceUnit}
             />
           </div>
