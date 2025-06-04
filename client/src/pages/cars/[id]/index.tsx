@@ -94,7 +94,7 @@ const columns = [
   { key: "documents", label: "Documents" },
   { key: "fuelup", label: "Fuel-up" },
   { key: "service", label: "Service" },
-  { key: "actions", label: "Actions" },
+  { key: "actions", label: "" },
 ];
 
 const COLORS: Record<ExpenseType, string> = {
