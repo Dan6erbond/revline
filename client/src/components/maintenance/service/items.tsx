@@ -20,12 +20,12 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { getDistance, getKilometers } from "@/utils/distance";
 import { useMutation, useQuery } from "@apollo/client";
 
-import { DistanceUnit } from "@/gql/graphql";
 import { Plus } from "lucide-react";
 import { distanceUnits } from "@/literals";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
+import { useUnits } from "@/hooks/use-units";
 
 const getServiceItems = graphql(`
   query GetServiceItems($id: ID!) {
@@ -90,7 +90,7 @@ export default function Items() {
     skip: !getQueryParam(router.query.id),
   });
 
-  const distanceUnit = data?.me?.settings?.distanceUnit ?? DistanceUnit.Miles;
+  const { distanceUnit } = useUnits(data?.me?.settings);
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 

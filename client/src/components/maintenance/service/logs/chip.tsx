@@ -4,11 +4,12 @@ import Link from "next/link";
 import { Wrench } from "lucide-react";
 import { distanceUnits } from "@/literals";
 import { getDistance } from "@/utils/distance";
+import { useUnits } from "@/hooks/use-units";
 
 export function ServiceLogChip({
   log,
   href,
-  distanceUnit,
+  ...props
 }: {
   log: {
     id: string;
@@ -20,6 +21,8 @@ export function ServiceLogChip({
   href?: string;
   distanceUnit?: DistanceUnit | null;
 }) {
+  const { distanceUnit } = useUnits(props);
+
   return (
     <Chip
       as={href ? Link : undefined}
@@ -32,10 +35,10 @@ export function ServiceLogChip({
         {(log.odometerReading &&
           getDistance(
             log.odometerReading.readingKm,
-            distanceUnit ?? DistanceUnit.Miles
+            distanceUnit
           ).toLocaleString()) ??
           "-"}{" "}
-        {distanceUnits[distanceUnit ?? DistanceUnit.Miles]} ·{" "}
+        {distanceUnits[distanceUnit]} ·{" "}
         {new Date(log.datePerformed).toLocaleDateString()}
       </span>
     </Chip>

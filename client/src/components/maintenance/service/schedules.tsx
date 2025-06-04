@@ -25,11 +25,11 @@ import { Plus, Trash } from "lucide-react";
 import { getDistance, getKilometers } from "@/utils/distance";
 import { useMutation, useQuery } from "@apollo/client";
 
-import { DistanceUnit } from "@/gql/graphql";
 import { distanceUnits } from "@/literals";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
+import { useUnits } from "@/hooks/use-units";
 
 const getServiceSchedules = graphql(`
   query GetServiceSchedules($id: ID!) {
@@ -142,7 +142,7 @@ export default function Schedules() {
     skip: !getQueryParam(router.query.id),
   });
 
-  const distanceUnit = data?.me?.settings?.distanceUnit ?? DistanceUnit.Miles;
+  const { distanceUnit } = useUnits(data?.me?.settings);
 
   const { data: serviceItems } = useQuery(getServiceItems, {
     variables: { id: getQueryParam(router.query.id) as string },
@@ -201,9 +201,7 @@ export default function Schedules() {
               : null,
           repeatEveryMonths,
           startsAtKm:
-            startsAtKm != null
-              ? getKilometers(startsAtKm, distanceUnit)
-              : null,
+            startsAtKm != null ? getKilometers(startsAtKm, distanceUnit) : null,
           startsAtMonths,
           itemIDs: serviceItemIds,
         },

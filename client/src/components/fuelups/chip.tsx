@@ -11,12 +11,12 @@ import { Fuel } from "lucide-react";
 import Link from "next/link";
 import { getDistance } from "@/utils/distance";
 import { getFuelVolume } from "@/utils/fuel-volume";
+import { useUnits } from "@/hooks/use-units";
 
 export function FuelUpChip({
   fuelUp,
   href,
-  fuelVolumeUnit,
-  distanceUnit,
+  ...props
 }: {
   fuelUp: {
     id: string;
@@ -34,6 +34,8 @@ export function FuelUpChip({
   fuelVolumeUnit?: FuelVolumeUnit | null;
   distanceUnit?: DistanceUnit | null;
 }) {
+  const { fuelVolumeUnit, distanceUnit } = useUnits(props);
+
   return (
     <Chip
       as={href ? Link : undefined}
@@ -42,18 +44,15 @@ export function FuelUpChip({
       startContent={<Fuel className="size-4 ml-1 text-muted-foreground" />}
     >
       <span className="ml-1 truncate">
-        {getFuelVolume(
-          fuelUp.amountLiters,
-          fuelVolumeUnit ?? FuelVolumeUnit.Gallon
-        ).toLocaleString()}
-        {fuelVolumeUnits[fuelVolumeUnit ?? FuelVolumeUnit.Gallon]} @{" "}
+        {getFuelVolume(fuelUp.amountLiters, fuelVolumeUnit).toLocaleString()}
+        {fuelVolumeUnits[fuelVolumeUnit]} @{" "}
         {(fuelUp.odometerReading &&
           getDistance(
             fuelUp.odometerReading.readingKm,
-            distanceUnit ?? DistanceUnit.Miles
+            distanceUnit
           ).toLocaleString()) ??
           "-"}{" "}
-        {distanceUnits[distanceUnit ?? DistanceUnit.Miles]} ·{" "}
+        {distanceUnits[distanceUnit]} ·{" "}
         {new Date(fuelUp.occurredAt).toLocaleDateString()}
       </span>
     </Chip>

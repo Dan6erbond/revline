@@ -47,7 +47,6 @@ import {
   X,
 } from "lucide-react";
 import { FormEventHandler, Key, ReactElement, useState } from "react";
-import { PowerUnit, TorqueUnit } from "@/gql/graphql";
 import { getKilowatts, getPower } from "@/utils/power";
 import { getNm, getTorque } from "@/utils/torque";
 import { powerUnitsShort, torqueUnitsShort } from "@/literals";
@@ -61,6 +60,7 @@ import type { Payload } from "recharts/types/component/DefaultLegendContent";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
+import { useUnits } from "@/hooks/use-units";
 import { withNotification } from "@/utils/with-notification";
 
 const getDynoSession = graphql(`
@@ -176,8 +176,7 @@ export default function Session() {
 
   const [selectedRows, setSelectedRows] = useState<Selection>(new Set());
 
-  const powerUnit = data?.me?.settings?.powerUnit ?? PowerUnit.ImpHorsepower;
-  const torqueUnit = data?.me?.settings?.torqueUnit ?? TorqueUnit.PoundFeet;
+  const { powerUnit, torqueUnit } = useUnits(data?.me?.settings);
 
   const [visible, setVisible] = useState({
     power: true,

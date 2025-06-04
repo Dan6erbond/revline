@@ -25,7 +25,6 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { DistanceUnit, ServiceLog } from "@/gql/graphql";
 import { FileUp, Plus, Trash } from "lucide-react";
 import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
 import { getDistance, getKilometers } from "@/utils/distance";
@@ -34,6 +33,7 @@ import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import DocumentChip from "@/components/documents/chip";
 import Dropzone from "@/components/dropzone";
 import FileIcon from "@/components/file-icon";
+import { ServiceLog } from "@/gql/graphql";
 import { distanceUnits } from "@/literals";
 import { formatBytes } from "@/utils/upload-file";
 import { getQueryParam } from "@/utils/router";
@@ -41,6 +41,7 @@ import { graphql } from "@/gql";
 import { useDocumentsUpload } from "@/hooks/use-documents-upload";
 import { useMemo } from "react";
 import { useRouter } from "next/router";
+import { useUnits } from "@/hooks/use-units";
 import { withNotification } from "@/utils/with-notification";
 
 const getServiceLogs = graphql(`
@@ -222,7 +223,7 @@ export default function Logs() {
     skip: !getQueryParam(router.query.id),
   });
 
-  const distanceUnit = data?.me?.settings?.distanceUnit ?? DistanceUnit.Miles;
+  const { distanceUnit } = useUnits(data?.me?.settings);
 
   const { data: serviceItems } = useQuery(getServiceItems, {
     variables: { id: getQueryParam(router.query.id) as string },

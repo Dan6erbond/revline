@@ -22,7 +22,6 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { ComponentProps, useCallback, useState } from "react";
-import { DistanceUnit, FuelConsumptionUnit } from "@/gql/graphql";
 import { distanceUnits, fuelConsumptionUnitsShort } from "@/literals";
 import { useMutation, useQuery } from "@apollo/client";
 
@@ -38,6 +37,7 @@ import { uploadFile } from "@/utils/upload-file";
 import { useConfig } from "@/contexts/config";
 import { useHref } from "@/utils/use-href";
 import { useRouter } from "next/router";
+import { useUnits } from "@/hooks/use-units";
 
 const getCarBanner = graphql(`
   query GetCarBanner($id: ID!) {
@@ -130,9 +130,7 @@ export default function CarLayout(props: ComponentProps<"main">) {
     skip: !getQueryParam(router.query.id),
   });
 
-  const distanceUnit = data?.me?.settings?.distanceUnit ?? DistanceUnit.Miles;
-  const fuelConsumptionUnit =
-    data?.me?.settings?.fuelConsumptionUnit ?? FuelConsumptionUnit.Mpg;
+  const { distanceUnit, fuelConsumptionUnit } = useUnits(data?.me?.settings);
 
   const [mutate] = useMutation(uploadBannerImage);
 

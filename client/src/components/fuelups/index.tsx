@@ -36,15 +36,8 @@ import {
   YAxis,
 } from "recharts";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import {
-  DistanceUnit,
-  FuelCategory,
-  FuelConsumptionUnit,
-  FuelUp,
-  FuelVolumeUnit,
-  OctaneRating,
-} from "@/gql/graphql";
 import { FileUp, Fuel, MapPin, Percent, Plus } from "lucide-react";
+import { FuelCategory, FuelUp, OctaneRating } from "@/gql/graphql";
 import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
 import {
   distanceUnits,
@@ -65,6 +58,7 @@ import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useDocumentsUpload } from "@/hooks/use-documents-upload";
 import { useRouter } from "next/router";
+import { useUnits } from "@/hooks/use-units";
 import { withNotification } from "@/utils/with-notification";
 
 const getFuelUps = graphql(`
@@ -174,12 +168,8 @@ export default function FuelUps() {
     skip: !getQueryParam(router.query.id),
   });
 
-  const fuelVolumeUnit =
-    data?.me?.settings?.fuelVolumeUnit ?? FuelVolumeUnit.Gallon;
-  const distanceUnit = data?.me?.settings?.distanceUnit ?? DistanceUnit.Miles;
-  const currencyCode = data?.me?.settings?.currencyCode ?? "USD";
-  const fuelConsumptionUnit =
-    data?.me?.settings?.fuelConsumptionUnit ?? FuelConsumptionUnit.Mpg;
+  const { fuelVolumeUnit, distanceUnit, currencyCode, fuelConsumptionUnit } =
+    useUnits(data?.me.settings);
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 

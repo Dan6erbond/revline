@@ -39,11 +39,12 @@ import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
 import { EnumSelect } from "../enum-select";
 import { Key } from "react";
 import Link from "next/link";
-import ModsPicker from "../../mods/picker";
+import ModsPicker from "@/mods/picker";
 import { TaskFields } from "./task";
 import { getQueryParam } from "@/utils/router";
 import { getTasksByRank } from "./column";
 import { useRouter } from "next/router";
+import { useUnits } from "@/hooks/use-units";
 import { withNotification } from "@/utils/with-notification";
 
 const getTask = graphql(`
@@ -150,7 +151,7 @@ export default function TaskDrawerContent({
     refetchQueries: [getTasks, getTasksByRank],
   });
 
-  const currencyCode = data.me.settings?.currencyCode ?? "USD";
+  const { currencyCode } = useUnits(data.me.settings);
 
   const { register, handleSubmit, watch, control, setValue } = useForm<Inputs>({
     defaultValues: {

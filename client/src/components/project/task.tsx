@@ -24,6 +24,7 @@ import Link from "next/link";
 import { forwardRef } from "react";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
+import { useUnits } from "@/hooks/use-units";
 
 export const TaskFields = graphql(`
   fragment TaskFields on Task {
@@ -110,7 +111,7 @@ export const TaskCard = forwardRef<
 
   const t = useFragment(TaskFields, task);
 
-  const currencyCode = data?.me?.settings?.currencyCode ?? "USD";
+  const { currencyCode } = useUnits(data?.me?.settings);
 
   return (
     <KanbanCard

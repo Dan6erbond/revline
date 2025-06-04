@@ -31,6 +31,7 @@ import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/router";
+import { useUnits } from "@/hooks/use-units";
 import { withNotification } from "@/utils/with-notification";
 
 type Inputs = {
@@ -97,7 +98,7 @@ export default function Mod({ id }: { id: string }) {
 
   const { data } = useSuspenseQuery(getMod, { variables: { id } });
 
-  const currencyCode = data?.me?.settings?.currencyCode ?? "USD";
+  const { currencyCode } = useUnits(data?.me?.settings);
 
   const [mutate] = useMutation(updateMod);
 
@@ -125,7 +126,7 @@ export default function Mod({ id }: { id: string }) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   return (
-    <div className="flex flex-col gap-4 p-4 container mx-auto">
+    <div className="flex flex-col gap-8 sm:gap-10 md:gap-12 lg:gap-14 p-4 container mx-auto">
       <div className="flex gap-4 items-center">
         <Button
           as={Link}
@@ -175,7 +176,7 @@ export default function Mod({ id }: { id: string }) {
         </Button>
       </form>
 
-      <div className="mt-6 flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <div className="flex justify-between">
           <h2 className="text-xl font-semibold mb-2">Product Options</h2>
           <Button startContent={<Plus />} onPress={onOpen}>
@@ -198,7 +199,7 @@ export default function Mod({ id }: { id: string }) {
         )}
       </div>
 
-      <div className="mt-6 flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <div className="flex justify-between">
           <h2 className="text-xl font-semibold mb-2">Tasks</h2>
         </div>
@@ -213,7 +214,7 @@ export default function Mod({ id }: { id: string }) {
         )}
       </div>
 
-      <section className="container mx-auto p-4 md:p-6">
+      <section>
         <div className="flex justify-between">
           <h1 className="mb-10 text-xl font-semibold">Build Log</h1>
 

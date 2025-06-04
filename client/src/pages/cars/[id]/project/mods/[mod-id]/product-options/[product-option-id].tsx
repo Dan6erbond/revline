@@ -15,6 +15,7 @@ import { graphql } from "@/gql";
 import { uploadFile } from "@/utils/upload-file";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import { useUnits } from "@/hooks/use-units";
 import { withNotification } from "@/utils/with-notification";
 
 const getModProductOption = graphql(`
@@ -85,7 +86,7 @@ export default function ProductOption() {
     skip: !id,
   });
 
-  const currencyCode = data?.me?.settings?.currencyCode ?? "USD";
+  const { currencyCode } = useUnits(data?.me?.settings);
 
   const [mutate] = useMutation(updateModProductOption);
 
