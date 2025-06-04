@@ -27,6 +27,7 @@ import { useApolloClient, useMutation } from "@apollo/client";
 import Dropzone from "@/components/dropzone";
 import FileIcon from "@/components/file-icon";
 import { FileUp } from "lucide-react";
+import { MinimalTiptapEditor } from "../minimal-tiptap";
 import { formatBytes } from "@/utils/upload-file";
 import { getQueryParam } from "@/utils/router";
 import { useDocumentsUpload } from "@/hooks/use-documents-upload";
@@ -99,7 +100,7 @@ type Inputs = {
   occurredAt: ZonedDateTime;
   type: ExpenseType;
   amount: number;
-  notes: string | null;
+  notes: any;
   files: File[];
 };
 
@@ -239,7 +240,7 @@ export default function ExpenseModal({
       <ModalContent>
         {(onClose) => (
           <>
-            <ModalHeader>Enter Expense</ModalHeader>
+            <ModalHeader>{expense ? "Update" : "Enter"} Expense</ModalHeader>
             <ModalBody>
               <form
                 id="expense"
@@ -284,11 +285,10 @@ export default function ExpenseModal({
                     />
                   )}
                 />
-                <Textarea
-                  label="Notes"
-                  {...register("notes")}
-                  variant="bordered"
-                  aria-label="Notes"
+                <Controller
+                  control={control}
+                  name="notes"
+                  render={({ field }) => <MinimalTiptapEditor {...field} />}
                 />
                 <Controller
                   control={control}
