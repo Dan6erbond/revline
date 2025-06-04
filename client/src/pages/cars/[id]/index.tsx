@@ -1,15 +1,5 @@
 import {
   Button,
-  DatePicker,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  NumberInput,
-  Progress,
-  Select,
-  SelectItem,
   Tab,
   Table,
   TableBody,
@@ -18,7 +8,6 @@ import {
   TableHeader,
   TableRow,
   Tabs,
-  Textarea,
   useDisclosure,
 } from "@heroui/react";
 import {
@@ -29,22 +18,23 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { Coins, FileUp, Fuel, Plus } from "lucide-react";
-import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { Expense, ExpenseType } from "@/gql/graphql";
-import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { Coins, Edit, Fuel, Plus, Trash } from "lucide-react";
+import ExpenseModal, { ExpenseFields } from "@/components/expenses/modal";
+import { graphql, useFragment } from "@/gql";
+import { useMutation, useQuery } from "@apollo/client";
 
 import CarLayout from "@/components/layout/car-layout";
+import DeleteModal from "@/components/modals/delete";
 import DocumentChip from "@/components/documents/chip";
-import Dropzone from "@/components/dropzone";
-import FileIcon from "@/components/file-icon";
-import { formatBytes } from "@/utils/upload-file";
+import { ExpenseType } from "@/gql/graphql";
+import { FuelUpChip } from "@/components/fuelups/chip";
+import { ServiceLogChip } from "@/components/maintenance/service/logs/chip";
+import { createExtensions } from "@/components/minimal-tiptap/hooks/use-minimal-tiptap";
+import { generateHTML } from "@tiptap/react";
 import { getQueryParam } from "@/utils/router";
-import { graphql } from "@/gql";
-import { useDocumentsUpload } from "@/hooks/use-documents-upload";
 import { useRouter } from "next/router";
-import { withNotification } from "@/utils/with-notification";
+import { useState } from "react";
+import { useUnits } from "@/hooks/use-units";
 
 const getExpenses = graphql(`
   query GetExpenses($id: ID!) {
@@ -53,46 +43,46 @@ const getExpenses = graphql(`
       settings {
         id
         currencyCode
+        fuelVolumeUnit
+        distanceUnit
       }
     }
     car(id: $id) {
       id
       expenses {
-        id
-        occurredAt
-        type
-        amount
-        notes
-        documents {
+        ...ExpenseFields
+        fuelUp {
           id
-          name
-          tags
-          metadata {
-            contentType
+          occurredAt
+          station
+          amountLiters
+          fuelCategory
+          octaneRating
+          odometerReading {
+            id
+            readingKm
           }
+          notes
+          isFullTank
+        }
+        serviceLog {
+          id
+          datePerformed
+          odometerReading {
+            id
+            readingKm
+          }
+          performedBy
+          notes
         }
       }
     }
   }
 `);
 
-type Inputs = {
-  occurredAt: ZonedDateTime;
-  type: ExpenseType;
-  amount: number;
-  notes: string;
-  files: File[];
-};
-
-const createExpense = graphql(`
-  mutation CreateExpense($input: CreateExpenseInput!) {
-    createExpense(input: $input) {
-      id
-      occurredAt
-      type
-      amount
-      notes
-    }
+const deleteExpense = graphql(`
+  mutation DeleteExpense($id: ID!) {
+    deleteExpense(id: $id)
   }
 `);
 
@@ -102,6 +92,9 @@ const columns = [
   { key: "amount", label: "Amount" },
   { key: "notes", label: "Notes" },
   { key: "documents", label: "Documents" },
+  { key: "fuelup", label: "Fuel-up" },
+  { key: "service", label: "Service" },
+  { key: "actions", label: "Actions" },
 ];
 
 const COLORS: Record<ExpenseType, string> = {
@@ -125,8 +118,6 @@ const COLORS: Record<ExpenseType, string> = {
 export default function Car() {
   const router = useRouter();
 
-  const client = useApolloClient();
-
   const { data } = useQuery(getExpenses, {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
@@ -134,8 +125,9 @@ export default function Car() {
 
   const expenseData =
     data?.car.expenses?.reduce<Record<string, number>>((acc, expense) => {
-      const type = expense.type.toLowerCase();
-      acc[type] = (acc[type] || 0) + expense.amount;
+      const ex = useFragment(ExpenseFields, expense);
+      const type = ex.type.toLowerCase();
+      acc[type] = (acc[type] || 0) + ex.amount;
       return acc;
     }, {}) ?? {};
 
@@ -145,22 +137,15 @@ export default function Car() {
     type: type as ExpenseType,
   }));
 
-  const currencyCode = data?.me?.settings?.currencyCode ?? "USD";
+  const { currencyCode } = useUnits(data?.me?.settings);
 
-  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-  const { register, handleSubmit, control, reset } = useForm<Inputs>({
-    defaultValues: {
-      occurredAt: now(getLocalTimeZone()),
-      files: [],
-    },
-  });
+  const [editing, setEditing] = useState<string | null>(null);
 
-  const [handleFileUpload, { uploadProgress }] = useDocumentsUpload();
-
-  const [mutate, { loading }] = useMutation(createExpense, {
-    update: (cache, res) => {
-      if (!res.data?.createExpense || !data?.car) return;
+  const [mutateDelete, { loading }] = useMutation(deleteExpense, {
+    update: (cache, res, { variables }) => {
+      if (!variables?.id || !data?.car) return;
 
       cache.writeQuery({
         query: getExpenses,
@@ -169,62 +154,19 @@ export default function Car() {
           ...data,
           car: {
             ...data.car,
-            expenses: [...(data.car.expenses ?? []), res.data.createExpense],
+            expenses:
+              (data.car.expenses?.filter((ex) => {
+                const e = useFragment(ExpenseFields, ex);
+
+                return e.id !== variables.id;
+              }) as any) ?? [],
           },
         },
       });
     },
   });
 
-  const onSubmit: SubmitHandler<Inputs> = withNotification(
-    {},
-    ({ occurredAt, type, amount, notes, files }) =>
-      mutate({
-        variables: {
-          input: {
-            carID: getQueryParam(router.query.id)!,
-            occurredAt: occurredAt.toDate().toISOString(),
-            type,
-            amount,
-            notes,
-          },
-        },
-      })
-        .then(({ data }) => {
-          if (!data) return;
-
-          reset();
-
-          const expense = data.createExpense;
-
-          return Promise.all(
-            files.map((f) =>
-              handleFileUpload(f, { expenseID: expense.id }).then(
-                ({ data }) => {
-                  if (!data?.uploadDocument) return;
-
-                  client.cache.modify<Expense>({
-                    id: client.cache.identify(expense),
-                    fields: {
-                      documents(existingDocRefs, { toReference, readField }) {
-                        return [
-                          ...(existingDocRefs ?? []).filter(
-                            (doc) =>
-                              readField({ from: doc, fieldName: "id" }) !==
-                              data!.uploadDocument.document.id
-                          ),
-                          toReference(data!.uploadDocument.document),
-                        ];
-                      },
-                    },
-                  });
-                }
-              )
-            )
-          );
-        })
-        .then(onClose)
-  );
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   return (
     <CarLayout>
@@ -304,148 +246,110 @@ export default function Car() {
                 items={data?.car?.expenses ?? []}
                 emptyContent={"No rows to display."}
               >
-                {(ex) => (
-                  <TableRow key={ex.id}>
-                    <TableCell>
-                      {new Date(ex.occurredAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>{ex.type}</TableCell>
-                    <TableCell>
-                      {ex.amount.toLocaleString([], {
-                        style: "currency",
-                        currency: currencyCode,
-                        maximumFractionDigits: 2,
-                      })}
-                    </TableCell>
-                    <TableCell>{ex.notes}</TableCell>
-                    <TableCell className="flex gap-2 flex-wrap">
-                      {ex.documents?.map((doc) => (
-                        <DocumentChip document={doc} key={doc.id} />
-                      ))}
-                    </TableCell>
-                  </TableRow>
-                )}
+                {(expense) => {
+                  const ex = useFragment(ExpenseFields, expense);
+
+                  return (
+                    <TableRow key={ex.id}>
+                      <TableCell>
+                        {new Date(ex.occurredAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>{ex.type}</TableCell>
+                      <TableCell>
+                        {ex.amount.toLocaleString([], {
+                          style: "currency",
+                          currency: currencyCode,
+                          maximumFractionDigits: 2,
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        <div
+                          className="prose"
+                          dangerouslySetInnerHTML={
+                            ex.notes && {
+                              __html: generateHTML(
+                                ex.notes,
+                                createExtensions("")
+                              ),
+                            }
+                          }
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2 flex-wrap">
+                          {ex.documents?.map((doc) => (
+                            <DocumentChip document={doc} key={doc.id} />
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {expense.fuelUp && (
+                          <FuelUpChip
+                            fuelUp={expense.fuelUp}
+                            href={`/cars/${router.query.id}/fuelups`}
+                            fuelVolumeUnit={data?.me.settings?.fuelVolumeUnit}
+                            distanceUnit={data?.me.settings?.distanceUnit}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {expense.serviceLog && (
+                          <ServiceLogChip
+                            log={expense.serviceLog}
+                            href={`/cars/${router.query.id}/maintenance`}
+                            distanceUnit={data?.me.settings?.distanceUnit}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            isIconOnly
+                            variant="light"
+                            size="sm"
+                            onPress={() => setEditing(ex.id)}
+                          >
+                            <Edit className="size-5" />
+                          </Button>
+                          <Button
+                            isIconOnly
+                            variant="light"
+                            color="danger"
+                            size="sm"
+                            onPress={() => setDeleting(ex.id)}
+                          >
+                            <Trash className="size-5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                }}
               </TableBody>
             </Table>
 
-            <Modal
-              isOpen={isOpen}
-              onOpenChange={onOpenChange}
-              scrollBehavior="inside"
-            >
-              <ModalContent>
-                {(onClose) => (
-                  <>
-                    <ModalHeader>Enter Expense</ModalHeader>
-                    <ModalBody>
-                      <form
-                        id="expense"
-                        className="flex flex-col gap-4"
-                        onSubmit={handleSubmit(onSubmit)}
-                      >
-                        <Controller
-                          name="occurredAt"
-                          control={control}
-                          render={({ field }) => (
-                            <DatePicker
-                              hideTimeZone
-                              showMonthAndYearPickers
-                              label="Date"
-                              {...field}
-                              variant="bordered"
-                            />
-                          )}
-                        />
-                        <Select
-                          label="Type"
-                          {...register("type")}
-                          variant="bordered"
-                          aria-label="Type"
-                        >
-                          {Object.entries(ExpenseType).map(([label, type]) => (
-                            <SelectItem key={type}>{label}</SelectItem>
-                          ))}
-                        </Select>
-                        <Controller
-                          control={control}
-                          name="amount"
-                          render={({ field: { onChange, ...field } }) => (
-                            <NumberInput
-                              label="Amount"
-                              className="min-w-36"
-                              endContent={currencyCode}
-                              {...field}
-                              onValueChange={onChange}
-                              variant="bordered"
-                              aria-label="Amount"
-                            />
-                          )}
-                        />
-                        <Textarea
-                          label="Notes"
-                          {...register("notes")}
-                          variant="bordered"
-                          aria-label="Notes"
-                        />
-                        <Controller
-                          control={control}
-                          name="files"
-                          render={({ field: { value, onChange } }) => (
-                            <Dropzone
-                              value={value}
-                              onChange={onChange}
-                              multiple
-                              label="Drag & drop files or click to browse"
-                              icon={<FileUp className="size-4 opacity-60" />}
-                            />
-                          )}
-                        />
-                        {uploadProgress.length > 0 && (
-                          <div className="space-y-2">
-                            {uploadProgress.map(({ file, id, progress }) => (
-                              <div
-                                key={id}
-                                className="bg-background flex flex-col gap-2"
-                              >
-                                <Progress value={progress} size="sm" />
-                                <div className="flex items-center justify-between gap-2 rounded-lg border p-2 pe-3">
-                                  <div className="flex items-center gap-3 overflow-hidden">
-                                    <div className="flex aspect-square size-10 shrink-0 items-center justify-center rounded border">
-                                      <FileIcon file={file} />
-                                    </div>
-                                    <div className="flex min-w-0 flex-col gap-0.5">
-                                      <p className="truncate text-[13px] font-medium">
-                                        {file.name}
-                                      </p>
-                                      <p className="text-muted-foreground text-xs">
-                                        {formatBytes(file.size)}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </form>
-                    </ModalBody>
-                    <ModalFooter>
-                      <Button color="danger" variant="light" onPress={onClose}>
-                        Close
-                      </Button>
-                      <Button
-                        color="primary"
-                        type="submit"
-                        form="expense"
-                        isLoading={loading || uploadProgress.length > 0}
-                      >
-                        Save
-                      </Button>
-                    </ModalFooter>
-                  </>
-                )}
-              </ModalContent>
-            </Modal>
+            <ExpenseModal
+              currencyCode={currencyCode}
+              isOpen={isOpen || !!editing}
+              onOpenChange={editing ? () => setEditing(null) : onOpenChange}
+              expense={data?.car.expenses?.find((ex) => {
+                const e = useFragment(ExpenseFields, ex);
+                return e.id === editing;
+              })}
+              key={editing}
+            />
+
+            <DeleteModal
+              titleMessage="Are you sure you want to delete this expense?"
+              isOpen={!!deleting}
+              onClose={() => setDeleting(null)}
+              onDelete={() =>
+                mutateDelete({ variables: { id: deleting! } }).then(() =>
+                  setDeleting(null)
+                )
+              }
+              confirmProps={{ isLoading: loading }}
+            />
           </div>
         </Tab>
         <Tab
