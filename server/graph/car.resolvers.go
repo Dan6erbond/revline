@@ -523,6 +523,32 @@ func (r *mutationResolver) CreateFuelUp(ctx context.Context, input ent.CreateFue
 	return c.FuelUp.Create().SetInput(input).Save(ctx)
 }
 
+// UpdateFuelUp is the resolver for the updateFuelUp field.
+func (r *mutationResolver) UpdateFuelUp(ctx context.Context, id string, input ent.UpdateFuelUpInput) (*ent.FuelUp, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.FuelUp.UpdateOneID(uid).SetInput(input).Save(ctx)
+}
+
+// DeleteFuelUp is the resolver for the deleteFuelUp field.
+func (r *mutationResolver) DeleteFuelUp(ctx context.Context, id string) (bool, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return false, err
+	}
+
+	if err = r.entClient.FuelUp.DeleteOneID(uid).Exec(ctx); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 // CreateOdometerReading is the resolver for the createOdometerReading field.
 func (r *mutationResolver) CreateOdometerReading(ctx context.Context, input ent.CreateOdometerReadingInput) (*ent.OdometerReading, error) {
 	return r.entClient.OdometerReading.Create().SetInput(input).Save(ctx)

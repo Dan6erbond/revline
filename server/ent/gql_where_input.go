@@ -4177,10 +4177,12 @@ type FuelUpWhereInput struct {
 	AmountLitersLTE   *float64  `json:"amountLitersLTE,omitempty"`
 
 	// "fuel_category" field predicates.
-	FuelCategory      *fuelup.FuelCategory  `json:"fuelCategory,omitempty"`
-	FuelCategoryNEQ   *fuelup.FuelCategory  `json:"fuelCategoryNEQ,omitempty"`
-	FuelCategoryIn    []fuelup.FuelCategory `json:"fuelCategoryIn,omitempty"`
-	FuelCategoryNotIn []fuelup.FuelCategory `json:"fuelCategoryNotIn,omitempty"`
+	FuelCategory       *fuelup.FuelCategory  `json:"fuelCategory,omitempty"`
+	FuelCategoryNEQ    *fuelup.FuelCategory  `json:"fuelCategoryNEQ,omitempty"`
+	FuelCategoryIn     []fuelup.FuelCategory `json:"fuelCategoryIn,omitempty"`
+	FuelCategoryNotIn  []fuelup.FuelCategory `json:"fuelCategoryNotIn,omitempty"`
+	FuelCategoryIsNil  bool                  `json:"fuelCategoryIsNil,omitempty"`
+	FuelCategoryNotNil bool                  `json:"fuelCategoryNotNil,omitempty"`
 
 	// "octane_rating" field predicates.
 	OctaneRating       *fuelup.OctaneRating  `json:"octaneRating,omitempty"`
@@ -4193,23 +4195,6 @@ type FuelUpWhereInput struct {
 	// "is_full_tank" field predicates.
 	IsFullTank    *bool `json:"isFullTank,omitempty"`
 	IsFullTankNEQ *bool `json:"isFullTankNEQ,omitempty"`
-
-	// "notes" field predicates.
-	Notes             *string  `json:"notes,omitempty"`
-	NotesNEQ          *string  `json:"notesNEQ,omitempty"`
-	NotesIn           []string `json:"notesIn,omitempty"`
-	NotesNotIn        []string `json:"notesNotIn,omitempty"`
-	NotesGT           *string  `json:"notesGT,omitempty"`
-	NotesGTE          *string  `json:"notesGTE,omitempty"`
-	NotesLT           *string  `json:"notesLT,omitempty"`
-	NotesLTE          *string  `json:"notesLTE,omitempty"`
-	NotesContains     *string  `json:"notesContains,omitempty"`
-	NotesHasPrefix    *string  `json:"notesHasPrefix,omitempty"`
-	NotesHasSuffix    *string  `json:"notesHasSuffix,omitempty"`
-	NotesIsNil        bool     `json:"notesIsNil,omitempty"`
-	NotesNotNil       bool     `json:"notesNotNil,omitempty"`
-	NotesEqualFold    *string  `json:"notesEqualFold,omitempty"`
-	NotesContainsFold *string  `json:"notesContainsFold,omitempty"`
 
 	// "car" edge predicates.
 	HasCar     *bool            `json:"hasCar,omitempty"`
@@ -4470,6 +4455,12 @@ func (i *FuelUpWhereInput) P() (predicate.FuelUp, error) {
 	if len(i.FuelCategoryNotIn) > 0 {
 		predicates = append(predicates, fuelup.FuelCategoryNotIn(i.FuelCategoryNotIn...))
 	}
+	if i.FuelCategoryIsNil {
+		predicates = append(predicates, fuelup.FuelCategoryIsNil())
+	}
+	if i.FuelCategoryNotNil {
+		predicates = append(predicates, fuelup.FuelCategoryNotNil())
+	}
 	if i.OctaneRating != nil {
 		predicates = append(predicates, fuelup.OctaneRatingEQ(*i.OctaneRating))
 	}
@@ -4493,51 +4484,6 @@ func (i *FuelUpWhereInput) P() (predicate.FuelUp, error) {
 	}
 	if i.IsFullTankNEQ != nil {
 		predicates = append(predicates, fuelup.IsFullTankNEQ(*i.IsFullTankNEQ))
-	}
-	if i.Notes != nil {
-		predicates = append(predicates, fuelup.NotesEQ(*i.Notes))
-	}
-	if i.NotesNEQ != nil {
-		predicates = append(predicates, fuelup.NotesNEQ(*i.NotesNEQ))
-	}
-	if len(i.NotesIn) > 0 {
-		predicates = append(predicates, fuelup.NotesIn(i.NotesIn...))
-	}
-	if len(i.NotesNotIn) > 0 {
-		predicates = append(predicates, fuelup.NotesNotIn(i.NotesNotIn...))
-	}
-	if i.NotesGT != nil {
-		predicates = append(predicates, fuelup.NotesGT(*i.NotesGT))
-	}
-	if i.NotesGTE != nil {
-		predicates = append(predicates, fuelup.NotesGTE(*i.NotesGTE))
-	}
-	if i.NotesLT != nil {
-		predicates = append(predicates, fuelup.NotesLT(*i.NotesLT))
-	}
-	if i.NotesLTE != nil {
-		predicates = append(predicates, fuelup.NotesLTE(*i.NotesLTE))
-	}
-	if i.NotesContains != nil {
-		predicates = append(predicates, fuelup.NotesContains(*i.NotesContains))
-	}
-	if i.NotesHasPrefix != nil {
-		predicates = append(predicates, fuelup.NotesHasPrefix(*i.NotesHasPrefix))
-	}
-	if i.NotesHasSuffix != nil {
-		predicates = append(predicates, fuelup.NotesHasSuffix(*i.NotesHasSuffix))
-	}
-	if i.NotesIsNil {
-		predicates = append(predicates, fuelup.NotesIsNil())
-	}
-	if i.NotesNotNil {
-		predicates = append(predicates, fuelup.NotesNotNil())
-	}
-	if i.NotesEqualFold != nil {
-		predicates = append(predicates, fuelup.NotesEqualFold(*i.NotesEqualFold))
-	}
-	if i.NotesContainsFold != nil {
-		predicates = append(predicates, fuelup.NotesContainsFold(*i.NotesContainsFold))
 	}
 
 	if i.HasCar != nil {

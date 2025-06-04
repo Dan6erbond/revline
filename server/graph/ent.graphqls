@@ -767,10 +767,10 @@ input CreateFuelUpInput {
   occurredAt: Time!
   station: String!
   amountLiters: Float!
-  fuelCategory: FuelCategory!
+  fuelCategory: FuelCategory
   octaneRating: OctaneRating
   isFullTank: Boolean
-  notes: String
+  notes: Map
   carID: ID!
   odometerReadingID: ID
   expenseID: ID
@@ -1578,10 +1578,10 @@ type FuelUp implements Node {
   occurredAt: Time!
   station: String!
   amountLiters: Float!
-  fuelCategory: FuelCategory!
+  fuelCategory: FuelCategory
   octaneRating: OctaneRating
   isFullTank: Boolean!
-  notes: String
+  notes: Map
   car: Car!
   odometerReading: OdometerReading
   expense: Expense
@@ -1673,6 +1673,8 @@ input FuelUpWhereInput {
   fuelCategoryNEQ: FuelCategory
   fuelCategoryIn: [FuelCategory!]
   fuelCategoryNotIn: [FuelCategory!]
+  fuelCategoryIsNil: Boolean
+  fuelCategoryNotNil: Boolean
   """
   octane_rating field predicates
   """
@@ -1687,24 +1689,6 @@ input FuelUpWhereInput {
   """
   isFullTank: Boolean
   isFullTankNEQ: Boolean
-  """
-  notes field predicates
-  """
-  notes: String
-  notesNEQ: String
-  notesIn: [String!]
-  notesNotIn: [String!]
-  notesGT: String
-  notesGTE: String
-  notesLT: String
-  notesLTE: String
-  notesContains: String
-  notesHasPrefix: String
-  notesHasSuffix: String
-  notesIsNil: Boolean
-  notesNotNil: Boolean
-  notesEqualFold: String
-  notesContainsFold: String
   """
   car edge predicates
   """
@@ -3660,10 +3644,11 @@ input UpdateFuelUpInput {
   station: String
   amountLiters: Float
   fuelCategory: FuelCategory
+  clearFuelCategory: Boolean
   octaneRating: OctaneRating
   clearOctaneRating: Boolean
   isFullTank: Boolean
-  notes: String
+  notes: Map
   clearNotes: Boolean
   carID: ID
   odometerReadingID: ID

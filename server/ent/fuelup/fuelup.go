@@ -226,11 +226,6 @@ func ByIsFullTank(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsFullTank, opts...).ToFunc()
 }
 
-// ByNotes orders the results by the notes field.
-func ByNotes(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldNotes, opts...).ToFunc()
-}
-
 // ByCarField orders the results by car field.
 func ByCarField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {

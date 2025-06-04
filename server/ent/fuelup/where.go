@@ -86,11 +86,6 @@ func IsFullTank(v bool) predicate.FuelUp {
 	return predicate.FuelUp(sql.FieldEQ(FieldIsFullTank, v))
 }
 
-// Notes applies equality check predicate on the "notes" field. It's identical to NotesEQ.
-func Notes(v string) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldEQ(FieldNotes, v))
-}
-
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.FuelUp {
 	return predicate.FuelUp(sql.FieldEQ(FieldCreateTime, v))
@@ -336,6 +331,16 @@ func FuelCategoryNotIn(vs ...FuelCategory) predicate.FuelUp {
 	return predicate.FuelUp(sql.FieldNotIn(FieldFuelCategory, vs...))
 }
 
+// FuelCategoryIsNil applies the IsNil predicate on the "fuel_category" field.
+func FuelCategoryIsNil() predicate.FuelUp {
+	return predicate.FuelUp(sql.FieldIsNull(FieldFuelCategory))
+}
+
+// FuelCategoryNotNil applies the NotNil predicate on the "fuel_category" field.
+func FuelCategoryNotNil() predicate.FuelUp {
+	return predicate.FuelUp(sql.FieldNotNull(FieldFuelCategory))
+}
+
 // OctaneRatingEQ applies the EQ predicate on the "octane_rating" field.
 func OctaneRatingEQ(v OctaneRating) predicate.FuelUp {
 	return predicate.FuelUp(sql.FieldEQ(FieldOctaneRating, v))
@@ -376,61 +381,6 @@ func IsFullTankNEQ(v bool) predicate.FuelUp {
 	return predicate.FuelUp(sql.FieldNEQ(FieldIsFullTank, v))
 }
 
-// NotesEQ applies the EQ predicate on the "notes" field.
-func NotesEQ(v string) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldEQ(FieldNotes, v))
-}
-
-// NotesNEQ applies the NEQ predicate on the "notes" field.
-func NotesNEQ(v string) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldNEQ(FieldNotes, v))
-}
-
-// NotesIn applies the In predicate on the "notes" field.
-func NotesIn(vs ...string) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldIn(FieldNotes, vs...))
-}
-
-// NotesNotIn applies the NotIn predicate on the "notes" field.
-func NotesNotIn(vs ...string) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldNotIn(FieldNotes, vs...))
-}
-
-// NotesGT applies the GT predicate on the "notes" field.
-func NotesGT(v string) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldGT(FieldNotes, v))
-}
-
-// NotesGTE applies the GTE predicate on the "notes" field.
-func NotesGTE(v string) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldGTE(FieldNotes, v))
-}
-
-// NotesLT applies the LT predicate on the "notes" field.
-func NotesLT(v string) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldLT(FieldNotes, v))
-}
-
-// NotesLTE applies the LTE predicate on the "notes" field.
-func NotesLTE(v string) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldLTE(FieldNotes, v))
-}
-
-// NotesContains applies the Contains predicate on the "notes" field.
-func NotesContains(v string) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldContains(FieldNotes, v))
-}
-
-// NotesHasPrefix applies the HasPrefix predicate on the "notes" field.
-func NotesHasPrefix(v string) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldHasPrefix(FieldNotes, v))
-}
-
-// NotesHasSuffix applies the HasSuffix predicate on the "notes" field.
-func NotesHasSuffix(v string) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldHasSuffix(FieldNotes, v))
-}
-
 // NotesIsNil applies the IsNil predicate on the "notes" field.
 func NotesIsNil() predicate.FuelUp {
 	return predicate.FuelUp(sql.FieldIsNull(FieldNotes))
@@ -439,16 +389,6 @@ func NotesIsNil() predicate.FuelUp {
 // NotesNotNil applies the NotNil predicate on the "notes" field.
 func NotesNotNil() predicate.FuelUp {
 	return predicate.FuelUp(sql.FieldNotNull(FieldNotes))
-}
-
-// NotesEqualFold applies the EqualFold predicate on the "notes" field.
-func NotesEqualFold(v string) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldEqualFold(FieldNotes, v))
-}
-
-// NotesContainsFold applies the ContainsFold predicate on the "notes" field.
-func NotesContainsFold(v string) predicate.FuelUp {
-	return predicate.FuelUp(sql.FieldContainsFold(FieldNotes, v))
 }
 
 // HasCar applies the HasEdge predicate on the "car" edge.

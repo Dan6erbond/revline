@@ -9336,7 +9336,7 @@ type FuelUpMutation struct {
 	fuel_category           *fuelup.FuelCategory
 	octane_rating           *fuelup.OctaneRating
 	is_full_tank            *bool
-	notes                   *string
+	notes                   *map[string]interface{}
 	clearedFields           map[string]struct{}
 	car                     *uuid.UUID
 	clearedcar              bool
@@ -9673,7 +9673,7 @@ func (m *FuelUpMutation) FuelCategory() (r fuelup.FuelCategory, exists bool) {
 // OldFuelCategory returns the old "fuel_category" field's value of the FuelUp entity.
 // If the FuelUp object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FuelUpMutation) OldFuelCategory(ctx context.Context) (v fuelup.FuelCategory, err error) {
+func (m *FuelUpMutation) OldFuelCategory(ctx context.Context) (v *fuelup.FuelCategory, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldFuelCategory is only allowed on UpdateOne operations")
 	}
@@ -9687,9 +9687,22 @@ func (m *FuelUpMutation) OldFuelCategory(ctx context.Context) (v fuelup.FuelCate
 	return oldValue.FuelCategory, nil
 }
 
+// ClearFuelCategory clears the value of the "fuel_category" field.
+func (m *FuelUpMutation) ClearFuelCategory() {
+	m.fuel_category = nil
+	m.clearedFields[fuelup.FieldFuelCategory] = struct{}{}
+}
+
+// FuelCategoryCleared returns if the "fuel_category" field was cleared in this mutation.
+func (m *FuelUpMutation) FuelCategoryCleared() bool {
+	_, ok := m.clearedFields[fuelup.FieldFuelCategory]
+	return ok
+}
+
 // ResetFuelCategory resets all changes to the "fuel_category" field.
 func (m *FuelUpMutation) ResetFuelCategory() {
 	m.fuel_category = nil
+	delete(m.clearedFields, fuelup.FieldFuelCategory)
 }
 
 // SetOctaneRating sets the "octane_rating" field.
@@ -9778,12 +9791,12 @@ func (m *FuelUpMutation) ResetIsFullTank() {
 }
 
 // SetNotes sets the "notes" field.
-func (m *FuelUpMutation) SetNotes(s string) {
-	m.notes = &s
+func (m *FuelUpMutation) SetNotes(value map[string]interface{}) {
+	m.notes = &value
 }
 
 // Notes returns the value of the "notes" field in the mutation.
-func (m *FuelUpMutation) Notes() (r string, exists bool) {
+func (m *FuelUpMutation) Notes() (r map[string]interface{}, exists bool) {
 	v := m.notes
 	if v == nil {
 		return
@@ -9794,7 +9807,7 @@ func (m *FuelUpMutation) Notes() (r string, exists bool) {
 // OldNotes returns the old "notes" field's value of the FuelUp entity.
 // If the FuelUp object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FuelUpMutation) OldNotes(ctx context.Context) (v *string, err error) {
+func (m *FuelUpMutation) OldNotes(ctx context.Context) (v map[string]interface{}, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
 	}
@@ -10178,7 +10191,7 @@ func (m *FuelUpMutation) SetField(name string, value ent.Value) error {
 		m.SetIsFullTank(v)
 		return nil
 	case fuelup.FieldNotes:
-		v, ok := value.(string)
+		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -10229,6 +10242,9 @@ func (m *FuelUpMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *FuelUpMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(fuelup.FieldFuelCategory) {
+		fields = append(fields, fuelup.FieldFuelCategory)
+	}
 	if m.FieldCleared(fuelup.FieldOctaneRating) {
 		fields = append(fields, fuelup.FieldOctaneRating)
 	}
@@ -10249,6 +10265,9 @@ func (m *FuelUpMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *FuelUpMutation) ClearField(name string) error {
 	switch name {
+	case fuelup.FieldFuelCategory:
+		m.ClearFuelCategory()
+		return nil
 	case fuelup.FieldOctaneRating:
 		m.ClearOctaneRating()
 		return nil

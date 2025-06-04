@@ -1178,10 +1178,10 @@ type CreateFuelUpInput struct {
 	OccurredAt        time.Time
 	Station           string
 	AmountLiters      float64
-	FuelCategory      fuelup.FuelCategory
+	FuelCategory      *fuelup.FuelCategory
 	OctaneRating      *fuelup.OctaneRating
 	IsFullTank        *bool
-	Notes             *string
+	Notes             map[string]interface{}
 	CarID             uuid.UUID
 	OdometerReadingID *uuid.UUID
 	ExpenseID         *uuid.UUID
@@ -1199,7 +1199,9 @@ func (i *CreateFuelUpInput) Mutate(m *FuelUpMutation) {
 	m.SetOccurredAt(i.OccurredAt)
 	m.SetStation(i.Station)
 	m.SetAmountLiters(i.AmountLiters)
-	m.SetFuelCategory(i.FuelCategory)
+	if v := i.FuelCategory; v != nil {
+		m.SetFuelCategory(*v)
+	}
 	if v := i.OctaneRating; v != nil {
 		m.SetOctaneRating(*v)
 	}
@@ -1207,7 +1209,7 @@ func (i *CreateFuelUpInput) Mutate(m *FuelUpMutation) {
 		m.SetIsFullTank(*v)
 	}
 	if v := i.Notes; v != nil {
-		m.SetNotes(*v)
+		m.SetNotes(v)
 	}
 	m.SetCarID(i.CarID)
 	if v := i.OdometerReadingID; v != nil {
@@ -1233,12 +1235,13 @@ type UpdateFuelUpInput struct {
 	OccurredAt           *time.Time
 	Station              *string
 	AmountLiters         *float64
+	ClearFuelCategory    bool
 	FuelCategory         *fuelup.FuelCategory
 	ClearOctaneRating    bool
 	OctaneRating         *fuelup.OctaneRating
 	IsFullTank           *bool
 	ClearNotes           bool
-	Notes                *string
+	Notes                map[string]interface{}
 	CarID                *uuid.UUID
 	ClearOdometerReading bool
 	OdometerReadingID    *uuid.UUID
@@ -1263,6 +1266,9 @@ func (i *UpdateFuelUpInput) Mutate(m *FuelUpMutation) {
 	if v := i.AmountLiters; v != nil {
 		m.SetAmountLiters(*v)
 	}
+	if i.ClearFuelCategory {
+		m.ClearFuelCategory()
+	}
 	if v := i.FuelCategory; v != nil {
 		m.SetFuelCategory(*v)
 	}
@@ -1279,7 +1285,7 @@ func (i *UpdateFuelUpInput) Mutate(m *FuelUpMutation) {
 		m.ClearNotes()
 	}
 	if v := i.Notes; v != nil {
-		m.SetNotes(*v)
+		m.SetNotes(v)
 	}
 	if v := i.CarID; v != nil {
 		m.SetCarID(*v)

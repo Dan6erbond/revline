@@ -29,6 +29,8 @@ func (FuelUp) Fields() []ent.Field {
 			SchemaType(map[string]string{
 				dialect.Postgres: "fuel_category",
 			}).
+			Optional().
+			Nillable().
 			Annotations(
 				entgql.Type("FuelCategory"),
 			),
@@ -44,9 +46,11 @@ func (FuelUp) Fields() []ent.Field {
 			Nillable(),
 		field.Bool("is_full_tank").
 			Default(true),
-		field.String("notes").
+		field.JSON("notes", map[string]any{}).
 			Optional().
-			Nillable(),
+			Annotations(
+				entgql.Type("Map"),
+			),
 	}
 }
 

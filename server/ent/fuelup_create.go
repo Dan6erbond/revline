@@ -77,6 +77,14 @@ func (fuc *FuelUpCreate) SetFuelCategory(fc fuelup.FuelCategory) *FuelUpCreate {
 	return fuc
 }
 
+// SetNillableFuelCategory sets the "fuel_category" field if the given value is not nil.
+func (fuc *FuelUpCreate) SetNillableFuelCategory(fc *fuelup.FuelCategory) *FuelUpCreate {
+	if fc != nil {
+		fuc.SetFuelCategory(*fc)
+	}
+	return fuc
+}
+
 // SetOctaneRating sets the "octane_rating" field.
 func (fuc *FuelUpCreate) SetOctaneRating(fr fuelup.OctaneRating) *FuelUpCreate {
 	fuc.mutation.SetOctaneRating(fr)
@@ -106,16 +114,8 @@ func (fuc *FuelUpCreate) SetNillableIsFullTank(b *bool) *FuelUpCreate {
 }
 
 // SetNotes sets the "notes" field.
-func (fuc *FuelUpCreate) SetNotes(s string) *FuelUpCreate {
-	fuc.mutation.SetNotes(s)
-	return fuc
-}
-
-// SetNillableNotes sets the "notes" field if the given value is not nil.
-func (fuc *FuelUpCreate) SetNillableNotes(s *string) *FuelUpCreate {
-	if s != nil {
-		fuc.SetNotes(*s)
-	}
+func (fuc *FuelUpCreate) SetNotes(m map[string]interface{}) *FuelUpCreate {
+	fuc.mutation.SetNotes(m)
 	return fuc
 }
 
@@ -267,9 +267,6 @@ func (fuc *FuelUpCreate) check() error {
 	if _, ok := fuc.mutation.AmountLiters(); !ok {
 		return &ValidationError{Name: "amount_liters", err: errors.New(`ent: missing required field "FuelUp.amount_liters"`)}
 	}
-	if _, ok := fuc.mutation.FuelCategory(); !ok {
-		return &ValidationError{Name: "fuel_category", err: errors.New(`ent: missing required field "FuelUp.fuel_category"`)}
-	}
 	if v, ok := fuc.mutation.FuelCategory(); ok {
 		if err := fuelup.FuelCategoryValidator(v); err != nil {
 			return &ValidationError{Name: "fuel_category", err: fmt.Errorf(`ent: validator failed for field "FuelUp.fuel_category": %w`, err)}
@@ -343,7 +340,7 @@ func (fuc *FuelUpCreate) createSpec() (*FuelUp, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := fuc.mutation.FuelCategory(); ok {
 		_spec.SetField(fuelup.FieldFuelCategory, field.TypeEnum, value)
-		_node.FuelCategory = value
+		_node.FuelCategory = &value
 	}
 	if value, ok := fuc.mutation.OctaneRating(); ok {
 		_spec.SetField(fuelup.FieldOctaneRating, field.TypeEnum, value)
@@ -354,8 +351,8 @@ func (fuc *FuelUpCreate) createSpec() (*FuelUp, *sqlgraph.CreateSpec) {
 		_node.IsFullTank = value
 	}
 	if value, ok := fuc.mutation.Notes(); ok {
-		_spec.SetField(fuelup.FieldNotes, field.TypeString, value)
-		_node.Notes = &value
+		_spec.SetField(fuelup.FieldNotes, field.TypeJSON, value)
+		_node.Notes = value
 	}
 	if nodes := fuc.mutation.CarIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

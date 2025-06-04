@@ -239,7 +239,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			fuelup.FieldFuelCategory: {Type: field.TypeEnum, Column: fuelup.FieldFuelCategory},
 			fuelup.FieldOctaneRating: {Type: field.TypeEnum, Column: fuelup.FieldOctaneRating},
 			fuelup.FieldIsFullTank:   {Type: field.TypeBool, Column: fuelup.FieldIsFullTank},
-			fuelup.FieldNotes:        {Type: field.TypeString, Column: fuelup.FieldNotes},
+			fuelup.FieldNotes:        {Type: field.TypeJSON, Column: fuelup.FieldNotes},
 		},
 	}
 	graph.Nodes[11] = &sqlgraph.Node{
@@ -2841,8 +2841,8 @@ func (f *FuelUpFilter) WhereIsFullTank(p entql.BoolP) {
 	f.Where(p.Field(fuelup.FieldIsFullTank))
 }
 
-// WhereNotes applies the entql string predicate on the notes field.
-func (f *FuelUpFilter) WhereNotes(p entql.StringP) {
+// WhereNotes applies the entql json.RawMessage predicate on the notes field.
+func (f *FuelUpFilter) WhereNotes(p entql.BytesP) {
 	f.Where(p.Field(fuelup.FieldNotes))
 }
 

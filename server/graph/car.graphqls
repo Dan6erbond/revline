@@ -72,6 +72,8 @@ extend type Mutation {
   updateExpense(id: ID!, input: UpdateExpenseInput!): Expense! @loggedIn
   deleteExpense(id: ID!): Boolean! @loggedIn
   createFuelUp(input: CreateFuelUpInput!): FuelUp! @loggedIn
+  updateFuelUp(id: ID!, input: UpdateFuelUpInput!): FuelUp! @loggedIn
+  deleteFuelUp(id: ID!): Boolean! @loggedIn
   createOdometerReading(input: CreateOdometerReadingInput!): OdometerReading!
     @loggedIn
   createServiceItem(input: CreateServiceItemInput!): ServiceItem! @loggedIn

@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -32,13 +33,13 @@ type FuelUp struct {
 	// AmountLiters holds the value of the "amount_liters" field.
 	AmountLiters float64 `json:"amount_liters,omitempty"`
 	// FuelCategory holds the value of the "fuel_category" field.
-	FuelCategory fuelup.FuelCategory `json:"fuel_category,omitempty"`
+	FuelCategory *fuelup.FuelCategory `json:"fuel_category,omitempty"`
 	// OctaneRating holds the value of the "octane_rating" field.
 	OctaneRating *fuelup.OctaneRating `json:"octane_rating,omitempty"`
 	// IsFullTank holds the value of the "is_full_tank" field.
 	IsFullTank bool `json:"is_full_tank,omitempty"`
 	// Notes holds the value of the "notes" field.
-	Notes *string `json:"notes,omitempty"`
+	Notes map[string]interface{} `json:"notes,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FuelUpQuery when eager-loading is set.
 	Edges                    FuelUpEdges `json:"edges"`
@@ -113,11 +114,13 @@ func (*FuelUp) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case fuelup.FieldNotes:
+			values[i] = new([]byte)
 		case fuelup.FieldIsFullTank:
 			values[i] = new(sql.NullBool)
 		case fuelup.FieldAmountLiters:
 			values[i] = new(sql.NullFloat64)
-		case fuelup.FieldStation, fuelup.FieldFuelCategory, fuelup.FieldOctaneRating, fuelup.FieldNotes:
+		case fuelup.FieldStation, fuelup.FieldFuelCategory, fuelup.FieldOctaneRating:
 			values[i] = new(sql.NullString)
 		case fuelup.FieldCreateTime, fuelup.FieldUpdateTime, fuelup.FieldOccurredAt:
 			values[i] = new(sql.NullTime)
@@ -182,7 +185,8 @@ func (fu *FuelUp) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field fuel_category", values[i])
 			} else if value.Valid {
-				fu.FuelCategory = fuelup.FuelCategory(value.String)
+				fu.FuelCategory = new(fuelup.FuelCategory)
+				*fu.FuelCategory = fuelup.FuelCategory(value.String)
 			}
 		case fuelup.FieldOctaneRating:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -198,11 +202,12 @@ func (fu *FuelUp) assignValues(columns []string, values []any) error {
 				fu.IsFullTank = value.Bool
 			}
 		case fuelup.FieldNotes:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field notes", values[i])
-			} else if value.Valid {
-				fu.Notes = new(string)
-				*fu.Notes = value.String
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &fu.Notes); err != nil {
+					return fmt.Errorf("unmarshal field notes: %w", err)
+				}
 			}
 		case fuelup.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -289,8 +294,10 @@ func (fu *FuelUp) String() string {
 	builder.WriteString("amount_liters=")
 	builder.WriteString(fmt.Sprintf("%v", fu.AmountLiters))
 	builder.WriteString(", ")
-	builder.WriteString("fuel_category=")
-	builder.WriteString(fmt.Sprintf("%v", fu.FuelCategory))
+	if v := fu.FuelCategory; v != nil {
+		builder.WriteString("fuel_category=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	if v := fu.OctaneRating; v != nil {
 		builder.WriteString("octane_rating=")
@@ -300,10 +307,8 @@ func (fu *FuelUp) String() string {
 	builder.WriteString("is_full_tank=")
 	builder.WriteString(fmt.Sprintf("%v", fu.IsFullTank))
 	builder.WriteString(", ")
-	if v := fu.Notes; v != nil {
-		builder.WriteString("notes=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("notes=")
+	builder.WriteString(fmt.Sprintf("%v", fu.Notes))
 	builder.WriteByte(')')
 	return builder.String()
 }

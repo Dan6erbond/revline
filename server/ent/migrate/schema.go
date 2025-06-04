@@ -315,10 +315,10 @@ var (
 		{Name: "occurred_at", Type: field.TypeTime},
 		{Name: "station", Type: field.TypeString},
 		{Name: "amount_liters", Type: field.TypeFloat64},
-		{Name: "fuel_category", Type: field.TypeEnum, Enums: []string{"petrol", "diesel", "electric", "lpg", "other"}, SchemaType: map[string]string{"postgres": "fuel_category"}},
+		{Name: "fuel_category", Type: field.TypeEnum, Nullable: true, Enums: []string{"petrol", "diesel", "electric", "lpg", "other"}, SchemaType: map[string]string{"postgres": "fuel_category"}},
 		{Name: "octane_rating", Type: field.TypeEnum, Nullable: true, Enums: []string{"ron91", "ron95", "ron98", "ron100", "e85", "race"}, SchemaType: map[string]string{"postgres": "octane_rating"}},
 		{Name: "is_full_tank", Type: field.TypeBool, Default: true},
-		{Name: "notes", Type: field.TypeString, Nullable: true},
+		{Name: "notes", Type: field.TypeJSON, Nullable: true},
 		{Name: "car_fuel_ups", Type: field.TypeUUID},
 		{Name: "odometer_reading_fuel_up", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}

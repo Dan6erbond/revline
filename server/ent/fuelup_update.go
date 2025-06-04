@@ -102,6 +102,12 @@ func (fuu *FuelUpUpdate) SetNillableFuelCategory(fc *fuelup.FuelCategory) *FuelU
 	return fuu
 }
 
+// ClearFuelCategory clears the value of the "fuel_category" field.
+func (fuu *FuelUpUpdate) ClearFuelCategory() *FuelUpUpdate {
+	fuu.mutation.ClearFuelCategory()
+	return fuu
+}
+
 // SetOctaneRating sets the "octane_rating" field.
 func (fuu *FuelUpUpdate) SetOctaneRating(fr fuelup.OctaneRating) *FuelUpUpdate {
 	fuu.mutation.SetOctaneRating(fr)
@@ -137,16 +143,8 @@ func (fuu *FuelUpUpdate) SetNillableIsFullTank(b *bool) *FuelUpUpdate {
 }
 
 // SetNotes sets the "notes" field.
-func (fuu *FuelUpUpdate) SetNotes(s string) *FuelUpUpdate {
-	fuu.mutation.SetNotes(s)
-	return fuu
-}
-
-// SetNillableNotes sets the "notes" field if the given value is not nil.
-func (fuu *FuelUpUpdate) SetNillableNotes(s *string) *FuelUpUpdate {
-	if s != nil {
-		fuu.SetNotes(*s)
-	}
+func (fuu *FuelUpUpdate) SetNotes(m map[string]interface{}) *FuelUpUpdate {
+	fuu.mutation.SetNotes(m)
 	return fuu
 }
 
@@ -348,6 +346,9 @@ func (fuu *FuelUpUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := fuu.mutation.FuelCategory(); ok {
 		_spec.SetField(fuelup.FieldFuelCategory, field.TypeEnum, value)
 	}
+	if fuu.mutation.FuelCategoryCleared() {
+		_spec.ClearField(fuelup.FieldFuelCategory, field.TypeEnum)
+	}
 	if value, ok := fuu.mutation.OctaneRating(); ok {
 		_spec.SetField(fuelup.FieldOctaneRating, field.TypeEnum, value)
 	}
@@ -358,10 +359,10 @@ func (fuu *FuelUpUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(fuelup.FieldIsFullTank, field.TypeBool, value)
 	}
 	if value, ok := fuu.mutation.Notes(); ok {
-		_spec.SetField(fuelup.FieldNotes, field.TypeString, value)
+		_spec.SetField(fuelup.FieldNotes, field.TypeJSON, value)
 	}
 	if fuu.mutation.NotesCleared() {
-		_spec.ClearField(fuelup.FieldNotes, field.TypeString)
+		_spec.ClearField(fuelup.FieldNotes, field.TypeJSON)
 	}
 	if fuu.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -584,6 +585,12 @@ func (fuuo *FuelUpUpdateOne) SetNillableFuelCategory(fc *fuelup.FuelCategory) *F
 	return fuuo
 }
 
+// ClearFuelCategory clears the value of the "fuel_category" field.
+func (fuuo *FuelUpUpdateOne) ClearFuelCategory() *FuelUpUpdateOne {
+	fuuo.mutation.ClearFuelCategory()
+	return fuuo
+}
+
 // SetOctaneRating sets the "octane_rating" field.
 func (fuuo *FuelUpUpdateOne) SetOctaneRating(fr fuelup.OctaneRating) *FuelUpUpdateOne {
 	fuuo.mutation.SetOctaneRating(fr)
@@ -619,16 +626,8 @@ func (fuuo *FuelUpUpdateOne) SetNillableIsFullTank(b *bool) *FuelUpUpdateOne {
 }
 
 // SetNotes sets the "notes" field.
-func (fuuo *FuelUpUpdateOne) SetNotes(s string) *FuelUpUpdateOne {
-	fuuo.mutation.SetNotes(s)
-	return fuuo
-}
-
-// SetNillableNotes sets the "notes" field if the given value is not nil.
-func (fuuo *FuelUpUpdateOne) SetNillableNotes(s *string) *FuelUpUpdateOne {
-	if s != nil {
-		fuuo.SetNotes(*s)
-	}
+func (fuuo *FuelUpUpdateOne) SetNotes(m map[string]interface{}) *FuelUpUpdateOne {
+	fuuo.mutation.SetNotes(m)
 	return fuuo
 }
 
@@ -860,6 +859,9 @@ func (fuuo *FuelUpUpdateOne) sqlSave(ctx context.Context) (_node *FuelUp, err er
 	if value, ok := fuuo.mutation.FuelCategory(); ok {
 		_spec.SetField(fuelup.FieldFuelCategory, field.TypeEnum, value)
 	}
+	if fuuo.mutation.FuelCategoryCleared() {
+		_spec.ClearField(fuelup.FieldFuelCategory, field.TypeEnum)
+	}
 	if value, ok := fuuo.mutation.OctaneRating(); ok {
 		_spec.SetField(fuelup.FieldOctaneRating, field.TypeEnum, value)
 	}
@@ -870,10 +872,10 @@ func (fuuo *FuelUpUpdateOne) sqlSave(ctx context.Context) (_node *FuelUp, err er
 		_spec.SetField(fuelup.FieldIsFullTank, field.TypeBool, value)
 	}
 	if value, ok := fuuo.mutation.Notes(); ok {
-		_spec.SetField(fuelup.FieldNotes, field.TypeString, value)
+		_spec.SetField(fuelup.FieldNotes, field.TypeJSON, value)
 	}
 	if fuuo.mutation.NotesCleared() {
-		_spec.ClearField(fuelup.FieldNotes, field.TypeString)
+		_spec.ClearField(fuelup.FieldNotes, field.TypeJSON)
 	}
 	if fuuo.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{

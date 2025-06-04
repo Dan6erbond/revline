@@ -309,12 +309,14 @@ type ComplexityRoot struct {
 		DeleteDynoResult           func(childComplexity int, id string) int
 		DeleteDynoResults          func(childComplexity int, ids []string) int
 		DeleteExpense              func(childComplexity int, id string) int
+		DeleteFuelUp               func(childComplexity int, id string) int
 		LinkConnectAccount         func(childComplexity int) int
 		UpdateAlbum                func(childComplexity int, id string, input ent.UpdateAlbumInput) int
 		UpdateBuildLog             func(childComplexity int, id string, input ent.UpdateBuildLogInput) int
 		UpdateDragSession          func(childComplexity int, id string, input ent.UpdateDragSessionInput) int
 		UpdateDynoSession          func(childComplexity int, id string, input ent.UpdateDynoSessionInput) int
 		UpdateExpense              func(childComplexity int, id string, input ent.UpdateExpenseInput) int
+		UpdateFuelUp               func(childComplexity int, id string, input ent.UpdateFuelUpInput) int
 		UpdateMedia                func(childComplexity int, id string, input ent.UpdateMediaInput) int
 		UpdateMod                  func(childComplexity int, id string, input ent.UpdateModInput) int
 		UpdateModProductOption     func(childComplexity int, id string, input ent.UpdateModProductOptionInput) int
@@ -551,6 +553,8 @@ type MutationResolver interface {
 	UpdateExpense(ctx context.Context, id string, input ent.UpdateExpenseInput) (*ent.Expense, error)
 	DeleteExpense(ctx context.Context, id string) (bool, error)
 	CreateFuelUp(ctx context.Context, input ent.CreateFuelUpInput) (*ent.FuelUp, error)
+	UpdateFuelUp(ctx context.Context, id string, input ent.UpdateFuelUpInput) (*ent.FuelUp, error)
+	DeleteFuelUp(ctx context.Context, id string) (bool, error)
 	CreateOdometerReading(ctx context.Context, input ent.CreateOdometerReadingInput) (*ent.OdometerReading, error)
 	CreateServiceItem(ctx context.Context, input ent.CreateServiceItemInput) (*ent.ServiceItem, error)
 	CreateServiceSchedule(ctx context.Context, input ent.CreateServiceScheduleInput) (*ent.ServiceSchedule, error)
@@ -2069,6 +2073,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Mutation.DeleteExpense(childComplexity, args["id"].(string)), true
 
+	case "Mutation.deleteFuelUp":
+		if e.complexity.Mutation.DeleteFuelUp == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteFuelUp_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteFuelUp(childComplexity, args["id"].(string)), true
+
 	case "Mutation.linkConnectAccount":
 		if e.complexity.Mutation.LinkConnectAccount == nil {
 			break
@@ -2135,6 +2151,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.UpdateExpense(childComplexity, args["id"].(string), args["input"].(ent.UpdateExpenseInput)), true
+
+	case "Mutation.updateFuelUp":
+		if e.complexity.Mutation.UpdateFuelUp == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateFuelUp_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateFuelUp(childComplexity, args["id"].(string), args["input"].(ent.UpdateFuelUpInput)), true
 
 	case "Mutation.updateMedia":
 		if e.complexity.Mutation.UpdateMedia == nil {
@@ -4074,6 +4102,29 @@ func (ec *executionContext) field_Mutation_deleteExpense_argsID(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_Mutation_deleteFuelUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_deleteFuelUp_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_deleteFuelUp_argsID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Mutation_updateAlbum_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -4276,6 +4327,47 @@ func (ec *executionContext) field_Mutation_updateExpense_argsInput(
 	}
 
 	var zeroVal ent.UpdateExpenseInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateFuelUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_updateFuelUp_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := ec.field_Mutation_updateFuelUp_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_updateFuelUp_argsID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateFuelUp_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (ent.UpdateFuelUpInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNUpdateFuelUpInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateFuelUpInput(ctx, tmp)
+	}
+
+	var zeroVal ent.UpdateFuelUpInput
 	return zeroVal, nil
 }
 
@@ -11381,14 +11473,11 @@ func (ec *executionContext) _FuelUp_fuelCategory(ctx context.Context, field grap
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(fuelup.FuelCategory)
+	res := resTmp.(*fuelup.FuelCategory)
 	fc.Result = res
-	return ec.marshalNFuelCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋfuelupᚐFuelCategory(ctx, field.Selections, res)
+	return ec.marshalOFuelCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋfuelupᚐFuelCategory(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_FuelUp_fuelCategory(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11512,9 +11601,9 @@ func (ec *executionContext) _FuelUp_notes(ctx context.Context, field graphql.Col
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(map[string]interface{})
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_FuelUp_notes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11524,7 +11613,7 @@ func (ec *executionContext) fieldContext_FuelUp_notes(_ context.Context, field g
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Map does not have child fields")
 		},
 	}
 	return fc, nil
@@ -15153,6 +15242,190 @@ func (ec *executionContext) fieldContext_Mutation_createFuelUp(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createFuelUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateFuelUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateFuelUp(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdateFuelUp(rctx, fc.Args["id"].(string), fc.Args["input"].(ent.UpdateFuelUpInput))
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			if ec.directives.LoggedIn == nil {
+				var zeroVal *ent.FuelUp
+				return zeroVal, errors.New("directive loggedIn is not implemented")
+			}
+			return ec.directives.LoggedIn(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*ent.FuelUp); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/Dan6erbond/revline/ent.FuelUp`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.FuelUp)
+	fc.Result = res
+	return ec.marshalNFuelUp2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐFuelUp(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateFuelUp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_FuelUp_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_FuelUp_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_FuelUp_updateTime(ctx, field)
+			case "occurredAt":
+				return ec.fieldContext_FuelUp_occurredAt(ctx, field)
+			case "station":
+				return ec.fieldContext_FuelUp_station(ctx, field)
+			case "amountLiters":
+				return ec.fieldContext_FuelUp_amountLiters(ctx, field)
+			case "fuelCategory":
+				return ec.fieldContext_FuelUp_fuelCategory(ctx, field)
+			case "octaneRating":
+				return ec.fieldContext_FuelUp_octaneRating(ctx, field)
+			case "isFullTank":
+				return ec.fieldContext_FuelUp_isFullTank(ctx, field)
+			case "notes":
+				return ec.fieldContext_FuelUp_notes(ctx, field)
+			case "car":
+				return ec.fieldContext_FuelUp_car(ctx, field)
+			case "odometerReading":
+				return ec.fieldContext_FuelUp_odometerReading(ctx, field)
+			case "expense":
+				return ec.fieldContext_FuelUp_expense(ctx, field)
+			case "documents":
+				return ec.fieldContext_FuelUp_documents(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type FuelUp", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateFuelUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteFuelUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteFuelUp(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().DeleteFuelUp(rctx, fc.Args["id"].(string))
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			if ec.directives.LoggedIn == nil {
+				var zeroVal bool
+				return zeroVal, errors.New("directive loggedIn is not implemented")
+			}
+			return ec.directives.LoggedIn(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteFuelUp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteFuelUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -30468,7 +30741,7 @@ func (ec *executionContext) unmarshalInputCreateFuelUpInput(ctx context.Context,
 			it.AmountLiters = data
 		case "fuelCategory":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelCategory"))
-			data, err := ec.unmarshalNFuelCategory2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚋfuelupᚐFuelCategory(ctx, v)
+			data, err := ec.unmarshalOFuelCategory2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋfuelupᚐFuelCategory(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -30489,7 +30762,7 @@ func (ec *executionContext) unmarshalInputCreateFuelUpInput(ctx context.Context,
 			it.IsFullTank = data
 		case "notes":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOMap2map(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -33904,7 +34177,7 @@ func (ec *executionContext) unmarshalInputFuelUpWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "occurredAt", "occurredAtNEQ", "occurredAtIn", "occurredAtNotIn", "occurredAtGT", "occurredAtGTE", "occurredAtLT", "occurredAtLTE", "station", "stationNEQ", "stationIn", "stationNotIn", "stationGT", "stationGTE", "stationLT", "stationLTE", "stationContains", "stationHasPrefix", "stationHasSuffix", "stationEqualFold", "stationContainsFold", "amountLiters", "amountLitersNEQ", "amountLitersIn", "amountLitersNotIn", "amountLitersGT", "amountLitersGTE", "amountLitersLT", "amountLitersLTE", "fuelCategory", "fuelCategoryNEQ", "fuelCategoryIn", "fuelCategoryNotIn", "octaneRating", "octaneRatingNEQ", "octaneRatingIn", "octaneRatingNotIn", "octaneRatingIsNil", "octaneRatingNotNil", "isFullTank", "isFullTankNEQ", "notes", "notesNEQ", "notesIn", "notesNotIn", "notesGT", "notesGTE", "notesLT", "notesLTE", "notesContains", "notesHasPrefix", "notesHasSuffix", "notesIsNil", "notesNotNil", "notesEqualFold", "notesContainsFold", "hasCar", "hasCarWith", "hasOdometerReading", "hasOdometerReadingWith", "hasExpense", "hasExpenseWith", "hasDocuments", "hasDocumentsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "occurredAt", "occurredAtNEQ", "occurredAtIn", "occurredAtNotIn", "occurredAtGT", "occurredAtGTE", "occurredAtLT", "occurredAtLTE", "station", "stationNEQ", "stationIn", "stationNotIn", "stationGT", "stationGTE", "stationLT", "stationLTE", "stationContains", "stationHasPrefix", "stationHasSuffix", "stationEqualFold", "stationContainsFold", "amountLiters", "amountLitersNEQ", "amountLitersIn", "amountLitersNotIn", "amountLitersGT", "amountLitersGTE", "amountLitersLT", "amountLitersLTE", "fuelCategory", "fuelCategoryNEQ", "fuelCategoryIn", "fuelCategoryNotIn", "fuelCategoryIsNil", "fuelCategoryNotNil", "octaneRating", "octaneRatingNEQ", "octaneRatingIn", "octaneRatingNotIn", "octaneRatingIsNil", "octaneRatingNotNil", "isFullTank", "isFullTankNEQ", "hasCar", "hasCarWith", "hasOdometerReading", "hasOdometerReadingWith", "hasExpense", "hasExpenseWith", "hasDocuments", "hasDocumentsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -34331,6 +34604,20 @@ func (ec *executionContext) unmarshalInputFuelUpWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.FuelCategoryNotIn = data
+		case "fuelCategoryIsNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelCategoryIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelCategoryIsNil = data
+		case "fuelCategoryNotNil":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fuelCategoryNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FuelCategoryNotNil = data
 		case "octaneRating":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("octaneRating"))
 			data, err := ec.unmarshalOOctaneRating2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋfuelupᚐOctaneRating(ctx, v)
@@ -34387,111 +34674,6 @@ func (ec *executionContext) unmarshalInputFuelUpWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.IsFullTankNEQ = data
-		case "notes":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Notes = data
-		case "notesNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesNEQ"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesNEQ = data
-		case "notesIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesIn = data
-		case "notesNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesNotIn"))
-			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesNotIn = data
-		case "notesGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesGT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesGT = data
-		case "notesGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesGTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesGTE = data
-		case "notesLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesLT"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesLT = data
-		case "notesLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesLTE"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesLTE = data
-		case "notesContains":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesContains"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesContains = data
-		case "notesHasPrefix":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesHasPrefix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesHasPrefix = data
-		case "notesHasSuffix":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesHasSuffix"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesHasSuffix = data
-		case "notesIsNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesIsNil = data
-		case "notesNotNil":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesNotNil = data
-		case "notesEqualFold":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesEqualFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesEqualFold = data
-		case "notesContainsFold":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notesContainsFold"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.NotesContainsFold = data
 		case "hasCar":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCar"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -42308,7 +42490,7 @@ func (ec *executionContext) unmarshalInputUpdateFuelUpInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "occurredAt", "station", "amountLiters", "fuelCategory", "octaneRating", "clearOctaneRating", "isFullTank", "notes", "clearNotes", "carID", "odometerReadingID", "clearOdometerReading", "expenseID", "clearExpense", "addDocumentIDs", "removeDocumentIDs", "clearDocuments"}
+	fieldsInOrder := [...]string{"updateTime", "occurredAt", "station", "amountLiters", "fuelCategory", "clearFuelCategory", "octaneRating", "clearOctaneRating", "isFullTank", "notes", "clearNotes", "carID", "odometerReadingID", "clearOdometerReading", "expenseID", "clearExpense", "addDocumentIDs", "removeDocumentIDs", "clearDocuments"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -42350,6 +42532,13 @@ func (ec *executionContext) unmarshalInputUpdateFuelUpInput(ctx context.Context,
 				return it, err
 			}
 			it.FuelCategory = data
+		case "clearFuelCategory":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearFuelCategory"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearFuelCategory = data
 		case "octaneRating":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("octaneRating"))
 			data, err := ec.unmarshalOOctaneRating2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋfuelupᚐOctaneRating(ctx, v)
@@ -42373,7 +42562,7 @@ func (ec *executionContext) unmarshalInputUpdateFuelUpInput(ctx context.Context,
 			it.IsFullTank = data
 		case "notes":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			data, err := ec.unmarshalOMap2map(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -47969,9 +48158,6 @@ func (ec *executionContext) _FuelUp(ctx context.Context, sel ast.SelectionSet, o
 			}
 		case "fuelCategory":
 			out.Values[i] = ec._FuelUp_fuelCategory(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
 		case "octaneRating":
 			out.Values[i] = ec._FuelUp_octaneRating(ctx, field, obj)
 		case "isFullTank":
@@ -48914,6 +49100,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createFuelUp":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createFuelUp(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateFuelUp":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateFuelUp(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deleteFuelUp":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteFuelUp(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -52810,6 +53010,11 @@ func (ec *executionContext) unmarshalNUpdateExpenseInput2githubᚗcomᚋDan6erbo
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNUpdateFuelUpInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateFuelUpInput(ctx context.Context, v any) (ent.UpdateFuelUpInput, error) {
+	res, err := ec.unmarshalInputUpdateFuelUpInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNUpdateMediaInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateMediaInput(ctx context.Context, v any) (ent.UpdateMediaInput, error) {
 	res, err := ec.unmarshalInputUpdateMediaInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -54774,7 +54979,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]interface{}, error) {
+func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]any, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -54782,7 +54987,7 @@ func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[s
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
+func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
