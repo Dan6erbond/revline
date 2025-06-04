@@ -217,7 +217,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			expense.FieldOccurredAt: {Type: field.TypeTime, Column: expense.FieldOccurredAt},
 			expense.FieldType:       {Type: field.TypeEnum, Column: expense.FieldType},
 			expense.FieldAmount:     {Type: field.TypeFloat64, Column: expense.FieldAmount},
-			expense.FieldNotes:      {Type: field.TypeString, Column: expense.FieldNotes},
+			expense.FieldNotes:      {Type: field.TypeJSON, Column: expense.FieldNotes},
 		},
 	}
 	graph.Nodes[10] = &sqlgraph.Node{
@@ -2700,8 +2700,8 @@ func (f *ExpenseFilter) WhereAmount(p entql.Float64P) {
 	f.Where(p.Field(expense.FieldAmount))
 }
 
-// WhereNotes applies the entql string predicate on the notes field.
-func (f *ExpenseFilter) WhereNotes(p entql.StringP) {
+// WhereNotes applies the entql json.RawMessage predicate on the notes field.
+func (f *ExpenseFilter) WhereNotes(p entql.BytesP) {
 	f.Where(p.Field(expense.FieldNotes))
 }
 

@@ -42,9 +42,11 @@ func (Expense) Fields() []ent.Field {
 
 		field.Float("amount").
 			Positive(),
-		field.String("notes").
+		field.JSON("notes", map[string]any{}).
 			Optional().
-			Nillable(),
+			Annotations(
+				entgql.Type("Map"),
+			),
 	}
 }
 

@@ -69,6 +69,8 @@ extend type Mutation {
   updateMedia(id: ID!, input: UpdateMediaInput!): Media! @loggedIn
   uploadDocument(input: CreateDocumentInput!): UploadDocumentResult! @loggedIn
   createExpense(input: CreateExpenseInput!): Expense! @loggedIn
+  updateExpense(id: ID!, input: UpdateExpenseInput!): Expense! @loggedIn
+  deleteExpense(id: ID!): Boolean! @loggedIn
   createFuelUp(input: CreateFuelUpInput!): FuelUp! @loggedIn
   createOdometerReading(input: CreateOdometerReadingInput!): OdometerReading!
     @loggedIn
@@ -99,11 +101,6 @@ extend type Mutation {
     id: ID!
     input: UpdateModProductOptionInput!
   ): ModProductOption! @loggedIn
-  createBuildLog(
-    input: CreateBuildLogInput!
-  ): BuildLog! @loggedIn
-  updateBuildLog(
-    id: ID!
-    input: UpdateBuildLogInput!
-  ): BuildLog! @loggedIn
+  createBuildLog(input: CreateBuildLogInput!): BuildLog! @loggedIn
+  updateBuildLog(id: ID!, input: UpdateBuildLogInput!): BuildLog! @loggedIn
 }

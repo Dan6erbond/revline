@@ -76,11 +76,6 @@ func Amount(v float64) predicate.Expense {
 	return predicate.Expense(sql.FieldEQ(FieldAmount, v))
 }
 
-// Notes applies equality check predicate on the "notes" field. It's identical to NotesEQ.
-func Notes(v string) predicate.Expense {
-	return predicate.Expense(sql.FieldEQ(FieldNotes, v))
-}
-
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.Expense {
 	return predicate.Expense(sql.FieldEQ(FieldCreateTime, v))
@@ -261,61 +256,6 @@ func AmountLTE(v float64) predicate.Expense {
 	return predicate.Expense(sql.FieldLTE(FieldAmount, v))
 }
 
-// NotesEQ applies the EQ predicate on the "notes" field.
-func NotesEQ(v string) predicate.Expense {
-	return predicate.Expense(sql.FieldEQ(FieldNotes, v))
-}
-
-// NotesNEQ applies the NEQ predicate on the "notes" field.
-func NotesNEQ(v string) predicate.Expense {
-	return predicate.Expense(sql.FieldNEQ(FieldNotes, v))
-}
-
-// NotesIn applies the In predicate on the "notes" field.
-func NotesIn(vs ...string) predicate.Expense {
-	return predicate.Expense(sql.FieldIn(FieldNotes, vs...))
-}
-
-// NotesNotIn applies the NotIn predicate on the "notes" field.
-func NotesNotIn(vs ...string) predicate.Expense {
-	return predicate.Expense(sql.FieldNotIn(FieldNotes, vs...))
-}
-
-// NotesGT applies the GT predicate on the "notes" field.
-func NotesGT(v string) predicate.Expense {
-	return predicate.Expense(sql.FieldGT(FieldNotes, v))
-}
-
-// NotesGTE applies the GTE predicate on the "notes" field.
-func NotesGTE(v string) predicate.Expense {
-	return predicate.Expense(sql.FieldGTE(FieldNotes, v))
-}
-
-// NotesLT applies the LT predicate on the "notes" field.
-func NotesLT(v string) predicate.Expense {
-	return predicate.Expense(sql.FieldLT(FieldNotes, v))
-}
-
-// NotesLTE applies the LTE predicate on the "notes" field.
-func NotesLTE(v string) predicate.Expense {
-	return predicate.Expense(sql.FieldLTE(FieldNotes, v))
-}
-
-// NotesContains applies the Contains predicate on the "notes" field.
-func NotesContains(v string) predicate.Expense {
-	return predicate.Expense(sql.FieldContains(FieldNotes, v))
-}
-
-// NotesHasPrefix applies the HasPrefix predicate on the "notes" field.
-func NotesHasPrefix(v string) predicate.Expense {
-	return predicate.Expense(sql.FieldHasPrefix(FieldNotes, v))
-}
-
-// NotesHasSuffix applies the HasSuffix predicate on the "notes" field.
-func NotesHasSuffix(v string) predicate.Expense {
-	return predicate.Expense(sql.FieldHasSuffix(FieldNotes, v))
-}
-
 // NotesIsNil applies the IsNil predicate on the "notes" field.
 func NotesIsNil() predicate.Expense {
 	return predicate.Expense(sql.FieldIsNull(FieldNotes))
@@ -324,16 +264,6 @@ func NotesIsNil() predicate.Expense {
 // NotesNotNil applies the NotNil predicate on the "notes" field.
 func NotesNotNil() predicate.Expense {
 	return predicate.Expense(sql.FieldNotNull(FieldNotes))
-}
-
-// NotesEqualFold applies the EqualFold predicate on the "notes" field.
-func NotesEqualFold(v string) predicate.Expense {
-	return predicate.Expense(sql.FieldEqualFold(FieldNotes, v))
-}
-
-// NotesContainsFold applies the ContainsFold predicate on the "notes" field.
-func NotesContainsFold(v string) predicate.Expense {
-	return predicate.Expense(sql.FieldContainsFold(FieldNotes, v))
 }
 
 // HasCar applies the HasEdge predicate on the "car" edge.

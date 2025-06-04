@@ -234,19 +234,13 @@ func (r *carResolver) OdometerKm(ctx context.Context, obj *ent.Car) (float64, er
 
 // URL is the resolver for the url field.
 func (r *documentResolver) URL(ctx context.Context, obj *ent.Document) (string, error) {
-	car, err := obj.Car(ctx)
+	car, err := obj.QueryCar().WithOwner().First(ctx)
 
 	if err != nil {
 		return "", err
 	}
 
-	owner, err := car.Owner(ctx)
-
-	if err != nil {
-		return "", err
-	}
-
-	objectName := fmt.Sprintf("users/%s/cars/%s/documents/%s", owner.ID, car.ID, obj.ID)
+	objectName := fmt.Sprintf("users/%s/cars/%s/documents/%s", car.Edges.Owner.ID, car.ID, obj.ID)
 
 	url, err := r.s3Client.PresignedGetObject(ctx, r.config.S3.Bucket, objectName, time.Hour, nil)
 
@@ -262,19 +256,13 @@ func (r *documentResolver) URL(ctx context.Context, obj *ent.Document) (string, 
 
 // Metadata is the resolver for the metadata field.
 func (r *documentResolver) Metadata(ctx context.Context, obj *ent.Document) (*minio.ObjectInfo, error) {
-	car, err := obj.Car(ctx)
+	car, err := obj.QueryCar().WithOwner().First(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	owner, err := car.Owner(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	objectName := fmt.Sprintf("users/%s/cars/%s/documents/%s", owner.ID, car.ID, obj.ID)
+	objectName := fmt.Sprintf("users/%s/cars/%s/documents/%s", car.Edges.Owner.ID, car.ID, obj.ID)
 
 	object, err := r.s3Client.GetObject(ctx, r.config.S3.Bucket, objectName, minio.GetObjectOptions{})
 
@@ -500,6 +488,32 @@ func (r *mutationResolver) CreateExpense(ctx context.Context, input ent.CreateEx
 	c := ent.FromContext(ctx)
 
 	return c.Expense.Create().SetInput(input).Save(ctx)
+}
+
+// UpdateExpense is the resolver for the updateExpense field.
+func (r *mutationResolver) UpdateExpense(ctx context.Context, id string, input ent.UpdateExpenseInput) (*ent.Expense, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.Expense.UpdateOneID(uid).SetInput(input).Save(ctx)
+}
+
+// DeleteExpense is the resolver for the deleteExpense field.
+func (r *mutationResolver) DeleteExpense(ctx context.Context, id string) (bool, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return false, err
+	}
+
+	if err = r.entClient.Expense.DeleteOneID(uid).Exec(ctx); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 // CreateFuelUp is the resolver for the createFuelUp field.
@@ -796,7 +810,20 @@ func (r *createFuelUpInputResolver) Cost(ctx context.Context, obj *ent.CreateFue
 		SetCarID(obj.CarID).
 		SetType(expense.TypeFuel).
 		SetAmount(data).
-		SetNotes("Created by fuel-up").
+		SetNotes(map[string]any{
+			"type": "doc",
+			"content": []any{
+				map[string]any{
+					"type": "paragraph",
+					"content": []any{
+						map[string]any{
+							"type": "text",
+							"text": "Created by fuel-up",
+						},
+					},
+				},
+			},
+		}).
 		SetOccurredAt(obj.OccurredAt).
 		Save(ctx)
 
@@ -842,7 +869,20 @@ func (r *createServiceLogInputResolver) Cost(ctx context.Context, obj *ent.Creat
 			SetCarID(obj.CarID).
 			SetType(expense.TypeService).
 			SetAmount(*data).
-			SetNotes("Created by service log").
+			SetNotes(map[string]any{
+				"type": "doc",
+				"content": []any{
+					map[string]any{
+						"type": "paragraph",
+						"content": []any{
+							map[string]any{
+								"type": "text",
+								"text": "Created by service log",
+							},
+						},
+					},
+				},
+			}).
 			SetOccurredAt(obj.DatePerformed).
 			Save(ctx)
 

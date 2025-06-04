@@ -72,16 +72,8 @@ func (ec *ExpenseCreate) SetAmount(f float64) *ExpenseCreate {
 }
 
 // SetNotes sets the "notes" field.
-func (ec *ExpenseCreate) SetNotes(s string) *ExpenseCreate {
-	ec.mutation.SetNotes(s)
-	return ec
-}
-
-// SetNillableNotes sets the "notes" field if the given value is not nil.
-func (ec *ExpenseCreate) SetNillableNotes(s *string) *ExpenseCreate {
-	if s != nil {
-		ec.SetNotes(*s)
-	}
+func (ec *ExpenseCreate) SetNotes(m map[string]interface{}) *ExpenseCreate {
+	ec.mutation.SetNotes(m)
 	return ec
 }
 
@@ -298,8 +290,8 @@ func (ec *ExpenseCreate) createSpec() (*Expense, *sqlgraph.CreateSpec) {
 		_node.Amount = value
 	}
 	if value, ok := ec.mutation.Notes(); ok {
-		_spec.SetField(expense.FieldNotes, field.TypeString, value)
-		_node.Notes = &value
+		_spec.SetField(expense.FieldNotes, field.TypeJSON, value)
+		_node.Notes = value
 	}
 	if nodes := ec.mutation.CarIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

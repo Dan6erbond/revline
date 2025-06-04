@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -32,7 +33,7 @@ type Expense struct {
 	// Amount holds the value of the "amount" field.
 	Amount float64 `json:"amount,omitempty"`
 	// Notes holds the value of the "notes" field.
-	Notes *string `json:"notes,omitempty"`
+	Notes map[string]interface{} `json:"notes,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ExpenseQuery when eager-loading is set.
 	Edges               ExpenseEdges `json:"edges"`
@@ -108,9 +109,11 @@ func (*Expense) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case expense.FieldNotes:
+			values[i] = new([]byte)
 		case expense.FieldAmount:
 			values[i] = new(sql.NullFloat64)
-		case expense.FieldType, expense.FieldNotes:
+		case expense.FieldType:
 			values[i] = new(sql.NullString)
 		case expense.FieldCreateTime, expense.FieldUpdateTime, expense.FieldOccurredAt:
 			values[i] = new(sql.NullTime)
@@ -174,11 +177,12 @@ func (e *Expense) assignValues(columns []string, values []any) error {
 				e.Amount = value.Float64
 			}
 		case expense.FieldNotes:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field notes", values[i])
-			} else if value.Valid {
-				e.Notes = new(string)
-				*e.Notes = value.String
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &e.Notes); err != nil {
+					return fmt.Errorf("unmarshal field notes: %w", err)
+				}
 			}
 		case expense.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -272,10 +276,8 @@ func (e *Expense) String() string {
 	builder.WriteString("amount=")
 	builder.WriteString(fmt.Sprintf("%v", e.Amount))
 	builder.WriteString(", ")
-	if v := e.Notes; v != nil {
-		builder.WriteString("notes=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("notes=")
+	builder.WriteString(fmt.Sprintf("%v", e.Notes))
 	builder.WriteByte(')')
 	return builder.String()
 }

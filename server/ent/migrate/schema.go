@@ -276,7 +276,7 @@ var (
 		{Name: "occurred_at", Type: field.TypeTime},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"fuel", "service", "insurance", "tax", "toll", "parking", "loan", "registration", "maintenance", "repair", "upgrade", "cleaning", "accessories", "inspection", "other"}},
 		{Name: "amount", Type: field.TypeFloat64},
-		{Name: "notes", Type: field.TypeString, Nullable: true},
+		{Name: "notes", Type: field.TypeJSON, Nullable: true},
 		{Name: "car_expenses", Type: field.TypeUUID},
 		{Name: "fuel_up_expense", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "service_log_expense", Type: field.TypeUUID, Unique: true, Nullable: true},

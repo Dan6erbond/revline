@@ -89,16 +89,8 @@ func (eu *ExpenseUpdate) AddAmount(f float64) *ExpenseUpdate {
 }
 
 // SetNotes sets the "notes" field.
-func (eu *ExpenseUpdate) SetNotes(s string) *ExpenseUpdate {
-	eu.mutation.SetNotes(s)
-	return eu
-}
-
-// SetNillableNotes sets the "notes" field if the given value is not nil.
-func (eu *ExpenseUpdate) SetNillableNotes(s *string) *ExpenseUpdate {
-	if s != nil {
-		eu.SetNotes(*s)
-	}
+func (eu *ExpenseUpdate) SetNotes(m map[string]interface{}) *ExpenseUpdate {
+	eu.mutation.SetNotes(m)
 	return eu
 }
 
@@ -298,10 +290,10 @@ func (eu *ExpenseUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.AddField(expense.FieldAmount, field.TypeFloat64, value)
 	}
 	if value, ok := eu.mutation.Notes(); ok {
-		_spec.SetField(expense.FieldNotes, field.TypeString, value)
+		_spec.SetField(expense.FieldNotes, field.TypeJSON, value)
 	}
 	if eu.mutation.NotesCleared() {
-		_spec.ClearField(expense.FieldNotes, field.TypeString)
+		_spec.ClearField(expense.FieldNotes, field.TypeJSON)
 	}
 	if eu.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -511,16 +503,8 @@ func (euo *ExpenseUpdateOne) AddAmount(f float64) *ExpenseUpdateOne {
 }
 
 // SetNotes sets the "notes" field.
-func (euo *ExpenseUpdateOne) SetNotes(s string) *ExpenseUpdateOne {
-	euo.mutation.SetNotes(s)
-	return euo
-}
-
-// SetNillableNotes sets the "notes" field if the given value is not nil.
-func (euo *ExpenseUpdateOne) SetNillableNotes(s *string) *ExpenseUpdateOne {
-	if s != nil {
-		euo.SetNotes(*s)
-	}
+func (euo *ExpenseUpdateOne) SetNotes(m map[string]interface{}) *ExpenseUpdateOne {
+	euo.mutation.SetNotes(m)
 	return euo
 }
 
@@ -750,10 +734,10 @@ func (euo *ExpenseUpdateOne) sqlSave(ctx context.Context) (_node *Expense, err e
 		_spec.AddField(expense.FieldAmount, field.TypeFloat64, value)
 	}
 	if value, ok := euo.mutation.Notes(); ok {
-		_spec.SetField(expense.FieldNotes, field.TypeString, value)
+		_spec.SetField(expense.FieldNotes, field.TypeJSON, value)
 	}
 	if euo.mutation.NotesCleared() {
-		_spec.ClearField(expense.FieldNotes, field.TypeString)
+		_spec.ClearField(expense.FieldNotes, field.TypeJSON)
 	}
 	if euo.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -1056,7 +1056,7 @@ type CreateExpenseInput struct {
 	OccurredAt   time.Time
 	Type         expense.Type
 	Amount       float64
-	Notes        *string
+	Notes        map[string]interface{}
 	CarID        uuid.UUID
 	FuelUpID     *uuid.UUID
 	ServiceLogID *uuid.UUID
@@ -1075,7 +1075,7 @@ func (i *CreateExpenseInput) Mutate(m *ExpenseMutation) {
 	m.SetType(i.Type)
 	m.SetAmount(i.Amount)
 	if v := i.Notes; v != nil {
-		m.SetNotes(*v)
+		m.SetNotes(v)
 	}
 	m.SetCarID(i.CarID)
 	if v := i.FuelUpID; v != nil {
@@ -1102,7 +1102,7 @@ type UpdateExpenseInput struct {
 	Type              *expense.Type
 	Amount            *float64
 	ClearNotes        bool
-	Notes             *string
+	Notes             map[string]interface{}
 	CarID             *uuid.UUID
 	ClearFuelUp       bool
 	FuelUpID          *uuid.UUID
@@ -1131,7 +1131,7 @@ func (i *UpdateExpenseInput) Mutate(m *ExpenseMutation) {
 		m.ClearNotes()
 	}
 	if v := i.Notes; v != nil {
-		m.SetNotes(*v)
+		m.SetNotes(v)
 	}
 	if v := i.CarID; v != nil {
 		m.SetCarID(*v)

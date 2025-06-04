@@ -3801,23 +3801,6 @@ type ExpenseWhereInput struct {
 	AmountLT    *float64  `json:"amountLT,omitempty"`
 	AmountLTE   *float64  `json:"amountLTE,omitempty"`
 
-	// "notes" field predicates.
-	Notes             *string  `json:"notes,omitempty"`
-	NotesNEQ          *string  `json:"notesNEQ,omitempty"`
-	NotesIn           []string `json:"notesIn,omitempty"`
-	NotesNotIn        []string `json:"notesNotIn,omitempty"`
-	NotesGT           *string  `json:"notesGT,omitempty"`
-	NotesGTE          *string  `json:"notesGTE,omitempty"`
-	NotesLT           *string  `json:"notesLT,omitempty"`
-	NotesLTE          *string  `json:"notesLTE,omitempty"`
-	NotesContains     *string  `json:"notesContains,omitempty"`
-	NotesHasPrefix    *string  `json:"notesHasPrefix,omitempty"`
-	NotesHasSuffix    *string  `json:"notesHasSuffix,omitempty"`
-	NotesIsNil        bool     `json:"notesIsNil,omitempty"`
-	NotesNotNil       bool     `json:"notesNotNil,omitempty"`
-	NotesEqualFold    *string  `json:"notesEqualFold,omitempty"`
-	NotesContainsFold *string  `json:"notesContainsFold,omitempty"`
-
 	// "car" edge predicates.
 	HasCar     *bool            `json:"hasCar,omitempty"`
 	HasCarWith []*CarWhereInput `json:"hasCarWith,omitempty"`
@@ -4037,51 +4020,6 @@ func (i *ExpenseWhereInput) P() (predicate.Expense, error) {
 	}
 	if i.AmountLTE != nil {
 		predicates = append(predicates, expense.AmountLTE(*i.AmountLTE))
-	}
-	if i.Notes != nil {
-		predicates = append(predicates, expense.NotesEQ(*i.Notes))
-	}
-	if i.NotesNEQ != nil {
-		predicates = append(predicates, expense.NotesNEQ(*i.NotesNEQ))
-	}
-	if len(i.NotesIn) > 0 {
-		predicates = append(predicates, expense.NotesIn(i.NotesIn...))
-	}
-	if len(i.NotesNotIn) > 0 {
-		predicates = append(predicates, expense.NotesNotIn(i.NotesNotIn...))
-	}
-	if i.NotesGT != nil {
-		predicates = append(predicates, expense.NotesGT(*i.NotesGT))
-	}
-	if i.NotesGTE != nil {
-		predicates = append(predicates, expense.NotesGTE(*i.NotesGTE))
-	}
-	if i.NotesLT != nil {
-		predicates = append(predicates, expense.NotesLT(*i.NotesLT))
-	}
-	if i.NotesLTE != nil {
-		predicates = append(predicates, expense.NotesLTE(*i.NotesLTE))
-	}
-	if i.NotesContains != nil {
-		predicates = append(predicates, expense.NotesContains(*i.NotesContains))
-	}
-	if i.NotesHasPrefix != nil {
-		predicates = append(predicates, expense.NotesHasPrefix(*i.NotesHasPrefix))
-	}
-	if i.NotesHasSuffix != nil {
-		predicates = append(predicates, expense.NotesHasSuffix(*i.NotesHasSuffix))
-	}
-	if i.NotesIsNil {
-		predicates = append(predicates, expense.NotesIsNil())
-	}
-	if i.NotesNotNil {
-		predicates = append(predicates, expense.NotesNotNil())
-	}
-	if i.NotesEqualFold != nil {
-		predicates = append(predicates, expense.NotesEqualFold(*i.NotesEqualFold))
-	}
-	if i.NotesContainsFold != nil {
-		predicates = append(predicates, expense.NotesContainsFold(*i.NotesContainsFold))
 	}
 
 	if i.HasCar != nil {
