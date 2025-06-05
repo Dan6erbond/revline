@@ -134,6 +134,11 @@ func (r *Resolver) CreateServiceLogInput() CreateServiceLogInputResolver {
 // CreateUserInput returns CreateUserInputResolver implementation.
 func (r *Resolver) CreateUserInput() CreateUserInputResolver { return &createUserInputResolver{r} }
 
+// UpdateFuelUpInput returns UpdateFuelUpInputResolver implementation.
+func (r *Resolver) UpdateFuelUpInput() UpdateFuelUpInputResolver {
+	return &updateFuelUpInputResolver{r}
+}
+
 // UpdateModProductOptionInput returns UpdateModProductOptionInputResolver implementation.
 func (r *Resolver) UpdateModProductOptionInput() UpdateModProductOptionInputResolver {
 	return &updateModProductOptionInputResolver{r}
@@ -153,5 +158,6 @@ type createFuelUpInputResolver struct{ *Resolver }
 type createModProductOptionInputResolver struct{ *Resolver }
 type createServiceLogInputResolver struct{ *Resolver }
 type createUserInputResolver struct{ *Resolver }
+type updateFuelUpInputResolver struct{ *Resolver }
 type updateModProductOptionInputResolver struct{ *Resolver }
 type updateUserInputResolver struct{ *Resolver }

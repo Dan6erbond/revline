@@ -65,6 +65,7 @@ type ResolverRoot interface {
 	CreateModProductOptionInput() CreateModProductOptionInputResolver
 	CreateServiceLogInput() CreateServiceLogInputResolver
 	CreateUserInput() CreateUserInputResolver
+	UpdateFuelUpInput() UpdateFuelUpInputResolver
 	UpdateModProductOptionInput() UpdateModProductOptionInputResolver
 	UpdateUserInput() UpdateUserInputResolver
 }
@@ -320,6 +321,7 @@ type ComplexityRoot struct {
 		UpdateMedia                func(childComplexity int, id string, input ent.UpdateMediaInput) int
 		UpdateMod                  func(childComplexity int, id string, input ent.UpdateModInput) int
 		UpdateModProductOption     func(childComplexity int, id string, input ent.UpdateModProductOptionInput) int
+		UpdateOdometerReading      func(childComplexity int, id string, input ent.UpdateOdometerReadingInput) int
 		UpdateProfile              func(childComplexity int, input ent.UpdateProfileInput) int
 		UpdateSettings             func(childComplexity int, input ent.UpdateUserSettingsInput) int
 		UpdateTask                 func(childComplexity int, id string, input ent.UpdateTaskInput) int
@@ -556,6 +558,7 @@ type MutationResolver interface {
 	UpdateFuelUp(ctx context.Context, id string, input ent.UpdateFuelUpInput) (*ent.FuelUp, error)
 	DeleteFuelUp(ctx context.Context, id string) (bool, error)
 	CreateOdometerReading(ctx context.Context, input ent.CreateOdometerReadingInput) (*ent.OdometerReading, error)
+	UpdateOdometerReading(ctx context.Context, id string, input ent.UpdateOdometerReadingInput) (*ent.OdometerReading, error)
 	CreateServiceItem(ctx context.Context, input ent.CreateServiceItemInput) (*ent.ServiceItem, error)
 	CreateServiceSchedule(ctx context.Context, input ent.CreateServiceScheduleInput) (*ent.ServiceSchedule, error)
 	CreateServiceLog(ctx context.Context, input ent.CreateServiceLogInput) (*ent.ServiceLog, error)
@@ -618,6 +621,10 @@ type CreateServiceLogInputResolver interface {
 }
 type CreateUserInputResolver interface {
 	StripeAccountCapabilities(ctx context.Context, obj *ent.CreateUserInput, data map[string]any) error
+}
+type UpdateFuelUpInputResolver interface {
+	Cost(ctx context.Context, obj *ent.UpdateFuelUpInput, data *float64) error
+	OdometerKm(ctx context.Context, obj *ent.UpdateFuelUpInput, data *float64) error
 }
 type UpdateModProductOptionInputResolver interface {
 	Specs(ctx context.Context, obj *ent.UpdateModProductOptionInput, data map[string]any) error
@@ -2199,6 +2206,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.UpdateModProductOption(childComplexity, args["id"].(string), args["input"].(ent.UpdateModProductOptionInput)), true
+
+	case "Mutation.updateOdometerReading":
+		if e.complexity.Mutation.UpdateOdometerReading == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateOdometerReading_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateOdometerReading(childComplexity, args["id"].(string), args["input"].(ent.UpdateOdometerReadingInput)), true
 
 	case "Mutation.updateProfile":
 		if e.complexity.Mutation.UpdateProfile == nil {
@@ -4491,6 +4510,47 @@ func (ec *executionContext) field_Mutation_updateMod_argsInput(
 	}
 
 	var zeroVal ent.UpdateModInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateOdometerReading_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_updateOdometerReading_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := ec.field_Mutation_updateOdometerReading_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_updateOdometerReading_argsID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateOdometerReading_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (ent.UpdateOdometerReadingInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNUpdateOdometerReadingInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateOdometerReadingInput(ctx, tmp)
+	}
+
+	var zeroVal ent.UpdateOdometerReadingInput
 	return zeroVal, nil
 }
 
@@ -15523,6 +15583,103 @@ func (ec *executionContext) fieldContext_Mutation_createOdometerReading(ctx cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createOdometerReading_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateOdometerReading(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateOdometerReading(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdateOdometerReading(rctx, fc.Args["id"].(string), fc.Args["input"].(ent.UpdateOdometerReadingInput))
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			if ec.directives.LoggedIn == nil {
+				var zeroVal *ent.OdometerReading
+				return zeroVal, errors.New("directive loggedIn is not implemented")
+			}
+			return ec.directives.LoggedIn(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*ent.OdometerReading); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/Dan6erbond/revline/ent.OdometerReading`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.OdometerReading)
+	fc.Result = res
+	return ec.marshalNOdometerReading2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐOdometerReading(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateOdometerReading(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_OdometerReading_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_OdometerReading_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_OdometerReading_updateTime(ctx, field)
+			case "readingKm":
+				return ec.fieldContext_OdometerReading_readingKm(ctx, field)
+			case "readingTime":
+				return ec.fieldContext_OdometerReading_readingTime(ctx, field)
+			case "notes":
+				return ec.fieldContext_OdometerReading_notes(ctx, field)
+			case "car":
+				return ec.fieldContext_OdometerReading_car(ctx, field)
+			case "fuelUp":
+				return ec.fieldContext_OdometerReading_fuelUp(ctx, field)
+			case "serviceLog":
+				return ec.fieldContext_OdometerReading_serviceLog(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OdometerReading", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateOdometerReading_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -42490,7 +42647,7 @@ func (ec *executionContext) unmarshalInputUpdateFuelUpInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "occurredAt", "station", "amountLiters", "fuelCategory", "clearFuelCategory", "octaneRating", "clearOctaneRating", "isFullTank", "notes", "clearNotes", "carID", "odometerReadingID", "clearOdometerReading", "expenseID", "clearExpense", "addDocumentIDs", "removeDocumentIDs", "clearDocuments"}
+	fieldsInOrder := [...]string{"updateTime", "occurredAt", "station", "amountLiters", "fuelCategory", "clearFuelCategory", "octaneRating", "clearOctaneRating", "isFullTank", "notes", "clearNotes", "carID", "odometerReadingID", "clearOdometerReading", "expenseID", "clearExpense", "addDocumentIDs", "removeDocumentIDs", "clearDocuments", "cost", "odometerKm"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -42630,6 +42787,24 @@ func (ec *executionContext) unmarshalInputUpdateFuelUpInput(ctx context.Context,
 				return it, err
 			}
 			it.ClearDocuments = data
+		case "cost":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cost"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.UpdateFuelUpInput().Cost(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "odometerKm":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("odometerKm"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.UpdateFuelUpInput().OdometerKm(ctx, &it, data); err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -49125,6 +49300,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "updateOdometerReading":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateOdometerReading(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createServiceItem":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createServiceItem(ctx, field)
@@ -53027,6 +53209,11 @@ func (ec *executionContext) unmarshalNUpdateModInput2githubᚗcomᚋDan6erbond�
 
 func (ec *executionContext) unmarshalNUpdateModProductOptionInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateModProductOptionInput(ctx context.Context, v any) (ent.UpdateModProductOptionInput, error) {
 	res, err := ec.unmarshalInputUpdateModProductOptionInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateOdometerReadingInput2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUpdateOdometerReadingInput(ctx context.Context, v any) (ent.UpdateOdometerReadingInput, error) {
+	res, err := ec.unmarshalInputUpdateOdometerReadingInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

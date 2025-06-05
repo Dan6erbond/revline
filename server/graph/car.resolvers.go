@@ -19,7 +19,9 @@ import (
 	"github.com/Dan6erbond/revline/ent/fuelup"
 	"github.com/Dan6erbond/revline/ent/odometerreading"
 	"github.com/Dan6erbond/revline/ent/serviceschedule"
+	"github.com/Dan6erbond/revline/graph/graphutils"
 	"github.com/Dan6erbond/revline/graph/model"
+	"github.com/Dan6erbond/revline/internal"
 	"github.com/google/uuid"
 	minio "github.com/minio/minio-go/v7"
 )
@@ -554,6 +556,17 @@ func (r *mutationResolver) CreateOdometerReading(ctx context.Context, input ent.
 	return r.entClient.OdometerReading.Create().SetInput(input).Save(ctx)
 }
 
+// UpdateOdometerReading is the resolver for the updateOdometerReading field.
+func (r *mutationResolver) UpdateOdometerReading(ctx context.Context, id string, input ent.UpdateOdometerReadingInput) (*ent.OdometerReading, error) {
+	uid, err := uuid.Parse(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.entClient.OdometerReading.UpdateOneID(uid).SetInput(input).Save(ctx)
+}
+
 // CreateServiceItem is the resolver for the createServiceItem field.
 func (r *mutationResolver) CreateServiceItem(ctx context.Context, input ent.CreateServiceItemInput) (*ent.ServiceItem, error) {
 	return r.entClient.ServiceItem.Create().SetInput(input).Save(ctx)
@@ -836,20 +849,7 @@ func (r *createFuelUpInputResolver) Cost(ctx context.Context, obj *ent.CreateFue
 		SetCarID(obj.CarID).
 		SetType(expense.TypeFuel).
 		SetAmount(data).
-		SetNotes(map[string]any{
-			"type": "doc",
-			"content": []any{
-				map[string]any{
-					"type": "paragraph",
-					"content": []any{
-						map[string]any{
-							"type": "text",
-							"text": "Created by fuel-up",
-						},
-					},
-				},
-			},
-		}).
+		SetNotes(internal.GetDoc("Created by fuel up")).
 		SetOccurredAt(obj.OccurredAt).
 		Save(ctx)
 
@@ -895,20 +895,7 @@ func (r *createServiceLogInputResolver) Cost(ctx context.Context, obj *ent.Creat
 			SetCarID(obj.CarID).
 			SetType(expense.TypeService).
 			SetAmount(*data).
-			SetNotes(map[string]any{
-				"type": "doc",
-				"content": []any{
-					map[string]any{
-						"type": "paragraph",
-						"content": []any{
-							map[string]any{
-								"type": "text",
-								"text": "Created by service log",
-							},
-						},
-					},
-				},
-			}).
+			SetNotes(internal.GetDoc("Created by service log")).
 			SetOccurredAt(obj.DatePerformed).
 			Save(ctx)
 
@@ -935,6 +922,129 @@ func (r *createServiceLogInputResolver) OdometerKm(ctx context.Context, obj *ent
 			SetReadingTime(obj.DatePerformed).
 			SetNotes("Created by service log").
 			Save(ctx)
+
+		if err != nil {
+			return err
+		}
+
+		obj.OdometerReadingID = &or.ID
+
+		return err
+	}
+
+	return nil
+}
+
+// Cost is the resolver for the cost field.
+func (r *updateFuelUpInputResolver) Cost(ctx context.Context, obj *ent.UpdateFuelUpInput, data *float64) error {
+	if data != nil {
+		id := graphutils.ResolveArgumentValue(ctx, "id").(string)
+
+		uid, err := uuid.Parse(id)
+
+		if err != nil {
+			return err
+		}
+
+		fuelUp, err := r.entClient.FuelUp.Query().
+			Where(fuelup.ID(uid)).
+			WithCar().
+			WithExpense().
+			First(ctx)
+
+		if err != nil {
+			return err
+		}
+
+		if fuelUp.Edges.Expense != nil {
+			eu := fuelUp.Edges.Expense.Update().SetAmount(*data)
+
+			if obj.OccurredAt != nil {
+				eu.SetOccurredAt(*obj.OccurredAt)
+			}
+
+			if _, err = eu.Save(ctx); err != nil {
+				return err
+			}
+
+			return nil
+		}
+
+		exc := r.entClient.Expense.Create().
+			SetCarID(fuelUp.Edges.Car.ID).
+			SetType(expense.TypeService).
+			SetAmount(*data).
+			SetNotes(internal.GetDoc("Created by fuel up"))
+
+		if obj.OccurredAt != nil {
+			exc.SetOccurredAt(*obj.OccurredAt)
+		} else {
+			exc.SetOccurredAt(fuelUp.OccurredAt)
+		}
+
+		ex, err := exc.Save(ctx)
+
+		if err != nil {
+			return err
+		}
+
+		obj.ExpenseID = &ex.ID
+
+		return err
+	}
+
+	return nil
+}
+
+// OdometerKm is the resolver for the odometerKm field.
+func (r *updateFuelUpInputResolver) OdometerKm(ctx context.Context, obj *ent.UpdateFuelUpInput, data *float64) error {
+	if data != nil {
+		c := ent.FromContext(ctx)
+
+		id := graphutils.ResolveArgumentValue(ctx, "id").(string)
+
+		uid, err := uuid.Parse(id)
+
+		if err != nil {
+			return err
+		}
+
+		fuelUp, err := r.entClient.FuelUp.Query().
+			Where(fuelup.ID(uid)).
+			WithCar().
+			WithOdometerReading().
+			First(ctx)
+
+		if err != nil {
+			return err
+		}
+
+		if fuelUp.Edges.OdometerReading != nil {
+			oru := fuelUp.Edges.OdometerReading.Update().SetReadingKm(*data)
+
+			if obj.OccurredAt != nil {
+				oru.SetReadingTime(*obj.OccurredAt)
+			}
+
+			if _, err = oru.Save(ctx); err != nil {
+				return err
+			}
+
+			return nil
+		}
+
+		orc := c.OdometerReading.Create().
+			SetCarID(fuelUp.Edges.Car.ID).
+			SetReadingKm(*data).
+			SetNotes("Created by fuel-up")
+
+		if obj.OccurredAt != nil {
+			orc.SetReadingTime(*obj.OccurredAt)
+		} else {
+			orc.SetReadingTime(fuelUp.OccurredAt)
+		}
+
+		or, err := orc.Save(ctx)
 
 		if err != nil {
 			return err

@@ -57,6 +57,11 @@ extend input CreateFuelUpInput {
   odometerKm: Float
 }
 
+extend input UpdateFuelUpInput {
+  cost: Float
+  odometerKm: Float
+}
+
 extend input CreateServiceLogInput {
   cost: Float
   odometerKm: Float
@@ -76,6 +81,10 @@ extend type Mutation {
   deleteFuelUp(id: ID!): Boolean! @loggedIn
   createOdometerReading(input: CreateOdometerReadingInput!): OdometerReading!
     @loggedIn
+  updateOdometerReading(
+    id: ID!
+    input: UpdateOdometerReadingInput!
+  ): OdometerReading! @loggedIn
   createServiceItem(input: CreateServiceItemInput!): ServiceItem! @loggedIn
   createServiceSchedule(input: CreateServiceScheduleInput!): ServiceSchedule!
     @loggedIn
