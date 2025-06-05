@@ -33,6 +33,8 @@ import {
   parseAbsolute,
 } from "@internationalized/date";
 import { distanceUnits, fuelVolumeUnits } from "@/literals";
+import { getDistance, getKilometers } from "@/utils/distance";
+import { getFuelVolume, getLiters } from "@/utils/fuel-volume";
 import { useApolloClient, useMutation } from "@apollo/client";
 
 import Dropzone from "../dropzone";
@@ -40,8 +42,6 @@ import FileIcon from "../file-icon";
 import { MinimalTiptapEditor } from "../minimal-tiptap";
 import { formatBytes } from "@/utils/upload-file";
 import { getCurrencySymbol } from "@/utils/currency";
-import { getKilometers } from "@/utils/distance";
-import { getLiters } from "@/utils/fuel-volume";
 import { getQueryParam } from "@/utils/router";
 import { useDocumentsUpload } from "@/hooks/use-documents-upload";
 import { useRouter } from "next/router";
@@ -159,6 +159,15 @@ export default function FuelUpModal({
         occurredAt: fu?.occurredAt
           ? parseAbsolute(fu.occurredAt, getLocalTimeZone())
           : now(getLocalTimeZone()),
+        amount: fu ? getFuelVolume(fu.amountLiters, fuelVolumeUnit) : 0,
+        cost: fu?.expense?.amount ?? 0,
+        relativeCost:
+          fu && fu.amountLiters && fu.expense
+            ? fu.expense.amount / getFuelVolume(fu.amountLiters, fuelVolumeUnit)
+            : 0,
+        odometerKm: fu?.odometerReading
+          ? getDistance(fu.odometerReading.readingKm, distanceUnit)
+          : 0,
       },
     });
 
@@ -217,16 +226,16 @@ export default function FuelUpModal({
         fuelCategory: fuelCategory,
         octaneRating: octaneRating || null,
         notes,
+        cost,
         isFullTank,
+        odometerKm: getKilometers(odometerKm, distanceUnit),
       };
 
       if (fu) {
         return update({
           variables: {
             id: fu.id,
-            input: {
-              ...input,
-            },
+            input,
           },
         }).then(props.onClose ?? (() => props.onOpenChange?.(false)));
       }
@@ -236,8 +245,6 @@ export default function FuelUpModal({
           input: {
             carID: getQueryParam(router.query.id)!,
             ...input,
-            cost,
-            odometerKm: getKilometers(odometerKm, distanceUnit),
           },
         },
       })
@@ -305,20 +312,28 @@ export default function FuelUpModal({
                     />
                   )}
                 />
-                <Autocomplete
-                  label="Station"
-                  items={[] as { key: string; label: string }[]}
-                  allowsCustomValue
-                  endContent={<MapPin />}
-                  {...register("station")}
-                  variant="bordered"
-                >
-                  {(item) => (
-                    <AutocompleteItem key={item.key}>
-                      {item.label}
-                    </AutocompleteItem>
+                <Controller
+                  control={control}
+                  name="station"
+                  render={({ field: { value, onChange, ...field } }) => (
+                    <Autocomplete
+                      label="Station"
+                      items={[] as { key: string; label: string }[]}
+                      allowsCustomValue
+                      endContent={<MapPin />}
+                      variant="bordered"
+                      inputValue={value}
+                      onInputChange={onChange}
+                      {...field}
+                    >
+                      {(item) => (
+                        <AutocompleteItem key={item.key}>
+                          {item.label}
+                        </AutocompleteItem>
+                      )}
+                    </Autocomplete>
                   )}
-                </Autocomplete>
+                />
                 <div className="flex flex-wrap gap-4">
                   <Controller
                     control={control}
