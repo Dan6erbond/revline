@@ -19800,44 +19800,19 @@ func (ec *executionContext) _Query_me(ctx context.Context, field graphql.Collect
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Me(rctx)
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			if ec.directives.LoggedIn == nil {
-				var zeroVal *ent.User
-				return zeroVal, errors.New("directive loggedIn is not implemented")
-			}
-			return ec.directives.LoggedIn(ctx, nil, directive0)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(*ent.User); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/Dan6erbond/revline/ent.User`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Me(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -50092,16 +50067,13 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		case "me":
 			field := field
 
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._Query_me(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
 				return res
 			}
 
@@ -55166,7 +55138,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]any, error) {
+func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]interface{}, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -55174,7 +55146,7 @@ func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[s
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
+func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
