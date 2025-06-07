@@ -151,7 +151,7 @@ export default function TaskDrawerContent({
     refetchQueries: [getTasks, getTasksByRank],
   });
 
-  const { currencyCode } = useUnits(data.me.settings);
+  const { currencyCode } = useUnits(data.me?.settings);
 
   const { register, handleSubmit, watch, control, setValue } = useForm<Inputs>({
     defaultValues: {
