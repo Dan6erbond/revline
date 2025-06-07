@@ -1,8 +1,5 @@
 import type { NextConfig } from "next";
 import createMDX from "@next/mdx";
-import rehypePrettyCode from "rehype-pretty-code";
-import remarkGfm from "remark-gfm";
-import { transformerCopyButton } from "@rehype-pretty/transformers";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -11,15 +8,15 @@ const nextConfig: NextConfig = {
 
 const withMDX = createMDX({
   options: {
-    remarkPlugins: [remarkGfm],
+    remarkPlugins: [/* ["remark-gfm"] */],
     rehypePlugins: [
-      [
-        rehypePrettyCode,
+      /* [
+        "rehype-pretty-code",
         {
           theme: "tokyo-night",
           transformers: [transformerCopyButton()],
         },
-      ],
+      ], */
     ],
   },
 });

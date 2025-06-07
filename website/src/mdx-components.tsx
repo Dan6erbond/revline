@@ -1,10 +1,7 @@
-"use client";
-
 import Image, { ImageProps } from "next/image";
-import { Link, LinkProps } from "@heroui/react";
-import NextLink, { LinkProps as NextLinkProps } from "next/link";
 
 import type { MDXComponents } from "mdx/types";
+import MdxLink from "./components/ui/mdx-link";
 import React from "react";
 import slugify from "slugify";
 
@@ -35,20 +32,6 @@ function Table({ data }: TableProps) {
       <tbody>{rows}</tbody>
     </table>
   );
-}
-
-function CustomLink(props: LinkProps | NextLinkProps) {
-  const href = props.href as string;
-
-  if (href!.startsWith("/")) {
-    return <NextLink {...(props as NextLinkProps)} />;
-  }
-
-  if (href!.startsWith("#")) {
-    return <Link {...(props as LinkProps)} />;
-  }
-
-  return <Link isExternal {...(props as LinkProps)} />;
 }
 
 function RoundedImage(props: ImageProps) {
@@ -94,7 +77,7 @@ const globalComponents: MDXComponents = {
   h5: createHeading(5),
   h6: createHeading(6),
   Image: RoundedImage,
-  a: CustomLink,
+  a: MdxLink,
   /* code: Code, */
   Table,
 };

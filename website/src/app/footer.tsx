@@ -50,6 +50,14 @@ export default function Footer() {
           <p className="text-sm text-gray-400">
             &copy; {new Date().getFullYear()} Revline 1. Crafted with passion.
           </p>
+          <div className="flex gap-4">
+            <NextLink href="/terms-of-use" className="text-zinc-300">
+              Terms of Use
+            </NextLink>
+            <NextLink href="/privacy-policy" className="text-zinc-300">
+              Privacy Policy
+            </NextLink>
+          </div>
         </div>
       </div>
     </footer>
