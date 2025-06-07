@@ -216,7 +216,7 @@ export default function ProfileForm() {
                 data?.me?.profile?.pictureUrl ? "Change image" : "Upload image"
               }
             >
-              {data?.me.profile?.pictureUrl && (
+              {data?.me?.profile?.pictureUrl && (
                 <Image
                   className="size-full object-cover"
                   src={data.me.profile.pictureUrl ?? undefined}

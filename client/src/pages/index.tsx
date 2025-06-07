@@ -63,7 +63,7 @@ export default function Home() {
     <>
       <RootNavbar pathname={router.pathname} path={router.asPath} />
       <main className="flex flex-col gap-4 md:gap-8 p-4 md:p-8 container mx-auto">
-        {data?.me.settings == null && (
+        {data?.me?.settings == null && (
           <Alert
             color="warning"
             variant="faded"
@@ -88,12 +88,12 @@ export default function Home() {
             startContent={<Plus />}
             onPress={() => {
               if (
-                !data?.me.cars ||
+                !data?.me?.cars ||
                 data.me.cars?.length < 1 ||
-                (data?.me.subscription?.tier &&
+                (data?.me?.subscription?.tier &&
                   [
                     (SubscriptionTier.Diy, SubscriptionTier.Enthusiast),
-                  ].includes(data?.me.subscription?.tier))
+                  ].includes(data?.me?.subscription?.tier))
               ) {
                 router.push("/cars/create");
               } else {
@@ -109,7 +109,7 @@ export default function Home() {
         <GateModal isOpen={isOpen} onOpenChange={onOpenChange} />
 
         <div className="grid gap-4 md:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {data?.me.cars?.map((car) => (
+          {data?.me?.cars?.map((car) => (
             <Card
               key={car.id}
               isPressable

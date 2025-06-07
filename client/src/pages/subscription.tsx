@@ -204,9 +204,9 @@ export default function Subscription() {
               "Unlimited vehicles",
               "Secure document storage",
             ]}
-            isCurrent={data?.me.subscription?.tier === SubscriptionTier.Diy}
+            isCurrent={data?.me?.subscription?.tier === SubscriptionTier.Diy}
             onSubscribe={
-              data?.me.subscription?.tier == null
+              data?.me?.subscription?.tier == null
                 ? () => {
                     const decodedCookie = decodeURIComponent(document.cookie);
                     const ca = decodedCookie.split(";");
@@ -227,7 +227,7 @@ export default function Subscription() {
                 : undefined
             }
             onManage={
-              data?.me.subscription?.tier === SubscriptionTier.Diy
+              data?.me?.subscription?.tier === SubscriptionTier.Diy
                 ? () => {
                     mutateBillingPortalSession().then(
                       ({ data }) =>
@@ -249,12 +249,12 @@ export default function Subscription() {
               "Sharable vehicle profiles",
               "Advanced logging for upgrades",
             ]}
-            isRecommended={data?.me.subscription?.tier == null}
+            isRecommended={data?.me?.subscription?.tier == null}
             isCurrent={
-              data?.me.subscription?.tier === SubscriptionTier.Enthusiast
+              data?.me?.subscription?.tier === SubscriptionTier.Enthusiast
             }
             onSubscribe={
-              data?.me.subscription?.tier == null
+              data?.me?.subscription?.tier == null
                 ? () => {
                     const decodedCookie = decodeURIComponent(document.cookie);
                     const ca = decodedCookie.split(";");
@@ -275,7 +275,7 @@ export default function Subscription() {
                 : undefined
             }
             onManage={
-              data?.me.subscription?.tier === SubscriptionTier.Enthusiast
+              data?.me?.subscription?.tier === SubscriptionTier.Enthusiast
                 ? () => {
                     mutateBillingPortalSession().then(
                       ({ data }) =>

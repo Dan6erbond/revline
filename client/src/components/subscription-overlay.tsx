@@ -30,11 +30,11 @@ export default function SubscriptionOverlay({
   const shouldShowOverlay =
     (Array.isArray(requiredTiers) &&
       !requiredTiers.includes(
-        data?.me.subscription?.tier as SubscriptionTier
+        data?.me?.subscription?.tier as SubscriptionTier
       )) ||
     (!requiredTiers &&
       requiredTier !== undefined &&
-      data?.me.subscription?.tier !== requiredTier);
+      data?.me?.subscription?.tier !== requiredTier);
 
   return (
     <div

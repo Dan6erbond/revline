@@ -118,7 +118,7 @@ export default function Affiliate() {
             <span>Partner with us and grow together</span>
           </div>
         </div>
-        {data?.me.stripeAccountID &&
+        {data?.me?.stripeAccountID &&
         data.me.stripeAccountCapabilities.transfers === "active" ? (
           <div className="flex flex-col gap-4 md:gap-6">
             <div>
@@ -207,7 +207,7 @@ export default function Affiliate() {
                   FetchResult<LinkConnectAccountMutation> | undefined
                 >;
 
-                if (data?.me.stripeAccountID) {
+                if (data?.me?.stripeAccountID) {
                   promise = mutateLinkConnectAccount();
                 } else {
                   promise = mutateCreateConnectAccount().then(({ data }) => {

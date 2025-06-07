@@ -104,7 +104,7 @@ export default function FuelUps() {
   });
 
   const { fuelVolumeUnit, distanceUnit, currencyCode, fuelConsumptionUnit } =
-    useUnits(data?.me.settings);
+    useUnits(data?.me?.settings);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -331,7 +331,7 @@ export default function FuelUps() {
       </div>
 
       <FuelUpModal
-        settings={data?.me.settings}
+        settings={data?.me?.settings}
         isOpen={isOpen || !!editing}
         onOpenChange={editing ? () => setEditing(null) : onOpenChange}
         fuelUp={data?.car.fuelUps?.find((fu) => {
