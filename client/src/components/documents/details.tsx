@@ -169,7 +169,7 @@ export default function Details({
             <p>Expense</p>
             <ExpenseChip
               expense={data.document.expense}
-              currencyCode={data.me.settings?.currencyCode}
+              currencyCode={data.me?.settings?.currencyCode}
               href={`/cars/${router.query.id}`}
             />
           </div>
@@ -180,8 +180,8 @@ export default function Details({
             <FuelUpChip
               fuelUp={data.document.fuelUp}
               href={`/cars/${router.query.id}/fuelups`}
-              fuelVolumeUnit={data.me.settings?.fuelVolumeUnit}
-              distanceUnit={data.me.settings?.distanceUnit}
+              fuelVolumeUnit={data.me?.settings?.fuelVolumeUnit}
+              distanceUnit={data.me?.settings?.distanceUnit}
             />
           </div>
         )}
@@ -191,7 +191,7 @@ export default function Details({
             <ServiceLogChip
               log={data.document.serviceLog}
               href={`/cars/${router.query.id}/maintenance`}
-              distanceUnit={data.me.settings?.distanceUnit}
+              distanceUnit={data.me?.settings?.distanceUnit}
             />
           </div>
         )}
