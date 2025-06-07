@@ -72,6 +72,20 @@ const createOdometerReading = graphql(`
   }
 `);
 
+export const updateOdometerReading = graphql(`
+  mutation UpdateOdometerReading(
+    $id: ID!
+    $input: UpdateOdometerReadingInput!
+  ) {
+    updateOdometerReading(id: $id, input: $input) {
+      id
+      readingKm
+      readingTime
+      notes
+    }
+  }
+`);
+
 const columns = [
   { key: "readingKm", label: "Reading" },
   { key: "readingTime", label: "Read at" },

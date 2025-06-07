@@ -25,16 +25,6 @@ import {
   cn,
   useDisclosure,
 } from "@heroui/react";
-import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import {
   FilePlus,
@@ -53,10 +43,10 @@ import { powerUnitsShort, torqueUnitsShort } from "@/literals";
 import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
 
 import DocumentChip from "@/components/documents/chip";
+import DynoSessionChart from "./chart";
 import FancySwitch from "@/components/fancy-switch";
 import FileIcon from "@/components/file-icon";
 import { MinimalTiptapEditor } from "@/components/minimal-tiptap";
-import type { Payload } from "recharts/types/component/DefaultLegendContent";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
@@ -177,16 +167,6 @@ export default function Session() {
   const [selectedRows, setSelectedRows] = useState<Selection>(new Set());
 
   const { powerUnit, torqueUnit } = useUnits(data?.me?.settings);
-
-  const [visible, setVisible] = useState({
-    power: true,
-    torque: true,
-  });
-
-  const handleLegendClick = (e: Payload) => {
-    const key = e.dataKey === "powerKw" ? "power" : "torque";
-    setVisible((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
@@ -464,96 +444,11 @@ export default function Session() {
           </DropdownMenu>
         </Dropdown>
       </div>
-      <div className="aspect-video min-h-[300px] rounded-2xl bg-primary/5 backdrop-blur-xl px-6 md:px-10 py-8 md:py-12 border border-primary/10 shadow-sm">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={
-              data.dynoSession.results
-                ?.toSorted((a, b) => a.rpm - b.rpm)
-                .map(({ rpm, powerKw, torqueNm }) => ({
-                  rpm,
-                  power:
-                    powerKw != null ? getPower(powerKw, powerUnit) : undefined,
-                  torque:
-                    torqueNm != null
-                      ? getTorque(torqueNm, torqueUnit)
-                      : undefined,
-                })) ?? []
-            }
-          >
-            <CartesianGrid strokeDasharray="3 3" className="stroke-zinc-200" />
-            <XAxis
-              dataKey="rpm"
-              tick={{ fill: "hsl(var(--heroui-foreground))" }}
-              label={{
-                value: "RPM",
-                position: "insideBottom",
-                offset: -10,
-                fill: "hsl(var(--heroui-foreground))",
-              }}
-            />
-            <YAxis
-              yAxisId="left"
-              tick={{ fill: "hsl(var(--heroui-primary))" }}
-              label={{
-                value: `Power (${powerUnitsShort[powerUnit]})`,
-                angle: -90,
-                position: "insideLeft",
-                offset: 10,
-                fill: "hsl(var(--heroui-primary))",
-              }}
-            />
-            <YAxis
-              yAxisId="right"
-              orientation="right"
-              tick={{ fill: "hsl(var(--heroui-secondary-400))" }}
-              label={{
-                value: `Torque (${torqueUnitsShort[torqueUnit]})`,
-                angle: -90,
-                position: "insideRight",
-                offset: 10,
-                fill: "hsl(var(--heroui-secondary-400))",
-              }}
-            />
-            <Tooltip
-              contentStyle={{
-                background: "hsl(var(--heroui-background))",
-                color: "hsl(var(--heroui-foreground))",
-              }}
-            />
-            <Legend
-              verticalAlign="bottom"
-              align="center"
-              wrapperStyle={{ paddingTop: 16, cursor: "pointer" }}
-              onClick={handleLegendClick}
-            />
-            <Line
-              yAxisId="left"
-              type="monotone"
-              dataKey="power"
-              stroke="hsl(var(--heroui-primary))"
-              strokeWidth={2}
-              dot={false}
-              name={`Power (${powerUnitsShort[powerUnit]})`}
-              hide={!visible.power}
-              strokeOpacity={visible.power ? 1 : 0}
-              connectNulls
-            />
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey="torque"
-              stroke="hsl(var(--heroui-secondary-400))"
-              strokeWidth={2}
-              dot={false}
-              name={`Torque (${torqueUnitsShort[torqueUnit]})`}
-              hide={!visible.torque}
-              strokeOpacity={visible.torque ? 1 : 0}
-              connectNulls
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      <DynoSessionChart
+        session={data.dynoSession}
+        powerUnit={powerUnit}
+        torqueUnit={torqueUnit}
+      />
       <Table
         selectionMode="multiple"
         selectedKeys={selectedRows}

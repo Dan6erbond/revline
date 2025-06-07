@@ -19,6 +19,10 @@ import {
 } from "@heroui/react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Gauge, Plus, Timer } from "lucide-react";
+import {
+  commonDragResultCombinations,
+  resolveDragResultType,
+} from "@/utils/drag-session";
 import { useMutation, useSuspenseQuery } from "@apollo/client";
 
 import { DragResultUnit } from "@/gql/graphql";
@@ -75,45 +79,6 @@ const createDragResult = graphql(`
     }
   }
 `);
-
-const MILE_TO_KM = 1.60934;
-
-const commonTypes = [
-  {
-    unit: DragResultUnit.Km,
-    value: MILE_TO_KM * 0.25,
-    label: "¼ mile",
-  },
-  {
-    unit: DragResultUnit.Km,
-    value: MILE_TO_KM * 0.125,
-    label: "⅛ mile",
-  },
-  {
-    unit: DragResultUnit.Km,
-    value: MILE_TO_KM * 0.5,
-    label: "½ mile",
-  },
-  {
-    unit: DragResultUnit.Kph,
-    value: MILE_TO_KM * 60,
-    label: "0-60mph",
-  },
-  {
-    unit: DragResultUnit.Kph,
-    value: MILE_TO_KM * 100,
-    label: "0-100mph",
-  },
-  {
-    unit: DragResultUnit.Kph,
-    value: MILE_TO_KM * 120,
-    label: "0-120mph",
-  },
-] as const;
-
-function resolveDragResultType(unit: DragResultUnit, value: number) {
-  return commonTypes.find((t) => t.unit === unit && t.value === value)?.label;
-}
 
 export default function Session() {
   const router = useRouter();
@@ -250,7 +215,7 @@ export default function Session() {
                   onSubmit={handleSubmit(onSubmit)}
                 >
                   <div className="flex gap-2 overflow-x-auto pb-2">
-                    {commonTypes.map((t) => (
+                    {commonDragResultCombinations.map((t) => (
                       <Chip
                         key={t.label}
                         as={
