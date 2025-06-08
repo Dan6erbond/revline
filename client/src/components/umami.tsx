@@ -12,12 +12,14 @@ export default function Umami({
   const { data: session } = useSession();
 
   useEffect(() => {
-    if (session?.user) {
-      const {
-        user: { id, ...user },
-      } = session;
-      umami.identify(id, user);
-    }
+    setTimeout(() => {
+      if (typeof umami !== "undefined" && session?.user) {
+        const {
+          user: { id, ...user },
+        } = session;
+        umami.identify(id, user);
+      }
+    }, 500);
   }, [session?.user?.id]);
 
   return (
