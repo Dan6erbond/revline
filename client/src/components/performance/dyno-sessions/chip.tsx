@@ -70,7 +70,7 @@ export function DynoSessionChip({
       <PopoverTrigger>{chip}</PopoverTrigger>
       <PopoverContent>
         {(titleProps) => (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 min-w-[90vw] sm:min-w-0">
             <h3 className="text-small font-bold" {...titleProps}>
               {session.title}
             </h3>
