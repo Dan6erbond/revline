@@ -1,10 +1,12 @@
-import { Chip } from "@heroui/react";
+import { Chip, ChipProps } from "@heroui/react";
+
 import { Gauge } from "lucide-react";
 import Link from "next/link";
 
 export function DynoSessionChip({
   session,
   href,
+  ...props
 }: {
   session: {
     id: string;
@@ -21,13 +23,14 @@ export function DynoSessionChip({
       | undefined;
   };
   href?: string;
-}) {
+} & ChipProps) {
   return (
     <Chip
       as={href ? Link : undefined}
       href={href}
       className="capitalize"
       startContent={<Gauge className="size-4 ml-1 text-muted-foreground" />}
+      {...props}
     >
       <span className="ml-1 truncate">
         Dyno Session · {session.title}

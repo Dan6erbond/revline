@@ -1,10 +1,29 @@
-import { Card, CardBody, CardHeader, Skeleton, Spinner } from "@heroui/react";
-import { GetCarWithOwnerQuery, ModStatus } from "@/gql/graphql";
+import {
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Skeleton,
+  Spinner,
+  useDisclosure,
+} from "@heroui/react";
+import {
+  GetCarWithOwnerQuery,
+  ModStatus,
+  ModsQuery,
+  PowerUnit,
+  TorqueUnit,
+} from "@/gql/graphql";
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 import { addApolloState, buildClient } from "@/apollo-client";
 
 import CarHead from "@/components/car/head";
 import { ComponentProps } from "react";
+import DynoSessionChart from "@/components/performance/dyno-sessions/chart";
+import { DynoSessionChip } from "@/components/performance/dyno-sessions/chip";
 import ModCategoryChip from "@/mods/category-chip";
 import PublicCarLayout from "@/components/layout/public-car-layout";
 import { auth } from "@/auth";
@@ -14,6 +33,78 @@ import { getQueryParam } from "@/utils/router";
 import { useIntersectionObserver } from "@heroui/use-intersection-observer";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
+import { useUnits } from "@/hooks/use-units";
+
+function ModCard({
+  mod,
+  ...props
+}: {
+  mod: NonNullable<
+    NonNullable<NonNullable<ModsQuery["car"]["mods"]["edges"]>[number]>["node"]
+  >;
+  powerUnit: PowerUnit;
+  torqueUnit: TorqueUnit;
+}) {
+  const { isOpen, onOpenChange, onOpen, onClose } = useDisclosure();
+
+  return (
+    <Card key={mod.id} className="flex flex-col gap-2">
+      <CardHeader className="flex justify-between items-start gap-2">
+        <div>
+          <h2 className="text-xl font-semibold leading-tight">{mod.title}</h2>
+          {mod.stage && (
+            <p className="text-sm text-muted-foreground">Stage: {mod.stage}</p>
+          )}
+        </div>
+        <ModCategoryChip category={mod.category} />
+      </CardHeader>
+      <CardBody>
+        <p className="text-sm text-muted-foreground mb-2">{mod.description}</p>
+
+        {mod.buildLogs && mod.buildLogs.length > 0 && (
+          <div className="text-sm text-default-500 space-y-1">
+            <p className="font-semibold">Recent Build Logs:</p>
+            {mod.buildLogs.slice(0, 2).map((log) => (
+              <div
+                key={log.id}
+                className="text-xs border-l-2 pl-2 border-muted"
+              >
+                <p className="font-medium">{log.title}</p>
+                <p className="text-muted-foreground">
+                  {new Date(log.logTime).toLocaleDateString()}
+                </p>
+              </div>
+            ))}
+            {mod.buildLogs.length > 2 && (
+              <p className="text-xs italic">More logs available...</p>
+            )}
+          </div>
+        )}
+      </CardBody>
+      <CardFooter>
+        <div className="flex items-center gap-4 flex-wrap">
+          <p className="text-sm text-default-600 font-semibold">
+            Dyno Sessions:
+          </p>
+          {mod.dynoSessions?.map((session) => (
+            <Popover key={session.id} isOpen={isOpen}>
+              <PopoverTrigger>
+                <DynoSessionChip
+                  session={session}
+                  onMouseEnter={onOpen}
+                  onMouseLeave={onClose}
+                />
+              </PopoverTrigger>
+              <PopoverContent>
+                <DynoSessionChart session={session} {...props} />
+              </PopoverContent>
+            </Popover>
+          ))}
+        </div>
+      </CardFooter>
+    </Card>
+  );
+}
 
 export default function Mods({
   data: carData,
@@ -33,6 +124,8 @@ export default function Mods({
     },
     skip: !getQueryParam(router.query.id),
   });
+
+  const { powerUnit, torqueUnit } = useUnits(data?.me?.settings);
 
   const [loaderRef] = useIntersectionObserver({
     isEnabled: data?.car.mods.pageInfo.hasNextPage && !loading,
@@ -59,46 +152,12 @@ export default function Mods({
             ?.map((e) => e?.node)
             .filter((n) => !!n)
             .map((mod) => (
-              <Card key={mod.id} className="flex flex-col gap-2">
-                <CardHeader className="flex justify-between items-start gap-2">
-                  <div>
-                    <h2 className="text-xl font-semibold leading-tight">
-                      {mod.title}
-                    </h2>
-                    {mod.stage && (
-                      <p className="text-sm text-muted-foreground">
-                        Stage: {mod.stage}
-                      </p>
-                    )}
-                  </div>
-                  <ModCategoryChip category={mod.category} />
-                </CardHeader>
-                <CardBody>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {mod.description}
-                  </p>
-
-                  {mod.buildLogs && mod.buildLogs.length > 0 && (
-                    <div className="text-sm text-default-500 space-y-1">
-                      <p className="font-semibold">Recent Build Logs:</p>
-                      {mod.buildLogs.slice(0, 2).map((log) => (
-                        <div
-                          key={log.id}
-                          className="text-xs border-l-2 pl-2 border-muted"
-                        >
-                          <p className="font-medium">{log.title}</p>
-                          <p className="text-muted-foreground">
-                            {new Date(log.logTime).toLocaleDateString()}
-                          </p>
-                        </div>
-                      ))}
-                      {mod.buildLogs.length > 2 && (
-                        <p className="text-xs italic">More logs available...</p>
-                      )}
-                    </div>
-                  )}
-                </CardBody>
-              </Card>
+              <ModCard
+                mod={mod}
+                key={mod.id}
+                powerUnit={powerUnit}
+                torqueUnit={torqueUnit}
+              />
             ))}
 
           {loading &&
