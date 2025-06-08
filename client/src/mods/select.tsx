@@ -1,29 +1,10 @@
 import { ModCategory, ModStatus } from "@/gql/graphql";
 import { Select, SelectItem, SelectProps } from "@heroui/react";
 
+import { getMods } from "./shared";
 import { getQueryParam } from "@/utils/router";
-import { graphql } from "@/gql";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
-
-const getMods = graphql(`
-  query Mods($id: ID!) {
-    car(id: $id) {
-      id
-      mods {
-        id
-        title
-        stage
-        category
-        status
-        description
-        productOptions {
-          id
-        }
-      }
-    }
-  }
-`);
 
 export default function ModsSelect({
   filterMods,
@@ -55,9 +36,9 @@ export default function ModsSelect({
       placeholder="Add Mod"
       classNames={{ innerWrapper: "py-4" }}
       items={
-        (filterMods
-          ? modsData?.car.mods?.filter(filterMods)
-          : modsData?.car.mods) ?? []
+        modsData?.car.mods.edges
+          ?.map((e) => e?.node!)
+          .filter((n) => (filterMods ? filterMods(n) : true)) ?? []
       }
       {...props}
     >

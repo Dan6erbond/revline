@@ -9,44 +9,11 @@ import PublicCarLayout from "@/components/layout/public-car-layout";
 import PublicOverview from "@/components/car/public-overview";
 import { auth } from "@/auth";
 import dynamic from "next/dynamic";
+import { getCarWithOwner } from "@/car/queries";
 import { getQueryParam } from "@/utils/router";
-import { graphql } from "@/gql";
 import { useSession } from "next-auth/react";
 
 const Expenses = dynamic(() => import("@/components/expenses"), { ssr: false });
-
-const getCarWithOwner = graphql(`
-  query GetCarWithOwner($id: ID!) {
-    me {
-      id
-      settings {
-        id
-        powerUnit
-        torqueUnit
-      }
-    }
-    car(id: $id) {
-      id
-      name
-      make
-      model
-      trim
-      year
-      bannerImage {
-        id
-        url
-      }
-      owner {
-        id
-        email
-        profile {
-          id
-          username
-        }
-      }
-    }
-  }
-`);
 
 export default function Car({
   data,

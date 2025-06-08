@@ -3,57 +3,43 @@ import {
   Card,
   CardBody,
   CardHeader,
-  Chip,
+  Spinner,
   Tab,
   Tabs,
 } from "@heroui/react";
 import { KanbanIcon, Lightbulb, Plus, WrenchIcon } from "lucide-react";
-import {
-  categoryColors,
-  categoryIcons,
-  categoryLabels,
-  statusColors,
-  statusIcons,
-  statusLabels,
-} from "@/mods/shared";
+import { categoryIcons, getMods, statusIcons } from "@/mods/shared";
 
 import CarLayout from "@/components/layout/car-layout";
 import Link from "next/link";
+import ModCategoryChip from "@/mods/category-chip";
+import ModStatusChip from "@/mods/status-chip";
 import SubscriptionOverlay from "@/components/subscription-overlay";
 import { SubscriptionTier } from "@/gql/graphql";
 import { getQueryParam } from "@/utils/router";
-import { graphql } from "@/gql";
+import { useIntersectionObserver } from "@heroui/use-intersection-observer";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
-
-const getMods = graphql(`
-  query Mods($id: ID!) {
-    car(id: $id) {
-      id
-      mods {
-        id
-        title
-        stage
-        category
-        status
-        description
-        productOptions {
-          id
-        }
-      }
-    }
-  }
-`);
 
 export default function Mods() {
   const router = useRouter();
 
-  const { data, loading, error } = useQuery(getMods, {
-    variables: { id: getQueryParam(router.query.id) as string },
+  const { data, loading, error, fetchMore } = useQuery(getMods, {
+    variables: { id: getQueryParam(router.query.id) as string, first: 10 },
     skip: !getQueryParam(router.query.id),
   });
 
-  const mods = data?.car?.mods ?? [];
+  const [loaderRef] = useIntersectionObserver({
+    isEnabled: data?.car.mods.pageInfo.hasNextPage,
+    onChange: (isIntersecting) =>
+      isIntersecting &&
+      data?.car.mods.edges &&
+      fetchMore({
+        variables: {
+          after: data.car.mods.edges[data.car.mods.edges.length - 1]?.cursor,
+        },
+      }),
+  });
 
   return (
     <CarLayout
@@ -102,55 +88,50 @@ export default function Mods() {
           {loading && <p>Loading...</p>}
           {error && <p>Error loading mods.</p>}
 
-          <div className="flex flex-col gap-3">
-            {mods.map((mod) => {
-              const CategoryIcon = categoryIcons[mod.category];
-              const StatusIcon = statusIcons[mod.status];
+          <div className="flex flex-col gap-4 md:gap-6">
+            {data?.car?.mods.edges
+              ?.map((e) => e?.node)
+              .filter((n) => !!n)
+              .map((mod) => {
+                const CategoryIcon = categoryIcons[mod.category];
+                const StatusIcon = statusIcons[mod.status];
 
-              return (
-                <Card
-                  key={mod.id}
-                  as={Link}
-                  isPressable
-                  href={`/cars/${router.query.id}/project/mods/${mod.id}`}
-                >
-                  <CardHeader className="flex justify-between">
-                    <div className="flex flex-col gap-1">
-                      <div className="text-md font-medium">{mod.title}</div>
-                      <div className="text-xs text-default-500">
-                        Stage: {mod.stage}
+                return (
+                  <Card
+                    key={mod.id}
+                    as={Link}
+                    isPressable
+                    href={`/cars/${router.query.id}/project/mods/${mod.id}`}
+                  >
+                    <CardHeader className="flex justify-between">
+                      <div className="flex flex-col gap-1">
+                        <div className="text-md font-medium">{mod.title}</div>
+                        <div className="text-xs text-default-500">
+                          Stage: {mod.stage}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex flex-col gap-2 items-end">
-                      <Chip
-                        startContent={
-                          <CategoryIcon className="h-3.5 w-3.5 ml-1" />
-                        }
-                        color={categoryColors[mod.category]}
-                      >
-                        {categoryLabels[mod.category]}
-                      </Chip>
-                      <Chip
-                        startContent={
-                          <StatusIcon className="h-3.5 w-3.5 ml-1" />
-                        }
-                        color={statusColors[mod.status]}
-                      >
-                        {statusLabels[mod.status]}
-                      </Chip>
-                    </div>
-                  </CardHeader>
-                  <CardBody className="flex flex-col gap-1">
-                    <div className="text-sm text-content4-foreground">
-                      {mod.description}
-                    </div>
-                    <div className="text-sm text-content4">
-                      {mod.productOptions?.length} Options
-                    </div>
-                  </CardBody>
-                </Card>
-              );
-            })}
+                      <div className="flex flex-col gap-2 items-end">
+                        <ModCategoryChip category={mod.category} />
+                        <ModStatusChip status={mod.status} />
+                      </div>
+                    </CardHeader>
+                    <CardBody className="flex flex-col gap-1">
+                      <div className="text-sm text-content4-foreground">
+                        {mod.description}
+                      </div>
+                      <div className="text-sm text-content4">
+                        {mod.productOptions?.length} Options
+                      </div>
+                    </CardBody>
+                  </Card>
+                );
+              })}
+
+            {data?.car.mods.pageInfo.hasNextPage && (
+              <div className="flex w-full justify-center">
+                <Spinner ref={loaderRef} color="white" />
+              </div>
+            )}
           </div>
         </Tab>
         <Tab

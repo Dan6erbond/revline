@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { ModCategory, ModStatus } from "@/gql/graphql";
 
+import { graphql } from "@/gql";
+
 export const categoryLabels = {
   [ModCategory.Performance]: "Performance",
   [ModCategory.Aesthetic]: "Aesthetic",
@@ -43,3 +45,44 @@ export const statusColors = {
   [ModStatus.Planned]: "primary",
   [ModStatus.Completed]: "success",
 } as const;
+
+export const getMods = graphql(`
+  query Mods($id: ID!, $where: ModWhereInput, $first: Int, $after: Cursor) {
+    car(id: $id) {
+      id
+      mods(where: $where, first: $first, after: $after) {
+        edges {
+          node {
+            id
+            title
+            stage
+            category
+            status
+            description
+            productOptions {
+              id
+            }
+            buildLogs {
+              id
+              title
+              notes
+              media {
+                id
+                ...MediaItem
+              }
+              logTime
+            }
+          }
+          cursor
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+        totalCount
+      }
+    }
+  }
+`);

@@ -3,29 +3,10 @@ import { Key } from "react";
 import ModChip from "./chip";
 import ModsSelect from "./select";
 import { X } from "lucide-react";
+import { getMods } from "./shared";
 import { getQueryParam } from "@/utils/router";
-import { graphql } from "@/gql";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
-
-const getMods = graphql(`
-  query Mods($id: ID!) {
-    car(id: $id) {
-      id
-      mods {
-        id
-        title
-        stage
-        category
-        status
-        description
-        productOptions {
-          id
-        }
-      }
-    }
-  }
-`);
 
 export default function ModsPicker({
   value,
@@ -57,7 +38,10 @@ export default function ModsPicker({
       />
       <div className="flex flex-wrap gap-2 mt-2">
         {value?.map((id) => {
-          const mod = modsData?.car.mods?.find((mod) => mod.id === id);
+          const mod = modsData?.car.mods.edges
+            ?.map((e) => e?.node)
+            .filter((n) => !!n)
+            .find((mod) => mod.id === id);
 
           if (!mod) return null;
 

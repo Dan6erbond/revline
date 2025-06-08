@@ -1,4 +1,4 @@
-import { Gauge, Images, Wrench } from "lucide-react";
+import { Gauge, Images, ScrollText, Wrench } from "lucide-react";
 import { Tab, Tabs } from "@heroui/react";
 
 import { ComponentProps } from "react";
@@ -53,6 +53,12 @@ export default function PublicCarLayout({
       href: `/cars/${router.query.id}/mods`,
       active: router.pathname === "/cars/[id]/mods",
       icon: <Wrench className="size-5" />,
+    },
+    {
+      name: "Build Logs",
+      href: `/cars/${router.query.id}/build-logs`,
+      active: router.pathname === "/cars/[id]/build-logs",
+      icon: <ScrollText className="size-5" />,
       isDisabled: true,
     },
     {

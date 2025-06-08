@@ -5,6 +5,7 @@ export default function CarHead({
   car,
   baseUrl,
   basePath,
+  page = "overview",
 }: {
   car: {
     __typename?: "Car";
@@ -32,21 +33,37 @@ export default function CarHead({
   };
   baseUrl: string;
   basePath: string;
+  page?: "overview" | "mods" | "logs";
 }) {
   const { name, make, model, trim, year, bannerImage, owner, id } = car;
+  const username = owner?.profile?.username || "a Revline 1 user";
   const fallbackTitleParts = [year, make, model, trim].filter(Boolean);
+  const carTitle = name || fallbackTitleParts.join(" ");
 
-  const title = name
-    ? `${name} | Revline 1`
-    : `${fallbackTitleParts.join(" ")} | Revline 1`;
+  let titleSuffix = "";
+  let description = "";
 
-  const description = name
-    ? `Explore ${name}, a custom car shared by ${
-        owner?.profile?.username || "a Revline 1 user"
-      }.`
-    : `Check out this ${fallbackTitleParts.join(" ")} owned by ${
-        owner?.profile?.username || "a Revline 1 user"
-      } on Revline 1.`;
+  switch (page) {
+    case "mods":
+      titleSuffix = "Modifications Showcase";
+      description = `Browse custom mods, upgrades, and tweaks made to ${carTitle}, shared by ${username} on Revline 1.`;
+      break;
+    case "logs":
+      titleSuffix = "Build Logs";
+      description = `Explore detailed build logs and progress notes for ${carTitle}, contributed by ${username} on Revline 1.`;
+      break;
+    case "overview":
+    default:
+      titleSuffix = "Overview";
+      description = name
+        ? `Explore ${name}, a custom build by ${username}. Discover specs, history, and more.`
+        : `Discover details of ${fallbackTitleParts.join(
+            " "
+          )}, owned by ${username}, on Revline 1.`;
+      break;
+  }
+
+  const title = `${carTitle} | ${titleSuffix} | Revline 1`;
 
   const imageUrl =
     bannerImage?.url ||
