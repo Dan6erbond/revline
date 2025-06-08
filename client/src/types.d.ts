@@ -15,3 +15,12 @@ declare module "next-auth/jwt" {
     refreshToken?: string;
   }
 }
+
+declare global {
+  namespace umami {
+    interface umami {
+      identify(unique_id: string, data?: object): void;
+      identify(data: object): void;
+    }
+  }
+}

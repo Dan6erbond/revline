@@ -4,6 +4,7 @@ import "react-pdf/dist/Page/TextLayer.css";
 
 import type { AppContext, AppInitialProps, AppProps } from "next/app";
 import { HeroUIProvider, ToastProvider } from "@heroui/react";
+import Script, { ScriptProps } from "next/script";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
@@ -12,7 +13,6 @@ import AuthenticatedApolloProvider from "@/apollo-client/provider";
 import ConfigProvider from "@/contexts/config";
 import Head from "next/head";
 import { Inter } from "next/font/google";
-import Script from "next/script";
 import { Session } from "next-auth";
 import { getQueryParam } from "../utils/router";
 import { pdfjs } from "react-pdf";
@@ -30,10 +30,13 @@ function UserTour() {
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_USERTOUR_TOKEN) {
       usertour.init(process.env.NEXT_PUBLIC_USERTOUR_TOKEN);
+
       const { user } = (session as Session) ?? {};
+
       if (user) {
+        const { id, ...u } = user;
         usertour.identify(user.id, {
-          ...user,
+          ...u,
           signed_up_at: user.createTime,
         });
       }
@@ -41,6 +44,30 @@ function UserTour() {
   }, [session]);
 
   return null;
+}
+
+function Umami({ ...props }: ScriptProps) {
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      const { user } = (session as Session) ?? {};
+
+      if (user) {
+        const { id, ...u } = user;
+        umami.identify(id, u);
+      }
+    }
+  }, [session?.user?.id]);
+
+  return (
+    <Script
+      defer
+      src="https://cloud.umami.is/script.js"
+      data-website-id="64bc9887-3516-4a18-b0a9-bfff4281cb0b"
+      {...props}
+    />
+  );
 }
 
 type CustomAppProps = {
@@ -66,13 +93,7 @@ export default function CustomApp({
   return (
     <HeroUIProvider navigate={router.push} useHref={href}>
       <ToastProvider />
-      {process.env.NODE_ENV !== "development" && (
-        <Script
-          defer
-          src="https://cloud.umami.is/script.js"
-          data-website-id="64bc9887-3516-4a18-b0a9-bfff4281cb0b"
-        />
-      )}
+      {process.env.NODE_ENV !== "development" && <Umami />}
       <style jsx global>{`
         html {
           font-family: ${inter.style.fontFamily};
