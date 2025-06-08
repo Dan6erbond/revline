@@ -227,11 +227,13 @@ function DynoSessionCard({
           </>
         )}
         {session.results && session.results.length > 0 ? (
-          <DynoSessionChart
-            session={session}
-            className="my-4 mx-auto"
-            {...props}
-          />
+          <div className="min-w-[350px] sm:min-w-0 self-stretch">
+            <DynoSessionChart
+              session={session}
+              className="my-4 mx-auto"
+              {...props}
+            />
+          </div>
         ) : (
           <div className="my-4 w-full min-h-[300px] flex items-center justify-center rounded-md border border-dashed border-gray-300 bg-muted text-muted-foreground">
             <div className="flex flex-col items-center gap-2 text-center">
