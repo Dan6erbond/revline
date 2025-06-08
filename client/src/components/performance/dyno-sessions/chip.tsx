@@ -69,11 +69,18 @@ export function DynoSessionChip({
     <Popover isOpen={isOpen} shouldCloseOnBlur onOpenChange={onOpenChange}>
       <PopoverTrigger>{chip}</PopoverTrigger>
       <PopoverContent>
-        <DynoSessionChart
-          session={session}
-          powerUnit={powerUnit}
-          torqueUnit={torqueUnit}
-        />
+        {(titleProps) => (
+          <div className="flex flex-col gap-2">
+            <h3 className="text-small font-bold" {...titleProps}>
+              {session.title}
+            </h3>
+            <DynoSessionChart
+              session={session}
+              powerUnit={powerUnit}
+              torqueUnit={torqueUnit}
+            />
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   );
