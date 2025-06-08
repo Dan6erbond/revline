@@ -17,6 +17,7 @@ import { ServiceLogChip } from "../maintenance/service/logs/chip";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useSuspenseQuery } from "@apollo/client";
+import { useUnits } from "@/hooks/use-units";
 
 const PreviewFields = graphql(`
   fragment PreviewFields on Document {
@@ -75,6 +76,8 @@ const getDocument = graphql(`
         currencyCode
         fuelVolumeUnit
         distanceUnit
+        powerUnit
+        torqueUnit
       }
     }
     document(id: $id) {
@@ -157,6 +160,8 @@ export default function Details({
 
   const { data } = useSuspenseQuery(getDocument, { variables: { id } });
 
+  const { powerUnit, torqueUnit } = useUnits();
+
   return (
     <>
       <DrawerHeader className="flex flex-col gap-1">
@@ -210,6 +215,8 @@ export default function Details({
             <DynoSessionChip
               session={data.document.dynoSession}
               href={`/cars/${router.query.id}/performance/dyno-sessions/${data.document.dynoSession.id}`}
+              powerUnit={powerUnit}
+              torqueUnit={torqueUnit}
             />
           </div>
         )}
