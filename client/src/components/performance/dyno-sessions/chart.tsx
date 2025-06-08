@@ -49,12 +49,16 @@ export default function DynoSessionChart({
   return (
     <div
       className={cn(
-        "w-full sm:w-auto sm:aspect-video min-h-[200px] sm:min-h-[300px] rounded-2xl bg-primary/5 backdrop-blur-xl px-6 md:px-10 py-8 md:py-12 border border-primary/10 shadow-sm",
+        "w-full sm:w-auto min-w-[200px] sm:min-w-0 sm:aspect-video min-h-[200px] sm:min-h-[300px] rounded-2xl bg-primary/5 backdrop-blur-xl px-6 md:px-10 py-8 md:py-12 border border-primary/10 shadow-sm",
         className
       )}
       {...props}
     >
-      <ResponsiveContainer width="100%" height="100%" className="min-h-[200px] sm:min-h-0">
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+        className="min-h-[200px] sm:min-h-0"
+      >
         <LineChart
           data={
             session.results
