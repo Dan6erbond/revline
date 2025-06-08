@@ -683,7 +683,6 @@ input CreateCarInput {
   type: String
   year: Int
   trim: String
-  ownerID: ID!
   dragSessionIDs: [ID!]
   fuelUpIDs: [ID!]
   odometerReadingIDs: [ID!]
@@ -3542,7 +3541,6 @@ input UpdateCarInput {
   clearYear: Boolean
   trim: String
   clearTrim: Boolean
-  ownerID: ID
   addDragSessionIDs: [ID!]
   removeDragSessionIDs: [ID!]
   clearDragSessions: Boolean

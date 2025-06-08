@@ -207,7 +207,6 @@ type CreateCarInput struct {
 	Type               *string
 	Year               *int
 	Trim               *string
-	OwnerID            uuid.UUID
 	DragSessionIDs     []uuid.UUID
 	FuelUpIDs          []uuid.UUID
 	OdometerReadingIDs []uuid.UUID
@@ -249,7 +248,6 @@ func (i *CreateCarInput) Mutate(m *CarMutation) {
 	if v := i.Trim; v != nil {
 		m.SetTrim(*v)
 	}
-	m.SetOwnerID(i.OwnerID)
 	if v := i.DragSessionIDs; len(v) > 0 {
 		m.AddDragSessionIDs(v...)
 	}
@@ -317,7 +315,6 @@ type UpdateCarInput struct {
 	Year                     *int
 	ClearTrim                bool
 	Trim                     *string
-	OwnerID                  *uuid.UUID
 	ClearDragSessions        bool
 	AddDragSessionIDs        []uuid.UUID
 	RemoveDragSessionIDs     []uuid.UUID
@@ -401,9 +398,6 @@ func (i *UpdateCarInput) Mutate(m *CarMutation) {
 	}
 	if v := i.Trim; v != nil {
 		m.SetTrim(*v)
-	}
-	if v := i.OwnerID; v != nil {
-		m.SetOwnerID(*v)
 	}
 	if i.ClearDragSessions {
 		m.ClearDragSessions()

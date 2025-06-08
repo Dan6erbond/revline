@@ -45,7 +45,10 @@ func (Car) Edges() []ent.Edge {
 		edge.From("owner", User.Type).
 			Ref("cars").
 			Unique().
-			Required(),
+			Required().
+			Annotations(
+				entgql.Skip(entgql.SkipMutationCreateInput, entgql.SkipMutationUpdateInput),
+			),
 		edge.To("drag_sessions", DragSession.Type),
 		edge.To("fuel_ups", FuelUp.Type),
 		edge.To("odometer_readings", OdometerReading.Type),

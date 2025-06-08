@@ -30566,7 +30566,7 @@ func (ec *executionContext) unmarshalInputCreateCarInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "make", "model", "type", "year", "trim", "ownerID", "dragSessionIDs", "fuelUpIDs", "odometerReadingIDs", "serviceItemIDs", "serviceLogIDs", "serviceScheduleIDs", "mediumIDs", "albumIDs", "documentIDs", "dynoSessionIDs", "expenseIDs", "buildLogIDs", "bannerImageID", "taskIDs", "modIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "name", "make", "model", "type", "year", "trim", "dragSessionIDs", "fuelUpIDs", "odometerReadingIDs", "serviceItemIDs", "serviceLogIDs", "serviceScheduleIDs", "mediumIDs", "albumIDs", "documentIDs", "dynoSessionIDs", "expenseIDs", "buildLogIDs", "bannerImageID", "taskIDs", "modIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -30629,13 +30629,6 @@ func (ec *executionContext) unmarshalInputCreateCarInput(ctx context.Context, ob
 				return it, err
 			}
 			it.Trim = data
-		case "ownerID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ownerID"))
-			data, err := ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.OwnerID = data
 		case "dragSessionIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dragSessionIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
@@ -42029,7 +42022,7 @@ func (ec *executionContext) unmarshalInputUpdateCarInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "name", "make", "clearMake", "model", "clearModel", "type", "clearType", "year", "clearYear", "trim", "clearTrim", "ownerID", "addDragSessionIDs", "removeDragSessionIDs", "clearDragSessions", "addFuelUpIDs", "removeFuelUpIDs", "clearFuelUps", "addOdometerReadingIDs", "removeOdometerReadingIDs", "clearOdometerReadings", "addServiceItemIDs", "removeServiceItemIDs", "clearServiceItems", "addServiceLogIDs", "removeServiceLogIDs", "clearServiceLogs", "addServiceScheduleIDs", "removeServiceScheduleIDs", "clearServiceSchedules", "addMediumIDs", "removeMediumIDs", "clearMedia", "addAlbumIDs", "removeAlbumIDs", "clearAlbums", "addDocumentIDs", "removeDocumentIDs", "clearDocuments", "addDynoSessionIDs", "removeDynoSessionIDs", "clearDynoSessions", "addExpenseIDs", "removeExpenseIDs", "clearExpenses", "addBuildLogIDs", "removeBuildLogIDs", "clearBuildLogs", "bannerImageID", "clearBannerImage", "addTaskIDs", "removeTaskIDs", "clearTasks", "addModIDs", "removeModIDs", "clearMods"}
+	fieldsInOrder := [...]string{"updateTime", "name", "make", "clearMake", "model", "clearModel", "type", "clearType", "year", "clearYear", "trim", "clearTrim", "addDragSessionIDs", "removeDragSessionIDs", "clearDragSessions", "addFuelUpIDs", "removeFuelUpIDs", "clearFuelUps", "addOdometerReadingIDs", "removeOdometerReadingIDs", "clearOdometerReadings", "addServiceItemIDs", "removeServiceItemIDs", "clearServiceItems", "addServiceLogIDs", "removeServiceLogIDs", "clearServiceLogs", "addServiceScheduleIDs", "removeServiceScheduleIDs", "clearServiceSchedules", "addMediumIDs", "removeMediumIDs", "clearMedia", "addAlbumIDs", "removeAlbumIDs", "clearAlbums", "addDocumentIDs", "removeDocumentIDs", "clearDocuments", "addDynoSessionIDs", "removeDynoSessionIDs", "clearDynoSessions", "addExpenseIDs", "removeExpenseIDs", "clearExpenses", "addBuildLogIDs", "removeBuildLogIDs", "clearBuildLogs", "bannerImageID", "clearBannerImage", "addTaskIDs", "removeTaskIDs", "clearTasks", "addModIDs", "removeModIDs", "clearMods"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -42120,13 +42113,6 @@ func (ec *executionContext) unmarshalInputUpdateCarInput(ctx context.Context, ob
 				return it, err
 			}
 			it.ClearTrim = data
-		case "ownerID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ownerID"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.OwnerID = data
 		case "addDragSessionIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addDragSessionIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
