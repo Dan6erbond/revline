@@ -60,7 +60,9 @@ func (Car) Edges() []ent.Edge {
 		edge.To("documents", Document.Type),
 		edge.To("dyno_sessions", DynoSession.Type),
 		edge.To("expenses", Expense.Type),
-		edge.To("build_logs", BuildLog.Type),
+		edge.To("build_logs", BuildLog.Type).
+			Annotations(entgql.RelayConnection()).
+			Annotations(entgql.MultiOrder()),
 		edge.To("banner_image", Media.Type).
 			Unique(),
 		edge.To("tasks", Task.Type).

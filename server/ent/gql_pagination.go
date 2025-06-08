@@ -425,19 +425,14 @@ func (c *BuildLogConnection) build(nodes []*BuildLog, pager *buildlogPager, afte
 type BuildLogPaginateOption func(*buildlogPager) error
 
 // WithBuildLogOrder configures pagination ordering.
-func WithBuildLogOrder(order *BuildLogOrder) BuildLogPaginateOption {
-	if order == nil {
-		order = DefaultBuildLogOrder
-	}
-	o := *order
+func WithBuildLogOrder(order []*BuildLogOrder) BuildLogPaginateOption {
 	return func(pager *buildlogPager) error {
-		if err := o.Direction.Validate(); err != nil {
-			return err
+		for _, o := range order {
+			if err := o.Direction.Validate(); err != nil {
+				return err
+			}
 		}
-		if o.Field == nil {
-			o.Field = DefaultBuildLogOrder.Field
-		}
-		pager.order = &o
+		pager.order = append(pager.order, order...)
 		return nil
 	}
 }
@@ -455,7 +450,7 @@ func WithBuildLogFilter(filter func(*BuildLogQuery) (*BuildLogQuery, error)) Bui
 
 type buildlogPager struct {
 	reverse bool
-	order   *BuildLogOrder
+	order   []*BuildLogOrder
 	filter  func(*BuildLogQuery) (*BuildLogQuery, error)
 }
 
@@ -466,8 +461,10 @@ func newBuildLogPager(opts []BuildLogPaginateOption, reverse bool) (*buildlogPag
 			return nil, err
 		}
 	}
-	if pager.order == nil {
-		pager.order = DefaultBuildLogOrder
+	for i, o := range pager.order {
+		if i > 0 && o.Field == pager.order[i-1].Field {
+			return nil, fmt.Errorf("duplicate order direction %q", o.Direction)
+		}
 	}
 	return pager, nil
 }
@@ -480,48 +477,87 @@ func (p *buildlogPager) applyFilter(query *BuildLogQuery) (*BuildLogQuery, error
 }
 
 func (p *buildlogPager) toCursor(bl *BuildLog) Cursor {
-	return p.order.Field.toCursor(bl)
+	cs_ := make([]any, 0, len(p.order))
+	for _, o_ := range p.order {
+		cs_ = append(cs_, o_.Field.toCursor(bl).Value)
+	}
+	return Cursor{ID: bl.ID, Value: cs_}
 }
 
 func (p *buildlogPager) applyCursors(query *BuildLogQuery, after, before *Cursor) (*BuildLogQuery, error) {
-	direction := p.order.Direction
+	idDirection := entgql.OrderDirectionAsc
 	if p.reverse {
-		direction = direction.Reverse()
+		idDirection = entgql.OrderDirectionDesc
 	}
-	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultBuildLogOrder.Field.column, p.order.Field.column, direction) {
+	fields, directions := make([]string, 0, len(p.order)), make([]OrderDirection, 0, len(p.order))
+	for _, o := range p.order {
+		fields = append(fields, o.Field.column)
+		direction := o.Direction
+		if p.reverse {
+			direction = direction.Reverse()
+		}
+		directions = append(directions, direction)
+	}
+	predicates, err := entgql.MultiCursorsPredicate(after, before, &entgql.MultiCursorsOptions{
+		FieldID:     DefaultBuildLogOrder.Field.column,
+		DirectionID: idDirection,
+		Fields:      fields,
+		Directions:  directions,
+	})
+	if err != nil {
+		return nil, err
+	}
+	for _, predicate := range predicates {
 		query = query.Where(predicate)
 	}
 	return query, nil
 }
 
 func (p *buildlogPager) applyOrder(query *BuildLogQuery) *BuildLogQuery {
-	direction := p.order.Direction
-	if p.reverse {
-		direction = direction.Reverse()
+	var defaultOrdered bool
+	for _, o := range p.order {
+		direction := o.Direction
+		if p.reverse {
+			direction = direction.Reverse()
+		}
+		query = query.Order(o.Field.toTerm(direction.OrderTermOption()))
+		if o.Field.column == DefaultBuildLogOrder.Field.column {
+			defaultOrdered = true
+		}
+		if len(query.ctx.Fields) > 0 {
+			query.ctx.AppendFieldOnce(o.Field.column)
+		}
 	}
-	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
-	if p.order.Field != DefaultBuildLogOrder.Field {
+	if !defaultOrdered {
+		direction := entgql.OrderDirectionAsc
+		if p.reverse {
+			direction = direction.Reverse()
+		}
 		query = query.Order(DefaultBuildLogOrder.Field.toTerm(direction.OrderTermOption()))
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(p.order.Field.column)
 	}
 	return query
 }
 
 func (p *buildlogPager) orderExpr(query *BuildLogQuery) sql.Querier {
-	direction := p.order.Direction
-	if p.reverse {
-		direction = direction.Reverse()
-	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(p.order.Field.column)
+		for _, o := range p.order {
+			query.ctx.AppendFieldOnce(o.Field.column)
+		}
 	}
 	return sql.ExprFunc(func(b *sql.Builder) {
-		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
-		if p.order.Field != DefaultBuildLogOrder.Field {
-			b.Comma().Ident(DefaultBuildLogOrder.Field.column).Pad().WriteString(string(direction))
+		for _, o := range p.order {
+			direction := o.Direction
+			if p.reverse {
+				direction = direction.Reverse()
+			}
+			b.Ident(o.Field.column).Pad().WriteString(string(direction))
+			b.Comma()
 		}
+		direction := entgql.OrderDirectionAsc
+		if p.reverse {
+			direction = direction.Reverse()
+		}
+		b.Ident(DefaultBuildLogOrder.Field.column).Pad().WriteString(string(direction))
 	})
 }
 
@@ -576,6 +612,71 @@ func (bl *BuildLogQuery) Paginate(
 	}
 	conn.build(nodes, pager, after, first, before, last)
 	return conn, nil
+}
+
+var (
+	// BuildLogOrderFieldID orders BuildLog by id.
+	BuildLogOrderFieldID = &BuildLogOrderField{
+		Value: func(bl *BuildLog) (ent.Value, error) {
+			return bl.ID, nil
+		},
+		column: buildlog.FieldID,
+		toTerm: buildlog.ByID,
+		toCursor: func(bl *BuildLog) Cursor {
+			return Cursor{
+				ID:    bl.ID,
+				Value: bl.ID,
+			}
+		},
+	}
+	// BuildLogOrderFieldLogTime orders BuildLog by log_time.
+	BuildLogOrderFieldLogTime = &BuildLogOrderField{
+		Value: func(bl *BuildLog) (ent.Value, error) {
+			return bl.LogTime, nil
+		},
+		column: buildlog.FieldLogTime,
+		toTerm: buildlog.ByLogTime,
+		toCursor: func(bl *BuildLog) Cursor {
+			return Cursor{
+				ID:    bl.ID,
+				Value: bl.LogTime,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f BuildLogOrderField) String() string {
+	var str string
+	switch f.column {
+	case BuildLogOrderFieldID.column:
+		str = "ID"
+	case BuildLogOrderFieldLogTime.column:
+		str = "LOG_TIME"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f BuildLogOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *BuildLogOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("BuildLogOrderField %T must be a string", v)
+	}
+	switch str {
+	case "ID":
+		*f = *BuildLogOrderFieldID
+	case "LOG_TIME":
+		*f = *BuildLogOrderFieldLogTime
+	default:
+		return fmt.Errorf("%s is not a valid BuildLogOrderField", str)
+	}
+	return nil
 }
 
 // BuildLogOrderField defines the ordering field of BuildLog.

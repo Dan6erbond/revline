@@ -96,12 +96,23 @@ type ComplexityRoot struct {
 		UpdateTime func(childComplexity int) int
 	}
 
+	BuildLogConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	BuildLogEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	Car struct {
 		Albums                        func(childComplexity int) int
 		AverageConsumptionLitersPerKm func(childComplexity int) int
 		BannerImage                   func(childComplexity int) int
 		BannerImageURL                func(childComplexity int) int
-		BuildLogs                     func(childComplexity int) int
+		BuildLogs                     func(childComplexity int, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.BuildLogOrder, where *ent.BuildLogWhereInput) int
 		CreateTime                    func(childComplexity int) int
 		Documents                     func(childComplexity int) int
 		DragSessions                  func(childComplexity int) int
@@ -768,6 +779,41 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.BuildLog.UpdateTime(childComplexity), true
 
+	case "BuildLogConnection.edges":
+		if e.complexity.BuildLogConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.BuildLogConnection.Edges(childComplexity), true
+
+	case "BuildLogConnection.pageInfo":
+		if e.complexity.BuildLogConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.BuildLogConnection.PageInfo(childComplexity), true
+
+	case "BuildLogConnection.totalCount":
+		if e.complexity.BuildLogConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.BuildLogConnection.TotalCount(childComplexity), true
+
+	case "BuildLogEdge.cursor":
+		if e.complexity.BuildLogEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.BuildLogEdge.Cursor(childComplexity), true
+
+	case "BuildLogEdge.node":
+		if e.complexity.BuildLogEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.BuildLogEdge.Node(childComplexity), true
+
 	case "Car.albums":
 		if e.complexity.Car.Albums == nil {
 			break
@@ -801,7 +847,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			break
 		}
 
-		return e.complexity.Car.BuildLogs(childComplexity), true
+		args, err := ec.field_Car_buildLogs_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Car.BuildLogs(childComplexity, args["after"].(*entgql.Cursor[uuid.UUID]), args["first"].(*int), args["before"].(*entgql.Cursor[uuid.UUID]), args["last"].(*int), args["orderBy"].([]*ent.BuildLogOrder), args["where"].(*ent.BuildLogWhereInput)), true
 
 	case "Car.createTime":
 		if e.complexity.Car.CreateTime == nil {
@@ -3412,6 +3463,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAlbumWhereInput,
+		ec.unmarshalInputBuildLogOrder,
 		ec.unmarshalInputBuildLogWhereInput,
 		ec.unmarshalInputCarWhereInput,
 		ec.unmarshalInputCheckoutSessionWhereInput,
@@ -3598,6 +3650,119 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Car_buildLogs_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Car_buildLogs_argsAfter(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["after"] = arg0
+	arg1, err := ec.field_Car_buildLogs_argsFirst(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["first"] = arg1
+	arg2, err := ec.field_Car_buildLogs_argsBefore(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["before"] = arg2
+	arg3, err := ec.field_Car_buildLogs_argsLast(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["last"] = arg3
+	arg4, err := ec.field_Car_buildLogs_argsOrderBy(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["orderBy"] = arg4
+	arg5, err := ec.field_Car_buildLogs_argsWhere(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["where"] = arg5
+	return args, nil
+}
+func (ec *executionContext) field_Car_buildLogs_argsAfter(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*entgql.Cursor[uuid.UUID], error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+	if tmp, ok := rawArgs["after"]; ok {
+		return ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+	}
+
+	var zeroVal *entgql.Cursor[uuid.UUID]
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_buildLogs_argsFirst(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+	if tmp, ok := rawArgs["first"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_buildLogs_argsBefore(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*entgql.Cursor[uuid.UUID], error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+	if tmp, ok := rawArgs["before"]; ok {
+		return ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+	}
+
+	var zeroVal *entgql.Cursor[uuid.UUID]
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_buildLogs_argsLast(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+	if tmp, ok := rawArgs["last"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_buildLogs_argsOrderBy(
+	ctx context.Context,
+	rawArgs map[string]any,
+) ([]*ent.BuildLogOrder, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		return ec.unmarshalOBuildLogOrder2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogOrderᚄ(ctx, tmp)
+	}
+
+	var zeroVal []*ent.BuildLogOrder
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_buildLogs_argsWhere(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*ent.BuildLogWhereInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+	if tmp, ok := rawArgs["where"]; ok {
+		return ec.unmarshalOBuildLogWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogWhereInput(ctx, tmp)
+	}
+
+	var zeroVal *ent.BuildLogWhereInput
+	return zeroVal, nil
+}
 
 func (ec *executionContext) field_Car_mods_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -6101,6 +6266,256 @@ func (ec *executionContext) fieldContext_BuildLog_media(_ context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _BuildLogConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.BuildLogConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BuildLogConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.BuildLogEdge)
+	fc.Result = res
+	return ec.marshalOBuildLogEdge2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BuildLogConnection_edges(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BuildLogConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "node":
+				return ec.fieldContext_BuildLogEdge_node(ctx, field)
+			case "cursor":
+				return ec.fieldContext_BuildLogEdge_cursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BuildLogEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BuildLogConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.BuildLogConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BuildLogConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.PageInfo[uuid.UUID])
+	fc.Result = res
+	return ec.marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BuildLogConnection_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BuildLogConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BuildLogConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.BuildLogConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BuildLogConnection_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BuildLogConnection_totalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BuildLogConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BuildLogEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.BuildLogEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BuildLogEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.BuildLog)
+	fc.Result = res
+	return ec.marshalOBuildLog2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLog(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BuildLogEdge_node(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BuildLogEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_BuildLog_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_BuildLog_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_BuildLog_updateTime(ctx, field)
+			case "title":
+				return ec.fieldContext_BuildLog_title(ctx, field)
+			case "notes":
+				return ec.fieldContext_BuildLog_notes(ctx, field)
+			case "logTime":
+				return ec.fieldContext_BuildLog_logTime(ctx, field)
+			case "car":
+				return ec.fieldContext_BuildLog_car(ctx, field)
+			case "mods":
+				return ec.fieldContext_BuildLog_mods(ctx, field)
+			case "media":
+				return ec.fieldContext_BuildLog_media(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BuildLog", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BuildLogEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.BuildLogEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BuildLogEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.Cursor[uuid.UUID])
+	fc.Result = res
+	return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BuildLogEdge_cursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BuildLogEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Cursor does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Car_id(ctx context.Context, field graphql.CollectedField, obj *ent.Car) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Car_id(ctx, field)
 	if err != nil {
@@ -7283,21 +7698,24 @@ func (ec *executionContext) _Car_buildLogs(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.BuildLogs(ctx)
+		return obj.BuildLogs(ctx, fc.Args["after"].(*entgql.Cursor[uuid.UUID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[uuid.UUID]), fc.Args["last"].(*int), fc.Args["orderBy"].([]*ent.BuildLogOrder), fc.Args["where"].(*ent.BuildLogWhereInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.BuildLog)
+	res := resTmp.(*ent.BuildLogConnection)
 	fc.Result = res
-	return ec.marshalOBuildLog2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogᚄ(ctx, field.Selections, res)
+	return ec.marshalNBuildLogConnection2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogConnection(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Car_buildLogs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Car_buildLogs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Car",
 		Field:      field,
@@ -7305,27 +7723,26 @@ func (ec *executionContext) fieldContext_Car_buildLogs(_ context.Context, field 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_BuildLog_id(ctx, field)
-			case "createTime":
-				return ec.fieldContext_BuildLog_createTime(ctx, field)
-			case "updateTime":
-				return ec.fieldContext_BuildLog_updateTime(ctx, field)
-			case "title":
-				return ec.fieldContext_BuildLog_title(ctx, field)
-			case "notes":
-				return ec.fieldContext_BuildLog_notes(ctx, field)
-			case "logTime":
-				return ec.fieldContext_BuildLog_logTime(ctx, field)
-			case "car":
-				return ec.fieldContext_BuildLog_car(ctx, field)
-			case "mods":
-				return ec.fieldContext_BuildLog_mods(ctx, field)
-			case "media":
-				return ec.fieldContext_BuildLog_media(ctx, field)
+			case "edges":
+				return ec.fieldContext_BuildLogConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_BuildLogConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_BuildLogConnection_totalCount(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type BuildLog", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type BuildLogConnection", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Car_buildLogs_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -28261,6 +28678,44 @@ func (ec *executionContext) unmarshalInputAlbumWhereInput(ctx context.Context, o
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputBuildLogOrder(ctx context.Context, obj any) (ent.BuildLogOrder, error) {
+	var it ent.BuildLogOrder
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+
+	fieldsInOrder := [...]string{"direction", "field"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "direction":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		case "field":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNBuildLogOrderField2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputBuildLogWhereInput(ctx context.Context, obj any) (ent.BuildLogWhereInput, error) {
 	var it ent.BuildLogWhereInput
 	asMap := map[string]any{}
@@ -46675,6 +47130,93 @@ func (ec *executionContext) _BuildLog(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
+var buildLogConnectionImplementors = []string{"BuildLogConnection"}
+
+func (ec *executionContext) _BuildLogConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.BuildLogConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, buildLogConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BuildLogConnection")
+		case "edges":
+			out.Values[i] = ec._BuildLogConnection_edges(ctx, field, obj)
+		case "pageInfo":
+			out.Values[i] = ec._BuildLogConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalCount":
+			out.Values[i] = ec._BuildLogConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var buildLogEdgeImplementors = []string{"BuildLogEdge"}
+
+func (ec *executionContext) _BuildLogEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.BuildLogEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, buildLogEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BuildLogEdge")
+		case "node":
+			out.Values[i] = ec._BuildLogEdge_node(ctx, field, obj)
+		case "cursor":
+			out.Values[i] = ec._BuildLogEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var carImplementors = []string{"Car", "Node"}
 
 func (ec *executionContext) _Car(ctx context.Context, sel ast.SelectionSet, obj *ent.Car) graphql.Marshaler {
@@ -47118,13 +47660,16 @@ func (ec *executionContext) _Car(ctx context.Context, sel ast.SelectionSet, obj 
 		case "buildLogs":
 			field := field
 
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._Car_buildLogs(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -52637,6 +53182,37 @@ func (ec *executionContext) marshalNBuildLog2ᚖgithubᚗcomᚋDan6erbondᚋrevl
 	return ec._BuildLog(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNBuildLogConnection2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogConnection(ctx context.Context, sel ast.SelectionSet, v *ent.BuildLogConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._BuildLogConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNBuildLogOrder2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogOrder(ctx context.Context, v any) (*ent.BuildLogOrder, error) {
+	res, err := ec.unmarshalInputBuildLogOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNBuildLogOrderField2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogOrderField(ctx context.Context, v any) (*ent.BuildLogOrderField, error) {
+	var res = new(ent.BuildLogOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNBuildLogOrderField2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.BuildLogOrderField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) unmarshalNBuildLogWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogWhereInput(ctx context.Context, v any) (*ent.BuildLogWhereInput, error) {
 	res, err := ec.unmarshalInputBuildLogWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
@@ -54150,6 +54726,79 @@ func (ec *executionContext) marshalOBuildLog2ᚕᚖgithubᚗcomᚋDan6erbondᚋr
 	return ret
 }
 
+func (ec *executionContext) marshalOBuildLog2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLog(ctx context.Context, sel ast.SelectionSet, v *ent.BuildLog) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._BuildLog(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOBuildLogEdge2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.BuildLogEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOBuildLogEdge2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOBuildLogEdge2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogEdge(ctx context.Context, sel ast.SelectionSet, v *ent.BuildLogEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._BuildLogEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOBuildLogOrder2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogOrderᚄ(ctx context.Context, v any) ([]*ent.BuildLogOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*ent.BuildLogOrder, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNBuildLogOrder2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogOrder(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
 func (ec *executionContext) unmarshalOBuildLogWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐBuildLogWhereInputᚄ(ctx context.Context, v any) ([]*ent.BuildLogWhereInput, error) {
 	if v == nil {
 		return nil, nil
@@ -55621,7 +56270,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]any, error) {
+func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]interface{}, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -55629,7 +56278,7 @@ func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[s
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
+func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

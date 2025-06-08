@@ -19,14 +19,20 @@ type BuildLog struct {
 func (BuildLog) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New),
+			Default(uuid.New).
+			Annotations(
+				entgql.OrderField("ID"),
+			),
 		field.String("title"),
 		field.JSON("notes", map[string]any{}).
 			Optional().
 			Annotations(
 				entgql.Type("Map"),
 			),
-		field.Time("log_time"),
+		field.Time("log_time").
+			Annotations(
+				entgql.OrderField("LOG_TIME"),
+			),
 	}
 }
 
@@ -54,5 +60,7 @@ func (BuildLog) Mixin() []ent.Mixin {
 func (BuildLog) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
+		entgql.RelayConnection(),
+		entgql.MultiOrder(),
 	}
 }

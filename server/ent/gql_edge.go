@@ -200,16 +200,25 @@ func (c *Car) Expenses(ctx context.Context) (result []*Expense, err error) {
 	return result, err
 }
 
-func (c *Car) BuildLogs(ctx context.Context) (result []*BuildLog, err error) {
-	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = c.NamedBuildLogs(graphql.GetFieldContext(ctx).Field.Alias)
-	} else {
-		result, err = c.Edges.BuildLogsOrErr()
+func (c *Car) BuildLogs(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy []*BuildLogOrder, where *BuildLogWhereInput,
+) (*BuildLogConnection, error) {
+	opts := []BuildLogPaginateOption{
+		WithBuildLogOrder(orderBy),
+		WithBuildLogFilter(where.Filter),
 	}
-	if IsNotLoaded(err) {
-		result, err = c.QueryBuildLogs().All(ctx)
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := c.Edges.totalCount[12][alias]
+	if nodes, err := c.NamedBuildLogs(alias); err == nil || hasTotalCount {
+		pager, err := newBuildLogPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &BuildLogConnection{Edges: []*BuildLogEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
 	}
-	return result, err
+	return c.QueryBuildLogs().Paginate(ctx, after, first, before, last, opts...)
 }
 
 func (c *Car) BannerImage(ctx context.Context) (*Media, error) {
