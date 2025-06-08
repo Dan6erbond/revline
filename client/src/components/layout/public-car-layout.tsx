@@ -110,8 +110,8 @@ export default function PublicCarLayout({
           fill
         />
       </div>
-      <div className="flex sticky h-18 top-16 -mt-18 w-full z-20 bg-zinc-900/70 backdrop-blur-sm p-4 gap-4">
-        <h2 className="text-3xl text-white">{data?.car?.name}</h2>
+      <div className="flex items-center sticky h-12 md:h-18 top-16 -mt-12 md:-mt-18 w-full z-20 bg-zinc-900/70 backdrop-blur-sm p-4 gap-4">
+        <h2 className="text-2xl md:text-3xl text-white">{data?.car?.name}</h2>
       </div>
       <main {...props}>
         <Tabs
