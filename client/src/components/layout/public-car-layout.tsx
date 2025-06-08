@@ -117,7 +117,7 @@ export default function PublicCarLayout({
         <Tabs
           variant="underlined"
           selectedKey={tabs.find((t) => t.active)?.name ?? ""}
-          className="flex sticky h-14 top-34 pt-2 w-full z-20 bg-zinc-700/30 backdrop-blur-md"
+          className="flex sticky h-14 top-28 md:top-34 pt-2 w-full z-20 bg-zinc-700/30 backdrop-blur-md"
         >
           {tabs.map(({ name, icon, active, href, ...t }) => (
             <Tab
