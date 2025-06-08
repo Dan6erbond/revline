@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -28,7 +29,10 @@ func (ServiceLog) Fields() []ent.Field {
 			Optional().
 			Nillable(),
 		field.Strings("tags").
-			Default([]string{}),
+			Default([]string{}).
+			Annotations(
+				entsql.DefaultExpr("jsonb_build_array()"),
+			),
 	}
 }
 

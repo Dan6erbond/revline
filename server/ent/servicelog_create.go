@@ -271,9 +271,6 @@ func (slc *ServiceLogCreate) check() error {
 	if _, ok := slc.mutation.DatePerformed(); !ok {
 		return &ValidationError{Name: "date_performed", err: errors.New(`ent: missing required field "ServiceLog.date_performed"`)}
 	}
-	if _, ok := slc.mutation.Tags(); !ok {
-		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "ServiceLog.tags"`)}
-	}
 	if len(slc.mutation.CarIDs()) == 0 {
 		return &ValidationError{Name: "car", err: errors.New(`ent: missing required edge "ServiceLog.car"`)}
 	}

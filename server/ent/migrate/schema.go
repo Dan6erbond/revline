@@ -519,7 +519,7 @@ var (
 		{Name: "date_performed", Type: field.TypeTime},
 		{Name: "performed_by", Type: field.TypeString, Nullable: true},
 		{Name: "notes", Type: field.TypeString, Nullable: true},
-		{Name: "tags", Type: field.TypeJSON},
+		{Name: "tags", Type: field.TypeJSON, Default: schema.Expr("jsonb_build_array()")},
 		{Name: "car_service_logs", Type: field.TypeUUID},
 		{Name: "odometer_reading_service_log", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "service_schedule_logs", Type: field.TypeUUID, Nullable: true},
