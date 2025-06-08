@@ -13,7 +13,6 @@ import AuthenticatedApolloProvider from "@/apollo-client/provider";
 import ConfigProvider from "@/contexts/config";
 import Head from "next/head";
 import { Inter } from "next/font/google";
-import { Session } from "next-auth";
 import { getQueryParam } from "../utils/router";
 import { pdfjs } from "react-pdf";
 import { useHref } from "@/utils/use-href";
@@ -31,12 +30,13 @@ function UserTour() {
     if (process.env.NEXT_PUBLIC_USERTOUR_TOKEN) {
       usertour.init(process.env.NEXT_PUBLIC_USERTOUR_TOKEN);
 
-      const { user } = (session as Session) ?? {};
+      if (session?.user) {
+        const {
+          user: { id, ...user },
+        } = session;
 
-      if (user) {
-        const { id, ...u } = user;
-        usertour.identify(user.id, {
-          ...u,
+        usertour.identify(id, {
+          ...user,
           signed_up_at: user.createTime,
         });
       }
