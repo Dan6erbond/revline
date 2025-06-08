@@ -69,5 +69,7 @@ func (Mod) Mixin() []ent.Mixin {
 func (Mod) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
+		entgql.RelayConnection(),
+		entgql.MultiOrder(),
 	}
 }

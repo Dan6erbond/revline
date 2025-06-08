@@ -112,7 +112,7 @@ type ComplexityRoot struct {
 		Make                          func(childComplexity int) int
 		Media                         func(childComplexity int) int
 		Model                         func(childComplexity int) int
-		Mods                          func(childComplexity int) int
+		Mods                          func(childComplexity int, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, where *ent.ModWhereInput) int
 		Name                          func(childComplexity int) int
 		OdometerKm                    func(childComplexity int) int
 		OdometerReadings              func(childComplexity int) int
@@ -268,6 +268,17 @@ type ComplexityRoot struct {
 		Tasks          func(childComplexity int) int
 		Title          func(childComplexity int) int
 		UpdateTime     func(childComplexity int) int
+	}
+
+	ModConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	ModEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	ModProductOption struct {
@@ -867,7 +878,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			break
 		}
 
-		return e.complexity.Car.Mods(childComplexity), true
+		args, err := ec.field_Car_mods_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Car.Mods(childComplexity, args["after"].(*entgql.Cursor[uuid.UUID]), args["first"].(*int), args["before"].(*entgql.Cursor[uuid.UUID]), args["last"].(*int), args["where"].(*ent.ModWhereInput)), true
 
 	case "Car.name":
 		if e.complexity.Car.Name == nil {
@@ -1727,6 +1743,41 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mod.UpdateTime(childComplexity), true
+
+	case "ModConnection.edges":
+		if e.complexity.ModConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.ModConnection.Edges(childComplexity), true
+
+	case "ModConnection.pageInfo":
+		if e.complexity.ModConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.ModConnection.PageInfo(childComplexity), true
+
+	case "ModConnection.totalCount":
+		if e.complexity.ModConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.ModConnection.TotalCount(childComplexity), true
+
+	case "ModEdge.cursor":
+		if e.complexity.ModEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.ModEdge.Cursor(childComplexity), true
+
+	case "ModEdge.node":
+		if e.complexity.ModEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.ModEdge.Node(childComplexity), true
 
 	case "ModProductOption.cons":
 		if e.complexity.ModProductOption.Cons == nil {
@@ -3547,6 +3598,101 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Car_mods_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Car_mods_argsAfter(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["after"] = arg0
+	arg1, err := ec.field_Car_mods_argsFirst(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["first"] = arg1
+	arg2, err := ec.field_Car_mods_argsBefore(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["before"] = arg2
+	arg3, err := ec.field_Car_mods_argsLast(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["last"] = arg3
+	arg4, err := ec.field_Car_mods_argsWhere(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["where"] = arg4
+	return args, nil
+}
+func (ec *executionContext) field_Car_mods_argsAfter(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*entgql.Cursor[uuid.UUID], error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+	if tmp, ok := rawArgs["after"]; ok {
+		return ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+	}
+
+	var zeroVal *entgql.Cursor[uuid.UUID]
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_mods_argsFirst(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+	if tmp, ok := rawArgs["first"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_mods_argsBefore(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*entgql.Cursor[uuid.UUID], error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+	if tmp, ok := rawArgs["before"]; ok {
+		return ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+	}
+
+	var zeroVal *entgql.Cursor[uuid.UUID]
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_mods_argsLast(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+	if tmp, ok := rawArgs["last"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_mods_argsWhere(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*ent.ModWhereInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+	if tmp, ok := rawArgs["where"]; ok {
+		return ec.unmarshalOModWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModWhereInput(ctx, tmp)
+	}
+
+	var zeroVal *ent.ModWhereInput
+	return zeroVal, nil
+}
 
 func (ec *executionContext) field_Car_tasks_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -6357,11 +6503,14 @@ func (ec *executionContext) _Car_owner(ctx context.Context, field graphql.Collec
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Car_owner(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7325,21 +7474,24 @@ func (ec *executionContext) _Car_mods(ctx context.Context, field graphql.Collect
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Mods(ctx)
+		return obj.Mods(ctx, fc.Args["after"].(*entgql.Cursor[uuid.UUID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[uuid.UUID]), fc.Args["last"].(*int), fc.Args["where"].(*ent.ModWhereInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.Mod)
+	res := resTmp.(*ent.ModConnection)
 	fc.Result = res
-	return ec.marshalOMod2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModᚄ(ctx, field.Selections, res)
+	return ec.marshalNModConnection2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModConnection(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Car_mods(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Car_mods(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Car",
 		Field:      field,
@@ -7347,33 +7499,26 @@ func (ec *executionContext) fieldContext_Car_mods(_ context.Context, field graph
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Mod_id(ctx, field)
-			case "createTime":
-				return ec.fieldContext_Mod_createTime(ctx, field)
-			case "updateTime":
-				return ec.fieldContext_Mod_updateTime(ctx, field)
-			case "title":
-				return ec.fieldContext_Mod_title(ctx, field)
-			case "category":
-				return ec.fieldContext_Mod_category(ctx, field)
-			case "status":
-				return ec.fieldContext_Mod_status(ctx, field)
-			case "description":
-				return ec.fieldContext_Mod_description(ctx, field)
-			case "stage":
-				return ec.fieldContext_Mod_stage(ctx, field)
-			case "car":
-				return ec.fieldContext_Mod_car(ctx, field)
-			case "tasks":
-				return ec.fieldContext_Mod_tasks(ctx, field)
-			case "productOptions":
-				return ec.fieldContext_Mod_productOptions(ctx, field)
-			case "buildLogs":
-				return ec.fieldContext_Mod_buildLogs(ctx, field)
+			case "edges":
+				return ec.fieldContext_ModConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_ModConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_ModConnection_totalCount(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Mod", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type ModConnection", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Car_mods_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -13304,6 +13449,262 @@ func (ec *executionContext) fieldContext_Mod_buildLogs(_ context.Context, field 
 				return ec.fieldContext_BuildLog_media(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BuildLog", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.ModConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.ModEdge)
+	fc.Result = res
+	return ec.marshalOModEdge2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModConnection_edges(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "node":
+				return ec.fieldContext_ModEdge_node(ctx, field)
+			case "cursor":
+				return ec.fieldContext_ModEdge_cursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ModEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.ModConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.PageInfo[uuid.UUID])
+	fc.Result = res
+	return ec.marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModConnection_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.ModConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModConnection_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModConnection_totalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.ModEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Mod)
+	fc.Result = res
+	return ec.marshalOMod2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMod(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModEdge_node(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Mod_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Mod_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Mod_updateTime(ctx, field)
+			case "title":
+				return ec.fieldContext_Mod_title(ctx, field)
+			case "category":
+				return ec.fieldContext_Mod_category(ctx, field)
+			case "status":
+				return ec.fieldContext_Mod_status(ctx, field)
+			case "description":
+				return ec.fieldContext_Mod_description(ctx, field)
+			case "stage":
+				return ec.fieldContext_Mod_stage(ctx, field)
+			case "car":
+				return ec.fieldContext_Mod_car(ctx, field)
+			case "tasks":
+				return ec.fieldContext_Mod_tasks(ctx, field)
+			case "productOptions":
+				return ec.fieldContext_Mod_productOptions(ctx, field)
+			case "buildLogs":
+				return ec.fieldContext_Mod_buildLogs(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Mod", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ModEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.ModEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ModEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.Cursor[uuid.UUID])
+	fc.Result = res
+	return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ModEdge_cursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ModEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Cursor does not have child fields")
 		},
 	}
 	return fc, nil
@@ -30230,7 +30631,7 @@ func (ec *executionContext) unmarshalInputCreateCarInput(ctx context.Context, ob
 			it.Trim = data
 		case "ownerID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ownerID"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			data, err := ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -41628,7 +42029,7 @@ func (ec *executionContext) unmarshalInputUpdateCarInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "name", "make", "clearMake", "model", "clearModel", "type", "clearType", "year", "clearYear", "trim", "clearTrim", "ownerID", "clearOwner", "addDragSessionIDs", "removeDragSessionIDs", "clearDragSessions", "addFuelUpIDs", "removeFuelUpIDs", "clearFuelUps", "addOdometerReadingIDs", "removeOdometerReadingIDs", "clearOdometerReadings", "addServiceItemIDs", "removeServiceItemIDs", "clearServiceItems", "addServiceLogIDs", "removeServiceLogIDs", "clearServiceLogs", "addServiceScheduleIDs", "removeServiceScheduleIDs", "clearServiceSchedules", "addMediumIDs", "removeMediumIDs", "clearMedia", "addAlbumIDs", "removeAlbumIDs", "clearAlbums", "addDocumentIDs", "removeDocumentIDs", "clearDocuments", "addDynoSessionIDs", "removeDynoSessionIDs", "clearDynoSessions", "addExpenseIDs", "removeExpenseIDs", "clearExpenses", "addBuildLogIDs", "removeBuildLogIDs", "clearBuildLogs", "bannerImageID", "clearBannerImage", "addTaskIDs", "removeTaskIDs", "clearTasks", "addModIDs", "removeModIDs", "clearMods"}
+	fieldsInOrder := [...]string{"updateTime", "name", "make", "clearMake", "model", "clearModel", "type", "clearType", "year", "clearYear", "trim", "clearTrim", "ownerID", "addDragSessionIDs", "removeDragSessionIDs", "clearDragSessions", "addFuelUpIDs", "removeFuelUpIDs", "clearFuelUps", "addOdometerReadingIDs", "removeOdometerReadingIDs", "clearOdometerReadings", "addServiceItemIDs", "removeServiceItemIDs", "clearServiceItems", "addServiceLogIDs", "removeServiceLogIDs", "clearServiceLogs", "addServiceScheduleIDs", "removeServiceScheduleIDs", "clearServiceSchedules", "addMediumIDs", "removeMediumIDs", "clearMedia", "addAlbumIDs", "removeAlbumIDs", "clearAlbums", "addDocumentIDs", "removeDocumentIDs", "clearDocuments", "addDynoSessionIDs", "removeDynoSessionIDs", "clearDynoSessions", "addExpenseIDs", "removeExpenseIDs", "clearExpenses", "addBuildLogIDs", "removeBuildLogIDs", "clearBuildLogs", "bannerImageID", "clearBannerImage", "addTaskIDs", "removeTaskIDs", "clearTasks", "addModIDs", "removeModIDs", "clearMods"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -41726,13 +42127,6 @@ func (ec *executionContext) unmarshalInputUpdateCarInput(ctx context.Context, ob
 				return it, err
 			}
 			it.OwnerID = data
-		case "clearOwner":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearOwner"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ClearOwner = data
 		case "addDragSessionIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addDragSessionIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
@@ -46339,13 +46733,16 @@ func (ec *executionContext) _Car(ctx context.Context, sel ast.SelectionSet, obj 
 		case "owner":
 			field := field
 
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._Car_owner(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -46837,13 +47234,16 @@ func (ec *executionContext) _Car(ctx context.Context, sel ast.SelectionSet, obj 
 		case "mods":
 			field := field
 
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._Car_mods(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -48942,6 +49342,93 @@ func (ec *executionContext) _Mod(ctx context.Context, sel ast.SelectionSet, obj 
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var modConnectionImplementors = []string{"ModConnection"}
+
+func (ec *executionContext) _ModConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.ModConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, modConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ModConnection")
+		case "edges":
+			out.Values[i] = ec._ModConnection_edges(ctx, field, obj)
+		case "pageInfo":
+			out.Values[i] = ec._ModConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalCount":
+			out.Values[i] = ec._ModConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var modEdgeImplementors = []string{"ModEdge"}
+
+func (ec *executionContext) _ModEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.ModEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, modEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ModEdge")
+		case "node":
+			out.Values[i] = ec._ModEdge_node(ctx, field, obj)
+		case "cursor":
+			out.Values[i] = ec._ModEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -52659,6 +53146,16 @@ func (ec *executionContext) marshalNModCategory2githubᚗcomᚋDan6erbondᚋrevl
 	return v
 }
 
+func (ec *executionContext) marshalNModConnection2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModConnection(ctx context.Context, sel ast.SelectionSet, v *ent.ModConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ModConnection(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNModProductOption2githubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOption(ctx context.Context, sel ast.SelectionSet, v ent.ModProductOption) graphql.Marshaler {
 	return ec._ModProductOption(ctx, sel, &v)
 }
@@ -55138,7 +55635,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]interface{}, error) {
+func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]any, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -55146,7 +55643,7 @@ func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[s
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
+func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -55281,6 +55778,13 @@ func (ec *executionContext) marshalOMod2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlin
 	return ret
 }
 
+func (ec *executionContext) marshalOMod2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMod(ctx context.Context, sel ast.SelectionSet, v *ent.Mod) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Mod(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOModCategory2ᚕgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚋmodᚐCategoryᚄ(ctx context.Context, v any) ([]mod.Category, error) {
 	if v == nil {
 		return nil, nil
@@ -55360,6 +55864,54 @@ func (ec *executionContext) marshalOModCategory2ᚖgithubᚗcomᚋDan6erbondᚋr
 		return graphql.Null
 	}
 	return v
+}
+
+func (ec *executionContext) marshalOModEdge2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.ModEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOModEdge2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOModEdge2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModEdge(ctx context.Context, sel ast.SelectionSet, v *ent.ModEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ModEdge(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOModProductOption2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModProductOptionᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.ModProductOption) graphql.Marshaler {

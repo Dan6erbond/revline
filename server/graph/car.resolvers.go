@@ -366,7 +366,7 @@ func (r *mediaResolver) Metadata(ctx context.Context, obj *ent.Media) (*minio.Ob
 func (r *mutationResolver) CreateCar(ctx context.Context, input ent.CreateCarInput) (*ent.Car, error) {
 	user := auth.ForContext(ctx)
 
-	input.OwnerID = &user.ID
+	input.OwnerID = user.ID
 
 	return r.entClient.Car.Create().SetInput(input).Save(ctx)
 }

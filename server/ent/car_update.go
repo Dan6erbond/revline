@@ -177,14 +177,6 @@ func (cu *CarUpdate) SetOwnerID(id uuid.UUID) *CarUpdate {
 	return cu
 }
 
-// SetNillableOwnerID sets the "owner" edge to the User entity by ID if the given value is not nil.
-func (cu *CarUpdate) SetNillableOwnerID(id *uuid.UUID) *CarUpdate {
-	if id != nil {
-		cu = cu.SetOwnerID(*id)
-	}
-	return cu
-}
-
 // SetOwner sets the "owner" edge to the User entity.
 func (cu *CarUpdate) SetOwner(u *User) *CarUpdate {
 	return cu.SetOwnerID(u.ID)
@@ -766,7 +758,18 @@ func (cu *CarUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (cu *CarUpdate) check() error {
+	if cu.mutation.OwnerCleared() && len(cu.mutation.OwnerIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Car.owner"`)
+	}
+	return nil
+}
+
 func (cu *CarUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := cu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(car.Table, car.Columns, sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID))
 	if ps := cu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -1655,14 +1658,6 @@ func (cuo *CarUpdateOne) SetOwnerID(id uuid.UUID) *CarUpdateOne {
 	return cuo
 }
 
-// SetNillableOwnerID sets the "owner" edge to the User entity by ID if the given value is not nil.
-func (cuo *CarUpdateOne) SetNillableOwnerID(id *uuid.UUID) *CarUpdateOne {
-	if id != nil {
-		cuo = cuo.SetOwnerID(*id)
-	}
-	return cuo
-}
-
 // SetOwner sets the "owner" edge to the User entity.
 func (cuo *CarUpdateOne) SetOwner(u *User) *CarUpdateOne {
 	return cuo.SetOwnerID(u.ID)
@@ -2257,7 +2252,18 @@ func (cuo *CarUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (cuo *CarUpdateOne) check() error {
+	if cuo.mutation.OwnerCleared() && len(cuo.mutation.OwnerIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Car.owner"`)
+	}
+	return nil
+}
+
 func (cuo *CarUpdateOne) sqlSave(ctx context.Context) (_node *Car, err error) {
+	if err := cuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(car.Table, car.Columns, sqlgraph.NewFieldSpec(car.FieldID, field.TypeUUID))
 	id, ok := cuo.mutation.ID()
 	if !ok {

@@ -65,7 +65,7 @@ func (c *Car) Owner(ctx context.Context) (*User, error) {
 	if IsNotLoaded(err) {
 		result, err = c.QueryOwner().Only(ctx)
 	}
-	return result, MaskNotFound(err)
+	return result, err
 }
 
 func (c *Car) DragSessions(ctx context.Context) (result []*DragSession, err error) {
@@ -241,16 +241,24 @@ func (c *Car) Tasks(
 	return c.QueryTasks().Paginate(ctx, after, first, before, last, opts...)
 }
 
-func (c *Car) Mods(ctx context.Context) (result []*Mod, err error) {
-	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = c.NamedMods(graphql.GetFieldContext(ctx).Field.Alias)
-	} else {
-		result, err = c.Edges.ModsOrErr()
+func (c *Car) Mods(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, where *ModWhereInput,
+) (*ModConnection, error) {
+	opts := []ModPaginateOption{
+		WithModFilter(where.Filter),
 	}
-	if IsNotLoaded(err) {
-		result, err = c.QueryMods().All(ctx)
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := c.Edges.totalCount[15][alias]
+	if nodes, err := c.NamedMods(alias); err == nil || hasTotalCount {
+		pager, err := newModPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &ModConnection{Edges: []*ModEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
 	}
-	return result, err
+	return c.QueryMods().Paginate(ctx, after, first, before, last, opts...)
 }
 
 func (cs *CheckoutSession) User(ctx context.Context) (*User, error) {

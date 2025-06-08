@@ -44,7 +44,8 @@ func (Car) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("owner", User.Type).
 			Ref("cars").
-			Unique(),
+			Unique().
+			Required(),
 		edge.To("drag_sessions", DragSession.Type),
 		edge.To("fuel_ups", FuelUp.Type),
 		edge.To("odometer_readings", OdometerReading.Type),
@@ -60,8 +61,11 @@ func (Car) Edges() []ent.Edge {
 		edge.To("banner_image", Media.Type).
 			Unique(),
 		edge.To("tasks", Task.Type).
-			Annotations(entgql.RelayConnection()),
-		edge.To("mods", Mod.Type),
+			Annotations(entgql.RelayConnection()).
+			Annotations(entgql.MultiOrder()),
+		edge.To("mods", Mod.Type).
+			Annotations(entgql.RelayConnection()).
+			Annotations(entgql.MultiOrder()),
 	}
 }
 

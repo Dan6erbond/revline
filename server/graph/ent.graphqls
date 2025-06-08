@@ -181,7 +181,7 @@ type Car implements Node {
   type: String
   year: Int
   trim: String
-  owner: User
+  owner: User!
   dragSessions: [DragSession!]
   fuelUps: [FuelUp!]
   odometerReadings: [OdometerReading!]
@@ -226,7 +226,32 @@ type Car implements Node {
     """
     where: TaskWhereInput
   ): TaskConnection!
-  mods: [Mod!]
+  mods(
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
+    after: Cursor
+
+    """
+    Returns the first _n_ elements from the list.
+    """
+    first: Int
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: Cursor
+
+    """
+    Returns the last _n_ elements from the list.
+    """
+    last: Int
+
+    """
+    Filtering options for Mods returned from the connection.
+    """
+    where: ModWhereInput
+  ): ModConnection!
 }
 """
 CarWhereInput is used for filtering Car objects.
@@ -658,7 +683,7 @@ input CreateCarInput {
   type: String
   year: Int
   trim: String
-  ownerID: ID
+  ownerID: ID!
   dragSessionIDs: [ID!]
   fuelUpIDs: [ID!]
   odometerReadingIDs: [ID!]
@@ -1858,6 +1883,36 @@ enum ModCategory @goModel(model: "github.com/Dan6erbond/revline/ent/mod.Category
   performance
   aesthetic
   utility
+}
+"""
+A connection to a list of items.
+"""
+type ModConnection {
+  """
+  A list of edges.
+  """
+  edges: [ModEdge]
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+  """
+  Identifies the total count of items in the connection.
+  """
+  totalCount: Int!
+}
+"""
+An edge in a connection.
+"""
+type ModEdge {
+  """
+  The item at the end of the edge.
+  """
+  node: Mod
+  """
+  A cursor for use in pagination.
+  """
+  cursor: Cursor!
 }
 type ModProductOption implements Node {
   id: ID!
@@ -3488,7 +3543,6 @@ input UpdateCarInput {
   trim: String
   clearTrim: Boolean
   ownerID: ID
-  clearOwner: Boolean
   addDragSessionIDs: [ID!]
   removeDragSessionIDs: [ID!]
   clearDragSessions: Boolean
