@@ -32,7 +32,7 @@ export default function Mods({
   });
 
   const [loaderRef] = useIntersectionObserver({
-    isEnabled: data?.car.mods.pageInfo.hasNextPage,
+    isEnabled: data?.car.mods.pageInfo.hasNextPage && !loading,
     onChange: (isIntersecting) =>
       isIntersecting &&
       data?.car.mods.edges &&
@@ -127,7 +127,7 @@ export default function Mods({
               ))}
         </div>
 
-        {data?.car.mods.pageInfo.hasNextPage && (
+        {!loading && data?.car.mods.pageInfo.hasNextPage && (
           <div className="flex w-full justify-center mt-10">
             <Spinner ref={loaderRef} color="white" />
           </div>
