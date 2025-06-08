@@ -426,6 +426,7 @@ type ComplexityRoot struct {
 		OdometerReading func(childComplexity int) int
 		PerformedBy     func(childComplexity int) int
 		Schedule        func(childComplexity int) int
+		Tags            func(childComplexity int) int
 		UpdateTime      func(childComplexity int) int
 	}
 
@@ -2858,6 +2859,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.ServiceLog.Schedule(childComplexity), true
+
+	case "ServiceLog.tags":
+		if e.complexity.ServiceLog.Tags == nil {
+			break
+		}
+
+		return e.complexity.ServiceLog.Tags(childComplexity), true
 
 	case "ServiceLog.updateTime":
 		if e.complexity.ServiceLog.UpdateTime == nil {
@@ -7281,6 +7289,8 @@ func (ec *executionContext) fieldContext_Car_serviceLogs(_ context.Context, fiel
 				return ec.fieldContext_ServiceLog_performedBy(ctx, field)
 			case "notes":
 				return ec.fieldContext_ServiceLog_notes(ctx, field)
+			case "tags":
+				return ec.fieldContext_ServiceLog_tags(ctx, field)
 			case "car":
 				return ec.fieldContext_ServiceLog_car(ctx, field)
 			case "items":
@@ -9203,6 +9213,8 @@ func (ec *executionContext) fieldContext_Document_serviceLog(_ context.Context, 
 				return ec.fieldContext_ServiceLog_performedBy(ctx, field)
 			case "notes":
 				return ec.fieldContext_ServiceLog_notes(ctx, field)
+			case "tags":
+				return ec.fieldContext_ServiceLog_tags(ctx, field)
 			case "car":
 				return ec.fieldContext_ServiceLog_car(ctx, field)
 			case "items":
@@ -11505,6 +11517,8 @@ func (ec *executionContext) fieldContext_Expense_serviceLog(_ context.Context, f
 				return ec.fieldContext_ServiceLog_performedBy(ctx, field)
 			case "notes":
 				return ec.fieldContext_ServiceLog_notes(ctx, field)
+			case "tags":
+				return ec.fieldContext_ServiceLog_tags(ctx, field)
 			case "car":
 				return ec.fieldContext_ServiceLog_car(ctx, field)
 			case "items":
@@ -16785,6 +16799,8 @@ func (ec *executionContext) fieldContext_Mutation_createServiceLog(ctx context.C
 				return ec.fieldContext_ServiceLog_performedBy(ctx, field)
 			case "notes":
 				return ec.fieldContext_ServiceLog_notes(ctx, field)
+			case "tags":
+				return ec.fieldContext_ServiceLog_tags(ctx, field)
 			case "car":
 				return ec.fieldContext_ServiceLog_car(ctx, field)
 			case "items":
@@ -19140,6 +19156,8 @@ func (ec *executionContext) fieldContext_OdometerReading_serviceLog(_ context.Co
 				return ec.fieldContext_ServiceLog_performedBy(ctx, field)
 			case "notes":
 				return ec.fieldContext_ServiceLog_notes(ctx, field)
+			case "tags":
+				return ec.fieldContext_ServiceLog_tags(ctx, field)
 			case "car":
 				return ec.fieldContext_ServiceLog_car(ctx, field)
 			case "items":
@@ -21416,6 +21434,8 @@ func (ec *executionContext) fieldContext_ServiceItem_logs(_ context.Context, fie
 				return ec.fieldContext_ServiceLog_performedBy(ctx, field)
 			case "notes":
 				return ec.fieldContext_ServiceLog_notes(ctx, field)
+			case "tags":
+				return ec.fieldContext_ServiceLog_tags(ctx, field)
 			case "car":
 				return ec.fieldContext_ServiceLog_car(ctx, field)
 			case "items":
@@ -21681,6 +21701,50 @@ func (ec *executionContext) _ServiceLog_notes(ctx context.Context, field graphql
 }
 
 func (ec *executionContext) fieldContext_ServiceLog_notes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ServiceLog",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ServiceLog_tags(ctx context.Context, field graphql.CollectedField, obj *ent.ServiceLog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ServiceLog_tags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tags, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ServiceLog_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ServiceLog",
 		Field:      field,
@@ -22772,6 +22836,8 @@ func (ec *executionContext) fieldContext_ServiceSchedule_logs(_ context.Context,
 				return ec.fieldContext_ServiceLog_performedBy(ctx, field)
 			case "notes":
 				return ec.fieldContext_ServiceLog_notes(ctx, field)
+			case "tags":
+				return ec.fieldContext_ServiceLog_tags(ctx, field)
 			case "car":
 				return ec.fieldContext_ServiceLog_car(ctx, field)
 			case "items":
@@ -32335,7 +32401,7 @@ func (ec *executionContext) unmarshalInputCreateServiceLogInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "datePerformed", "performedBy", "notes", "carID", "itemIDs", "scheduleID", "odometerReadingID", "expenseID", "documentIDs", "cost", "odometerKm"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "datePerformed", "performedBy", "notes", "tags", "carID", "itemIDs", "scheduleID", "odometerReadingID", "expenseID", "documentIDs", "cost", "odometerKm"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -32377,6 +32443,13 @@ func (ec *executionContext) unmarshalInputCreateServiceLogInput(ctx context.Cont
 				return it, err
 			}
 			it.Notes = data
+		case "tags":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tags = data
 		case "carID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("carID"))
 			data, err := ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -44422,7 +44495,7 @@ func (ec *executionContext) unmarshalInputUpdateServiceLogInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "datePerformed", "performedBy", "clearPerformedBy", "notes", "clearNotes", "carID", "addItemIDs", "removeItemIDs", "clearItems", "scheduleID", "clearSchedule", "odometerReadingID", "clearOdometerReading", "expenseID", "clearExpense", "addDocumentIDs", "removeDocumentIDs", "clearDocuments"}
+	fieldsInOrder := [...]string{"updateTime", "datePerformed", "performedBy", "clearPerformedBy", "notes", "clearNotes", "tags", "appendTags", "carID", "addItemIDs", "removeItemIDs", "clearItems", "scheduleID", "clearSchedule", "odometerReadingID", "clearOdometerReading", "expenseID", "clearExpense", "addDocumentIDs", "removeDocumentIDs", "clearDocuments"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -44471,6 +44544,20 @@ func (ec *executionContext) unmarshalInputUpdateServiceLogInput(ctx context.Cont
 				return it, err
 			}
 			it.ClearNotes = data
+		case "tags":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tags = data
+		case "appendTags":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("appendTags"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AppendTags = data
 		case "carID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("carID"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -51336,6 +51423,11 @@ func (ec *executionContext) _ServiceLog(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = ec._ServiceLog_performedBy(ctx, field, obj)
 		case "notes":
 			out.Values[i] = ec._ServiceLog_notes(ctx, field, obj)
+		case "tags":
+			out.Values[i] = ec._ServiceLog_tags(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "car":
 			field := field
 

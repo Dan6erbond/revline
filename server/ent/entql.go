@@ -377,6 +377,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			servicelog.FieldDatePerformed: {Type: field.TypeTime, Column: servicelog.FieldDatePerformed},
 			servicelog.FieldPerformedBy:   {Type: field.TypeString, Column: servicelog.FieldPerformedBy},
 			servicelog.FieldNotes:         {Type: field.TypeString, Column: servicelog.FieldNotes},
+			servicelog.FieldTags:          {Type: field.TypeJSON, Column: servicelog.FieldTags},
 		},
 	}
 	graph.Nodes[18] = &sqlgraph.Node{
@@ -3662,6 +3663,11 @@ func (f *ServiceLogFilter) WherePerformedBy(p entql.StringP) {
 // WhereNotes applies the entql string predicate on the notes field.
 func (f *ServiceLogFilter) WhereNotes(p entql.StringP) {
 	f.Where(p.Field(servicelog.FieldNotes))
+}
+
+// WhereTags applies the entql json.RawMessage predicate on the tags field.
+func (f *ServiceLogFilter) WhereTags(p entql.BytesP) {
+	f.Where(p.Field(servicelog.FieldTags))
 }
 
 // WhereHasCar applies a predicate to check if query has an edge car.

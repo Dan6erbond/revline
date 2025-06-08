@@ -2120,6 +2120,7 @@ type CreateServiceLogInput struct {
 	DatePerformed     time.Time
 	PerformedBy       *string
 	Notes             *string
+	Tags              []string
 	CarID             uuid.UUID
 	ItemIDs           []uuid.UUID
 	ScheduleID        *uuid.UUID
@@ -2142,6 +2143,9 @@ func (i *CreateServiceLogInput) Mutate(m *ServiceLogMutation) {
 	}
 	if v := i.Notes; v != nil {
 		m.SetNotes(*v)
+	}
+	if v := i.Tags; v != nil {
+		m.SetTags(v)
 	}
 	m.SetCarID(i.CarID)
 	if v := i.ItemIDs; len(v) > 0 {
@@ -2175,6 +2179,8 @@ type UpdateServiceLogInput struct {
 	PerformedBy          *string
 	ClearNotes           bool
 	Notes                *string
+	Tags                 []string
+	AppendTags           []string
 	CarID                *uuid.UUID
 	ClearItems           bool
 	AddItemIDs           []uuid.UUID
@@ -2209,6 +2215,12 @@ func (i *UpdateServiceLogInput) Mutate(m *ServiceLogMutation) {
 	}
 	if v := i.Notes; v != nil {
 		m.SetNotes(*v)
+	}
+	if v := i.Tags; v != nil {
+		m.SetTags(v)
+	}
+	if i.AppendTags != nil {
+		m.AppendTags(i.Tags)
 	}
 	if v := i.CarID; v != nil {
 		m.SetCarID(*v)

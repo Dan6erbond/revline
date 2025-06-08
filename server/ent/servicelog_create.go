@@ -89,6 +89,12 @@ func (slc *ServiceLogCreate) SetNillableNotes(s *string) *ServiceLogCreate {
 	return slc
 }
 
+// SetTags sets the "tags" field.
+func (slc *ServiceLogCreate) SetTags(s []string) *ServiceLogCreate {
+	slc.mutation.SetTags(s)
+	return slc
+}
+
 // SetID sets the "id" field.
 func (slc *ServiceLogCreate) SetID(u uuid.UUID) *ServiceLogCreate {
 	slc.mutation.SetID(u)
@@ -244,6 +250,10 @@ func (slc *ServiceLogCreate) defaults() {
 		v := servicelog.DefaultUpdateTime()
 		slc.mutation.SetUpdateTime(v)
 	}
+	if _, ok := slc.mutation.Tags(); !ok {
+		v := servicelog.DefaultTags
+		slc.mutation.SetTags(v)
+	}
 	if _, ok := slc.mutation.ID(); !ok {
 		v := servicelog.DefaultID()
 		slc.mutation.SetID(v)
@@ -260,6 +270,9 @@ func (slc *ServiceLogCreate) check() error {
 	}
 	if _, ok := slc.mutation.DatePerformed(); !ok {
 		return &ValidationError{Name: "date_performed", err: errors.New(`ent: missing required field "ServiceLog.date_performed"`)}
+	}
+	if _, ok := slc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "ServiceLog.tags"`)}
 	}
 	if len(slc.mutation.CarIDs()) == 0 {
 		return &ValidationError{Name: "car", err: errors.New(`ent: missing required edge "ServiceLog.car"`)}
@@ -318,6 +331,10 @@ func (slc *ServiceLogCreate) createSpec() (*ServiceLog, *sqlgraph.CreateSpec) {
 	if value, ok := slc.mutation.Notes(); ok {
 		_spec.SetField(servicelog.FieldNotes, field.TypeString, value)
 		_node.Notes = &value
+	}
+	if value, ok := slc.mutation.Tags(); ok {
+		_spec.SetField(servicelog.FieldTags, field.TypeJSON, value)
+		_node.Tags = value
 	}
 	if nodes := slc.mutation.CarIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

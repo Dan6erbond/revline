@@ -25,6 +25,8 @@ const (
 	FieldPerformedBy = "performed_by"
 	// FieldNotes holds the string denoting the notes field in the database.
 	FieldNotes = "notes"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 	// EdgeCar holds the string denoting the car edge name in mutations.
 	EdgeCar = "car"
 	// EdgeItems holds the string denoting the items edge name in mutations.
@@ -89,6 +91,7 @@ var Columns = []string{
 	FieldDatePerformed,
 	FieldPerformedBy,
 	FieldNotes,
+	FieldTags,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "service_logs"
@@ -127,6 +130,8 @@ var (
 	DefaultUpdateTime func() time.Time
 	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
 	UpdateDefaultUpdateTime func() time.Time
+	// DefaultTags holds the default value on creation for the "tags" field.
+	DefaultTags []string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

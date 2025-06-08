@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -32,6 +33,8 @@ type ServiceLog struct {
 	PerformedBy *string `json:"performed_by,omitempty"`
 	// Notes holds the value of the "notes" field.
 	Notes *string `json:"notes,omitempty"`
+	// Tags holds the value of the "tags" field.
+	Tags []string `json:"tags,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ServiceLogQuery when eager-loading is set.
 	Edges                        ServiceLogEdges `json:"edges"`
@@ -132,6 +135,8 @@ func (*ServiceLog) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case servicelog.FieldTags:
+			values[i] = new([]byte)
 		case servicelog.FieldPerformedBy, servicelog.FieldNotes:
 			values[i] = new(sql.NullString)
 		case servicelog.FieldCreateTime, servicelog.FieldUpdateTime, servicelog.FieldDatePerformed:
@@ -196,6 +201,14 @@ func (sl *ServiceLog) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				sl.Notes = new(string)
 				*sl.Notes = value.String
+			}
+		case servicelog.FieldTags:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field tags", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &sl.Tags); err != nil {
+					return fmt.Errorf("unmarshal field tags: %w", err)
+				}
 			}
 		case servicelog.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -302,6 +315,9 @@ func (sl *ServiceLog) String() string {
 		builder.WriteString("notes=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("tags=")
+	builder.WriteString(fmt.Sprintf("%v", sl.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

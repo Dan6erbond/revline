@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/document"
@@ -92,6 +93,18 @@ func (slu *ServiceLogUpdate) SetNillableNotes(s *string) *ServiceLogUpdate {
 // ClearNotes clears the value of the "notes" field.
 func (slu *ServiceLogUpdate) ClearNotes() *ServiceLogUpdate {
 	slu.mutation.ClearNotes()
+	return slu
+}
+
+// SetTags sets the "tags" field.
+func (slu *ServiceLogUpdate) SetTags(s []string) *ServiceLogUpdate {
+	slu.mutation.SetTags(s)
+	return slu
+}
+
+// AppendTags appends s to the "tags" field.
+func (slu *ServiceLogUpdate) AppendTags(s []string) *ServiceLogUpdate {
+	slu.mutation.AppendTags(s)
 	return slu
 }
 
@@ -337,6 +350,14 @@ func (slu *ServiceLogUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if slu.mutation.NotesCleared() {
 		_spec.ClearField(servicelog.FieldNotes, field.TypeString)
+	}
+	if value, ok := slu.mutation.Tags(); ok {
+		_spec.SetField(servicelog.FieldTags, field.TypeJSON, value)
+	}
+	if value, ok := slu.mutation.AppendedTags(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicelog.FieldTags, value)
+		})
 	}
 	if slu.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -624,6 +645,18 @@ func (sluo *ServiceLogUpdateOne) ClearNotes() *ServiceLogUpdateOne {
 	return sluo
 }
 
+// SetTags sets the "tags" field.
+func (sluo *ServiceLogUpdateOne) SetTags(s []string) *ServiceLogUpdateOne {
+	sluo.mutation.SetTags(s)
+	return sluo
+}
+
+// AppendTags appends s to the "tags" field.
+func (sluo *ServiceLogUpdateOne) AppendTags(s []string) *ServiceLogUpdateOne {
+	sluo.mutation.AppendTags(s)
+	return sluo
+}
+
 // SetCarID sets the "car" edge to the Car entity by ID.
 func (sluo *ServiceLogUpdateOne) SetCarID(id uuid.UUID) *ServiceLogUpdateOne {
 	sluo.mutation.SetCarID(id)
@@ -896,6 +929,14 @@ func (sluo *ServiceLogUpdateOne) sqlSave(ctx context.Context) (_node *ServiceLog
 	}
 	if sluo.mutation.NotesCleared() {
 		_spec.ClearField(servicelog.FieldNotes, field.TypeString)
+	}
+	if value, ok := sluo.mutation.Tags(); ok {
+		_spec.SetField(servicelog.FieldTags, field.TypeJSON, value)
+	}
+	if value, ok := sluo.mutation.AppendedTags(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, servicelog.FieldTags, value)
+		})
 	}
 	if sluo.mutation.CarCleared() {
 		edge := &sqlgraph.EdgeSpec{

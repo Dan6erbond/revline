@@ -27,6 +27,8 @@ func (ServiceLog) Fields() []ent.Field {
 		field.String("notes").
 			Optional().
 			Nillable(),
+		field.Strings("tags").
+			Default([]string{}),
 	}
 }
 

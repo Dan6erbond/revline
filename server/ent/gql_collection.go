@@ -2727,6 +2727,11 @@ func (sl *ServiceLogQuery) collectField(ctx context.Context, oneNode bool, opCtx
 				selectedFields = append(selectedFields, servicelog.FieldNotes)
 				fieldSeen[servicelog.FieldNotes] = struct{}{}
 			}
+		case "tags":
+			if _, ok := fieldSeen[servicelog.FieldTags]; !ok {
+				selectedFields = append(selectedFields, servicelog.FieldTags)
+				fieldSeen[servicelog.FieldTags] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:

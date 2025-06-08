@@ -519,6 +519,7 @@ var (
 		{Name: "date_performed", Type: field.TypeTime},
 		{Name: "performed_by", Type: field.TypeString, Nullable: true},
 		{Name: "notes", Type: field.TypeString, Nullable: true},
+		{Name: "tags", Type: field.TypeJSON},
 		{Name: "car_service_logs", Type: field.TypeUUID},
 		{Name: "odometer_reading_service_log", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "service_schedule_logs", Type: field.TypeUUID, Nullable: true},
@@ -531,19 +532,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "service_logs_cars_service_logs",
-				Columns:    []*schema.Column{ServiceLogsColumns[6]},
+				Columns:    []*schema.Column{ServiceLogsColumns[7]},
 				RefColumns: []*schema.Column{CarsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "service_logs_odometer_readings_service_log",
-				Columns:    []*schema.Column{ServiceLogsColumns[7]},
+				Columns:    []*schema.Column{ServiceLogsColumns[8]},
 				RefColumns: []*schema.Column{OdometerReadingsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "service_logs_service_schedules_logs",
-				Columns:    []*schema.Column{ServiceLogsColumns[8]},
+				Columns:    []*schema.Column{ServiceLogsColumns[9]},
 				RefColumns: []*schema.Column{ServiceSchedulesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

@@ -398,6 +398,10 @@ func init() {
 	servicelog.DefaultUpdateTime = servicelogDescUpdateTime.Default.(func() time.Time)
 	// servicelog.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	servicelog.UpdateDefaultUpdateTime = servicelogDescUpdateTime.UpdateDefault.(func() time.Time)
+	// servicelogDescTags is the schema descriptor for tags field.
+	servicelogDescTags := servicelogFields[4].Descriptor()
+	// servicelog.DefaultTags holds the default value on creation for the tags field.
+	servicelog.DefaultTags = servicelogDescTags.Default.([]string)
 	// servicelogDescID is the schema descriptor for id field.
 	servicelogDescID := servicelogFields[0].Descriptor()
 	// servicelog.DefaultID holds the default value on creation for the id field.

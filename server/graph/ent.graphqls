@@ -984,6 +984,7 @@ input CreateServiceLogInput {
   datePerformed: Time!
   performedBy: String
   notes: String
+  tags: [String!]
   carID: ID!
   itemIDs: [ID!]
   scheduleID: ID
@@ -2751,6 +2752,7 @@ type ServiceLog implements Node {
   datePerformed: Time!
   performedBy: String
   notes: String
+  tags: [String!]!
   car: Car!
   items: [ServiceItem!]
   schedule: ServiceSchedule
@@ -3934,6 +3936,8 @@ input UpdateServiceLogInput {
   clearPerformedBy: Boolean
   notes: String
   clearNotes: Boolean
+  tags: [String!]
+  appendTags: [String!]
   carID: ID
   addItemIDs: [ID!]
   removeItemIDs: [ID!]
