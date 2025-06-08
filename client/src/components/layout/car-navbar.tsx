@@ -9,12 +9,14 @@ import {
 } from "@heroui/react";
 
 import { ArrowLeft } from "lucide-react";
-import AuthButton from "./auth-button";
 import NextLink from "next/link";
 import { Suspense } from "react";
 import Wordmark from "../wordmark";
+import dynamic from "next/dynamic";
 import { getQueryParam } from "@/utils/router";
 import { useRouter } from "next/router";
+
+const AuthButton = dynamic(() => import("./auth-button"), { ssr: false });
 
 export default function CarNavbar({
   car,
