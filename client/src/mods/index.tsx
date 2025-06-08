@@ -1,10 +1,12 @@
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, X } from "lucide-react";
 import {
   Button,
   Card,
   CardBody,
   Divider,
   Input,
+  Select,
+  SelectItem,
   Textarea,
   useDisclosure,
 } from "@heroui/react";
@@ -17,8 +19,9 @@ import {
   statusIcons,
   statusLabels,
 } from "@/mods/shared";
-import { useMutation, useSuspenseQuery } from "@apollo/client";
+import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
 
+import { DynoSessionChip } from "@/components/performance/dyno-sessions/chip";
 import { EnumSelect } from "@/components/enum-select";
 import Link from "next/link";
 import MediaItem from "@/components/media/item";
@@ -76,6 +79,33 @@ export const getMod = graphql(`
         }
         logTime
       }
+      dynoSessions {
+        id
+        title
+        notes
+        results {
+          id
+          rpm
+          powerKw
+          torqueNm
+        }
+      }
+    }
+  }
+`);
+
+const getDynoSessions = graphql(`
+  query GetDynoSessions($id: ID!) {
+    car(id: $id) {
+      id
+      dynoSessions {
+        id
+        title
+        notes
+        results {
+          id
+        }
+      }
     }
   }
 `);
@@ -89,6 +119,17 @@ const updateMod = graphql(`
       status
       description
       stage
+      dynoSessions {
+        id
+        title
+        notes
+        results {
+          id
+          rpm
+          powerKw
+          torqueNm
+        }
+      }
     }
   }
 `);
@@ -97,6 +138,11 @@ export default function Mod({ id }: { id: string }) {
   const router = useRouter();
 
   const { data } = useSuspenseQuery(getMod, { variables: { id } });
+
+  const { data: dynoSessionsData } = useQuery(getDynoSessions, {
+    variables: { id: getQueryParam(router.query.id) as string },
+    skip: !getQueryParam(router.query.id),
+  });
 
   const { currencyCode } = useUnits(data?.me?.settings);
 
@@ -212,6 +258,86 @@ export default function Mod({ id }: { id: string }) {
         ) : (
           <p>No tasks associated.</p>
         )}
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <h2 className="text-xl font-semibold mb-2">Dyno Sessions</h2>
+
+        {data.mod.dynoSessions && data.mod.dynoSessions.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {data.mod.dynoSessions.map((session) => (
+              <DynoSessionChip
+                key={session.id}
+                session={session}
+                href={`/cars/${router.query.id}/performance/dyno-sessions/${session.id}`}
+                endContent={
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
+                    onPress={() =>
+                      mutate({
+                        variables: {
+                          id,
+                          input: { removeDynoSessionIDs: [session.id] },
+                        },
+                      })
+                    }
+                    isIconOnly
+                    color="danger"
+                    variant="light"
+                    size="sm"
+                    radius="full"
+                    className="h-6 ml-1"
+                  >
+                    <X size={12} />
+                  </Button>
+                }
+              />
+            ))}
+          </div>
+        )}
+
+        <Select
+          placeholder="Add dyno session"
+          classNames={{ innerWrapper: "py-4" }}
+          items={
+            dynoSessionsData?.car.dynoSessions?.filter(
+              (session) =>
+                data.mod.dynoSessions?.findIndex((s) => s.id === session.id) ===
+                -1
+            ) ?? []
+          }
+          selectedKeys={new Set()}
+          onSelectionChange={(keys) => {
+            const key = Array.from(keys)[0];
+            if (key)
+              mutate({
+                variables: {
+                  id,
+                  input: { addDynoSessionIDs: [key.toString()] },
+                },
+              });
+          }}
+          variant="bordered"
+        >
+          {({ id, title, notes }) => (
+            <SelectItem key={id} textValue={title}>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium">{title}</span>
+                {notes && (
+                  <span
+                    className="text-xs text-default-500"
+                    dangerouslySetInnerHTML={{
+                      __html: generateHTML(notes, createExtensions("")),
+                    }}
+                  />
+                )}
+              </div>
+            </SelectItem>
+          )}
+        </Select>
       </div>
 
       <section>

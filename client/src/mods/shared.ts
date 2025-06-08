@@ -48,6 +48,14 @@ export const statusColors = {
 
 export const getMods = graphql(`
   query Mods($id: ID!, $where: ModWhereInput, $first: Int, $after: Cursor) {
+    me {
+      id
+      settings {
+        id
+         powerUnit
+         torqueUnit
+      }
+    }
     car(id: $id) {
       id
       mods(where: $where, first: $first, after: $after) {
@@ -71,6 +79,17 @@ export const getMods = graphql(`
                 ...MediaItem
               }
               logTime
+            }
+            dynoSessions {
+              id
+              title
+              notes
+              results {
+                id
+                rpm
+                powerKw
+                torqueNm
+              }
             }
           }
           cursor
