@@ -10,8 +10,8 @@ import {
   Repeat,
   Wrench,
 } from "lucide-react";
-import { Card, CardBody, CardHeader, Tab, Tabs } from "@heroui/react";
 import { ComponentType, ReactNode } from "react";
+import { Tab, Tabs } from "@heroui/react";
 
 import Items from "./items";
 import Logs from "./logs";

@@ -23,6 +23,7 @@ import {
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Plus, Trash } from "lucide-react";
 import { getDistance, getKilometers } from "@/utils/distance";
+import { getServiceItems, getServiceSchedules } from "./shared";
 import { useMutation, useQuery } from "@apollo/client";
 
 import { distanceUnits } from "@/literals";
@@ -30,64 +31,6 @@ import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
 import { useUnits } from "@/hooks/use-units";
-
-const getServiceSchedules = graphql(`
-  query GetServiceSchedules($id: ID!) {
-    me {
-      id
-      settings {
-        id
-        distanceUnit
-      }
-    }
-    car(id: $id) {
-      id
-      serviceSchedules {
-        id
-        title
-        notes
-        items {
-          id
-          label
-          notes
-          estimatedMinutes
-          defaultIntervalKm
-          defaultIntervalMonths
-          tags
-        }
-        repeatEveryKm
-        repeatEveryMonths
-        startsAtKm
-        startsAtMonths
-        archived
-      }
-    }
-  }
-`);
-
-const getServiceItems = graphql(`
-  query GetServiceItems($id: ID!) {
-    me {
-      id
-      settings {
-        id
-        distanceUnit
-      }
-    }
-    car(id: $id) {
-      id
-      serviceItems {
-        id
-        label
-        notes
-        estimatedMinutes
-        defaultIntervalKm
-        defaultIntervalMonths
-        tags
-      }
-    }
-  }
-`);
 
 type Inputs = {
   title: string;

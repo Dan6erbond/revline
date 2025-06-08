@@ -1,5 +1,6 @@
 import {
   Button,
+  Chip,
   DatePicker,
   Dropdown,
   DropdownItem,
@@ -28,12 +29,18 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { FileUp, Plus, Trash } from "lucide-react";
 import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
 import { getDistance, getKilometers } from "@/utils/distance";
+import {
+  getServiceItems,
+  getServiceLogs,
+  getServiceSchedules,
+} from "../shared";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
 import DocumentChip from "@/components/documents/chip";
 import Dropzone from "@/components/dropzone";
 import FileIcon from "@/components/file-icon";
 import { ServiceLog } from "@/gql/graphql";
+import TagsInput from "@/components/ui/tags-input";
 import { distanceUnits } from "@/literals";
 import { formatBytes } from "@/utils/upload-file";
 import { getQueryParam } from "@/utils/router";
@@ -44,117 +51,6 @@ import { useRouter } from "next/router";
 import { useUnits } from "@/hooks/use-units";
 import { withNotification } from "@/utils/with-notification";
 
-const getServiceLogs = graphql(`
-  query GetServiceLogs($id: ID!) {
-    me {
-      id
-      settings {
-        id
-        distanceUnit
-      }
-    }
-    car(id: $id) {
-      id
-      serviceLogs {
-        id
-        datePerformed
-        odometerReading {
-          id
-          readingKm
-          notes
-        }
-        notes
-        items {
-          id
-          label
-          notes
-          estimatedMinutes
-          defaultIntervalKm
-          defaultIntervalMonths
-          tags
-        }
-        schedule {
-          id
-          title
-          notes
-          repeatEveryKm
-          repeatEveryMonths
-          startsAtKm
-          startsAtMonths
-          archived
-        }
-        performedBy
-        documents {
-          id
-          name
-          tags
-          metadata {
-            contentType
-          }
-        }
-      }
-    }
-  }
-`);
-
-const getServiceItems = graphql(`
-  query GetServiceItems($id: ID!) {
-    me {
-      id
-      settings {
-        id
-        distanceUnit
-      }
-    }
-    car(id: $id) {
-      id
-      serviceItems {
-        id
-        label
-        notes
-        estimatedMinutes
-        defaultIntervalKm
-        defaultIntervalMonths
-        tags
-      }
-    }
-  }
-`);
-
-const getServiceSchedules = graphql(`
-  query GetServiceSchedules($id: ID!) {
-    me {
-      id
-      settings {
-        id
-        distanceUnit
-      }
-    }
-    car(id: $id) {
-      id
-      serviceSchedules {
-        id
-        title
-        notes
-        items {
-          id
-          label
-          notes
-          estimatedMinutes
-          defaultIntervalKm
-          defaultIntervalMonths
-          tags
-        }
-        repeatEveryKm
-        repeatEveryMonths
-        startsAtKm
-        startsAtMonths
-        archived
-      }
-    }
-  }
-`);
-
 type Inputs = {
   datePerformed: ZonedDateTime;
   odometerKm: number;
@@ -163,6 +59,7 @@ type Inputs = {
   scheduleId?: string | null;
   serviceItemIds: string[];
   files: File[];
+  tags: string[];
 };
 
 const createServiceLog = graphql(`
@@ -199,6 +96,7 @@ const createServiceLog = graphql(`
       expense {
         id
       }
+      tags
     }
   }
 `);
@@ -208,6 +106,7 @@ const columns = [
   { key: "odometer", label: "Odometer" },
   { key: "items", label: "Items" },
   { key: "schedule", label: "Schedule" },
+  { key: "tags", label: "Tags" },
   { key: "notes", label: "Notes" },
   { key: "performedBy", label: "Performed by" },
   { key: "documents", label: "Documents" },
@@ -269,7 +168,7 @@ export default function Logs() {
             ...data.car,
             serviceLogs: [
               ...(data.car.serviceLogs ?? []),
-              res.data.createServiceLog,
+              { ...res.data.createServiceLog, documents: [] },
             ],
           },
         },
@@ -287,6 +186,7 @@ export default function Logs() {
       serviceItemIds,
       scheduleId,
       files,
+      tags,
     }) =>
       mutate({
         variables: {
@@ -298,6 +198,7 @@ export default function Logs() {
             notes,
             itemIDs: serviceItemIds,
             scheduleID: scheduleId || null,
+            tags,
           },
         },
       })
@@ -380,6 +281,11 @@ export default function Logs() {
                   {sl.items?.map((i) => i.label).join(", ")}
                 </TableCell>
                 <TableCell>{sl.schedule?.title}</TableCell>
+                <TableCell>
+                  {sl.tags.map((tag, index) => (
+                    <Chip className="flex p-2 mb-1">{tag}</Chip>
+                  ))}
+                </TableCell>
                 <TableCell>{sl.notes}</TableCell>
                 <TableCell>{sl.performedBy}</TableCell>
                 <TableCell className="flex gap-2 flex-wrap">
@@ -430,6 +336,17 @@ export default function Logs() {
                         {...field}
                         onValueChange={onChange}
                         variant="bordered"
+                      />
+                    )}
+                  />
+                  <Controller
+                    control={control}
+                    name="tags"
+                    render={({ field: { onChange, ...field } }) => (
+                      <TagsInput
+                        onTagsChange={onChange}
+                        label="Tags"
+                        {...field}
                       />
                     )}
                   />

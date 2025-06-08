@@ -23,33 +23,10 @@ import { useMutation, useQuery } from "@apollo/client";
 import { Plus } from "lucide-react";
 import { distanceUnits } from "@/literals";
 import { getQueryParam } from "@/utils/router";
+import { getServiceItems } from "./shared";
 import { graphql } from "@/gql";
 import { useRouter } from "next/router";
 import { useUnits } from "@/hooks/use-units";
-
-const getServiceItems = graphql(`
-  query GetServiceItems($id: ID!) {
-    me {
-      id
-      settings {
-        id
-        distanceUnit
-      }
-    }
-    car(id: $id) {
-      id
-      serviceItems {
-        id
-        label
-        notes
-        estimatedMinutes
-        defaultIntervalKm
-        defaultIntervalMonths
-        tags
-      }
-    }
-  }
-`);
 
 type Inputs = {
   label: string;
