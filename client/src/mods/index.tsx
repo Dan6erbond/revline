@@ -52,6 +52,8 @@ export const getMod = graphql(`
       settings {
         id
         currencyCode
+        powerUnit
+        torqueUnit
       }
     }
     mod(id: $id) {
@@ -144,7 +146,7 @@ export default function Mod({ id }: { id: string }) {
     skip: !getQueryParam(router.query.id),
   });
 
-  const { currencyCode } = useUnits(data?.me?.settings);
+  const { currencyCode, powerUnit, torqueUnit } = useUnits(data?.me?.settings);
 
   const [mutate] = useMutation(updateMod);
 
@@ -294,6 +296,8 @@ export default function Mod({ id }: { id: string }) {
                     <X size={12} />
                   </Button>
                 }
+                powerUnit={powerUnit}
+                torqueUnit={torqueUnit}
               />
             ))}
           </div>
