@@ -46,6 +46,7 @@ const typePolicies = {
     fields: {
       tasks: relayStylePagination(["orderBy", "where"]),
       mods: relayStylePagination(["orderBy", "where"]),
+      buildLogs: relayStylePagination(["orderBy", "where"]),
       showSubtasks: {
         read(_, { storage }) {
           if (!storage.var) {

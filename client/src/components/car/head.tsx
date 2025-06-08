@@ -1,5 +1,4 @@
 import Head from "next/head";
-import React from "react";
 
 export default function CarHead({
   car,
@@ -33,7 +32,7 @@ export default function CarHead({
   };
   baseUrl: string;
   basePath: string;
-  page?: "overview" | "mods" | "logs";
+  page?: "overview" | "mods" | "build-log";
 }) {
   const { name, make, model, trim, year, bannerImage, owner, id } = car;
   const username = owner?.profile?.username || "a Revline 1 user";
@@ -48,7 +47,7 @@ export default function CarHead({
       titleSuffix = "Modifications Showcase";
       description = `Browse custom mods, upgrades, and tweaks made to ${carTitle}, shared by ${username} on Revline 1.`;
       break;
-    case "logs":
+    case "build-log":
       titleSuffix = "Build Logs";
       description = `Explore detailed build logs and progress notes for ${carTitle}, contributed by ${username} on Revline 1.`;
       break;

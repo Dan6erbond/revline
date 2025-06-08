@@ -55,11 +55,10 @@ export default function PublicCarLayout({
       icon: <Wrench className="size-5" />,
     },
     {
-      name: "Build Logs",
-      href: `/cars/${router.query.id}/build-logs`,
-      active: router.pathname === "/cars/[id]/build-logs",
+      name: "Build Log",
+      href: `/cars/${router.query.id}/build-log`,
+      active: router.pathname === "/cars/[id]/build-log",
       icon: <ScrollText className="size-5" />,
-      isDisabled: true,
     },
     {
       name: "Gallery",

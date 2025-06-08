@@ -38,21 +38,27 @@ const updateMedia = graphql(`
   }
 `);
 
-function Preview({ item }: { item: FragmentType<typeof MediaItemFields> }) {
+export function MediaPreview({
+  item,
+  className,
+}: {
+  item: FragmentType<typeof MediaItemFields>;
+  className?: string;
+}) {
   const config = useConfig();
 
   const m = useFragment(MediaItemFields, item);
   const isVideo = m.metadata?.contentType.startsWith("video/");
 
   return isVideo ? (
-    <video className="h-full w-full object-cover">
+    <video className={cn("h-full w-full object-cover", className)}>
       <source src={m.url} type={m.metadata?.contentType ?? "video/mp4"} />
     </video>
   ) : (
     <NextImage
       src={new URL(`/media/${m.id}`, config.serverUrl).toString()}
       alt={`Shared media ${m.id}`}
-      className="object-cover h-full w-full"
+      className={cn("object-cover h-full w-full", className)}
       sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 20vw"
       fill
     />
@@ -186,7 +192,7 @@ export default function MediaItem({
           </Dropdown>
         </div>
 
-        <Preview item={item} />
+        <MediaPreview item={item} />
       </Card>
 
       <Modal
@@ -297,7 +303,7 @@ export function SelectableMediaItem({
         </div>
       </div>
 
-      <Preview item={item} />
+      <MediaPreview item={item} />
     </label>
   );
 }

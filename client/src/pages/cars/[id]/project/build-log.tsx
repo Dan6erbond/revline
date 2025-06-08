@@ -1,4 +1,9 @@
 import {
+  BuildLogOrderField,
+  OrderDirection,
+  SubscriptionTier,
+} from "@/gql/graphql";
+import {
   Button,
   Card,
   CardBody,
@@ -10,6 +15,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Spinner,
   Tab,
   Tabs,
   useDisclosure,
@@ -26,10 +32,10 @@ import { MinimalTiptapEditor } from "@/components/minimal-tiptap";
 import ModChip from "@/mods/chip";
 import ModsPicker from "@/mods/picker";
 import SubscriptionOverlay from "@/components/subscription-overlay";
-import { SubscriptionTier } from "@/gql/graphql";
 import { createExtensions } from "@/components/minimal-tiptap/hooks/use-minimal-tiptap";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
+import { useIntersectionObserver } from "@heroui/use-intersection-observer";
 import { useRouter } from "next/router";
 import { withNotification } from "@/utils/with-notification";
 
@@ -42,26 +48,49 @@ type Inputs = {
 };
 
 const getBuildLogs = graphql(`
-  query GetBuildLogs($id: ID!) {
+  query GetBuildLogs(
+    $id: ID!
+    $where: BuildLogWhereInput
+    $first: Int
+    $after: Cursor
+    $orderBy: [BuildLogOrder!]
+  ) {
     car(id: $id) {
       id
-      buildLogs {
-        id
-        title
-        notes
-        media {
-          id
-          ...MediaItem
+      buildLogs(
+        where: $where
+        first: $first
+        after: $after
+        orderBy: $orderBy
+      ) {
+        edges {
+          node {
+            id
+            title
+            notes
+            media {
+              id
+              ...MediaItem
+            }
+            mods {
+              id
+              title
+              category
+              status
+              description
+              stage
+            }
+            logTime
+          }
+          cursor
         }
-        mods {
-          id
-          title
-          category
-          status
-          description
-          stage
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
         }
-        logTime
+        totalCount
       }
     }
   }
@@ -105,8 +134,14 @@ const createBuildLog = graphql(`
 export default function BuildLog() {
   const router = useRouter();
 
-  const { data } = useQuery(getBuildLogs, {
-    variables: { id: getQueryParam(router.query.id) as string },
+  const { data, fetchMore } = useQuery(getBuildLogs, {
+    variables: {
+      id: getQueryParam(router.query.id) as string,
+      first: 10,
+      orderBy: [
+        { field: BuildLogOrderField.LogTime, direction: OrderDirection.Desc },
+      ],
+    },
     skip: !getQueryParam(router.query.id),
   });
 
@@ -118,21 +153,7 @@ export default function BuildLog() {
   });
 
   const [mutate, { loading }] = useMutation(createBuildLog, {
-    update: (cache, res) => {
-      if (!res.data?.createBuildLog || !data?.car) return;
-
-      cache.writeQuery({
-        query: getBuildLogs,
-        variables: { id: getQueryParam(router.query.id) as string },
-        data: {
-          ...data,
-          car: {
-            ...data.car,
-            buildLogs: [...(data.car.buildLogs ?? []), res.data.createBuildLog],
-          },
-        },
-      });
-    },
+    refetchQueries: [getBuildLogs],
   });
 
   const { register, handleSubmit, control } = useForm<Inputs>({
@@ -158,6 +179,20 @@ export default function BuildLog() {
         },
       }).then(onClose)
   );
+
+  const [loaderRef] = useIntersectionObserver({
+    isEnabled: data?.car.buildLogs.pageInfo.hasNextPage && !loading,
+    onChange: (isIntersecting) =>
+      isIntersecting &&
+      data?.car.buildLogs.edges &&
+      fetchMore({
+        variables: {
+          after:
+            data.car.buildLogs.edges[data.car.buildLogs.edges.length - 1]
+              ?.cursor,
+        },
+      }),
+  });
 
   return (
     <CarLayout
@@ -222,55 +257,67 @@ export default function BuildLog() {
                 orientation="vertical"
                 className="absolute top-4 left-2 bg-content4"
               />
-              {data?.car?.buildLogs?.map((log) => (
-                <div key={log.id} className="relative mb-10 pl-8">
-                  <div className="absolute top-3.5 left-0 flex size-4 items-center justify-center rounded-full bg-foreground" />
+              {data?.car?.buildLogs?.edges
+                ?.map((e) => e?.node)
+                .filter((n) => !!n)
+                .map((log) => (
+                  <div key={log.id} className="relative mb-10 pl-8">
+                    <div className="absolute top-3.5 left-0 flex size-4 items-center justify-center rounded-full bg-foreground" />
 
-                  <h4 className="rounded-xl py-2 text-xl font-bold tracking-tight xl:mb-4 xl:px-3">
-                    {log.title}
-                  </h4>
+                    <h4 className="rounded-xl py-2 text-xl font-bold tracking-tight xl:mb-4 xl:px-3">
+                      {log.title}
+                    </h4>
 
-                  <h5 className="text-md top-3 -left-34 rounded-xl tracking-tight text-muted-foreground xl:absolute">
-                    {log.logTime
-                      ? new Date(log.logTime).toLocaleDateString()
-                      : ""}
-                  </h5>
+                    <h5 className="text-md top-3 -left-34 rounded-xl tracking-tight text-muted-foreground xl:absolute">
+                      {log.logTime
+                        ? new Date(log.logTime).toLocaleDateString()
+                        : ""}
+                    </h5>
 
-                  <Card className="my-5 border-none shadow-none">
-                    <CardBody className="flex flex-col gap-4">
-                      <div
-                        className="prose text-foreground"
-                        dangerouslySetInnerHTML={{
-                          __html: generateHTML(log.notes, createExtensions("")),
-                        }}
-                      />
+                    <Card className="my-5 border-none shadow-none">
+                      <CardBody className="flex flex-col gap-4">
+                        <div
+                          className="prose text-foreground"
+                          dangerouslySetInnerHTML={{
+                            __html: generateHTML(
+                              log.notes,
+                              createExtensions("")
+                            ),
+                          }}
+                        />
 
-                      {log.media && log.media.length > 0 && (
-                        <div className="flex flex-nowrap gap-4 overflow-x-auto p-2">
-                          {log.media?.map((m) => (
-                            <MediaItem
-                              item={m}
-                              key={m.id}
-                              className="aspect-square shrink-0"
+                        {log.media && log.media.length > 0 && (
+                          <div className="flex flex-nowrap gap-4 overflow-x-auto p-2">
+                            {log.media?.map((m) => (
+                              <MediaItem
+                                item={m}
+                                key={m.id}
+                                className="aspect-square shrink-0"
+                              />
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="flex flex-wrap gap-2">
+                          {log.mods?.map((mod) => (
+                            <ModChip
+                              key={mod.id}
+                              href={`/cars/${router.query.id}/project/mods/${mod.id}`}
+                              variant="faded"
+                              mod={mod}
                             />
                           ))}
                         </div>
-                      )}
+                      </CardBody>
+                    </Card>
+                  </div>
+                ))}
 
-                      <div className="flex flex-wrap gap-2">
-                        {log.mods?.map((mod) => (
-                          <ModChip
-                            key={mod.id}
-                            href={`/cars/${router.query.id}/project/mods/${mod.id}`}
-                            variant="faded"
-                            mod={mod}
-                          />
-                        ))}
-                      </div>
-                    </CardBody>
-                  </Card>
+              {!loading && data?.car.buildLogs.pageInfo.hasNextPage && (
+                <div className="flex w-full justify-center mt-10">
+                  <Spinner ref={loaderRef} color="white" />
                 </div>
-              ))}
+              )}
             </div>
           </section>
 
