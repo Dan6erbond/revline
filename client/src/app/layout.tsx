@@ -4,8 +4,7 @@ import AppNavbar from "./navbar";
 import { Inter } from "next/font/google";
 import type { Metadata } from "next";
 import { Providers } from "./providers";
-import Script from "next/script";
-import { SessionProvider } from "next-auth/react";
+import Umami from "@/components/umami";
 import { auth } from "@/auth";
 
 const inter = Inter({
@@ -41,13 +40,6 @@ export default async function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        {process.env.NODE_ENV !== "development" && (
-          <Script
-            defer
-            src="https://cloud.umami.is/script.js"
-            data-website-id="64bc9887-3516-4a18-b0a9-bfff4281cb0b"
-          />
-        )}
         <link
           rel="icon"
           type="image/png"
@@ -63,19 +55,17 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Revline 1" />
       </head>
       <body className={`antialiased ${inter.className} bg-background`}>
-        <SessionProvider
+        <Providers
           session={session}
-          basePath={basePath ? basePath + "/api/auth" : undefined}
+          serverUrl={process.env.SERVER_URL!}
+          basePath={process.env.BASE_PATH ?? ""}
         >
-          <Providers
-            session={session}
-            serverUrl={process.env.SERVER_URL!}
-            basePath={process.env.BASE_PATH ?? ""}
-          >
-            <AppNavbar />
-            {children}
-          </Providers>
-        </SessionProvider>
+          {process.env.NODE_ENV !== "development" && (
+            <Umami websiteId="64bc9887-3516-4a18-b0a9-bfff4281cb0b" />
+          )}
+          <AppNavbar />
+          {children}
+        </Providers>
       </body>
     </html>
   );

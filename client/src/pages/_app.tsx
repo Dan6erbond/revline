@@ -4,7 +4,6 @@ import "react-pdf/dist/Page/TextLayer.css";
 
 import type { AppContext, AppInitialProps, AppProps } from "next/app";
 import { HeroUIProvider, ToastProvider } from "@heroui/react";
-import Script, { ScriptProps } from "next/script";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
@@ -13,7 +12,8 @@ import AuthenticatedApolloProvider from "@/apollo-client/provider";
 import ConfigProvider from "@/contexts/config";
 import Head from "next/head";
 import { Inter } from "next/font/google";
-import { getQueryParam } from "../utils/router";
+import Umami from "@/components/umami";
+import { getQueryParam } from "@/utils/router";
 import { pdfjs } from "react-pdf";
 import { useHref } from "@/utils/use-href";
 import { useRouter } from "next/router";
@@ -44,28 +44,6 @@ function UserTour() {
   }, [session]);
 
   return null;
-}
-
-function Umami({ ...props }: ScriptProps) {
-  const { data: session } = useSession();
-
-  useEffect(() => {
-    if (session?.user) {
-      const {
-        user: { id, ...user },
-      } = session;
-      umami.identify(id, user);
-    }
-  }, [session?.user?.id]);
-
-  return (
-    <Script
-      defer
-      src="https://cloud.umami.is/script.js"
-      data-website-id="64bc9887-3516-4a18-b0a9-bfff4281cb0b"
-      {...props}
-    />
-  );
 }
 
 type CustomAppProps = {
@@ -121,7 +99,9 @@ export default function CustomApp({
       >
         <ConfigProvider basePath={router.basePath} serverUrl={url}>
           <AuthenticatedApolloProvider url={url} pageProps={pageProps}>
-            {process.env.NODE_ENV !== "development" && <Umami />}
+            {process.env.NODE_ENV !== "development" && (
+              <Umami websiteId="64bc9887-3516-4a18-b0a9-bfff4281cb0b" />
+            )}
             <UserTour />
             <Component {...pageProps} />
           </AuthenticatedApolloProvider>
