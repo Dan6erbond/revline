@@ -55,8 +55,11 @@ export default function Create() {
       cache.modify({
         id: cache.identify(data.createMod.car),
         fields: {
-          mods(existingRefs = []) {
-            return [...existingRefs, newModRef];
+          mods(existingRefs = { edges: [] }) {
+            return {
+              ...existingRefs,
+              edges: [...existingRefs.edges, { node: newModRef }],
+            };
           },
         },
       });
