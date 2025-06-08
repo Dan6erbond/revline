@@ -1,12 +1,11 @@
 import { Card, CardBody, CardHeader, Skeleton, Spinner } from "@heroui/react";
+import { GetCarWithOwnerQuery, ModStatus } from "@/gql/graphql";
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 import { addApolloState, buildClient } from "@/apollo-client";
 
 import CarHead from "@/components/car/head";
 import { ComponentProps } from "react";
-import { GetCarWithOwnerQuery } from "@/gql/graphql";
 import ModCategoryChip from "@/mods/category-chip";
-import ModStatusChip from "@/mods/status-chip";
 import PublicCarLayout from "@/components/layout/public-car-layout";
 import { auth } from "@/auth";
 import { getCarWithOwner } from "@/car/queries";
@@ -27,7 +26,11 @@ export default function Mods({
   const router = useRouter();
 
   const { data, loading, error, fetchMore } = useQuery(getMods, {
-    variables: { id: getQueryParam(router.query.id) as string, first: 10 },
+    variables: {
+      id: getQueryParam(router.query.id) as string,
+      first: 10,
+      where: { status: ModStatus.Completed },
+    },
     skip: !getQueryParam(router.query.id),
   });
 
@@ -68,10 +71,7 @@ export default function Mods({
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-col gap-2 items-end">
-                    <ModCategoryChip category={mod.category} />
-                    <ModStatusChip status={mod.status} />
-                  </div>
+                  <ModCategoryChip category={mod.category} />
                 </CardHeader>
                 <CardBody>
                   <p className="text-sm text-muted-foreground mb-2">
