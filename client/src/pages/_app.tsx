@@ -51,12 +51,10 @@ function Umami({ ...props }: ScriptProps) {
 
   useEffect(() => {
     if (session?.user?.id) {
-      const { user } = (session as Session) ?? {};
-
-      if (user) {
-        const { id, ...u } = user;
-        umami.identify(id, u);
-      }
+      const {
+        user: { id, ...user },
+      } = session;
+      umami.identify(id, user);
     }
   }, [session?.user?.id]);
 
