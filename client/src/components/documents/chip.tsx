@@ -22,6 +22,7 @@ export default function DocumentChip({
     <Chip
       as={Link}
       href={`/cars/${router.query.id}/documents/${doc.id}`}
+      variant="faded"
       startContent={
         <FileIcon
           name={doc.name}
