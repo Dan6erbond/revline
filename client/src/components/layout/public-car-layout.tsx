@@ -1,11 +1,19 @@
-import { Gauge, Images, ScrollText, Wrench } from "lucide-react";
-import { Tab, Tabs } from "@heroui/react";
+import { Alert, Button, Tab, Tabs } from "@heroui/react";
+import { ComponentProps, useEffect, useState } from "react";
+import {
+  Gauge,
+  Images,
+  Link,
+  ScrollText,
+  Settings,
+  Wrench,
+} from "lucide-react";
 
-import { ComponentProps } from "react";
 import Image from "next/image";
 import RootNavbar from "./root-navbar";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
+import { signIn } from "next-auth/react";
 import { useConfig } from "@/contexts/config";
 import { useHref } from "@/utils/use-href";
 import { useQuery } from "@apollo/client";
@@ -74,6 +82,16 @@ export default function PublicCarLayout({
     skip: !getQueryParam(router.query.id),
   });
 
+  const [providers, setProviders] = useState<{
+    [key: string]: { id: string };
+  }>({});
+
+  useEffect(() => {
+    fetch(config.basePath + "/api/auth/providers")
+      .then((res) => res.json())
+      .then((providers) => setProviders(providers));
+  }, [setProviders]);
+
   return (
     <>
       <RootNavbar pathname={router.pathname} path={router.asPath} />
@@ -113,7 +131,67 @@ export default function PublicCarLayout({
               href={href}
               {...t}
             >
-              {active && children}
+              {active && (
+                <>
+                  <div className="container mx-auto p-4">
+                    {/* Alert for unauthenticated users */}
+                    {data?.me == null && (
+                      <Alert
+                        color="secondary"
+                        variant="faded"
+                        title="You're not logged in"
+                        description="Create an account or log in to manage your cars, get personalized tuning info, and access all Revline features."
+                        endContent={
+                          <div className="flex gap-2">
+                            <Button
+                              onPress={() =>
+                                signIn(
+                                  Object.values(providers).length === 1 &&
+                                    Object.values(providers)[0].id !==
+                                      "credentials"
+                                    ? Object.values(providers)[0].id
+                                    : undefined,
+                                  {
+                                    redirectTo: router.asPath,
+                                  }
+                                )
+                              }
+                              color="primary"
+                              size="sm"
+                              variant="bordered"
+                            >
+                              Sign in
+                            </Button>
+                          </div>
+                        }
+                      />
+                    )}
+
+                    {/* Alert for users without unit settings */}
+                    {data?.me && data?.me?.settings == null && (
+                      <Alert
+                        color="warning"
+                        variant="faded"
+                        title="Unit settings incomplete"
+                        description="To get accurate results, please set your preferred units for torque, power, and other measurements."
+                        endContent={
+                          <Button
+                            as={Link}
+                            href="/settings"
+                            color="warning"
+                            size="sm"
+                            variant="flat"
+                            startContent={<Settings className="size-4" />}
+                          >
+                            Configure now
+                          </Button>
+                        }
+                      />
+                    )}
+                  </div>
+                  {children}
+                </>
+              )}
             </Tab>
           ))}
         </Tabs>

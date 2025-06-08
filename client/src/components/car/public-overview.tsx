@@ -1,6 +1,11 @@
-import { ActivitySquare, FileText, Gauge, Settings, Timer } from "lucide-react";
 import {
-  Alert,
+  ActivitySquare,
+  FileText,
+  Gauge,
+  LineChart,
+  Timer,
+} from "lucide-react";
+import {
   Button,
   Card,
   CardBody,
@@ -14,17 +19,13 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { DragResultUnit, PowerUnit, TorqueUnit } from "@/gql/graphql";
-import { useEffect, useState } from "react";
 
 import DynoSessionChart from "../performance/dyno-sessions/chart";
-import Link from "next/link";
 import { createExtensions } from "../minimal-tiptap/hooks/use-minimal-tiptap";
 import { generateHTML } from "@tiptap/react";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { resolveDragResultType } from "@/utils/drag-session";
-import { signIn } from "next-auth/react";
-import { useConfig } from "../../contexts/config";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
 import { useUnits } from "../../hooks/use-units";
@@ -207,22 +208,36 @@ function DynoSessionCard({
         <ActivitySquare className="w-5 h-5 text-primary group-hover:scale-110 transition-transform duration-200" />
       </CardHeader>
 
-      {session.notes && (
-        <CardBody className="text-sm text-muted-foreground flex items-start gap-2">
-          <FileText className="w-4 h-4 mt-0.5 text-muted" />
-          <span
-            className="line-clamp-2"
-            dangerouslySetInnerHTML={{
-              __html: generateHTML(session.notes, createExtensions("")),
-            }}
-          />
+      <CardBody className="text-sm text-muted-foreground flex items-start gap-2">
+        {session.notes && (
+          <>
+            <FileText className="w-4 h-4 mt-0.5 text-muted" />
+            <span
+              className="line-clamp-2"
+              dangerouslySetInnerHTML={{
+                __html: generateHTML(session.notes, createExtensions("")),
+              }}
+            />
+          </>
+        )}
+        {session.results && session.results.length > 0 ? (
           <DynoSessionChart
             session={session}
-            className="self-center my-4"
+            className="my-4 mx-auto"
             {...props}
           />
-        </CardBody>
-      )}
+        ) : (
+          <div className="my-4 w-full min-h-[300px] flex items-center justify-center rounded-md border border-dashed border-gray-300 bg-muted text-muted-foreground">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <LineChart className="h-8 w-8 text-gray-400" />
+              <div className="text-sm font-medium">No results yet</div>
+              <div className="text-xs text-gray-500">
+                Once data is available, a chart will appear here.
+              </div>
+            </div>
+          </div>
+        )}
+      </CardBody>
 
       <CardFooter className="text-xs text-muted-foreground flex justify-between items-center pt-2">
         <span>
@@ -236,17 +251,6 @@ function DynoSessionCard({
 
 export default function PublicOverview() {
   const router = useRouter();
-  const { basePath } = useConfig();
-
-  const [providers, setProviders] = useState<{
-    [key: string]: { id: string };
-  }>({});
-
-  useEffect(() => {
-    fetch(basePath + "/api/auth/providers")
-      .then((res) => res.json())
-      .then((providers) => setProviders(providers));
-  }, [setProviders]);
 
   const { data } = useQuery(getPublicCarOverview, {
     variables: {
@@ -259,60 +263,6 @@ export default function PublicOverview() {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-10">
-      {/* Alert for unauthenticated users */}
-      {data?.me == null && (
-        <Alert
-          color="secondary"
-          variant="faded"
-          title="You're not logged in"
-          description="Create an account or log in to manage your cars, get personalized tuning info, and access all Revline features."
-          endContent={
-            <div className="flex gap-2">
-              <Button
-                onPress={() =>
-                  signIn(
-                    Object.values(providers).length === 1 &&
-                      Object.values(providers)[0].id !== "credentials"
-                      ? Object.values(providers)[0].id
-                      : undefined,
-                    {
-                      redirectTo: router.asPath,
-                    }
-                  )
-                }
-                color="primary"
-                size="sm"
-                variant="bordered"
-              >
-                Sign in
-              </Button>
-            </div>
-          }
-        />
-      )}
-
-      {/* Alert for users without unit settings */}
-      {data?.me && data?.me?.settings == null && (
-        <Alert
-          color="warning"
-          variant="faded"
-          title="Unit settings incomplete"
-          description="To get accurate results, please set your preferred units for torque, power, and other measurements."
-          endContent={
-            <Button
-              as={Link}
-              href="/settings"
-              color="warning"
-              size="sm"
-              variant="flat"
-              startContent={<Settings className="size-4" />}
-            >
-              Configure now
-            </Button>
-          }
-        />
-      )}
-
       <section>
         <h2 className="text-2xl font-bold text-primary mb-4 flex items-center gap-2">
           <Timer className="w-5 h-5 text-primary-500" /> Drag Sessions
