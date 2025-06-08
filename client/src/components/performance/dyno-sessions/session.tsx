@@ -5,6 +5,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Tooltip as HeroTooltip,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
@@ -51,6 +52,7 @@ import { MinimalTiptapEditor } from "@/components/minimal-tiptap";
 import ModChip from "@/mods/chip";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
+import useDebounce from "../../../hooks/use-debounce";
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 import { useRouter } from "next/router";
 import { useUnits } from "@/hooks/use-units";
@@ -234,6 +236,29 @@ export default function Session() {
 
   const [mutate, { loading }] = useMutation(updateDynoSession);
 
+  const [title, setTitle] = useState(data?.dynoSession.title);
+
+  const handleTitleChange = useDebounce({
+    handle: (val: string) => {
+      const id = router.query.tab![1];
+
+      mutate({
+        variables: {
+          id,
+          input: { title: val },
+        },
+        optimisticResponse: {
+          __typename: "Mutation",
+          updateDynoSession: {
+            id,
+            title: val,
+          },
+        },
+      });
+    },
+    immediateHandler: (val: string) => setTitle(val),
+  });
+
   const [mutateCreate, { loading: isCreating }] = useMutation(
     createDynoResult,
     {
@@ -370,7 +395,15 @@ export default function Session() {
   return (
     <div className="flex flex-col gap-8 container mx-auto">
       <div className="flex flex-col gap-4">
-        <h2 className="text-2xl">{data?.dynoSession?.title}</h2>
+        <Input
+          label="Title"
+          variant="underlined"
+          className="border-b"
+          value={title}
+          onValueChange={handleTitleChange}
+          size="lg"
+          endContent={loading && <Spinner />}
+        />
         <MinimalTiptapEditor
           placeholder="Notes"
           throttleDelay={750}
