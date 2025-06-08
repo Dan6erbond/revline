@@ -21,7 +21,7 @@ import {
 import { Coins, Edit, Fuel, Plus, Trash } from "lucide-react";
 import ExpenseModal, { ExpenseFields } from "@/components/expenses/modal";
 import { graphql, useFragment } from "@/gql";
-import { useMutation, useQuery } from "@apollo/client";
+import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
 
 import DeleteModal from "@/components/modals/delete";
 import DocumentChip from "@/components/documents/chip";
@@ -117,7 +117,7 @@ const COLORS: Record<ExpenseType, string> = {
 export default function Expenses() {
   const router = useRouter();
 
-  const { data } = useQuery(getExpenses, {
+  const { data } = useSuspenseQuery(getExpenses, {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
   });

@@ -1,19 +1,23 @@
+import { StrictTypedTypePolicies } from "@/gql/apollo-helpers";
+import { possibleTypes } from "@/gql/possibleTypes.json";
 import {
   ApolloCache,
   ApolloClient,
   InMemoryCache,
   InMemoryCacheConfig,
   makeVar,
+  NormalizedCacheObject,
   ReactiveVar,
 } from "@apollo/client";
-
-import { StrictTypedTypePolicies } from "@/gql/apollo-helpers";
-import { possibleTypes } from "@/gql/possibleTypes.json";
 import { setContext } from "@apollo/client/link/context";
 import { relayStylePagination } from "@apollo/client/utilities";
 import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
+import merge from "deepmerge";
+import isEqual from "lodash/isEqual";
 import { Session } from "next-auth";
 import { RefObject } from "react";
+
+export const APOLLO_STATE_PROP_NAME = "__APOLLO_STATE__";
 
 export const authLink = ({
   accessToken,
@@ -67,21 +71,55 @@ export const cacheConfig = {
 } satisfies InMemoryCacheConfig;
 
 export const buildClient = ({
-  url,
+  url = process.env.SERVER_URL,
   cache = new InMemoryCache(cacheConfig),
+  initialState,
   ...props
 }: {
   accessToken?: string;
   getSessionRef?: RefObject<() => Promise<Session | null>>;
-  url: string;
-  cache?: ApolloCache<unknown>;
+  url?: string;
+  cache?: ApolloCache<NormalizedCacheObject>;
+  initialState?: NormalizedCacheObject | null;
 }) => {
   const httpLink = createUploadLink({
     uri: new URL("/graphql", process.env.INTERNAL_SERVER_URL ?? url).toString(),
   });
 
-  return new ApolloClient({
+  const client = new ApolloClient({
+    ssrMode: typeof window === "undefined",
     cache,
     link: authLink(props).concat(httpLink),
   });
+
+  if (initialState) {
+    // Get existing cache, loaded during client side data fetching
+    const existingCache = client.extract();
+
+    // Merge the existing cache into data passed from getStaticProps/getServerSideProps
+    const data = merge(initialState, existingCache as any, {
+      // combine arrays using object equality (like in sets)
+      arrayMerge: (destinationArray, sourceArray) => [
+        ...sourceArray,
+        ...destinationArray.filter((d) =>
+          sourceArray.every((s) => !isEqual(d, s))
+        ),
+      ],
+    });
+
+    client.cache.restore(data);
+  }
+
+  return client;
+};
+
+export const addApolloState = <T extends {}>(
+  client: ApolloClient<NormalizedCacheObject>,
+  props: T
+): T & { [APOLLO_STATE_PROP_NAME]?: any } => {
+  if (props) {
+    (props as any)[APOLLO_STATE_PROP_NAME] = client.cache.extract();
+  }
+
+  return props;
 };

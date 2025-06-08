@@ -33,6 +33,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns,
   },
+  transpilePackages: ["next-auth"],
 };
 
 export default nextConfig;
