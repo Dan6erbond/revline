@@ -1,7 +1,17 @@
-import { Chip, ChipProps } from "@heroui/react";
+import {
+  Chip,
+  ChipProps,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  useDisclosure,
+} from "@heroui/react";
+import { PowerUnit, TorqueUnit } from "@/gql/graphql";
 
+import DynoSessionChart from "./chart";
 import { Gauge } from "lucide-react";
 import Link from "next/link";
+import { useUnits } from "@/hooks/use-units";
 
 export function DynoSessionChip({
   session,
@@ -23,13 +33,21 @@ export function DynoSessionChip({
       | undefined;
   };
   href?: string;
+  powerUnit: PowerUnit;
+  torqueUnit: TorqueUnit;
 } & ChipProps) {
-  return (
+  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+
+  const { powerUnit, torqueUnit } = useUnits();
+
+  const chip = (
     <Chip
       as={href ? Link : undefined}
       href={href}
       className="capitalize"
       startContent={<Gauge className="size-4 ml-1 text-muted-foreground" />}
+      onMouseEnter={onOpen}
+      onMouseLeave={onClose}
       {...props}
     >
       <span className="ml-1 truncate">
@@ -41,5 +59,22 @@ export function DynoSessionChip({
           }`}
       </span>
     </Chip>
+  );
+
+  if (!session.results || session.results.length === 0) {
+    return chip;
+  }
+
+  return (
+    <Popover isOpen={isOpen} shouldCloseOnBlur onOpenChange={onOpenChange}>
+      <PopoverTrigger>{chip}</PopoverTrigger>
+      <PopoverContent>
+        <DynoSessionChart
+          session={session}
+          powerUnit={powerUnit}
+          torqueUnit={torqueUnit}
+        />
+      </PopoverContent>
+    </Popover>
   );
 }

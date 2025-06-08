@@ -3,12 +3,8 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
   Skeleton,
   Spinner,
-  useDisclosure,
 } from "@heroui/react";
 import {
   GetCarWithOwnerQuery,
@@ -22,7 +18,6 @@ import { addApolloState, buildClient } from "@/apollo-client";
 
 import CarHead from "@/components/car/head";
 import { ComponentProps } from "react";
-import DynoSessionChart from "@/components/performance/dyno-sessions/chart";
 import { DynoSessionChip } from "@/components/performance/dyno-sessions/chip";
 import ModCategoryChip from "@/mods/category-chip";
 import PublicCarLayout from "@/components/layout/public-car-layout";
@@ -45,8 +40,6 @@ function ModCard({
   powerUnit: PowerUnit;
   torqueUnit: TorqueUnit;
 }) {
-  const { isOpen, onOpenChange, onOpen, onClose } = useDisclosure();
-
   return (
     <Card key={mod.id} className="flex flex-col gap-2">
       <CardHeader className="flex justify-between items-start gap-2">
@@ -81,27 +74,18 @@ function ModCard({
           </div>
         )}
       </CardBody>
-      <CardFooter>
-        <div className="flex items-center gap-4 flex-wrap">
-          <p className="text-sm text-default-600 font-semibold">
-            Dyno Sessions:
-          </p>
-          {mod.dynoSessions?.map((session) => (
-            <Popover key={session.id} isOpen={isOpen}>
-              <PopoverTrigger>
-                <DynoSessionChip
-                  session={session}
-                  onMouseEnter={onOpen}
-                  onMouseLeave={onClose}
-                />
-              </PopoverTrigger>
-              <PopoverContent>
-                <DynoSessionChart session={session} {...props} />
-              </PopoverContent>
-            </Popover>
-          ))}
-        </div>
-      </CardFooter>
+      {mod.dynoSessions && mod.dynoSessions.length > 0 && (
+        <CardFooter>
+          <div className="flex items-center gap-4 flex-wrap">
+            <p className="text-sm text-default-600 font-semibold">
+              Dyno Sessions:
+            </p>
+            {mod.dynoSessions.map((session) => (
+              <DynoSessionChip session={session} key={session.id} {...props} />
+            ))}
+          </div>
+        </CardFooter>
+      )}
     </Card>
   );
 }
