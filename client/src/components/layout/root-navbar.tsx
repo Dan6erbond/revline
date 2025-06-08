@@ -11,8 +11,10 @@ import {
 } from "@heroui/react";
 import { Suspense, useState } from "react";
 
-import AuthButton from "./auth-button";
 import Wordmark from "../wordmark";
+import dynamic from "next/dynamic";
+
+const AuthButton = dynamic(() => import("./auth-button"), { ssr: false });
 
 export default function RootNavbar({
   pathname,
