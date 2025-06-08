@@ -206,6 +206,7 @@ type ComplexityRoot struct {
 		CreateTime func(childComplexity int) int
 		Documents  func(childComplexity int) int
 		ID         func(childComplexity int) int
+		Mods       func(childComplexity int) int
 		Notes      func(childComplexity int) int
 		Results    func(childComplexity int) int
 		Title      func(childComplexity int) int
@@ -272,6 +273,7 @@ type ComplexityRoot struct {
 		Category       func(childComplexity int) int
 		CreateTime     func(childComplexity int) int
 		Description    func(childComplexity int) int
+		DynoSessions   func(childComplexity int) int
 		ID             func(childComplexity int) int
 		ProductOptions func(childComplexity int) int
 		Stage          func(childComplexity int) int
@@ -1390,6 +1392,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.DynoSession.ID(childComplexity), true
 
+	case "DynoSession.mods":
+		if e.complexity.DynoSession.Mods == nil {
+			break
+		}
+
+		return e.complexity.DynoSession.Mods(childComplexity), true
+
 	case "DynoSession.notes":
 		if e.complexity.DynoSession.Notes == nil {
 			break
@@ -1746,6 +1755,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mod.Description(childComplexity), true
+
+	case "Mod.dynoSessions":
+		if e.complexity.Mod.DynoSessions == nil {
+			break
+		}
+
+		return e.complexity.Mod.DynoSessions(childComplexity), true
 
 	case "Mod.id":
 		if e.complexity.Mod.ID == nil {
@@ -6196,6 +6212,8 @@ func (ec *executionContext) fieldContext_BuildLog_mods(_ context.Context, field 
 				return ec.fieldContext_Mod_car(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Mod_tasks(ctx, field)
+			case "dynoSessions":
+				return ec.fieldContext_Mod_dynoSessions(ctx, field)
 			case "productOptions":
 				return ec.fieldContext_Mod_productOptions(ctx, field)
 			case "buildLogs":
@@ -7622,6 +7640,8 @@ func (ec *executionContext) fieldContext_Car_dynoSessions(_ context.Context, fie
 				return ec.fieldContext_DynoSession_results(ctx, field)
 			case "documents":
 				return ec.fieldContext_DynoSession_documents(ctx, field)
+			case "mods":
+				return ec.fieldContext_DynoSession_mods(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DynoSession", field.Name)
 		},
@@ -9345,6 +9365,8 @@ func (ec *executionContext) fieldContext_Document_dynoSession(_ context.Context,
 				return ec.fieldContext_DynoSession_results(ctx, field)
 			case "documents":
 				return ec.fieldContext_DynoSession_documents(ctx, field)
+			case "mods":
+				return ec.fieldContext_DynoSession_mods(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DynoSession", field.Name)
 		},
@@ -10535,6 +10557,8 @@ func (ec *executionContext) fieldContext_DynoResult_session(_ context.Context, f
 				return ec.fieldContext_DynoSession_results(ctx, field)
 			case "documents":
 				return ec.fieldContext_DynoSession_documents(ctx, field)
+			case "mods":
+				return ec.fieldContext_DynoSession_mods(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DynoSession", field.Name)
 		},
@@ -10984,6 +11008,75 @@ func (ec *executionContext) fieldContext_DynoSession_documents(_ context.Context
 				return ec.fieldContext_Document_metadata(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Document", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DynoSession_mods(ctx context.Context, field graphql.CollectedField, obj *ent.DynoSession) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DynoSession_mods(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Mods(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Mod)
+	fc.Result = res
+	return ec.marshalOMod2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DynoSession_mods(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DynoSession",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Mod_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Mod_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Mod_updateTime(ctx, field)
+			case "title":
+				return ec.fieldContext_Mod_title(ctx, field)
+			case "category":
+				return ec.fieldContext_Mod_category(ctx, field)
+			case "status":
+				return ec.fieldContext_Mod_status(ctx, field)
+			case "description":
+				return ec.fieldContext_Mod_description(ctx, field)
+			case "stage":
+				return ec.fieldContext_Mod_stage(ctx, field)
+			case "car":
+				return ec.fieldContext_Mod_car(ctx, field)
+			case "tasks":
+				return ec.fieldContext_Mod_tasks(ctx, field)
+			case "dynoSessions":
+				return ec.fieldContext_Mod_dynoSessions(ctx, field)
+			case "productOptions":
+				return ec.fieldContext_Mod_productOptions(ctx, field)
+			case "buildLogs":
+				return ec.fieldContext_Mod_buildLogs(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Mod", field.Name)
 		},
 	}
 	return fc, nil
@@ -13755,6 +13848,67 @@ func (ec *executionContext) fieldContext_Mod_tasks(_ context.Context, field grap
 	return fc, nil
 }
 
+func (ec *executionContext) _Mod_dynoSessions(ctx context.Context, field graphql.CollectedField, obj *ent.Mod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mod_dynoSessions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DynoSessions(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.DynoSession)
+	fc.Result = res
+	return ec.marshalODynoSession2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDynoSessionᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mod_dynoSessions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mod",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_DynoSession_id(ctx, field)
+			case "createTime":
+				return ec.fieldContext_DynoSession_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_DynoSession_updateTime(ctx, field)
+			case "title":
+				return ec.fieldContext_DynoSession_title(ctx, field)
+			case "notes":
+				return ec.fieldContext_DynoSession_notes(ctx, field)
+			case "car":
+				return ec.fieldContext_DynoSession_car(ctx, field)
+			case "results":
+				return ec.fieldContext_DynoSession_results(ctx, field)
+			case "documents":
+				return ec.fieldContext_DynoSession_documents(ctx, field)
+			case "mods":
+				return ec.fieldContext_DynoSession_mods(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DynoSession", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mod_productOptions(ctx context.Context, field graphql.CollectedField, obj *ent.Mod) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mod_productOptions(ctx, field)
 	if err != nil {
@@ -14086,6 +14240,8 @@ func (ec *executionContext) fieldContext_ModEdge_node(_ context.Context, field g
 				return ec.fieldContext_Mod_car(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Mod_tasks(ctx, field)
+			case "dynoSessions":
+				return ec.fieldContext_Mod_dynoSessions(ctx, field)
 			case "productOptions":
 				return ec.fieldContext_Mod_productOptions(ctx, field)
 			case "buildLogs":
@@ -14660,6 +14816,8 @@ func (ec *executionContext) fieldContext_ModProductOption_mod(_ context.Context,
 				return ec.fieldContext_Mod_car(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Mod_tasks(ctx, field)
+			case "dynoSessions":
+				return ec.fieldContext_Mod_dynoSessions(ctx, field)
 			case "productOptions":
 				return ec.fieldContext_Mod_productOptions(ctx, field)
 			case "buildLogs":
@@ -17191,6 +17349,8 @@ func (ec *executionContext) fieldContext_Mutation_createDynoSession(ctx context.
 				return ec.fieldContext_DynoSession_results(ctx, field)
 			case "documents":
 				return ec.fieldContext_DynoSession_documents(ctx, field)
+			case "mods":
+				return ec.fieldContext_DynoSession_mods(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DynoSession", field.Name)
 		},
@@ -17286,6 +17446,8 @@ func (ec *executionContext) fieldContext_Mutation_updateDynoSession(ctx context.
 				return ec.fieldContext_DynoSession_results(ctx, field)
 			case "documents":
 				return ec.fieldContext_DynoSession_documents(ctx, field)
+			case "mods":
+				return ec.fieldContext_DynoSession_mods(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DynoSession", field.Name)
 		},
@@ -18000,6 +18162,8 @@ func (ec *executionContext) fieldContext_Mutation_createMod(ctx context.Context,
 				return ec.fieldContext_Mod_car(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Mod_tasks(ctx, field)
+			case "dynoSessions":
+				return ec.fieldContext_Mod_dynoSessions(ctx, field)
 			case "productOptions":
 				return ec.fieldContext_Mod_productOptions(ctx, field)
 			case "buildLogs":
@@ -18103,6 +18267,8 @@ func (ec *executionContext) fieldContext_Mutation_updateMod(ctx context.Context,
 				return ec.fieldContext_Mod_car(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Mod_tasks(ctx, field)
+			case "dynoSessions":
+				return ec.fieldContext_Mod_dynoSessions(ctx, field)
 			case "productOptions":
 				return ec.fieldContext_Mod_productOptions(ctx, field)
 			case "buildLogs":
@@ -20115,6 +20281,8 @@ func (ec *executionContext) fieldContext_Query_dynoSession(ctx context.Context, 
 				return ec.fieldContext_DynoSession_results(ctx, field)
 			case "documents":
 				return ec.fieldContext_DynoSession_documents(ctx, field)
+			case "mods":
+				return ec.fieldContext_DynoSession_mods(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DynoSession", field.Name)
 		},
@@ -20518,6 +20686,8 @@ func (ec *executionContext) fieldContext_Query_mod(ctx context.Context, field gr
 				return ec.fieldContext_Mod_car(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Mod_tasks(ctx, field)
+			case "dynoSessions":
+				return ec.fieldContext_Mod_dynoSessions(ctx, field)
 			case "productOptions":
 				return ec.fieldContext_Mod_productOptions(ctx, field)
 			case "buildLogs":
@@ -24381,6 +24551,8 @@ func (ec *executionContext) fieldContext_Task_mods(_ context.Context, field grap
 				return ec.fieldContext_Mod_car(ctx, field)
 			case "tasks":
 				return ec.fieldContext_Mod_tasks(ctx, field)
+			case "dynoSessions":
+				return ec.fieldContext_Mod_dynoSessions(ctx, field)
 			case "productOptions":
 				return ec.fieldContext_Mod_productOptions(ctx, field)
 			case "buildLogs":
@@ -31585,7 +31757,7 @@ func (ec *executionContext) unmarshalInputCreateDynoSessionInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "notes", "carID", "resultIDs", "documentIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "notes", "carID", "resultIDs", "documentIDs", "modIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -31641,6 +31813,13 @@ func (ec *executionContext) unmarshalInputCreateDynoSessionInput(ctx context.Con
 				return it, err
 			}
 			it.DocumentIDs = data
+		case "modIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ModIDs = data
 		}
 	}
 
@@ -31956,7 +32135,7 @@ func (ec *executionContext) unmarshalInputCreateModInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "category", "status", "description", "stage", "carID", "taskIDs", "productOptionIDs", "buildLogIDs"}
+	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "category", "status", "description", "stage", "carID", "taskIDs", "dynoSessionIDs", "productOptionIDs", "buildLogIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -32026,6 +32205,13 @@ func (ec *executionContext) unmarshalInputCreateModInput(ctx context.Context, ob
 				return it, err
 			}
 			it.TaskIDs = data
+		case "dynoSessionIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dynoSessionIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DynoSessionIDs = data
 		case "productOptionIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("productOptionIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
@@ -34484,7 +34670,7 @@ func (ec *executionContext) unmarshalInputDynoSessionWhereInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "hasCar", "hasCarWith", "hasResults", "hasResultsWith", "hasDocuments", "hasDocumentsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "hasCar", "hasCarWith", "hasResults", "hasResultsWith", "hasDocuments", "hasDocumentsWith", "hasMods", "hasModsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -34813,6 +34999,20 @@ func (ec *executionContext) unmarshalInputDynoSessionWhereInput(ctx context.Cont
 				return it, err
 			}
 			it.HasDocumentsWith = data
+		case "hasMods":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasMods"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasMods = data
+		case "hasModsWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasModsWith"))
+			data, err := ec.unmarshalOModWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐModWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasModsWith = data
 		}
 	}
 
@@ -37013,7 +37213,7 @@ func (ec *executionContext) unmarshalInputModWhereInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "category", "categoryNEQ", "categoryIn", "categoryNotIn", "status", "statusNEQ", "statusIn", "statusNotIn", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "stage", "stageNEQ", "stageIn", "stageNotIn", "stageGT", "stageGTE", "stageLT", "stageLTE", "stageContains", "stageHasPrefix", "stageHasSuffix", "stageIsNil", "stageNotNil", "stageEqualFold", "stageContainsFold", "hasCar", "hasCarWith", "hasTasks", "hasTasksWith", "hasProductOptions", "hasProductOptionsWith", "hasBuildLogs", "hasBuildLogsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleEqualFold", "titleContainsFold", "category", "categoryNEQ", "categoryIn", "categoryNotIn", "status", "statusNEQ", "statusIn", "statusNotIn", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "stage", "stageNEQ", "stageIn", "stageNotIn", "stageGT", "stageGTE", "stageLT", "stageLTE", "stageContains", "stageHasPrefix", "stageHasSuffix", "stageIsNil", "stageNotNil", "stageEqualFold", "stageContainsFold", "hasCar", "hasCarWith", "hasTasks", "hasTasksWith", "hasDynoSessions", "hasDynoSessionsWith", "hasProductOptions", "hasProductOptionsWith", "hasBuildLogs", "hasBuildLogsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -37594,6 +37794,20 @@ func (ec *executionContext) unmarshalInputModWhereInput(ctx context.Context, obj
 				return it, err
 			}
 			it.HasTasksWith = data
+		case "hasDynoSessions":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDynoSessions"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasDynoSessions = data
+		case "hasDynoSessionsWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasDynoSessionsWith"))
+			data, err := ec.unmarshalODynoSessionWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐDynoSessionWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasDynoSessionsWith = data
 		case "hasProductOptions":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasProductOptions"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -43315,7 +43529,7 @@ func (ec *executionContext) unmarshalInputUpdateDynoSessionInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "title", "notes", "clearNotes", "carID", "addResultIDs", "removeResultIDs", "clearResults", "addDocumentIDs", "removeDocumentIDs", "clearDocuments"}
+	fieldsInOrder := [...]string{"updateTime", "title", "notes", "clearNotes", "carID", "addResultIDs", "removeResultIDs", "clearResults", "addDocumentIDs", "removeDocumentIDs", "clearDocuments", "addModIDs", "removeModIDs", "clearMods"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -43399,6 +43613,27 @@ func (ec *executionContext) unmarshalInputUpdateDynoSessionInput(ctx context.Con
 				return it, err
 			}
 			it.ClearDocuments = data
+		case "addModIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addModIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddModIDs = data
+		case "removeModIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeModIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveModIDs = data
+		case "clearMods":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearMods"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearMods = data
 		}
 	}
 
@@ -43840,7 +44075,7 @@ func (ec *executionContext) unmarshalInputUpdateModInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "title", "category", "status", "description", "clearDescription", "stage", "clearStage", "carID", "addTaskIDs", "removeTaskIDs", "clearTasks", "addProductOptionIDs", "removeProductOptionIDs", "clearProductOptions", "addBuildLogIDs", "removeBuildLogIDs", "clearBuildLogs"}
+	fieldsInOrder := [...]string{"updateTime", "title", "category", "status", "description", "clearDescription", "stage", "clearStage", "carID", "addTaskIDs", "removeTaskIDs", "clearTasks", "addDynoSessionIDs", "removeDynoSessionIDs", "clearDynoSessions", "addProductOptionIDs", "removeProductOptionIDs", "clearProductOptions", "addBuildLogIDs", "removeBuildLogIDs", "clearBuildLogs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -43931,6 +44166,27 @@ func (ec *executionContext) unmarshalInputUpdateModInput(ctx context.Context, ob
 				return it, err
 			}
 			it.ClearTasks = data
+		case "addDynoSessionIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addDynoSessionIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddDynoSessionIDs = data
+		case "removeDynoSessionIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeDynoSessionIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveDynoSessionIDs = data
+		case "clearDynoSessions":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearDynoSessions"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearDynoSessions = data
 		case "addProductOptionIDs":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addProductOptionIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
@@ -49003,6 +49259,39 @@ func (ec *executionContext) _DynoSession(ctx context.Context, sel ast.SelectionS
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "mods":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DynoSession_mods(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -49871,6 +50160,39 @@ func (ec *executionContext) _Mod(ctx context.Context, sel ast.SelectionSet, obj 
 					}
 				}()
 				res = ec._Mod_tasks(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "dynoSessions":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Mod_dynoSessions(ctx, field, obj)
 				return res
 			}
 

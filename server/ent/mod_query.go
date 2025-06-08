@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -30,12 +31,14 @@ type ModQuery struct {
 	predicates              []predicate.Mod
 	withCar                 *CarQuery
 	withTasks               *TaskQuery
+	withDynoSessions        *DynoSessionQuery
 	withProductOptions      *ModProductOptionQuery
 	withBuildLogs           *BuildLogQuery
 	withFKs                 bool
 	modifiers               []func(*sql.Selector)
 	loadTotal               []func(context.Context, []*Mod) error
 	withNamedTasks          map[string]*TaskQuery
+	withNamedDynoSessions   map[string]*DynoSessionQuery
 	withNamedProductOptions map[string]*ModProductOptionQuery
 	withNamedBuildLogs      map[string]*BuildLogQuery
 	// intermediate query (i.e. traversal path).
@@ -111,6 +114,28 @@ func (mq *ModQuery) QueryTasks() *TaskQuery {
 			sqlgraph.From(mod.Table, mod.FieldID, selector),
 			sqlgraph.To(task.Table, task.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, mod.TasksTable, mod.TasksPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDynoSessions chains the current query on the "dyno_sessions" edge.
+func (mq *ModQuery) QueryDynoSessions() *DynoSessionQuery {
+	query := (&DynoSessionClient{config: mq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := mq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := mq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(mod.Table, mod.FieldID, selector),
+			sqlgraph.To(dynosession.Table, dynosession.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, mod.DynoSessionsTable, mod.DynoSessionsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
 		return fromU, nil
@@ -356,6 +381,7 @@ func (mq *ModQuery) Clone() *ModQuery {
 		predicates:         append([]predicate.Mod{}, mq.predicates...),
 		withCar:            mq.withCar.Clone(),
 		withTasks:          mq.withTasks.Clone(),
+		withDynoSessions:   mq.withDynoSessions.Clone(),
 		withProductOptions: mq.withProductOptions.Clone(),
 		withBuildLogs:      mq.withBuildLogs.Clone(),
 		// clone intermediate query.
@@ -383,6 +409,17 @@ func (mq *ModQuery) WithTasks(opts ...func(*TaskQuery)) *ModQuery {
 		opt(query)
 	}
 	mq.withTasks = query
+	return mq
+}
+
+// WithDynoSessions tells the query-builder to eager-load the nodes that are connected to
+// the "dyno_sessions" edge. The optional arguments are used to configure the query builder of the edge.
+func (mq *ModQuery) WithDynoSessions(opts ...func(*DynoSessionQuery)) *ModQuery {
+	query := (&DynoSessionClient{config: mq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	mq.withDynoSessions = query
 	return mq
 }
 
@@ -487,9 +524,10 @@ func (mq *ModQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mod, err
 		nodes       = []*Mod{}
 		withFKs     = mq.withFKs
 		_spec       = mq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			mq.withCar != nil,
 			mq.withTasks != nil,
+			mq.withDynoSessions != nil,
 			mq.withProductOptions != nil,
 			mq.withBuildLogs != nil,
 		}
@@ -534,6 +572,13 @@ func (mq *ModQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mod, err
 			return nil, err
 		}
 	}
+	if query := mq.withDynoSessions; query != nil {
+		if err := mq.loadDynoSessions(ctx, query, nodes,
+			func(n *Mod) { n.Edges.DynoSessions = []*DynoSession{} },
+			func(n *Mod, e *DynoSession) { n.Edges.DynoSessions = append(n.Edges.DynoSessions, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := mq.withProductOptions; query != nil {
 		if err := mq.loadProductOptions(ctx, query, nodes,
 			func(n *Mod) { n.Edges.ProductOptions = []*ModProductOption{} },
@@ -552,6 +597,13 @@ func (mq *ModQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mod, err
 		if err := mq.loadTasks(ctx, query, nodes,
 			func(n *Mod) { n.appendNamedTasks(name) },
 			func(n *Mod, e *Task) { n.appendNamedTasks(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range mq.withNamedDynoSessions {
+		if err := mq.loadDynoSessions(ctx, query, nodes,
+			func(n *Mod) { n.appendNamedDynoSessions(name) },
+			func(n *Mod, e *DynoSession) { n.appendNamedDynoSessions(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -663,6 +715,67 @@ func (mq *ModQuery) loadTasks(ctx context.Context, query *TaskQuery, nodes []*Mo
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "tasks" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (mq *ModQuery) loadDynoSessions(ctx context.Context, query *DynoSessionQuery, nodes []*Mod, init func(*Mod), assign func(*Mod, *DynoSession)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Mod)
+	nids := make(map[uuid.UUID]map[*Mod]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(mod.DynoSessionsTable)
+		s.Join(joinT).On(s.C(dynosession.FieldID), joinT.C(mod.DynoSessionsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(mod.DynoSessionsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(mod.DynoSessionsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Mod]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*DynoSession](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "dyno_sessions" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)
@@ -858,6 +971,20 @@ func (mq *ModQuery) WithNamedTasks(name string, opts ...func(*TaskQuery)) *ModQu
 		mq.withNamedTasks = make(map[string]*TaskQuery)
 	}
 	mq.withNamedTasks[name] = query
+	return mq
+}
+
+// WithNamedDynoSessions tells the query-builder to eager-load the nodes that are connected to the "dyno_sessions"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (mq *ModQuery) WithNamedDynoSessions(name string, opts ...func(*DynoSessionQuery)) *ModQuery {
+	query := (&DynoSessionClient{config: mq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if mq.withNamedDynoSessions == nil {
+		mq.withNamedDynoSessions = make(map[string]*DynoSessionQuery)
+	}
+	mq.withNamedDynoSessions[name] = query
 	return mq
 }
 

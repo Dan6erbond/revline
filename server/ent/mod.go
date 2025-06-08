@@ -46,17 +46,20 @@ type ModEdges struct {
 	Car *Car `json:"car,omitempty"`
 	// Tasks holds the value of the tasks edge.
 	Tasks []*Task `json:"tasks,omitempty"`
+	// DynoSessions holds the value of the dyno_sessions edge.
+	DynoSessions []*DynoSession `json:"dyno_sessions,omitempty"`
 	// ProductOptions holds the value of the product_options edge.
 	ProductOptions []*ModProductOption `json:"product_options,omitempty"`
 	// BuildLogs holds the value of the build_logs edge.
 	BuildLogs []*BuildLog `json:"build_logs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 	// totalCount holds the count of the edges above.
-	totalCount [4]map[string]int
+	totalCount [5]map[string]int
 
 	namedTasks          map[string][]*Task
+	namedDynoSessions   map[string][]*DynoSession
 	namedProductOptions map[string][]*ModProductOption
 	namedBuildLogs      map[string][]*BuildLog
 }
@@ -81,10 +84,19 @@ func (e ModEdges) TasksOrErr() ([]*Task, error) {
 	return nil, &NotLoadedError{edge: "tasks"}
 }
 
+// DynoSessionsOrErr returns the DynoSessions value or an error if the edge
+// was not loaded in eager-loading.
+func (e ModEdges) DynoSessionsOrErr() ([]*DynoSession, error) {
+	if e.loadedTypes[2] {
+		return e.DynoSessions, nil
+	}
+	return nil, &NotLoadedError{edge: "dyno_sessions"}
+}
+
 // ProductOptionsOrErr returns the ProductOptions value or an error if the edge
 // was not loaded in eager-loading.
 func (e ModEdges) ProductOptionsOrErr() ([]*ModProductOption, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.ProductOptions, nil
 	}
 	return nil, &NotLoadedError{edge: "product_options"}
@@ -93,7 +105,7 @@ func (e ModEdges) ProductOptionsOrErr() ([]*ModProductOption, error) {
 // BuildLogsOrErr returns the BuildLogs value or an error if the edge
 // was not loaded in eager-loading.
 func (e ModEdges) BuildLogsOrErr() ([]*BuildLog, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.BuildLogs, nil
 	}
 	return nil, &NotLoadedError{edge: "build_logs"}
@@ -207,6 +219,11 @@ func (m *Mod) QueryTasks() *TaskQuery {
 	return NewModClient(m.config).QueryTasks(m)
 }
 
+// QueryDynoSessions queries the "dyno_sessions" edge of the Mod entity.
+func (m *Mod) QueryDynoSessions() *DynoSessionQuery {
+	return NewModClient(m.config).QueryDynoSessions(m)
+}
+
 // QueryProductOptions queries the "product_options" edge of the Mod entity.
 func (m *Mod) QueryProductOptions() *ModProductOptionQuery {
 	return NewModClient(m.config).QueryProductOptions(m)
@@ -289,6 +306,30 @@ func (m *Mod) appendNamedTasks(name string, edges ...*Task) {
 		m.Edges.namedTasks[name] = []*Task{}
 	} else {
 		m.Edges.namedTasks[name] = append(m.Edges.namedTasks[name], edges...)
+	}
+}
+
+// NamedDynoSessions returns the DynoSessions named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (m *Mod) NamedDynoSessions(name string) ([]*DynoSession, error) {
+	if m.Edges.namedDynoSessions == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := m.Edges.namedDynoSessions[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (m *Mod) appendNamedDynoSessions(name string, edges ...*DynoSession) {
+	if m.Edges.namedDynoSessions == nil {
+		m.Edges.namedDynoSessions = make(map[string][]*DynoSession)
+	}
+	if len(edges) == 0 {
+		m.Edges.namedDynoSessions[name] = []*DynoSession{}
+	} else {
+		m.Edges.namedDynoSessions[name] = append(m.Edges.namedDynoSessions[name], edges...)
 	}
 }
 

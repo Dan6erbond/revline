@@ -36,6 +36,8 @@ const (
 	EdgeCar = "car"
 	// EdgeTasks holds the string denoting the tasks edge name in mutations.
 	EdgeTasks = "tasks"
+	// EdgeDynoSessions holds the string denoting the dyno_sessions edge name in mutations.
+	EdgeDynoSessions = "dyno_sessions"
 	// EdgeProductOptions holds the string denoting the product_options edge name in mutations.
 	EdgeProductOptions = "product_options"
 	// EdgeBuildLogs holds the string denoting the build_logs edge name in mutations.
@@ -54,6 +56,11 @@ const (
 	// TasksInverseTable is the table name for the Task entity.
 	// It exists in this package in order to avoid circular dependency with the "task" package.
 	TasksInverseTable = "tasks"
+	// DynoSessionsTable is the table that holds the dyno_sessions relation/edge. The primary key declared below.
+	DynoSessionsTable = "dyno_session_mods"
+	// DynoSessionsInverseTable is the table name for the DynoSession entity.
+	// It exists in this package in order to avoid circular dependency with the "dynosession" package.
+	DynoSessionsInverseTable = "dyno_sessions"
 	// ProductOptionsTable is the table that holds the product_options relation/edge.
 	ProductOptionsTable = "mod_product_options"
 	// ProductOptionsInverseTable is the table name for the ModProductOption entity.
@@ -90,6 +97,9 @@ var (
 	// TasksPrimaryKey and TasksColumn2 are the table columns denoting the
 	// primary key for the tasks relation (M2M).
 	TasksPrimaryKey = []string{"task_id", "mod_id"}
+	// DynoSessionsPrimaryKey and DynoSessionsColumn2 are the table columns denoting the
+	// primary key for the dyno_sessions relation (M2M).
+	DynoSessionsPrimaryKey = []string{"dyno_session_id", "mod_id"}
 	// BuildLogsPrimaryKey and BuildLogsColumn2 are the table columns denoting the
 	// primary key for the build_logs relation (M2M).
 	BuildLogsPrimaryKey = []string{"mod_id", "build_log_id"}
@@ -236,6 +246,20 @@ func ByTasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByDynoSessionsCount orders the results by dyno_sessions count.
+func ByDynoSessionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDynoSessionsStep(), opts...)
+	}
+}
+
+// ByDynoSessions orders the results by dyno_sessions terms.
+func ByDynoSessions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDynoSessionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByProductOptionsCount orders the results by product_options count.
 func ByProductOptionsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -275,6 +299,13 @@ func newTasksStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TasksInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, TasksTable, TasksPrimaryKey...),
+	)
+}
+func newDynoSessionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DynoSessionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, DynoSessionsTable, DynoSessionsPrimaryKey...),
 	)
 }
 func newProductOptionsStep() *sqlgraph.Step {

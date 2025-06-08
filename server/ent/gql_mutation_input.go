@@ -944,6 +944,7 @@ type CreateDynoSessionInput struct {
 	CarID       uuid.UUID
 	ResultIDs   []uuid.UUID
 	DocumentIDs []uuid.UUID
+	ModIDs      []uuid.UUID
 }
 
 // Mutate applies the CreateDynoSessionInput on the DynoSessionMutation builder.
@@ -964,6 +965,9 @@ func (i *CreateDynoSessionInput) Mutate(m *DynoSessionMutation) {
 	}
 	if v := i.DocumentIDs; len(v) > 0 {
 		m.AddDocumentIDs(v...)
+	}
+	if v := i.ModIDs; len(v) > 0 {
+		m.AddModIDs(v...)
 	}
 }
 
@@ -986,6 +990,9 @@ type UpdateDynoSessionInput struct {
 	ClearDocuments    bool
 	AddDocumentIDs    []uuid.UUID
 	RemoveDocumentIDs []uuid.UUID
+	ClearMods         bool
+	AddModIDs         []uuid.UUID
+	RemoveModIDs      []uuid.UUID
 }
 
 // Mutate applies the UpdateDynoSessionInput on the DynoSessionMutation builder.
@@ -1022,6 +1029,15 @@ func (i *UpdateDynoSessionInput) Mutate(m *DynoSessionMutation) {
 	}
 	if v := i.RemoveDocumentIDs; len(v) > 0 {
 		m.RemoveDocumentIDs(v...)
+	}
+	if i.ClearMods {
+		m.ClearMods()
+	}
+	if v := i.AddModIDs; len(v) > 0 {
+		m.AddModIDs(v...)
+	}
+	if v := i.RemoveModIDs; len(v) > 0 {
+		m.RemoveModIDs(v...)
 	}
 }
 
@@ -1462,6 +1478,7 @@ type CreateModInput struct {
 	Stage            *string
 	CarID            uuid.UUID
 	TaskIDs          []uuid.UUID
+	DynoSessionIDs   []uuid.UUID
 	ProductOptionIDs []uuid.UUID
 	BuildLogIDs      []uuid.UUID
 }
@@ -1488,6 +1505,9 @@ func (i *CreateModInput) Mutate(m *ModMutation) {
 	m.SetCarID(i.CarID)
 	if v := i.TaskIDs; len(v) > 0 {
 		m.AddTaskIDs(v...)
+	}
+	if v := i.DynoSessionIDs; len(v) > 0 {
+		m.AddDynoSessionIDs(v...)
 	}
 	if v := i.ProductOptionIDs; len(v) > 0 {
 		m.AddProductOptionIDs(v...)
@@ -1517,6 +1537,9 @@ type UpdateModInput struct {
 	ClearTasks             bool
 	AddTaskIDs             []uuid.UUID
 	RemoveTaskIDs          []uuid.UUID
+	ClearDynoSessions      bool
+	AddDynoSessionIDs      []uuid.UUID
+	RemoveDynoSessionIDs   []uuid.UUID
 	ClearProductOptions    bool
 	AddProductOptionIDs    []uuid.UUID
 	RemoveProductOptionIDs []uuid.UUID
@@ -1562,6 +1585,15 @@ func (i *UpdateModInput) Mutate(m *ModMutation) {
 	}
 	if v := i.RemoveTaskIDs; len(v) > 0 {
 		m.RemoveTaskIDs(v...)
+	}
+	if i.ClearDynoSessions {
+		m.ClearDynoSessions()
+	}
+	if v := i.AddDynoSessionIDs; len(v) > 0 {
+		m.AddDynoSessionIDs(v...)
+	}
+	if v := i.RemoveDynoSessionIDs; len(v) > 0 {
+		m.RemoveDynoSessionIDs(v...)
 	}
 	if i.ClearProductOptions {
 		m.ClearProductOptions()

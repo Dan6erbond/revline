@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/predicate"
@@ -147,6 +148,21 @@ func (mu *ModUpdate) AddTasks(t ...*Task) *ModUpdate {
 	return mu.AddTaskIDs(ids...)
 }
 
+// AddDynoSessionIDs adds the "dyno_sessions" edge to the DynoSession entity by IDs.
+func (mu *ModUpdate) AddDynoSessionIDs(ids ...uuid.UUID) *ModUpdate {
+	mu.mutation.AddDynoSessionIDs(ids...)
+	return mu
+}
+
+// AddDynoSessions adds the "dyno_sessions" edges to the DynoSession entity.
+func (mu *ModUpdate) AddDynoSessions(d ...*DynoSession) *ModUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return mu.AddDynoSessionIDs(ids...)
+}
+
 // AddProductOptionIDs adds the "product_options" edge to the ModProductOption entity by IDs.
 func (mu *ModUpdate) AddProductOptionIDs(ids ...uuid.UUID) *ModUpdate {
 	mu.mutation.AddProductOptionIDs(ids...)
@@ -207,6 +223,27 @@ func (mu *ModUpdate) RemoveTasks(t ...*Task) *ModUpdate {
 		ids[i] = t[i].ID
 	}
 	return mu.RemoveTaskIDs(ids...)
+}
+
+// ClearDynoSessions clears all "dyno_sessions" edges to the DynoSession entity.
+func (mu *ModUpdate) ClearDynoSessions() *ModUpdate {
+	mu.mutation.ClearDynoSessions()
+	return mu
+}
+
+// RemoveDynoSessionIDs removes the "dyno_sessions" edge to DynoSession entities by IDs.
+func (mu *ModUpdate) RemoveDynoSessionIDs(ids ...uuid.UUID) *ModUpdate {
+	mu.mutation.RemoveDynoSessionIDs(ids...)
+	return mu
+}
+
+// RemoveDynoSessions removes "dyno_sessions" edges to DynoSession entities.
+func (mu *ModUpdate) RemoveDynoSessions(d ...*DynoSession) *ModUpdate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return mu.RemoveDynoSessionIDs(ids...)
 }
 
 // ClearProductOptions clears all "product_options" edges to the ModProductOption entity.
@@ -408,6 +445,51 @@ func (mu *ModUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if mu.mutation.DynoSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   mod.DynoSessionsTable,
+			Columns: mod.DynoSessionsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.RemovedDynoSessionsIDs(); len(nodes) > 0 && !mu.mutation.DynoSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   mod.DynoSessionsTable,
+			Columns: mod.DynoSessionsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.DynoSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   mod.DynoSessionsTable,
+			Columns: mod.DynoSessionsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -639,6 +721,21 @@ func (muo *ModUpdateOne) AddTasks(t ...*Task) *ModUpdateOne {
 	return muo.AddTaskIDs(ids...)
 }
 
+// AddDynoSessionIDs adds the "dyno_sessions" edge to the DynoSession entity by IDs.
+func (muo *ModUpdateOne) AddDynoSessionIDs(ids ...uuid.UUID) *ModUpdateOne {
+	muo.mutation.AddDynoSessionIDs(ids...)
+	return muo
+}
+
+// AddDynoSessions adds the "dyno_sessions" edges to the DynoSession entity.
+func (muo *ModUpdateOne) AddDynoSessions(d ...*DynoSession) *ModUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return muo.AddDynoSessionIDs(ids...)
+}
+
 // AddProductOptionIDs adds the "product_options" edge to the ModProductOption entity by IDs.
 func (muo *ModUpdateOne) AddProductOptionIDs(ids ...uuid.UUID) *ModUpdateOne {
 	muo.mutation.AddProductOptionIDs(ids...)
@@ -699,6 +796,27 @@ func (muo *ModUpdateOne) RemoveTasks(t ...*Task) *ModUpdateOne {
 		ids[i] = t[i].ID
 	}
 	return muo.RemoveTaskIDs(ids...)
+}
+
+// ClearDynoSessions clears all "dyno_sessions" edges to the DynoSession entity.
+func (muo *ModUpdateOne) ClearDynoSessions() *ModUpdateOne {
+	muo.mutation.ClearDynoSessions()
+	return muo
+}
+
+// RemoveDynoSessionIDs removes the "dyno_sessions" edge to DynoSession entities by IDs.
+func (muo *ModUpdateOne) RemoveDynoSessionIDs(ids ...uuid.UUID) *ModUpdateOne {
+	muo.mutation.RemoveDynoSessionIDs(ids...)
+	return muo
+}
+
+// RemoveDynoSessions removes "dyno_sessions" edges to DynoSession entities.
+func (muo *ModUpdateOne) RemoveDynoSessions(d ...*DynoSession) *ModUpdateOne {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return muo.RemoveDynoSessionIDs(ids...)
 }
 
 // ClearProductOptions clears all "product_options" edges to the ModProductOption entity.
@@ -930,6 +1048,51 @@ func (muo *ModUpdateOne) sqlSave(ctx context.Context) (_node *Mod, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if muo.mutation.DynoSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   mod.DynoSessionsTable,
+			Columns: mod.DynoSessionsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.RemovedDynoSessionsIDs(); len(nodes) > 0 && !muo.mutation.DynoSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   mod.DynoSessionsTable,
+			Columns: mod.DynoSessionsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.DynoSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   mod.DynoSessionsTable,
+			Columns: mod.DynoSessionsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

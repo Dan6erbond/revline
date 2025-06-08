@@ -2156,6 +2156,22 @@ func (c *DynoSessionClient) QueryDocuments(ds *DynoSession) *DocumentQuery {
 	return query
 }
 
+// QueryMods queries the mods edge of a DynoSession.
+func (c *DynoSessionClient) QueryMods(ds *DynoSession) *ModQuery {
+	query := (&ModClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ds.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dynosession.Table, dynosession.FieldID, id),
+			sqlgraph.To(mod.Table, mod.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, dynosession.ModsTable, dynosession.ModsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ds.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *DynoSessionClient) Hooks() []Hook {
 	return c.hooks.DynoSession
@@ -2921,6 +2937,22 @@ func (c *ModClient) QueryTasks(m *Mod) *TaskQuery {
 			sqlgraph.From(mod.Table, mod.FieldID, id),
 			sqlgraph.To(task.Table, task.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, mod.TasksTable, mod.TasksPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDynoSessions queries the dyno_sessions edge of a Mod.
+func (c *ModClient) QueryDynoSessions(m *Mod) *DynoSessionQuery {
+	query := (&DynoSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(mod.Table, mod.FieldID, id),
+			sqlgraph.To(dynosession.Table, dynosession.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, mod.DynoSessionsTable, mod.DynoSessionsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
 		return fromV, nil

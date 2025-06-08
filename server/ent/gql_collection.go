@@ -1473,6 +1473,19 @@ func (ds *DynoSessionQuery) collectField(ctx context.Context, oneNode bool, opCt
 			ds.WithNamedDocuments(alias, func(wq *DocumentQuery) {
 				*wq = *query
 			})
+
+		case "mods":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&ModClient{config: ds.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, modImplementors)...); err != nil {
+				return err
+			}
+			ds.WithNamedMods(alias, func(wq *ModQuery) {
+				*wq = *query
+			})
 		case "createTime":
 			if _, ok := fieldSeen[dynosession.FieldCreateTime]; !ok {
 				selectedFields = append(selectedFields, dynosession.FieldCreateTime)
@@ -2009,6 +2022,19 @@ func (m *ModQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphq
 				return err
 			}
 			m.WithNamedTasks(alias, func(wq *TaskQuery) {
+				*wq = *query
+			})
+
+		case "dynoSessions":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&DynoSessionClient{config: m.config}).Query()
+			)
+			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, dynosessionImplementors)...); err != nil {
+				return err
+			}
+			m.WithNamedDynoSessions(alias, func(wq *DynoSessionQuery) {
 				*wq = *query
 			})
 

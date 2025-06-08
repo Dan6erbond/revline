@@ -7659,6 +7659,9 @@ type DynoSessionMutation struct {
 	documents        map[uuid.UUID]struct{}
 	removeddocuments map[uuid.UUID]struct{}
 	cleareddocuments bool
+	mods             map[uuid.UUID]struct{}
+	removedmods      map[uuid.UUID]struct{}
+	clearedmods      bool
 	done             bool
 	oldValue         func(context.Context) (*DynoSession, error)
 	predicates       []predicate.DynoSession
@@ -8072,6 +8075,60 @@ func (m *DynoSessionMutation) ResetDocuments() {
 	m.removeddocuments = nil
 }
 
+// AddModIDs adds the "mods" edge to the Mod entity by ids.
+func (m *DynoSessionMutation) AddModIDs(ids ...uuid.UUID) {
+	if m.mods == nil {
+		m.mods = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.mods[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMods clears the "mods" edge to the Mod entity.
+func (m *DynoSessionMutation) ClearMods() {
+	m.clearedmods = true
+}
+
+// ModsCleared reports if the "mods" edge to the Mod entity was cleared.
+func (m *DynoSessionMutation) ModsCleared() bool {
+	return m.clearedmods
+}
+
+// RemoveModIDs removes the "mods" edge to the Mod entity by IDs.
+func (m *DynoSessionMutation) RemoveModIDs(ids ...uuid.UUID) {
+	if m.removedmods == nil {
+		m.removedmods = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.mods, ids[i])
+		m.removedmods[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMods returns the removed IDs of the "mods" edge to the Mod entity.
+func (m *DynoSessionMutation) RemovedModsIDs() (ids []uuid.UUID) {
+	for id := range m.removedmods {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ModsIDs returns the "mods" edge IDs in the mutation.
+func (m *DynoSessionMutation) ModsIDs() (ids []uuid.UUID) {
+	for id := range m.mods {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMods resets all changes to the "mods" edge.
+func (m *DynoSessionMutation) ResetMods() {
+	m.mods = nil
+	m.clearedmods = false
+	m.removedmods = nil
+}
+
 // Where appends a list predicates to the DynoSessionMutation builder.
 func (m *DynoSessionMutation) Where(ps ...predicate.DynoSession) {
 	m.predicates = append(m.predicates, ps...)
@@ -8265,7 +8322,7 @@ func (m *DynoSessionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DynoSessionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.car != nil {
 		edges = append(edges, dynosession.EdgeCar)
 	}
@@ -8274,6 +8331,9 @@ func (m *DynoSessionMutation) AddedEdges() []string {
 	}
 	if m.documents != nil {
 		edges = append(edges, dynosession.EdgeDocuments)
+	}
+	if m.mods != nil {
+		edges = append(edges, dynosession.EdgeMods)
 	}
 	return edges
 }
@@ -8298,18 +8358,27 @@ func (m *DynoSessionMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case dynosession.EdgeMods:
+		ids := make([]ent.Value, 0, len(m.mods))
+		for id := range m.mods {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DynoSessionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedresults != nil {
 		edges = append(edges, dynosession.EdgeResults)
 	}
 	if m.removeddocuments != nil {
 		edges = append(edges, dynosession.EdgeDocuments)
+	}
+	if m.removedmods != nil {
+		edges = append(edges, dynosession.EdgeMods)
 	}
 	return edges
 }
@@ -8330,13 +8399,19 @@ func (m *DynoSessionMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case dynosession.EdgeMods:
+		ids := make([]ent.Value, 0, len(m.removedmods))
+		for id := range m.removedmods {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DynoSessionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedcar {
 		edges = append(edges, dynosession.EdgeCar)
 	}
@@ -8345,6 +8420,9 @@ func (m *DynoSessionMutation) ClearedEdges() []string {
 	}
 	if m.cleareddocuments {
 		edges = append(edges, dynosession.EdgeDocuments)
+	}
+	if m.clearedmods {
+		edges = append(edges, dynosession.EdgeMods)
 	}
 	return edges
 }
@@ -8359,6 +8437,8 @@ func (m *DynoSessionMutation) EdgeCleared(name string) bool {
 		return m.clearedresults
 	case dynosession.EdgeDocuments:
 		return m.cleareddocuments
+	case dynosession.EdgeMods:
+		return m.clearedmods
 	}
 	return false
 }
@@ -8386,6 +8466,9 @@ func (m *DynoSessionMutation) ResetEdge(name string) error {
 		return nil
 	case dynosession.EdgeDocuments:
 		m.ResetDocuments()
+		return nil
+	case dynosession.EdgeMods:
+		m.ResetMods()
 		return nil
 	}
 	return fmt.Errorf("unknown DynoSession edge %s", name)
@@ -11358,6 +11441,9 @@ type ModMutation struct {
 	tasks                  map[uuid.UUID]struct{}
 	removedtasks           map[uuid.UUID]struct{}
 	clearedtasks           bool
+	dyno_sessions          map[uuid.UUID]struct{}
+	removeddyno_sessions   map[uuid.UUID]struct{}
+	cleareddyno_sessions   bool
 	product_options        map[uuid.UUID]struct{}
 	removedproduct_options map[uuid.UUID]struct{}
 	clearedproduct_options bool
@@ -11844,6 +11930,60 @@ func (m *ModMutation) ResetTasks() {
 	m.removedtasks = nil
 }
 
+// AddDynoSessionIDs adds the "dyno_sessions" edge to the DynoSession entity by ids.
+func (m *ModMutation) AddDynoSessionIDs(ids ...uuid.UUID) {
+	if m.dyno_sessions == nil {
+		m.dyno_sessions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.dyno_sessions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDynoSessions clears the "dyno_sessions" edge to the DynoSession entity.
+func (m *ModMutation) ClearDynoSessions() {
+	m.cleareddyno_sessions = true
+}
+
+// DynoSessionsCleared reports if the "dyno_sessions" edge to the DynoSession entity was cleared.
+func (m *ModMutation) DynoSessionsCleared() bool {
+	return m.cleareddyno_sessions
+}
+
+// RemoveDynoSessionIDs removes the "dyno_sessions" edge to the DynoSession entity by IDs.
+func (m *ModMutation) RemoveDynoSessionIDs(ids ...uuid.UUID) {
+	if m.removeddyno_sessions == nil {
+		m.removeddyno_sessions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.dyno_sessions, ids[i])
+		m.removeddyno_sessions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDynoSessions returns the removed IDs of the "dyno_sessions" edge to the DynoSession entity.
+func (m *ModMutation) RemovedDynoSessionsIDs() (ids []uuid.UUID) {
+	for id := range m.removeddyno_sessions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DynoSessionsIDs returns the "dyno_sessions" edge IDs in the mutation.
+func (m *ModMutation) DynoSessionsIDs() (ids []uuid.UUID) {
+	for id := range m.dyno_sessions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDynoSessions resets all changes to the "dyno_sessions" edge.
+func (m *ModMutation) ResetDynoSessions() {
+	m.dyno_sessions = nil
+	m.cleareddyno_sessions = false
+	m.removeddyno_sessions = nil
+}
+
 // AddProductOptionIDs adds the "product_options" edge to the ModProductOption entity by ids.
 func (m *ModMutation) AddProductOptionIDs(ids ...uuid.UUID) {
 	if m.product_options == nil {
@@ -12202,12 +12342,15 @@ func (m *ModMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ModMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.car != nil {
 		edges = append(edges, mod.EdgeCar)
 	}
 	if m.tasks != nil {
 		edges = append(edges, mod.EdgeTasks)
+	}
+	if m.dyno_sessions != nil {
+		edges = append(edges, mod.EdgeDynoSessions)
 	}
 	if m.product_options != nil {
 		edges = append(edges, mod.EdgeProductOptions)
@@ -12232,6 +12375,12 @@ func (m *ModMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case mod.EdgeDynoSessions:
+		ids := make([]ent.Value, 0, len(m.dyno_sessions))
+		for id := range m.dyno_sessions {
+			ids = append(ids, id)
+		}
+		return ids
 	case mod.EdgeProductOptions:
 		ids := make([]ent.Value, 0, len(m.product_options))
 		for id := range m.product_options {
@@ -12250,9 +12399,12 @@ func (m *ModMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ModMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedtasks != nil {
 		edges = append(edges, mod.EdgeTasks)
+	}
+	if m.removeddyno_sessions != nil {
+		edges = append(edges, mod.EdgeDynoSessions)
 	}
 	if m.removedproduct_options != nil {
 		edges = append(edges, mod.EdgeProductOptions)
@@ -12270,6 +12422,12 @@ func (m *ModMutation) RemovedIDs(name string) []ent.Value {
 	case mod.EdgeTasks:
 		ids := make([]ent.Value, 0, len(m.removedtasks))
 		for id := range m.removedtasks {
+			ids = append(ids, id)
+		}
+		return ids
+	case mod.EdgeDynoSessions:
+		ids := make([]ent.Value, 0, len(m.removeddyno_sessions))
+		for id := range m.removeddyno_sessions {
 			ids = append(ids, id)
 		}
 		return ids
@@ -12291,12 +12449,15 @@ func (m *ModMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ModMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedcar {
 		edges = append(edges, mod.EdgeCar)
 	}
 	if m.clearedtasks {
 		edges = append(edges, mod.EdgeTasks)
+	}
+	if m.cleareddyno_sessions {
+		edges = append(edges, mod.EdgeDynoSessions)
 	}
 	if m.clearedproduct_options {
 		edges = append(edges, mod.EdgeProductOptions)
@@ -12315,6 +12476,8 @@ func (m *ModMutation) EdgeCleared(name string) bool {
 		return m.clearedcar
 	case mod.EdgeTasks:
 		return m.clearedtasks
+	case mod.EdgeDynoSessions:
+		return m.cleareddyno_sessions
 	case mod.EdgeProductOptions:
 		return m.clearedproduct_options
 	case mod.EdgeBuildLogs:
@@ -12343,6 +12506,9 @@ func (m *ModMutation) ResetEdge(name string) error {
 		return nil
 	case mod.EdgeTasks:
 		m.ResetTasks()
+		return nil
+	case mod.EdgeDynoSessions:
+		m.ResetDynoSessions()
 		return nil
 	case mod.EdgeProductOptions:
 		m.ResetProductOptions()

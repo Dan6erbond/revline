@@ -295,6 +295,29 @@ func HasDocumentsWith(preds ...predicate.Document) predicate.DynoSession {
 	})
 }
 
+// HasMods applies the HasEdge predicate on the "mods" edge.
+func HasMods() predicate.DynoSession {
+	return predicate.DynoSession(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, ModsTable, ModsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasModsWith applies the HasEdge predicate on the "mods" edge with a given conditions (other predicates).
+func HasModsWith(preds ...predicate.Mod) predicate.DynoSession {
+	return predicate.DynoSession(func(s *sql.Selector) {
+		step := newModsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.DynoSession) predicate.DynoSession {
 	return predicate.DynoSession(sql.AndPredicates(predicates...))

@@ -29,6 +29,8 @@ const (
 	EdgeResults = "results"
 	// EdgeDocuments holds the string denoting the documents edge name in mutations.
 	EdgeDocuments = "documents"
+	// EdgeMods holds the string denoting the mods edge name in mutations.
+	EdgeMods = "mods"
 	// Table holds the table name of the dynosession in the database.
 	Table = "dyno_sessions"
 	// CarTable is the table that holds the car relation/edge.
@@ -52,6 +54,11 @@ const (
 	DocumentsInverseTable = "documents"
 	// DocumentsColumn is the table column denoting the documents relation/edge.
 	DocumentsColumn = "dyno_session_documents"
+	// ModsTable is the table that holds the mods relation/edge. The primary key declared below.
+	ModsTable = "dyno_session_mods"
+	// ModsInverseTable is the table name for the Mod entity.
+	// It exists in this package in order to avoid circular dependency with the "mod" package.
+	ModsInverseTable = "mods"
 )
 
 // Columns holds all SQL columns for dynosession fields.
@@ -68,6 +75,12 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"car_dyno_sessions",
 }
+
+var (
+	// ModsPrimaryKey and ModsColumn2 are the table columns denoting the
+	// primary key for the mods relation (M2M).
+	ModsPrimaryKey = []string{"dyno_session_id", "mod_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -152,6 +165,20 @@ func ByDocuments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newDocumentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByModsCount orders the results by mods count.
+func ByModsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newModsStep(), opts...)
+	}
+}
+
+// ByMods orders the results by mods terms.
+func ByMods(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newModsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newCarStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -171,5 +198,12 @@ func newDocumentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DocumentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, DocumentsTable, DocumentsColumn),
+	)
+}
+func newModsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ModsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, ModsTable, ModsPrimaryKey...),
 	)
 }

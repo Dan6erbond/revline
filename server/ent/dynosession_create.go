@@ -14,6 +14,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/google/uuid"
 )
 
@@ -117,6 +118,21 @@ func (dsc *DynoSessionCreate) AddDocuments(d ...*Document) *DynoSessionCreate {
 		ids[i] = d[i].ID
 	}
 	return dsc.AddDocumentIDs(ids...)
+}
+
+// AddModIDs adds the "mods" edge to the Mod entity by IDs.
+func (dsc *DynoSessionCreate) AddModIDs(ids ...uuid.UUID) *DynoSessionCreate {
+	dsc.mutation.AddModIDs(ids...)
+	return dsc
+}
+
+// AddMods adds the "mods" edges to the Mod entity.
+func (dsc *DynoSessionCreate) AddMods(m ...*Mod) *DynoSessionCreate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return dsc.AddModIDs(ids...)
 }
 
 // Mutation returns the DynoSessionMutation object of the builder.
@@ -275,6 +291,22 @@ func (dsc *DynoSessionCreate) createSpec() (*DynoSession, *sqlgraph.CreateSpec) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dsc.mutation.ModsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dynosession.ModsTable,
+			Columns: dynosession.ModsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

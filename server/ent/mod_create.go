@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Dan6erbond/revline/ent/buildlog"
 	"github.com/Dan6erbond/revline/ent/car"
+	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/modproductoption"
 	"github.com/Dan6erbond/revline/ent/task"
@@ -145,6 +146,21 @@ func (mc *ModCreate) AddTasks(t ...*Task) *ModCreate {
 		ids[i] = t[i].ID
 	}
 	return mc.AddTaskIDs(ids...)
+}
+
+// AddDynoSessionIDs adds the "dyno_sessions" edge to the DynoSession entity by IDs.
+func (mc *ModCreate) AddDynoSessionIDs(ids ...uuid.UUID) *ModCreate {
+	mc.mutation.AddDynoSessionIDs(ids...)
+	return mc
+}
+
+// AddDynoSessions adds the "dyno_sessions" edges to the DynoSession entity.
+func (mc *ModCreate) AddDynoSessions(d ...*DynoSession) *ModCreate {
+	ids := make([]uuid.UUID, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return mc.AddDynoSessionIDs(ids...)
 }
 
 // AddProductOptionIDs adds the "product_options" edge to the ModProductOption entity by IDs.
@@ -349,6 +365,22 @@ func (mc *ModCreate) createSpec() (*Mod, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := mc.mutation.DynoSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   mod.DynoSessionsTable,
+			Columns: mod.DynoSessionsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dynosession.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

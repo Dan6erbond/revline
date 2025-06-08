@@ -939,6 +939,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Document",
 	)
 	graph.MustAddE(
+		"mods",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dynosession.ModsTable,
+			Columns: dynosession.ModsPrimaryKey,
+			Bidi:    false,
+		},
+		"DynoSession",
+		"Mod",
+	)
+	graph.MustAddE(
 		"car",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -1117,6 +1129,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Mod",
 		"Task",
+	)
+	graph.MustAddE(
+		"dyno_sessions",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   mod.DynoSessionsTable,
+			Columns: mod.DynoSessionsPrimaryKey,
+			Bidi:    false,
+		},
+		"Mod",
+		"DynoSession",
 	)
 	graph.MustAddE(
 		"product_options",
@@ -2636,6 +2660,20 @@ func (f *DynoSessionFilter) WhereHasDocumentsWith(preds ...predicate.Document) {
 	})))
 }
 
+// WhereHasMods applies a predicate to check if query has an edge mods.
+func (f *DynoSessionFilter) WhereHasMods() {
+	f.Where(entql.HasEdge("mods"))
+}
+
+// WhereHasModsWith applies a predicate to check if query has an edge mods with a given conditions (other predicates).
+func (f *DynoSessionFilter) WhereHasModsWith(preds ...predicate.Mod) {
+	f.Where(entql.HasEdgeWith("mods", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (eq *ExpenseQuery) addPredicate(pred func(s *sql.Selector)) {
 	eq.predicates = append(eq.predicates, pred)
@@ -3130,6 +3168,20 @@ func (f *ModFilter) WhereHasTasks() {
 // WhereHasTasksWith applies a predicate to check if query has an edge tasks with a given conditions (other predicates).
 func (f *ModFilter) WhereHasTasksWith(preds ...predicate.Task) {
 	f.Where(entql.HasEdgeWith("tasks", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasDynoSessions applies a predicate to check if query has an edge dyno_sessions.
+func (f *ModFilter) WhereHasDynoSessions() {
+	f.Where(entql.HasEdge("dyno_sessions"))
+}
+
+// WhereHasDynoSessionsWith applies a predicate to check if query has an edge dyno_sessions with a given conditions (other predicates).
+func (f *ModFilter) WhereHasDynoSessionsWith(preds ...predicate.DynoSession) {
+	f.Where(entql.HasEdgeWith("dyno_sessions", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

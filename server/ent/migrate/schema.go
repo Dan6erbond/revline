@@ -749,6 +749,31 @@ var (
 			},
 		},
 	}
+	// DynoSessionModsColumns holds the columns for the "dyno_session_mods" table.
+	DynoSessionModsColumns = []*schema.Column{
+		{Name: "dyno_session_id", Type: field.TypeUUID},
+		{Name: "mod_id", Type: field.TypeUUID},
+	}
+	// DynoSessionModsTable holds the schema information for the "dyno_session_mods" table.
+	DynoSessionModsTable = &schema.Table{
+		Name:       "dyno_session_mods",
+		Columns:    DynoSessionModsColumns,
+		PrimaryKey: []*schema.Column{DynoSessionModsColumns[0], DynoSessionModsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "dyno_session_mods_dyno_session_id",
+				Columns:    []*schema.Column{DynoSessionModsColumns[0]},
+				RefColumns: []*schema.Column{DynoSessionsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "dyno_session_mods_mod_id",
+				Columns:    []*schema.Column{DynoSessionModsColumns[1]},
+				RefColumns: []*schema.Column{ModsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// ModBuildLogsColumns holds the columns for the "mod_build_logs" table.
 	ModBuildLogsColumns = []*schema.Column{
 		{Name: "mod_id", Type: field.TypeUUID},
@@ -876,6 +901,7 @@ var (
 		UserSettingsTable,
 		AlbumMediaTable,
 		BuildLogMediaTable,
+		DynoSessionModsTable,
 		ModBuildLogsTable,
 		ServiceLogItemsTable,
 		ServiceScheduleItemsTable,
@@ -925,6 +951,8 @@ func init() {
 	AlbumMediaTable.ForeignKeys[1].RefTable = MediaTable
 	BuildLogMediaTable.ForeignKeys[0].RefTable = BuildLogsTable
 	BuildLogMediaTable.ForeignKeys[1].RefTable = MediaTable
+	DynoSessionModsTable.ForeignKeys[0].RefTable = DynoSessionsTable
+	DynoSessionModsTable.ForeignKeys[1].RefTable = ModsTable
 	ModBuildLogsTable.ForeignKeys[0].RefTable = ModsTable
 	ModBuildLogsTable.ForeignKeys[1].RefTable = BuildLogsTable
 	ServiceLogItemsTable.ForeignKeys[0].RefTable = ServiceLogsTable

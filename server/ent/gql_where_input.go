@@ -3489,6 +3489,10 @@ type DynoSessionWhereInput struct {
 	// "documents" edge predicates.
 	HasDocuments     *bool                 `json:"hasDocuments,omitempty"`
 	HasDocumentsWith []*DocumentWhereInput `json:"hasDocumentsWith,omitempty"`
+
+	// "mods" edge predicates.
+	HasMods     *bool            `json:"hasMods,omitempty"`
+	HasModsWith []*ModWhereInput `json:"hasModsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -3727,6 +3731,24 @@ func (i *DynoSessionWhereInput) P() (predicate.DynoSession, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, dynosession.HasDocumentsWith(with...))
+	}
+	if i.HasMods != nil {
+		p := dynosession.HasMods()
+		if !*i.HasMods {
+			p = dynosession.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasModsWith) > 0 {
+		with := make([]predicate.Mod, 0, len(i.HasModsWith))
+		for _, w := range i.HasModsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasModsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, dynosession.HasModsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -5100,6 +5122,10 @@ type ModWhereInput struct {
 	HasTasks     *bool             `json:"hasTasks,omitempty"`
 	HasTasksWith []*TaskWhereInput `json:"hasTasksWith,omitempty"`
 
+	// "dyno_sessions" edge predicates.
+	HasDynoSessions     *bool                    `json:"hasDynoSessions,omitempty"`
+	HasDynoSessionsWith []*DynoSessionWhereInput `json:"hasDynoSessionsWith,omitempty"`
+
 	// "product_options" edge predicates.
 	HasProductOptions     *bool                         `json:"hasProductOptions,omitempty"`
 	HasProductOptionsWith []*ModProductOptionWhereInput `json:"hasProductOptionsWith,omitempty"`
@@ -5441,6 +5467,24 @@ func (i *ModWhereInput) P() (predicate.Mod, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, mod.HasTasksWith(with...))
+	}
+	if i.HasDynoSessions != nil {
+		p := mod.HasDynoSessions()
+		if !*i.HasDynoSessions {
+			p = mod.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasDynoSessionsWith) > 0 {
+		with := make([]predicate.DynoSession, 0, len(i.HasDynoSessionsWith))
+		for _, w := range i.HasDynoSessionsWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasDynoSessionsWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, mod.HasDynoSessionsWith(with...))
 	}
 	if i.HasProductOptions != nil {
 		p := mod.HasProductOptions()

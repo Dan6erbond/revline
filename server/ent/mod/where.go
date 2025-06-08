@@ -462,6 +462,29 @@ func HasTasksWith(preds ...predicate.Task) predicate.Mod {
 	})
 }
 
+// HasDynoSessions applies the HasEdge predicate on the "dyno_sessions" edge.
+func HasDynoSessions() predicate.Mod {
+	return predicate.Mod(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DynoSessionsTable, DynoSessionsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDynoSessionsWith applies the HasEdge predicate on the "dyno_sessions" edge with a given conditions (other predicates).
+func HasDynoSessionsWith(preds ...predicate.DynoSession) predicate.Mod {
+	return predicate.Mod(func(s *sql.Selector) {
+		step := newDynoSessionsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasProductOptions applies the HasEdge predicate on the "product_options" edge.
 func HasProductOptions() predicate.Mod {
 	return predicate.Mod(func(s *sql.Selector) {

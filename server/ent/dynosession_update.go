@@ -15,6 +15,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/google/uuid"
 )
@@ -105,6 +106,21 @@ func (dsu *DynoSessionUpdate) AddDocuments(d ...*Document) *DynoSessionUpdate {
 	return dsu.AddDocumentIDs(ids...)
 }
 
+// AddModIDs adds the "mods" edge to the Mod entity by IDs.
+func (dsu *DynoSessionUpdate) AddModIDs(ids ...uuid.UUID) *DynoSessionUpdate {
+	dsu.mutation.AddModIDs(ids...)
+	return dsu
+}
+
+// AddMods adds the "mods" edges to the Mod entity.
+func (dsu *DynoSessionUpdate) AddMods(m ...*Mod) *DynoSessionUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return dsu.AddModIDs(ids...)
+}
+
 // Mutation returns the DynoSessionMutation object of the builder.
 func (dsu *DynoSessionUpdate) Mutation() *DynoSessionMutation {
 	return dsu.mutation
@@ -156,6 +172,27 @@ func (dsu *DynoSessionUpdate) RemoveDocuments(d ...*Document) *DynoSessionUpdate
 		ids[i] = d[i].ID
 	}
 	return dsu.RemoveDocumentIDs(ids...)
+}
+
+// ClearMods clears all "mods" edges to the Mod entity.
+func (dsu *DynoSessionUpdate) ClearMods() *DynoSessionUpdate {
+	dsu.mutation.ClearMods()
+	return dsu
+}
+
+// RemoveModIDs removes the "mods" edge to Mod entities by IDs.
+func (dsu *DynoSessionUpdate) RemoveModIDs(ids ...uuid.UUID) *DynoSessionUpdate {
+	dsu.mutation.RemoveModIDs(ids...)
+	return dsu
+}
+
+// RemoveMods removes "mods" edges to Mod entities.
+func (dsu *DynoSessionUpdate) RemoveMods(m ...*Mod) *DynoSessionUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return dsu.RemoveModIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -345,6 +382,51 @@ func (dsu *DynoSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if dsu.mutation.ModsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dynosession.ModsTable,
+			Columns: dynosession.ModsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dsu.mutation.RemovedModsIDs(); len(nodes) > 0 && !dsu.mutation.ModsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dynosession.ModsTable,
+			Columns: dynosession.ModsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dsu.mutation.ModsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dynosession.ModsTable,
+			Columns: dynosession.ModsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, dsu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{dynosession.Label}
@@ -438,6 +520,21 @@ func (dsuo *DynoSessionUpdateOne) AddDocuments(d ...*Document) *DynoSessionUpdat
 	return dsuo.AddDocumentIDs(ids...)
 }
 
+// AddModIDs adds the "mods" edge to the Mod entity by IDs.
+func (dsuo *DynoSessionUpdateOne) AddModIDs(ids ...uuid.UUID) *DynoSessionUpdateOne {
+	dsuo.mutation.AddModIDs(ids...)
+	return dsuo
+}
+
+// AddMods adds the "mods" edges to the Mod entity.
+func (dsuo *DynoSessionUpdateOne) AddMods(m ...*Mod) *DynoSessionUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return dsuo.AddModIDs(ids...)
+}
+
 // Mutation returns the DynoSessionMutation object of the builder.
 func (dsuo *DynoSessionUpdateOne) Mutation() *DynoSessionMutation {
 	return dsuo.mutation
@@ -489,6 +586,27 @@ func (dsuo *DynoSessionUpdateOne) RemoveDocuments(d ...*Document) *DynoSessionUp
 		ids[i] = d[i].ID
 	}
 	return dsuo.RemoveDocumentIDs(ids...)
+}
+
+// ClearMods clears all "mods" edges to the Mod entity.
+func (dsuo *DynoSessionUpdateOne) ClearMods() *DynoSessionUpdateOne {
+	dsuo.mutation.ClearMods()
+	return dsuo
+}
+
+// RemoveModIDs removes the "mods" edge to Mod entities by IDs.
+func (dsuo *DynoSessionUpdateOne) RemoveModIDs(ids ...uuid.UUID) *DynoSessionUpdateOne {
+	dsuo.mutation.RemoveModIDs(ids...)
+	return dsuo
+}
+
+// RemoveMods removes "mods" edges to Mod entities.
+func (dsuo *DynoSessionUpdateOne) RemoveMods(m ...*Mod) *DynoSessionUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return dsuo.RemoveModIDs(ids...)
 }
 
 // Where appends a list predicates to the DynoSessionUpdate builder.
@@ -701,6 +819,51 @@ func (dsuo *DynoSessionUpdateOne) sqlSave(ctx context.Context) (_node *DynoSessi
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if dsuo.mutation.ModsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dynosession.ModsTable,
+			Columns: dynosession.ModsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dsuo.mutation.RemovedModsIDs(); len(nodes) > 0 && !dsuo.mutation.ModsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dynosession.ModsTable,
+			Columns: dynosession.ModsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dsuo.mutation.ModsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   dynosession.ModsTable,
+			Columns: dynosession.ModsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(mod.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

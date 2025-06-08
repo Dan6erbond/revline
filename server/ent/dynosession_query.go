@@ -16,6 +16,7 @@ import (
 	"github.com/Dan6erbond/revline/ent/document"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
+	"github.com/Dan6erbond/revline/ent/mod"
 	"github.com/Dan6erbond/revline/ent/predicate"
 	"github.com/google/uuid"
 )
@@ -30,11 +31,13 @@ type DynoSessionQuery struct {
 	withCar            *CarQuery
 	withResults        *DynoResultQuery
 	withDocuments      *DocumentQuery
+	withMods           *ModQuery
 	withFKs            bool
 	modifiers          []func(*sql.Selector)
 	loadTotal          []func(context.Context, []*DynoSession) error
 	withNamedResults   map[string]*DynoResultQuery
 	withNamedDocuments map[string]*DocumentQuery
+	withNamedMods      map[string]*ModQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -130,6 +133,28 @@ func (dsq *DynoSessionQuery) QueryDocuments() *DocumentQuery {
 			sqlgraph.From(dynosession.Table, dynosession.FieldID, selector),
 			sqlgraph.To(document.Table, document.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, dynosession.DocumentsTable, dynosession.DocumentsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dsq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMods chains the current query on the "mods" edge.
+func (dsq *DynoSessionQuery) QueryMods() *ModQuery {
+	query := (&ModClient{config: dsq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dsq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dsq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dynosession.Table, dynosession.FieldID, selector),
+			sqlgraph.To(mod.Table, mod.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, dynosession.ModsTable, dynosession.ModsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(dsq.driver.Dialect(), step)
 		return fromU, nil
@@ -332,6 +357,7 @@ func (dsq *DynoSessionQuery) Clone() *DynoSessionQuery {
 		withCar:       dsq.withCar.Clone(),
 		withResults:   dsq.withResults.Clone(),
 		withDocuments: dsq.withDocuments.Clone(),
+		withMods:      dsq.withMods.Clone(),
 		// clone intermediate query.
 		sql:  dsq.sql.Clone(),
 		path: dsq.path,
@@ -368,6 +394,17 @@ func (dsq *DynoSessionQuery) WithDocuments(opts ...func(*DocumentQuery)) *DynoSe
 		opt(query)
 	}
 	dsq.withDocuments = query
+	return dsq
+}
+
+// WithMods tells the query-builder to eager-load the nodes that are connected to
+// the "mods" edge. The optional arguments are used to configure the query builder of the edge.
+func (dsq *DynoSessionQuery) WithMods(opts ...func(*ModQuery)) *DynoSessionQuery {
+	query := (&ModClient{config: dsq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	dsq.withMods = query
 	return dsq
 }
 
@@ -450,10 +487,11 @@ func (dsq *DynoSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		nodes       = []*DynoSession{}
 		withFKs     = dsq.withFKs
 		_spec       = dsq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			dsq.withCar != nil,
 			dsq.withResults != nil,
 			dsq.withDocuments != nil,
+			dsq.withMods != nil,
 		}
 	)
 	if dsq.withCar != nil {
@@ -503,6 +541,13 @@ func (dsq *DynoSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 			return nil, err
 		}
 	}
+	if query := dsq.withMods; query != nil {
+		if err := dsq.loadMods(ctx, query, nodes,
+			func(n *DynoSession) { n.Edges.Mods = []*Mod{} },
+			func(n *DynoSession, e *Mod) { n.Edges.Mods = append(n.Edges.Mods, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range dsq.withNamedResults {
 		if err := dsq.loadResults(ctx, query, nodes,
 			func(n *DynoSession) { n.appendNamedResults(name) },
@@ -514,6 +559,13 @@ func (dsq *DynoSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		if err := dsq.loadDocuments(ctx, query, nodes,
 			func(n *DynoSession) { n.appendNamedDocuments(name) },
 			func(n *DynoSession, e *Document) { n.appendNamedDocuments(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range dsq.withNamedMods {
+		if err := dsq.loadMods(ctx, query, nodes,
+			func(n *DynoSession) { n.appendNamedMods(name) },
+			func(n *DynoSession, e *Mod) { n.appendNamedMods(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -616,6 +668,67 @@ func (dsq *DynoSessionQuery) loadDocuments(ctx context.Context, query *DocumentQ
 			return fmt.Errorf(`unexpected referenced foreign-key "dyno_session_documents" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (dsq *DynoSessionQuery) loadMods(ctx context.Context, query *ModQuery, nodes []*DynoSession, init func(*DynoSession), assign func(*DynoSession, *Mod)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*DynoSession)
+	nids := make(map[uuid.UUID]map[*DynoSession]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(dynosession.ModsTable)
+		s.Join(joinT).On(s.C(mod.FieldID), joinT.C(dynosession.ModsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(dynosession.ModsPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(dynosession.ModsPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*DynoSession]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Mod](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "mods" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
@@ -729,6 +842,20 @@ func (dsq *DynoSessionQuery) WithNamedDocuments(name string, opts ...func(*Docum
 		dsq.withNamedDocuments = make(map[string]*DocumentQuery)
 	}
 	dsq.withNamedDocuments[name] = query
+	return dsq
+}
+
+// WithNamedMods tells the query-builder to eager-load the nodes that are connected to the "mods"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (dsq *DynoSessionQuery) WithNamedMods(name string, opts ...func(*ModQuery)) *DynoSessionQuery {
+	query := (&ModClient{config: dsq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if dsq.withNamedMods == nil {
+		dsq.withNamedMods = make(map[string]*ModQuery)
+	}
+	dsq.withNamedMods[name] = query
 	return dsq
 }
 

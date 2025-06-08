@@ -52,6 +52,8 @@ func (Mod) Edges() []ent.Edge {
 			Required(),
 		edge.From("tasks", Task.Type).
 			Ref("mods"),
+		edge.From("dyno_sessions", DynoSession.Type).
+			Ref("mods"),
 		edge.To("product_options", ModProductOption.Type),
 		edge.To("build_logs", BuildLog.Type),
 		/* edge.To("gains", ModGain.Type), */

@@ -844,6 +844,7 @@ input CreateDynoSessionInput {
   carID: ID!
   resultIDs: [ID!]
   documentIDs: [ID!]
+  modIDs: [ID!]
 }
 """
 CreateExpenseInput is used for create Expense object.
@@ -909,6 +910,7 @@ input CreateModInput {
   stage: String
   carID: ID!
   taskIDs: [ID!]
+  dynoSessionIDs: [ID!]
   productOptionIDs: [ID!]
   buildLogIDs: [ID!]
 }
@@ -1459,6 +1461,7 @@ type DynoSession implements Node {
   car: Car!
   results: [DynoResult!]
   documents: [Document!]
+  mods: [Mod!]
 }
 """
 DynoSessionWhereInput is used for filtering DynoSession objects.
@@ -1532,6 +1535,11 @@ input DynoSessionWhereInput {
   """
   hasDocuments: Boolean
   hasDocumentsWith: [DocumentWhereInput!]
+  """
+  mods edge predicates
+  """
+  hasMods: Boolean
+  hasModsWith: [ModWhereInput!]
 }
 type Expense implements Node {
   id: ID!
@@ -1953,6 +1961,7 @@ type Mod implements Node {
   stage: String
   car: Car!
   tasks: [Task!]
+  dynoSessions: [DynoSession!]
   productOptions: [ModProductOption!]
   buildLogs: [BuildLog!]
 }
@@ -2271,6 +2280,11 @@ input ModWhereInput {
   """
   hasTasks: Boolean
   hasTasksWith: [TaskWhereInput!]
+  """
+  dyno_sessions edge predicates
+  """
+  hasDynoSessions: Boolean
+  hasDynoSessionsWith: [DynoSessionWhereInput!]
   """
   product_options edge predicates
   """
@@ -3747,6 +3761,9 @@ input UpdateDynoSessionInput {
   addDocumentIDs: [ID!]
   removeDocumentIDs: [ID!]
   clearDocuments: Boolean
+  addModIDs: [ID!]
+  removeModIDs: [ID!]
+  clearMods: Boolean
 }
 """
 UpdateExpenseInput is used for update Expense object.
@@ -3833,6 +3850,9 @@ input UpdateModInput {
   addTaskIDs: [ID!]
   removeTaskIDs: [ID!]
   clearTasks: Boolean
+  addDynoSessionIDs: [ID!]
+  removeDynoSessionIDs: [ID!]
+  clearDynoSessions: Boolean
   addProductOptionIDs: [ID!]
   removeProductOptionIDs: [ID!]
   clearProductOptions: Boolean

@@ -38,6 +38,7 @@ func (DynoSession) Edges() []ent.Edge {
 			Required(),
 		edge.To("results", DynoResult.Type),
 		edge.To("documents", Document.Type),
+		edge.To("mods", Mod.Type),
 	}
 }
 

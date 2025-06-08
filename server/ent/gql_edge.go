@@ -414,6 +414,18 @@ func (ds *DynoSession) Documents(ctx context.Context) (result []*Document, err e
 	return result, err
 }
 
+func (ds *DynoSession) Mods(ctx context.Context) (result []*Mod, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = ds.NamedMods(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = ds.Edges.ModsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = ds.QueryMods().All(ctx)
+	}
+	return result, err
+}
+
 func (e *Expense) Car(ctx context.Context) (*Car, error) {
 	result, err := e.Edges.CarOrErr()
 	if IsNotLoaded(err) {
@@ -550,6 +562,18 @@ func (m *Mod) Tasks(ctx context.Context) (result []*Task, err error) {
 	}
 	if IsNotLoaded(err) {
 		result, err = m.QueryTasks().All(ctx)
+	}
+	return result, err
+}
+
+func (m *Mod) DynoSessions(ctx context.Context) (result []*DynoSession, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = m.NamedDynoSessions(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = m.Edges.DynoSessionsOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = m.QueryDynoSessions().All(ctx)
 	}
 	return result, err
 }
