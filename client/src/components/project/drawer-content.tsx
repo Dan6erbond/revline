@@ -162,11 +162,7 @@ export default function TaskDrawerContent({
     },
   });
 
-  const [parentId, subTaskIds, modIds] = watch([
-    "parentId",
-    "subTaskIds",
-    "modIds",
-  ]);
+  const [parentId, subTaskIds] = watch(["parentId", "subTaskIds"]);
 
   const onSubmit: SubmitHandler<Inputs> = withNotification(
     {},
