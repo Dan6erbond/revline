@@ -50,7 +50,7 @@ function Umami({ ...props }: ScriptProps) {
   const { data: session } = useSession();
 
   useEffect(() => {
-    if (session?.user?.id) {
+    if (session?.user) {
       const {
         user: { id, ...user },
       } = session;
@@ -91,7 +91,6 @@ export default function CustomApp({
   return (
     <HeroUIProvider navigate={router.push} useHref={href}>
       <ToastProvider />
-      {process.env.NODE_ENV !== "development" && <Umami />}
       <style jsx global>{`
         html {
           font-family: ${inter.style.fontFamily};
@@ -122,6 +121,7 @@ export default function CustomApp({
       >
         <ConfigProvider basePath={router.basePath} serverUrl={url}>
           <AuthenticatedApolloProvider url={url} pageProps={pageProps}>
+            {process.env.NODE_ENV !== "development" && <Umami />}
             <UserTour />
             <Component {...pageProps} />
           </AuthenticatedApolloProvider>
