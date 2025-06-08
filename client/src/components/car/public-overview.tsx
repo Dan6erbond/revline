@@ -18,9 +18,15 @@ import {
   ModalHeader,
   useDisclosure,
 } from "@heroui/react";
-import { DragResultUnit, PowerUnit, TorqueUnit } from "@/gql/graphql";
+import {
+  DragResultUnit,
+  GetPublicCarOverviewQuery,
+  PowerUnit,
+  TorqueUnit,
+} from "@/gql/graphql";
 
 import DynoSessionChart from "../performance/dyno-sessions/chart";
+import ModChip from "../../mods/chip";
 import { createExtensions } from "../minimal-tiptap/hooks/use-minimal-tiptap";
 import { generateHTML } from "@tiptap/react";
 import { getQueryParam } from "@/utils/router";
@@ -63,6 +69,14 @@ const getPublicCarOverview = graphql(`
           powerKw
           torqueNm
         }
+        mods {
+          id
+          title
+          category
+          status
+          description
+          stage
+        }
       }
     }
   }
@@ -91,7 +105,7 @@ function DragSessionCard({
     <>
       <Card
         key={session.id}
-        isPressable
+        isPressable={!!session.results && session.results?.length > 0}
         onPress={onOpen}
         className="transition-shadow duration-200 group bg-primary-50/5 backdrop-blur-md rounded-xl p-4"
       >
@@ -117,9 +131,11 @@ function DragSessionCard({
             {session.results?.length ?? 0} result
             {session.results?.length === 1 ? "" : "s"}
           </span>
-          <span className="text-xs text-muted tracking-tight">
-            ↗ View results
-          </span>
+          {session.results && session.results?.length > 0 && (
+            <span className="text-xs text-muted tracking-tight">
+              ↗ View results
+            </span>
+          )}
         </CardFooter>
       </Card>
 
@@ -182,19 +198,9 @@ function DynoSessionCard({
   session,
   ...props
 }: {
-  session: {
-    __typename?: "DynoSession";
-    id: string;
-    title: string;
-    notes?: any | null;
-    results?: Array<{
-      __typename?: "DynoResult";
-      id: string;
-      rpm: number;
-      powerKw?: number | null;
-      torqueNm?: number | null;
-    }> | null;
-  };
+  session: NonNullable<
+    GetPublicCarOverviewQuery["car"]["dynoSessions"]
+  >[number];
   powerUnit: PowerUnit;
   torqueUnit: TorqueUnit;
 }) {
@@ -234,6 +240,17 @@ function DynoSessionCard({
               <div className="text-xs text-gray-500">
                 Once data is available, a chart will appear here.
               </div>
+            </div>
+          </div>
+        )}
+
+        {session.mods && session.mods.length > 0 && (
+          <div className="space-y-2">
+            <p>Mods</p>
+            <div className="flex flex-wrap gap-2">
+              {session.mods.map((mod) => (
+                <ModChip key={mod.id} variant="faded" mod={mod} />
+              ))}
             </div>
           </div>
         )}
