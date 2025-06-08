@@ -36,7 +36,8 @@ import {
   Trash,
   X,
 } from "lucide-react";
-import { FormEventHandler, Key, ReactElement, useState } from "react";
+import { FormEventHandler, Key, ReactElement, useMemo, useState } from "react";
+import { categoryLabels, getMods } from "@/mods/shared";
 import { getKilowatts, getPower } from "@/utils/power";
 import { getNm, getTorque } from "@/utils/torque";
 import { powerUnitsShort, torqueUnitsShort } from "@/literals";
@@ -47,8 +48,10 @@ import DynoSessionChart from "./chart";
 import FancySwitch from "@/components/fancy-switch";
 import FileIcon from "@/components/file-icon";
 import { MinimalTiptapEditor } from "@/components/minimal-tiptap";
+import ModChip from "@/mods/chip";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
+import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 import { useRouter } from "next/router";
 import { useUnits } from "@/hooks/use-units";
 import { withNotification } from "@/utils/with-notification";
@@ -80,6 +83,14 @@ const getDynoSession = graphql(`
         metadata {
           contentType
         }
+      }
+      mods {
+        id
+        title
+        category
+        status
+        description
+        stage
       }
     }
   }
@@ -123,6 +134,14 @@ const updateDynoSession = graphql(`
           contentType
         }
       }
+      mods {
+        id
+        title
+        category
+        status
+        description
+        stage
+      }
     }
   }
 `);
@@ -162,6 +181,35 @@ export default function Session() {
   const { data: documentsData } = useQuery(getDocuments, {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
+  });
+
+  const modIds = useMemo(() => data.dynoSession.mods?.map((m) => m.id), [data]);
+
+  const {
+    data: modsData,
+    loading: isLoadingMods,
+    fetchMore,
+  } = useQuery(getMods, {
+    variables: {
+      id: getQueryParam(router.query.id) as string,
+      first: 10,
+      where: { idNotIn: modIds },
+    },
+    skip: !getQueryParam(router.query.id),
+  });
+
+  const [, scrollerRef] = useInfiniteScroll({
+    hasMore: modsData?.car.mods.pageInfo.hasNextPage,
+    isEnabled: !isLoadingMods,
+    shouldUseLoader: false,
+    onLoadMore: () =>
+      modsData?.car.mods.edges &&
+      fetchMore({
+        variables: {
+          after:
+            modsData.car.mods.edges[modsData.car.mods.edges.length - 1]?.cursor,
+        },
+      }),
   });
 
   const [selectedRows, setSelectedRows] = useState<Selection>(new Set());
@@ -414,6 +462,83 @@ export default function Session() {
           )}
         </Select>
       </div>
+
+      <div className="flex flex-col gap-4">
+        <p>Mods</p>
+
+        <div className="flex flex-wrap gap-2">
+          {data.dynoSession.mods?.map((mod) => (
+            <ModChip
+              key={mod.id}
+              mod={mod}
+              endContent={
+                <Button
+                  isIconOnly
+                  size="sm"
+                  variant="light"
+                  color="danger"
+                  radius="full"
+                  onClick={(e) => e.preventDefault()}
+                  onPress={withNotification({}, () =>
+                    mutate({
+                      variables: {
+                        id: router.query.tab![1],
+                        input: { removeModIDs: [mod.id] },
+                      },
+                    })
+                  )}
+                >
+                  <X size={16} />
+                </Button>
+              }
+              href={`/cars/${router.query.id}/project/mods/${mod.id}`}
+            />
+          ))}
+        </div>
+
+        <Select
+          placeholder="Add"
+          classNames={{ innerWrapper: "py-4" }}
+          items={
+            modsData?.car.mods?.edges?.map((e) => e?.node).filter((n) => !!n) ??
+            []
+          }
+          selectedKeys={new Set()}
+          onSelectionChange={withNotification({}, async (keys) => {
+            const key = Array.from(keys)[0];
+            if (key) {
+              await mutate({
+                variables: {
+                  id: router.query.tab![1],
+                  input: { addModIDs: [key as string] },
+                },
+              });
+            }
+          })}
+          variant="bordered"
+          isLoading={isLoadingMods}
+          scrollRef={scrollerRef}
+        >
+          {({ id, title, category, stage }) => (
+            <SelectItem key={id} textValue={title}>
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-medium truncate max-w-xs">
+                  {title}
+                </div>
+                {category && (
+                  <span className="text-xs text-gray-500 italic">
+                    {categoryLabels[category]}
+                  </span>
+                )}
+                {stage && (
+                  <span className="text-xs text-gray-400">(Stage {stage})</span>
+                )}
+              </div>
+            </SelectItem>
+          )}
+        </Select>
+      </div>
+
       <div className="flex justify-between">
         <h3 className="text-xl">Results</h3>
         <Dropdown>
