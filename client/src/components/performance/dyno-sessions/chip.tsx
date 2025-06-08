@@ -66,11 +66,16 @@ export function DynoSessionChip({
   }
 
   return (
-    <Popover isOpen={isOpen} shouldCloseOnBlur onOpenChange={onOpenChange}>
+    <Popover
+      isOpen={isOpen}
+      shouldCloseOnBlur
+      onOpenChange={onOpenChange}
+      backdrop="opaque"
+    >
       <PopoverTrigger>{chip}</PopoverTrigger>
       <PopoverContent>
         {(titleProps) => (
-          <div className="flex flex-col gap-2 min-w-[90vw] sm:min-w-0">
+          <div className="flex flex-col gap-2 min-w-[90vw] sm:min-w-0 py-2">
             <h3 className="text-small font-bold" {...titleProps}>
               {session.title}
             </h3>
