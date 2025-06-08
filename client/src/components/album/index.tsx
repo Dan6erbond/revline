@@ -86,9 +86,8 @@ export default function AlbumView({ id }: { id: string }) {
           },
         },
       });
-
-      setTitle(val);
     },
+    immediateHandler: (val: string) => setTitle(val),
   });
 
   const onAction = (key: Key) => {

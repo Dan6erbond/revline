@@ -4,10 +4,12 @@ import { useState } from "react";
 export default function useDebounce<T extends Array<any>>({
   delay = 500,
   handle,
+  immediateHandler,
 }: {
   delay?: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handle: (...args: T) => any;
+  immediateHandler?: (...args: T) => any;
 }) {
   const [handler, setHandler] = useState<NodeJS.Timeout | null>(null);
 
@@ -15,5 +17,6 @@ export default function useDebounce<T extends Array<any>>({
     if (handler) clearTimeout(handler);
 
     setHandler(setTimeout(() => handle(...args), delay));
+    immediateHandler?.(...args);
   };
 }
