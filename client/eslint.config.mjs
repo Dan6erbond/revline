@@ -14,7 +14,7 @@ const compat = new FlatCompat({
 
 const eslintConfig = defineConfig([
   ...compat.extends("next/core-web-vitals", "next/typescript"),
-  globalIgnores("src/gql/"),
+  globalIgnores(["src/gql/"]),
   {
     files: ["**/*.js"],
     processor: graphqlPlugin.processor,
