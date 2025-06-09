@@ -15,6 +15,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Skeleton,
   Spinner,
   Tab,
   Tabs,
@@ -97,12 +98,30 @@ const getBuildLogs = graphql(`
 `);
 
 const getGallery = graphql(`
-  query GetGallery($id: ID!) {
+  query GetGallery(
+    $id: ID!
+    $where: MediaWhereInput
+    $first: Int
+    $after: Cursor
+    $orderBy: [MediaOrder!]
+  ) {
     car(id: $id) {
       id
-      media {
-        id
-        ...MediaItem
+      media(where: $where, first: $first, after: $after, orderBy: $orderBy) {
+        edges {
+          node {
+            id
+            ...MediaItem
+          }
+          cursor
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+        totalCount
       }
     }
   }
@@ -147,9 +166,27 @@ export default function BuildLog() {
 
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
-  const { data: galleryData } = useQuery(getGallery, {
-    variables: { id: getQueryParam(router.query.id) as string },
+  const {
+    data: galleryData,
+    loading: loadingGallery,
+    fetchMore: fetchMoreMedia,
+  } = useQuery(getGallery, {
+    variables: { id: getQueryParam(router.query.id) as string, first: 10 },
     skip: !getQueryParam(router.query.id),
+  });
+
+  const [mediaLoaderRef] = useIntersectionObserver({
+    isEnabled: galleryData?.car.media.pageInfo.hasNextPage && !loadingGallery,
+    onChange: (isIntersecting) =>
+      isIntersecting &&
+      galleryData?.car.media.edges &&
+      fetchMoreMedia({
+        variables: {
+          after:
+            galleryData.car.media.edges[galleryData.car.media.edges.length - 1]
+              ?.cursor,
+        },
+      }),
   });
 
   const [mutate, { loading }] = useMutation(createBuildLog, {
@@ -371,15 +408,37 @@ export default function BuildLog() {
                         render={({ field: { value, onChange } }) => (
                           <fieldset className="space-y-2">
                             <legend>Media</legend>
-                            <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4 max-h-[250px] sm:max-h-[300px] md:max-h-[350px] lg:max-h-[400px] overflow-x-auto">
-                              {galleryData?.car.media?.map((m) => (
-                                <SelectableMediaItem
-                                  item={m}
-                                  key={m.id}
-                                  selected={value.includes(m.id)}
-                                  onSelect={() => onChange([...value, m.id])}
-                                />
-                              ))}
+                            <div className="max-h-[250px] sm:max-h-[300px] md:max-h-[350px] lg:max-h-[400px] overflow-y-auto">
+                              <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
+                                {galleryData?.car.media?.edges?.map((e) => (
+                                  <SelectableMediaItem
+                                    item={e!.node!}
+                                    key={e!.node!.id}
+                                    selected={value.includes(e!.node!.id)}
+                                    onSelect={() =>
+                                      onChange([...value, e!.node!.id])
+                                    }
+                                  />
+                                ))}
+                                {loadingGallery &&
+                                  Array(10)
+                                    .fill(null)
+                                    .map((_, i) => (
+                                      <Skeleton
+                                        key={i}
+                                        className="rounded-xl h-[150px] md:h-[200px] lg:h-[250px]"
+                                      />
+                                    ))}
+                              </div>
+                              {!loadingGallery &&
+                                galleryData?.car.media.pageInfo.hasNextPage && (
+                                  <div className="flex w-full justify-center mt-10">
+                                    <Spinner
+                                      ref={mediaLoaderRef}
+                                      color="white"
+                                    />
+                                  </div>
+                                )}
                             </div>
                           </fieldset>
                         )}

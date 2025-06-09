@@ -1,26 +1,45 @@
 import { Album, ImageUp, Images } from "lucide-react";
-import { Car, SubscriptionTier } from "@/gql/graphql";
-import { Progress, Skeleton, Tab, Tabs } from "@heroui/react";
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { Progress, Skeleton, Spinner, Tab, Tabs } from "@heroui/react";
 import { useCallback, useState } from "react";
+import { useMutation, useQuery } from "@apollo/client";
 
 import CarLayout from "@/components/layout/car-layout";
 import Dropzone from "@/components/dropzone";
 import MediaItem from "@/components/media/item";
 import SubscriptionOverlay from "@/components/subscription-overlay";
+import { SubscriptionTier } from "@/gql/graphql";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { uploadFile } from "@/utils/upload-file";
+import { useIntersectionObserver } from "@heroui/use-intersection-observer";
 import { useRouter } from "next/router";
 import { withNotification } from "@/utils/with-notification";
 
 const getGallery = graphql(`
-  query GetGallery($id: ID!) {
+  query GetGallery(
+    $id: ID!
+    $where: MediaWhereInput
+    $first: Int
+    $after: Cursor
+    $orderBy: [MediaOrder!]
+  ) {
     car(id: $id) {
       id
-      media {
-        id
-        ...MediaItem
+      media(where: $where, first: $first, after: $after, orderBy: $orderBy) {
+        edges {
+          node {
+            id
+            ...MediaItem
+          }
+          cursor
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+        totalCount
       }
     }
   }
@@ -41,11 +60,21 @@ const uploadMedia = graphql(`
 export default function Gallery() {
   const router = useRouter();
 
-  const client = useApolloClient();
-
-  const { data } = useQuery(getGallery, {
-    variables: { id: getQueryParam(router.query.id) as string },
+  const { data, loading, refetch, fetchMore } = useQuery(getGallery, {
+    variables: { id: getQueryParam(router.query.id) as string, first: 10 },
     skip: !getQueryParam(router.query.id),
+  });
+
+  const [loaderRef] = useIntersectionObserver({
+    isEnabled: data?.car.media.pageInfo.hasNextPage && !loading,
+    onChange: (isIntersecting) =>
+      isIntersecting &&
+      data?.car.media.edges &&
+      fetchMore({
+        variables: {
+          after: data.car.media.edges[data.car.media.edges.length - 1]?.cursor,
+        },
+      }),
   });
 
   const [mutate] = useMutation(uploadMedia);
@@ -94,22 +123,9 @@ export default function Gallery() {
         prev.filter((p) => p.id !== res.data!.uploadMedia.media.id)
       );
 
-      client.cache.modify<Car>({
-        id: client.cache.identify({
-          __typename: "Car",
-          id: getQueryParam(router.query.id),
-        }),
-        fields: {
-          media(existingMediaRefs, { toReference }) {
-            return [
-              ...(existingMediaRefs ?? []),
-              toReference(res.data!.uploadMedia.media),
-            ];
-          },
-        },
-      });
+      refetch();
     }),
-    [mutate, router.query.id, client]
+    [mutate, router.query.id, refetch]
   );
 
   return (
@@ -140,8 +156,8 @@ export default function Gallery() {
             href={`/cars/${router.query.id}/gallery`}
           >
             <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {data?.car?.media?.map((m) => (
-                <MediaItem item={m} key={m.id} />
+              {data?.car?.media?.edges?.map((e) => (
+                <MediaItem item={e!.node!} key={e!.node!.id} />
               ))}
               {uploadProgress.map((m) => (
                 <div
@@ -152,7 +168,21 @@ export default function Gallery() {
                   <Skeleton className="rounded-xl h-full w-full" />
                 </div>
               ))}
+              {loading &&
+                Array(10)
+                  .fill(null)
+                  .map((_, i) => (
+                    <Skeleton
+                      key={i}
+                      className="rounded-xl h-[150px] md:h-[200px] lg:h-[250px]"
+                    />
+                  ))}
             </div>
+            {!loading && data?.car.media.pageInfo.hasNextPage && (
+              <div className="flex w-full justify-center mt-10">
+                <Spinner ref={loaderRef} color="white" />
+              </div>
+            )}
           </Tab>
           <Tab
             key="albums"

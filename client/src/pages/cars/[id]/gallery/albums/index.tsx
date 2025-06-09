@@ -28,10 +28,21 @@ const getAlbums = graphql(`
       albums {
         id
         title
-        media {
-          id
-          url
-          createTime
+        media(first: 1) {
+          edges {
+            node {
+              id
+              ...MediaItem
+            }
+            cursor
+          }
+          pageInfo {
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
+          }
+          totalCount
         }
       }
     }
@@ -99,7 +110,7 @@ export default function Albums() {
           >
             <div className="flex flex-col items-stretch p-4 md:p-8 gap-4">
               {data?.car.albums?.map((album) => {
-                const cover = album.media?.[0];
+                const cover = album.media?.edges?.[0]?.node;
                 return (
                   <Card
                     key={album.id}

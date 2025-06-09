@@ -54,7 +54,7 @@ export default function ViewerModal({
             </ModalBody>
             <ModalFooter className="items-center justify-between">
               <p>{m?.description}</p>
-              <p className="text-content4">
+              <p className="dark:text-white">
                 Shared on Revline 1
               </p>
             </ModalFooter>

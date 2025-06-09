@@ -30,7 +30,10 @@ export default async function Image({
   const client = getClient();
 
   const { id } = await params;
-  const { data } = await client.query({ query: getAlbum, variables: { id } });
+  const { data } = await client.query({
+    query: getAlbum,
+    variables: { id, first: 3 },
+  });
 
   const { title, media, car } = data.album;
   const { name, owner } = car ?? {};
@@ -71,11 +74,11 @@ export default async function Image({
 
         {/* Media Grid */}
         <div tw="flex gap-4 mt-8 mb-8 flex-1 rounded-xl overflow-hidden">
-          {media?.slice(0, 3).map((item, idx) => {
+          {media.edges?.slice(0, 3).map((e, idx) => {
             return (
               <img
-                key={item.id}
-                src={(item as MediaItemFragment).url}
+                key={e!.node!.id}
+                src={(e!.node as MediaItemFragment).url}
                 alt={`media-${idx}`}
                 tw="flex-1 w-full h-full object-cover border border-gray-700 rounded-lg aspect-square"
               />

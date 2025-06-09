@@ -1,25 +1,45 @@
-import { Button, Chip, Image, Input, Select, SelectItem } from "@heroui/react";
+import { Button, Input, Skeleton, Spinner } from "@heroui/react";
 import { Controller, useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@apollo/client";
 
 import CarLayout from "@/components/layout/car-layout";
-import FileIcon from "@/components/file-icon";
+import { SelectableMediaItem } from "../../../../../components/media/item";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
+import { useIntersectionObserver } from "@heroui/use-intersection-observer";
 import { useRouter } from "next/router";
 import { withNotification } from "@/utils/with-notification";
 
 const getGallery = graphql(`
-  query GetCarMedia($id: ID!) {
+  query GetCarMedia(
+    $id: ID!
+    $where: MediaWhereInput
+    $first: Int
+    $after: Cursor
+    $orderBy: [MediaOrder!]
+  ) {
     car(id: $id) {
       id
-      media {
-        id
-        url
-        createTime
-        metadata {
-          contentType
+      media(where: $where, first: $first, after: $after, orderBy: $orderBy) {
+        edges {
+          node {
+            id
+            url
+            createTime
+            metadata {
+              contentType
+            }
+            ...MediaItem
+          }
+          cursor
         }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+        totalCount
       }
     }
   }
@@ -27,7 +47,7 @@ const getGallery = graphql(`
 
 type Inputs = {
   title: string;
-  mediaIds: Set<string>;
+  mediaIds: string[];
 };
 
 const createAlbum = graphql(`
@@ -41,15 +61,31 @@ const createAlbum = graphql(`
 export default function Create() {
   const router = useRouter();
 
-  const { data } = useQuery(getGallery, {
+  const {
+    data,
+    loading: loadingGallery,
+    fetchMore,
+  } = useQuery(getGallery, {
     variables: { id: getQueryParam(router.query.id) as string },
     skip: !getQueryParam(router.query.id),
+  });
+
+  const [loaderRef] = useIntersectionObserver({
+    isEnabled: data?.car.media.pageInfo.hasNextPage && !loadingGallery,
+    onChange: (isIntersecting) =>
+      isIntersecting &&
+      data?.car.media.edges &&
+      fetchMore({
+        variables: {
+          after: data.car.media.edges[data.car.media.edges.length - 1]?.cursor,
+        },
+      }),
   });
 
   const [mutate, { loading }] = useMutation(createAlbum);
 
   const { register, control, handleSubmit } = useForm<Inputs>({
-    defaultValues: { mediaIds: new Set([]) },
+    defaultValues: { mediaIds: [] },
   });
 
   const onSubmit = withNotification(
@@ -89,68 +125,34 @@ export default function Create() {
           <Controller
             control={control}
             name="mediaIds"
-            render={({ field: { value, onChange, ...field } }) => (
-              <Select
-                label="Media"
-                labelPlacement="outside"
-                classNames={{ innerWrapper: "py-4" }}
-                variant="bordered"
-                items={data?.car?.media ?? []}
-                selectionMode="multiple"
-                isMultiline
-                renderValue={(items) => {
-                  return (
-                    <div className="flex flex-wrap gap-2">
-                      {items.map((item) => (
-                        <Chip
-                          key={item.key}
-                          startContent={
-                            <Image
-                              alt={item.data?.id}
-                              className="flex-shrink-0 object-cover"
-                              height={25}
-                              width={25}
-                              src={item.data?.url}
-                            />
-                          }
-                        >
-                          {item.data?.id}
-                        </Chip>
+            render={({ field: { value, onChange } }) => (
+              <fieldset className="space-y-2">
+                <legend>Media</legend>
+                <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {data?.car.media?.edges?.map((e) => (
+                    <SelectableMediaItem
+                      item={e!.node!}
+                      key={e!.node!.id}
+                      selected={value.includes(e!.node!.id)}
+                      onSelect={() => onChange([...value, e!.node!.id])}
+                    />
+                  ))}
+                  {loadingGallery &&
+                    Array(10)
+                      .fill(null)
+                      .map((_, i) => (
+                        <Skeleton
+                          key={i}
+                          className="rounded-xl h-[150px] md:h-[200px] lg:h-[250px]"
+                        />
                       ))}
-                    </div>
-                  );
-                }}
-                {...field}
-                selectedKeys={value}
-                onSelectionChange={onChange}
-              >
-                {({ id, url, createTime, metadata }) => (
-                  <SelectItem textValue={id}>
-                    <div className="flex gap-2 items-center">
-                      {metadata?.contentType.startsWith("image/") ? (
-                        <Image
-                          alt={id}
-                          className="flex-shrink-0 object-cover"
-                          height={50}
-                          width={50}
-                          src={url}
-                        />
-                      ) : (
-                        <FileIcon
-                          className="size-12"
-                          contentType={metadata?.contentType}
-                        />
-                      )}
-                      <div className="flex flex-col">
-                        <span className="text-small">{id}</span>
-                        <span className="text-tiny text-default-400">
-                          {new Date(createTime).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  </SelectItem>
+                </div>
+                {!loadingGallery && data?.car.media.pageInfo.hasNextPage && (
+                  <div className="flex w-full justify-center mt-10">
+                    <Spinner ref={loaderRef} color="white" />
+                  </div>
                 )}
-              </Select>
+              </fieldset>
             )}
           />
           <Button type="submit" className="self-end" isLoading={loading}>

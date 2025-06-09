@@ -27,6 +27,7 @@ export const getCarWithOwner = graphql(`
         profile {
           id
           username
+          pictureUrl
         }
       }
     }

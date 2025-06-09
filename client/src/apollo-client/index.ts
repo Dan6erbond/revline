@@ -49,6 +49,7 @@ const typePolicies = {
       tasks: relayStylePagination(["orderBy", "where"]),
       mods: relayStylePagination(["orderBy", "where"]),
       buildLogs: relayStylePagination(["orderBy", "where"]),
+      media: relayStylePagination(["orderBy", "where"]),
       showSubtasks: {
         read(_, { storage }) {
           if (!storage.var) {
@@ -65,6 +66,11 @@ const typePolicies = {
           }
         },
       },
+    },
+  },
+  Album: {
+    fields: {
+      media: relayStylePagination(["orderBy", "where"]),
     },
   },
 } satisfies StrictTypedTypePolicies;
@@ -121,7 +127,7 @@ export const buildClient = ({
 export const addApolloState = <T extends object>(
   client: ApolloClient<NormalizedCacheObject>,
   props: T
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): T & { [APOLLO_STATE_PROP_NAME]?: any } => {
   if (props) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
