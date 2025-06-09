@@ -17,6 +17,7 @@ const AuthenticatedApolloProvider = ({
   children: ReactNode;
   url: string;
   session?: Session | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pageProps: any;
 }) => {
   const { data, status } = useSession();

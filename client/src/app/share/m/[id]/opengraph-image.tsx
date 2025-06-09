@@ -79,6 +79,7 @@ export default async function Image({
         <div tw="flex justify-between items-center">
           <p tw="text-3xl font-bold text-white">{name}</p>
           <img
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             src={logo as any}
             alt="Revline 1 logo"
             style={{ width: 48, height: 48, objectFit: "contain" }}

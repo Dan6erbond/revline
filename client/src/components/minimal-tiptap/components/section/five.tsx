@@ -1,18 +1,17 @@
-import * as React from "react"
+import * as React from "react";
 
-import { ChevronDown, Code, Minus, Plus, Quote } from "lucide-react"
+import { ChevronDown, Code, Minus, Plus, Quote } from "lucide-react";
 
-import type { Editor } from "@tiptap/react"
-import type { FormatAction } from "../../types"
-import { ImageEditDialog } from "../image/image-edit-dialog"
-import { LinkEditPopover } from "../link/link-edit-popover"
-import { ToolbarSection } from "../toolbar-section"
-import { VariantProps } from "@heroui/react"
-import type { toggleVariants } from "@/components/ui/toggle"
+import type { Editor } from "@tiptap/react";
+import type { FormatAction } from "../../types";
+import { LinkEditPopover } from "../link/link-edit-popover";
+import { ToolbarSection } from "../toolbar-section";
+import { VariantProps } from "@heroui/react";
+import type { toggleVariants } from "@/components/ui/toggle";
 
-type InsertElementAction = "codeBlock" | "blockquote" | "horizontalRule"
+type InsertElementAction = "codeBlock" | "blockquote" | "horizontalRule";
 interface InsertElement extends FormatAction {
-  value: InsertElementAction
+  value: InsertElementAction;
 }
 
 const formatActions: InsertElement[] = [
@@ -46,12 +45,12 @@ const formatActions: InsertElement[] = [
       editor.can().chain().focus().setHorizontalRule().run(),
     shortcuts: ["mod", "alt", "-"],
   },
-]
+];
 
 interface SectionFiveProps extends VariantProps<typeof toggleVariants> {
-  editor: Editor
-  activeActions?: InsertElementAction[]
-  mainActionCount?: number
+  editor: Editor;
+  activeActions?: InsertElementAction[];
+  mainActionCount?: number;
 }
 
 export const SectionFive: React.FC<SectionFiveProps> = ({
@@ -81,9 +80,9 @@ export const SectionFive: React.FC<SectionFiveProps> = ({
         variant={variant}
       />
     </>
-  )
-}
+  );
+};
 
-SectionFive.displayName = "SectionFive"
+SectionFive.displayName = "SectionFive";
 
-export default SectionFive
+export default SectionFive;

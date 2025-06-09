@@ -89,6 +89,7 @@ function DragSessionCard({
     __typename?: "DragSession";
     id: string;
     title: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     notes?: any | null;
     results?: Array<{
       __typename?: "DragResult";

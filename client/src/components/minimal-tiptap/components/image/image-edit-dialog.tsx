@@ -30,6 +30,7 @@ const ImageEditDialog = ({ editor, size, variant }: ImageEditDialogProps) => {
         variant={variant}
         onClick={onOpen}
       >
+        {/* eslint-disable-next-line jsx-a11y/alt-text */}
         <Image className="size-5" />
       </ToolbarButton>
 

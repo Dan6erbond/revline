@@ -39,6 +39,7 @@ import { useApolloClient, useMutation } from "@apollo/client";
 
 import Dropzone from "../dropzone";
 import FileIcon from "../file-icon";
+import { JSONContent } from "@tiptap/react";
 import { MinimalTiptapEditor } from "../minimal-tiptap";
 import { formatBytes } from "@/utils/upload-file";
 import { getCurrencySymbol } from "@/utils/currency";
@@ -108,7 +109,7 @@ type Inputs = {
   fuelCategory?: FuelCategory | null;
   octaneRating?: OctaneRating | null;
   odometerKm: number;
-  notes?: any;
+  notes?: JSONContent;
   isFullTank: boolean;
   files: File[];
 };
@@ -254,6 +255,7 @@ export default function FuelUpModal({
           reset();
 
           const fuelUp = data.createFuelUp;
+          // eslint-disable-next-line react-hooks/rules-of-hooks
           const fu = useFragment(FuelUpFields, fuelUp);
           const { expense } = fu;
 

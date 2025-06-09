@@ -41,7 +41,7 @@ export default function CarHead({
 
   let titleSuffix = "";
   let description = "";
-  let imageUrl = new URL(
+  const imageUrl = new URL(
     basePath + `/cars/${id}/opengraph-image`,
     baseUrl
   ).toString();

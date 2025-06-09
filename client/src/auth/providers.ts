@@ -35,6 +35,7 @@ export const providers: Provider[] = [
 ];
 
 export const resolvedProviders = providers.map((provider) => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   let providerData: Exclude<Provider, Function> & { useIdToken?: boolean };
 
   if (typeof provider === "function") {

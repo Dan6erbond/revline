@@ -7,16 +7,13 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-  VariantProps,
   cn,
 } from "@heroui/react";
 
 import type { Editor } from "@tiptap/react";
 import type { FormatAction } from "../../types";
 import type { Level } from "@tiptap/extension-heading";
-import { ToolbarButton } from "../toolbar-button";
 import { getShortcutKey } from "../../utils";
-import type { toggleVariants } from "@/components/ui/toggle";
 
 interface TextStyle
   extends Omit<
@@ -130,7 +127,7 @@ export const SectionOne: React.FC<SectionOneProps> = React.memo(
           <Element className={className}>{label}</Element>
         </DropdownItem>
       ),
-      [editor, handleStyleChange]
+      [editor]
     );
 
     return (

@@ -47,7 +47,7 @@ export default function PublicCarLayout({
 }: ComponentProps<"main">) {
   const router = useRouter();
   const href = useHref();
-  const config = useConfig();
+  const { basePath, serverUrl } = useConfig();
 
   const tabs = [
     {
@@ -87,10 +87,10 @@ export default function PublicCarLayout({
   }>({});
 
   useEffect(() => {
-    fetch(config.basePath + "/api/auth/providers")
+    fetch(basePath + "/api/auth/providers")
       .then((res) => res.json())
       .then((providers) => setProviders(providers));
-  }, [setProviders]);
+  }, [setProviders, basePath]);
 
   return (
     <>
@@ -102,7 +102,7 @@ export default function PublicCarLayout({
             data?.car?.bannerImage?.id
               ? new URL(
                   `/media/${data.car.bannerImage.id}`,
-                  config.serverUrl
+                  serverUrl
                 ).toString()
               : href("/placeholder.png")
           }

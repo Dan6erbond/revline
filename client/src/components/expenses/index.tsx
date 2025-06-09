@@ -21,7 +21,7 @@ import {
 import { Coins, Edit, Fuel, Plus, Trash } from "lucide-react";
 import ExpenseModal, { ExpenseFields } from "@/components/expenses/modal";
 import { graphql, useFragment } from "@/gql";
-import { useMutation, useQuery, useSuspenseQuery } from "@apollo/client";
+import { useMutation, useSuspenseQuery } from "@apollo/client";
 
 import DeleteModal from "@/components/modals/delete";
 import DocumentChip from "@/components/documents/chip";
@@ -124,6 +124,7 @@ export default function Expenses() {
 
   const expenseData =
     data?.car.expenses?.reduce<Record<string, number>>((acc, expense) => {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       const ex = useFragment(ExpenseFields, expense);
       const type = ex.type.toLowerCase();
       acc[type] = (acc[type] || 0) + ex.amount;
@@ -155,9 +156,11 @@ export default function Expenses() {
             ...data.car,
             expenses:
               (data.car.expenses?.filter((ex) => {
+                // eslint-disable-next-line react-hooks/rules-of-hooks
                 const e = useFragment(ExpenseFields, ex);
 
                 return e.id !== variables.id;
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               }) as any) ?? [],
           },
         },
@@ -245,6 +248,7 @@ export default function Expenses() {
               emptyContent={"No rows to display."}
             >
               {(expense) => {
+                // eslint-disable-next-line react-hooks/rules-of-hooks
                 const ex = useFragment(ExpenseFields, expense);
 
                 return (
@@ -331,6 +335,7 @@ export default function Expenses() {
             isOpen={isOpen || !!editing}
             onOpenChange={editing ? () => setEditing(null) : onOpenChange}
             expense={data?.car.expenses?.find((ex) => {
+              // eslint-disable-next-line react-hooks/rules-of-hooks
               const e = useFragment(ExpenseFields, ex);
               return e.id === editing;
             })}

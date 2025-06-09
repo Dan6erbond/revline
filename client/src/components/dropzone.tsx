@@ -90,7 +90,7 @@ export default function Dropzone({
         props.onChange(acceptedFiles[0]);
       }
     },
-    [props.onChange]
+    [props, accept]
   );
 
   const openFileDialog = useCallback(() => {
@@ -109,7 +109,7 @@ export default function Dropzone({
         }
       }
     },
-    [props.onChange]
+    [props]
   );
 
   return (

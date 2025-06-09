@@ -123,9 +123,11 @@ export default function FuelUps() {
             ...data.car,
             fuelUps:
               (data.car.fuelUps?.filter((fu) => {
+                // eslint-disable-next-line react-hooks/rules-of-hooks
                 const f = useFragment(FuelUpFields, fu);
 
                 return f.id !== variables.id;
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               }) as any) ?? [],
           },
         },
@@ -172,6 +174,7 @@ export default function FuelUps() {
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={data?.car.fuelUps?.map((f) => {
+                // eslint-disable-next-line react-hooks/rules-of-hooks
                 const fu = useFragment(FuelUpFields, f);
 
                 return {
@@ -253,6 +256,7 @@ export default function FuelUps() {
             emptyContent={"No rows to display."}
           >
             {(f) => {
+              // eslint-disable-next-line react-hooks/rules-of-hooks
               const fu = useFragment(FuelUpFields, f);
 
               return (
@@ -335,6 +339,7 @@ export default function FuelUps() {
         isOpen={isOpen || !!editing}
         onOpenChange={editing ? () => setEditing(null) : onOpenChange}
         fuelUp={data?.car.fuelUps?.find((fu) => {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
           const f = useFragment(FuelUpFields, fu);
           return f.id === editing;
         })}

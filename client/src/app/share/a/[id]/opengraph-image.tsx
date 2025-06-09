@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-
 import { ImageResponse } from "next/og";
 import { MediaItemFragment } from "@/gql/graphql";
 import { getAlbum } from "@/components/album/shared";

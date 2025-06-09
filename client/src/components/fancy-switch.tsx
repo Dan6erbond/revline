@@ -26,6 +26,7 @@ export interface FancySwitchProps<T extends OptionType>
       ? T & { label: string; value: OptionValue; disabled: boolean }
       : { label: string; value: T; disabled: boolean };
     isSelected: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getOptionProps: () => Record<string, any>;
   }) => React.ReactNode;
 }

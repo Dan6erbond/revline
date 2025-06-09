@@ -45,6 +45,7 @@ function FileIcon(
   } else if (fileType?.includes("audio/")) {
     return <Headphones {...props} />;
   } else if (fileType?.startsWith("image/")) {
+    // eslint-disable-next-line jsx-a11y/alt-text
     return <Image {...props} />;
   }
 

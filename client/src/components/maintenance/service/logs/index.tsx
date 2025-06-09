@@ -282,8 +282,10 @@ export default function Logs() {
                 </TableCell>
                 <TableCell>{sl.schedule?.title}</TableCell>
                 <TableCell>
-                  {sl.tags.map((tag, index) => (
-                    <Chip className="flex p-2 mb-1">{tag}</Chip>
+                  {sl.tags.map((tag, idx) => (
+                    <Chip key={`${tag}-${idx}`} className="flex p-2 mb-1">
+                      {tag}
+                    </Chip>
                   ))}
                 </TableCell>
                 <TableCell>{sl.notes}</TableCell>

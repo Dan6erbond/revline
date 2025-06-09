@@ -26,6 +26,7 @@ import { useApolloClient, useMutation } from "@apollo/client";
 import Dropzone from "@/components/dropzone";
 import FileIcon from "@/components/file-icon";
 import { FileUp } from "lucide-react";
+import { JSONContent } from "@tiptap/react";
 import { MinimalTiptapEditor } from "../minimal-tiptap";
 import { formatBytes } from "@/utils/upload-file";
 import { getQueryParam } from "@/utils/router";
@@ -99,7 +100,7 @@ type Inputs = {
   occurredAt: ZonedDateTime;
   type: ExpenseType;
   amount: number;
-  notes: any;
+  notes: JSONContent;
   files: File[];
 };
 
@@ -203,6 +204,7 @@ export default function ExpenseModal({
           reset();
 
           const expense = data.createExpense;
+          // eslint-disable-next-line react-hooks/rules-of-hooks
           const ex = useFragment(ExpenseFields, expense);
 
           return Promise.all(

@@ -55,7 +55,7 @@ const AuthenticatedApolloNextAppProvider = ({
   const makeClient = useCallback(
     () =>
       buildClient({ getSessionRef, accessToken: session?.accessToken, url }),
-    [getSessionRef, session]
+    [getSessionRef, session, url]
   );
 
   return (

@@ -49,7 +49,7 @@ export default function AuthButton({ path }: { path?: string | null }) {
     fetch(basePath + "/api/auth/providers")
       .then((res) => res.json())
       .then((providers) => setProviders(providers));
-  }, [setProviders]);
+  }, [setProviders, basePath]);
 
   return data?.me ? (
     <Dropdown placement="bottom-end">

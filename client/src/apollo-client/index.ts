@@ -99,6 +99,7 @@ export const buildClient = ({
     const existingCache = client.extract();
 
     // Merge the existing cache into data passed from getStaticProps/getServerSideProps
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = merge(initialState, existingCache as any, {
       // combine arrays using object equality (like in sets)
       arrayMerge: (destinationArray, sourceArray) => [
@@ -115,11 +116,13 @@ export const buildClient = ({
   return client;
 };
 
-export const addApolloState = <T extends {}>(
+export const addApolloState = <T extends object>(
   client: ApolloClient<NormalizedCacheObject>,
   props: T
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): T & { [APOLLO_STATE_PROP_NAME]?: any } => {
   if (props) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (props as any)[APOLLO_STATE_PROP_NAME] = client.cache.extract();
   }
 
