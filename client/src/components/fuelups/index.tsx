@@ -111,7 +111,7 @@ export default function FuelUps() {
   const [editing, setEditing] = useState<string | null>(null);
 
   const [mutateDelete, { loading }] = useMutation(deleteFuelUp, {
-    update: (cache, res, { variables }) => {
+    update: (cache, _, { variables }) => {
       if (!variables?.id || !data?.car) return;
 
       cache.writeQuery({
