@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { readFile } from "node:fs/promises";
 import { useUnits } from "@/hooks/use-units";
 
-export const size = {
+const size = {
   width: 1200,
   height: 630,
 };
@@ -41,8 +41,6 @@ const getCarOverviewForOpenGraph = graphql(`
     }
   }
 `);
-
-export const contentType = "image/png";
 
 export async function GET(
   _: Request,
