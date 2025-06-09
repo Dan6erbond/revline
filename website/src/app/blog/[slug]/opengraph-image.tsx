@@ -15,8 +15,6 @@ export const size = {
 
 export const contentType = "image/png";
 
-export const runtime = "nodejs";
-
 export default async function OGImage({
   params,
 }: {
@@ -33,8 +31,11 @@ export default async function OGImage({
   const stats = readingTime(blogPost.content);
   const minutes = Math.round(stats.minutes);
 
-  const logoBuffer = await readFile(join(process.cwd(), "public", "logo.png"));
-  const logoSrc = Uint8Array.from(logoBuffer).buffer;
+  const logo = (
+    await readFile(join(process.cwd(), "public", "logo.png")).then((buff) =>
+      Uint8Array.from(buff)
+    )
+  ).buffer;
 
   return new ImageResponse(
     (
@@ -68,7 +69,9 @@ export default async function OGImage({
           >
             {blogPost.metadata.title}
           </h1>
-          <p style={{ color: "#94A3B8", fontSize: 24 }}>{blogPost.metadata.summary}</p>
+          <p style={{ color: "#94A3B8", fontSize: 24 }}>
+            {blogPost.metadata.summary}
+          </p>
         </div>
 
         <div
@@ -86,7 +89,7 @@ export default async function OGImage({
             · <span>{minutes} min read</span>
           </div>
           <img
-            src={logoSrc as any}
+            src={logo as any}
             alt="Revline 1 logo"
             style={{ width: 96, height: 96, objectFit: "contain" }}
           />
