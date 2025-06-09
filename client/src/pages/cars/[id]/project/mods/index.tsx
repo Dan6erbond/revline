@@ -8,7 +8,6 @@ import {
   Tabs,
 } from "@heroui/react";
 import { KanbanIcon, Lightbulb, Plus, WrenchIcon } from "lucide-react";
-import { categoryIcons, getMods, statusIcons } from "@/mods/shared";
 
 import CarLayout from "@/components/layout/car-layout";
 import Link from "next/link";
@@ -16,6 +15,7 @@ import ModCategoryChip from "@/mods/category-chip";
 import ModStatusChip from "@/mods/status-chip";
 import SubscriptionOverlay from "@/components/subscription-overlay";
 import { SubscriptionTier } from "@/gql/graphql";
+import { getMods } from "@/mods/shared";
 import { getQueryParam } from "@/utils/router";
 import { useIntersectionObserver } from "@heroui/use-intersection-observer";
 import { useQuery } from "@apollo/client";
@@ -92,40 +92,35 @@ export default function Mods() {
             {data?.car?.mods.edges
               ?.map((e) => e?.node)
               .filter((n) => !!n)
-              .map((mod) => {
-                const CategoryIcon = categoryIcons[mod.category];
-                const StatusIcon = statusIcons[mod.status];
-
-                return (
-                  <Card
-                    key={mod.id}
-                    as={Link}
-                    isPressable
-                    href={`/cars/${router.query.id}/project/mods/${mod.id}`}
-                  >
-                    <CardHeader className="flex justify-between">
-                      <div className="flex flex-col gap-1">
-                        <div className="text-md font-medium">{mod.title}</div>
-                        <div className="text-xs text-default-500">
-                          Stage: {mod.stage}
-                        </div>
+              .map((mod) => (
+                <Card
+                  key={mod.id}
+                  as={Link}
+                  isPressable
+                  href={`/cars/${router.query.id}/project/mods/${mod.id}`}
+                >
+                  <CardHeader className="flex justify-between">
+                    <div className="flex flex-col gap-1">
+                      <div className="text-md font-medium">{mod.title}</div>
+                      <div className="text-xs text-default-500">
+                        Stage: {mod.stage}
                       </div>
-                      <div className="flex flex-col gap-2 items-end">
-                        <ModCategoryChip category={mod.category} />
-                        <ModStatusChip status={mod.status} />
-                      </div>
-                    </CardHeader>
-                    <CardBody className="flex flex-col gap-1">
-                      <div className="text-sm text-content4-foreground">
-                        {mod.description}
-                      </div>
-                      <div className="text-sm text-content4">
-                        {mod.productOptions?.length} Options
-                      </div>
-                    </CardBody>
-                  </Card>
-                );
-              })}
+                    </div>
+                    <div className="flex flex-col gap-2 items-end">
+                      <ModCategoryChip category={mod.category} />
+                      <ModStatusChip status={mod.status} />
+                    </div>
+                  </CardHeader>
+                  <CardBody className="flex flex-col gap-1">
+                    <div className="text-sm text-content4-foreground">
+                      {mod.description}
+                    </div>
+                    <div className="text-sm text-content4">
+                      {mod.productOptions?.length} Options
+                    </div>
+                  </CardBody>
+                </Card>
+              ))}
 
             {data?.car.mods.pageInfo.hasNextPage && (
               <div className="flex w-full justify-center">
