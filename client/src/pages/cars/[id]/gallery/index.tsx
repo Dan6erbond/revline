@@ -5,6 +5,7 @@ import { useMutation, useQuery } from "@apollo/client";
 
 import CarLayout from "@/components/layout/car-layout";
 import Dropzone from "@/components/dropzone";
+import Link from "next/link";
 import MediaItem from "@/components/media/item";
 import SubscriptionOverlay from "@/components/subscription-overlay";
 import { SubscriptionTier } from "@/gql/graphql";
@@ -154,6 +155,7 @@ export default function Gallery() {
               </div>
             }
             href={`/cars/${router.query.id}/gallery`}
+            as={Link}
           >
             <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {data?.car?.media?.edges?.map((e) => (
@@ -193,6 +195,7 @@ export default function Gallery() {
               </div>
             }
             href={`/cars/${router.query.id}/gallery/albums`}
+            as={Link}
           />
         </Tabs>
 
