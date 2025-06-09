@@ -128,10 +128,12 @@ type ComplexityRoot struct {
 		OdometerKm                    func(childComplexity int) int
 		OdometerReadings              func(childComplexity int) int
 		Owner                         func(childComplexity int) int
+		PowerKw                       func(childComplexity int) int
 		ServiceItems                  func(childComplexity int) int
 		ServiceLogs                   func(childComplexity int) int
 		ServiceSchedules              func(childComplexity int) int
 		Tasks                         func(childComplexity int, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.TaskOrder, where *ent.TaskWhereInput) int
+		TorqueNm                      func(childComplexity int) int
 		Trim                          func(childComplexity int) int
 		Type                          func(childComplexity int) int
 		UpcomingServices              func(childComplexity int) int
@@ -552,6 +554,8 @@ type CarResolver interface {
 	AverageConsumptionLitersPerKm(ctx context.Context, obj *ent.Car) (float64, error)
 	UpcomingServices(ctx context.Context, obj *ent.Car) ([]*model.UpcomingService, error)
 	OdometerKm(ctx context.Context, obj *ent.Car) (float64, error)
+	PowerKw(ctx context.Context, obj *ent.Car) (*float64, error)
+	TorqueNm(ctx context.Context, obj *ent.Car) (*float64, error)
 }
 type DocumentResolver interface {
 	URL(ctx context.Context, obj *ent.Document) (string, error)
@@ -967,6 +971,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Car.Owner(childComplexity), true
 
+	case "Car.powerKw":
+		if e.complexity.Car.PowerKw == nil {
+			break
+		}
+
+		return e.complexity.Car.PowerKw(childComplexity), true
+
 	case "Car.serviceItems":
 		if e.complexity.Car.ServiceItems == nil {
 			break
@@ -999,6 +1010,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Car.Tasks(childComplexity, args["after"].(*entgql.Cursor[uuid.UUID]), args["first"].(*int), args["before"].(*entgql.Cursor[uuid.UUID]), args["last"].(*int), args["orderBy"].([]*ent.TaskOrder), args["where"].(*ent.TaskWhereInput)), true
+
+	case "Car.torqueNm":
+		if e.complexity.Car.TorqueNm == nil {
+			break
+		}
+
+		return e.complexity.Car.TorqueNm(childComplexity), true
 
 	case "Car.trim":
 		if e.complexity.Car.Trim == nil {
@@ -5717,6 +5735,10 @@ func (ec *executionContext) fieldContext_Album_car(_ context.Context, field grap
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -6149,6 +6171,10 @@ func (ec *executionContext) fieldContext_BuildLog_car(_ context.Context, field g
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -8153,6 +8179,88 @@ func (ec *executionContext) fieldContext_Car_odometerKm(_ context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _Car_powerKw(ctx context.Context, field graphql.CollectedField, obj *ent.Car) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Car_powerKw(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Car().PowerKw(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Car_powerKw(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Car",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Car_torqueNm(ctx context.Context, field graphql.CollectedField, obj *ent.Car) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Car_torqueNm(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Car().TorqueNm(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Car_torqueNm(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Car",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CheckoutSession_id(ctx context.Context, field graphql.CollectedField, obj *ent.CheckoutSession) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CheckoutSession_id(ctx, field)
 	if err != nil {
@@ -9042,6 +9150,10 @@ func (ec *executionContext) fieldContext_Document_car(_ context.Context, field g
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -10111,6 +10223,10 @@ func (ec *executionContext) fieldContext_DragSession_car(_ context.Context, fiel
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -10880,6 +10996,10 @@ func (ec *executionContext) fieldContext_DynoSession_car(_ context.Context, fiel
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -11484,6 +11604,10 @@ func (ec *executionContext) fieldContext_Expense_car(_ context.Context, field gr
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -12445,6 +12569,10 @@ func (ec *executionContext) fieldContext_FuelUp_car(_ context.Context, field gra
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -13030,6 +13158,10 @@ func (ec *executionContext) fieldContext_Media_car(_ context.Context, field grap
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -13762,6 +13894,10 @@ func (ec *executionContext) fieldContext_Mod_car(_ context.Context, field graphq
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -15542,6 +15678,10 @@ func (ec *executionContext) fieldContext_Mutation_createCar(ctx context.Context,
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -19196,6 +19336,10 @@ func (ec *executionContext) fieldContext_OdometerReading_car(_ context.Context, 
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -20135,6 +20279,10 @@ func (ec *executionContext) fieldContext_Query_car(ctx context.Context, field gr
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -21480,6 +21628,10 @@ func (ec *executionContext) fieldContext_ServiceItem_car(_ context.Context, fiel
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -22024,6 +22176,10 @@ func (ec *executionContext) fieldContext_ServiceLog_car(_ context.Context, field
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -22884,6 +23040,10 @@ func (ec *executionContext) fieldContext_ServiceSchedule_car(_ context.Context, 
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -24330,6 +24490,10 @@ func (ec *executionContext) fieldContext_Task_car(_ context.Context, field graph
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -25735,6 +25899,10 @@ func (ec *executionContext) fieldContext_User_cars(_ context.Context, field grap
 				return ec.fieldContext_Car_upcomingServices(ctx, field)
 			case "odometerKm":
 				return ec.fieldContext_Car_odometerKm(ctx, field)
+			case "powerKw":
+				return ec.fieldContext_Car_powerKw(ctx, field)
+			case "torqueNm":
+				return ec.fieldContext_Car_torqueNm(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Car", field.Name)
 		},
@@ -48282,6 +48450,72 @@ func (ec *executionContext) _Car(ctx context.Context, sel ast.SelectionSet, obj 
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "powerKw":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Car_powerKw(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "torqueNm":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Car_torqueNm(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -56684,7 +56918,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]any, error) {
+func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]interface{}, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -56692,7 +56926,7 @@ func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[s
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
+func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

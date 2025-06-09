@@ -10,6 +10,8 @@ extend type Car {
   averageConsumptionLitersPerKm: Float!
   upcomingServices: [UpcomingService!]!
   odometerKm: Float!
+  powerKw: Float
+  torqueNm: Float
 }
 
 type FileMetadata @goModel(model: "github.com/minio/minio-go/v7.ObjectInfo") {
