@@ -29,6 +29,7 @@ import { ZonedDateTime, getLocalTimeZone, now } from "@internationalized/date";
 import { useMutation, useQuery } from "@apollo/client";
 
 import CarLayout from "@/components/layout/car-layout";
+import Link from "next/link";
 import { MinimalTiptapEditor } from "@/components/minimal-tiptap";
 import ModChip from "@/mods/chip";
 import ModsPicker from "@/mods/picker";
@@ -243,6 +244,7 @@ export default function BuildLog() {
 
       <Tabs variant="underlined" selectedKey="build-log">
         <Tab
+          as={Link}
           key="kanban"
           title={
             <div className="flex items-center space-x-2">
@@ -254,6 +256,7 @@ export default function BuildLog() {
           className="flex-1 flex flex-col gap-4"
         />
         <Tab
+          as={Link}
           key="mods"
           title={
             <div className="flex items-center space-x-2">
@@ -264,6 +267,7 @@ export default function BuildLog() {
           href={`/cars/${router.query.id}/project/mods`}
         />
         <Tab
+          as={Link}
           key="build-log"
           title={
             <div className="flex items-center space-x-2">

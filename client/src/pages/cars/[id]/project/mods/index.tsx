@@ -52,6 +52,7 @@ export default function Mods() {
 
       <Tabs variant="underlined" selectedKey="mods">
         <Tab
+          as={Link}
           key="kanban"
           title={
             <div className="flex items-center space-x-2">
@@ -63,6 +64,7 @@ export default function Mods() {
           className="flex-1 flex flex-col gap-4"
         />
         <Tab
+          as={Link}
           key="mods"
           title={
             <div className="flex items-center space-x-2">
@@ -130,6 +132,7 @@ export default function Mods() {
           </div>
         </Tab>
         <Tab
+          as={Link}
           key="build-log"
           title={
             <div className="flex items-center space-x-2">

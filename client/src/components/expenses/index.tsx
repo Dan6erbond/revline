@@ -27,6 +27,7 @@ import DeleteModal from "@/components/modals/delete";
 import DocumentChip from "@/components/documents/chip";
 import { ExpenseType } from "@/gql/graphql";
 import { FuelUpChip } from "@/components/fuelups/chip";
+import Link from "next/link";
 import { ServiceLogChip } from "@/components/maintenance/service/logs/chip";
 import { createExtensions } from "@/components/minimal-tiptap/hooks/use-minimal-tiptap";
 import { generateHTML } from "@tiptap/react";
@@ -173,6 +174,7 @@ export default function Expenses() {
   return (
     <Tabs variant="underlined" selectedKey="expenses" className="mt-2">
       <Tab
+        as={Link}
         key="expenses"
         title={
           <div className="flex items-center gap-2">
@@ -356,6 +358,7 @@ export default function Expenses() {
         </div>
       </Tab>
       <Tab
+        as={Link}
         key="fuelups"
         title={
           <div className="flex items-center gap-2">

@@ -3,6 +3,7 @@ import { Gauge, NotebookPen } from "lucide-react";
 import { Tab, Tabs } from "@heroui/react";
 
 import CarLayout from "@/components/layout/car-layout";
+import Link from "next/link";
 import Odometer from "@/components/maintenance/odometer";
 import Service from "@/components/maintenance/service";
 import { getQueryParam } from "@/utils/router";
@@ -45,6 +46,7 @@ export default function Maintenance() {
       >
         {({ id, icon, label, component: Component }) => (
           <Tab
+            as={Link}
             key={id}
             title={
               <div className="flex items-center space-x-2">

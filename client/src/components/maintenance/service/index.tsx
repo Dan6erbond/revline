@@ -14,6 +14,7 @@ import { ComponentType, ReactNode } from "react";
 import { Tab, Tabs } from "@heroui/react";
 
 import Items from "./items";
+import Link from "next/link";
 import Logs from "./logs";
 import Schedules from "./schedules";
 import { getQueryParam } from "@/utils/router";
@@ -204,6 +205,7 @@ export default function Service() {
       >
         {({ id, icon, label, disabled, component: Component }) => (
           <Tab
+            as={Link}
             key={id}
             title={
               <div className="flex items-center space-x-2">

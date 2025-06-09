@@ -89,6 +89,7 @@ export default function Albums() {
           placement="top"
         >
           <Tab
+            as={Link}
             key="pictures"
             title={
               <div className="flex items-center space-x-2">
@@ -99,6 +100,7 @@ export default function Albums() {
             href={`/cars/${router.query.id}/gallery`}
           />
           <Tab
+            as={Link}
             key="albums"
             title={
               <div className="flex items-center space-x-2">

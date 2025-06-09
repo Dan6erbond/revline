@@ -147,6 +147,7 @@ export default function Gallery() {
           }
         >
           <Tab
+            as={Link}
             key="pictures"
             title={
               <div className="flex items-center space-x-2">
@@ -155,7 +156,6 @@ export default function Gallery() {
               </div>
             }
             href={`/cars/${router.query.id}/gallery`}
-            as={Link}
           >
             <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {data?.car?.media?.edges?.map((e) => (
@@ -187,6 +187,7 @@ export default function Gallery() {
             )}
           </Tab>
           <Tab
+            as={Link}
             key="albums"
             title={
               <div className="flex items-center space-x-2">
@@ -195,7 +196,6 @@ export default function Gallery() {
               </div>
             }
             href={`/cars/${router.query.id}/gallery/albums`}
-            as={Link}
           />
         </Tabs>
 

@@ -1,15 +1,9 @@
 import { Alert, Button, Tab, Tabs } from "@heroui/react";
 import { ComponentProps, useEffect, useState } from "react";
-import {
-  Gauge,
-  Images,
-  Link,
-  ScrollText,
-  Settings,
-  Wrench,
-} from "lucide-react";
+import { Gauge, Images, ScrollText, Settings, Wrench } from "lucide-react";
 
 import Image from "next/image";
+import Link from "next/link";
 import RootNavbar from "./root-navbar";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
@@ -121,6 +115,7 @@ export default function PublicCarLayout({
         >
           {tabs.map(({ name, icon, active, href, ...t }) => (
             <Tab
+              as={Link}
               key={name}
               title={
                 <div className="flex items-center gap-2">

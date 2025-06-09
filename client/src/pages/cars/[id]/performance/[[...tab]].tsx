@@ -5,6 +5,7 @@ import { Tab, Tabs } from "@heroui/react";
 import CarLayout from "@/components/layout/car-layout";
 import DragSessions from "@/components/performance/drag-sessions";
 import DynoSessions from "@/components/performance/dyno-sessions";
+import Link from "next/link";
 import SubscriptionOverlay from "@/components/subscription-overlay";
 import { SubscriptionTier } from "@/gql/graphql";
 import { getQueryParam } from "@/utils/router";
@@ -59,6 +60,7 @@ export default function Performance() {
       >
         {({ id, icon, label, component: Component }) => (
           <Tab
+            as={Link}
             key={id}
             title={
               <div className="flex items-center space-x-2">

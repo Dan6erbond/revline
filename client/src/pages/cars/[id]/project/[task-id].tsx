@@ -4,6 +4,7 @@ import { Drawer, Tab, Tabs, addToast } from "@heroui/react";
 import CarLayout from "@/components/layout/car-layout";
 import { ErrorBoundary } from "react-error-boundary";
 import Kanban from "@/components/project/kanban";
+import Link from "next/link";
 import SubscriptionOverlay from "@/components/subscription-overlay";
 import { SubscriptionTier } from "@/gql/graphql";
 import { Suspense } from "react";
@@ -32,6 +33,7 @@ export default function Task() {
 
       <Tabs variant="underlined" selectedKey="kanban">
         <Tab
+          as={Link}
           key="kanban"
           title={
             <div className="flex items-center space-x-2">
@@ -45,6 +47,7 @@ export default function Task() {
           <Kanban />
         </Tab>
         <Tab
+          as={Link}
           key="mods"
           title={
             <div className="flex items-center space-x-2">

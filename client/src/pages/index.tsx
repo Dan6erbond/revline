@@ -8,16 +8,25 @@ import {
   Image,
   useDisclosure,
 } from "@heroui/react";
-import { ChevronRight, Flame, Gauge, Plus, Settings } from "lucide-react";
+import { ChartLine, ChevronRight, Flame, Gauge, Plus, Settings, Zap } from "lucide-react";
+import {
+  fuelConsumptionUnitsShort,
+  powerUnitsShort,
+  torqueUnitsShort,
+} from "@/literals";
 
-import GateModal from "../components/subscription/gate-modal";
+import GateModal from "@/components/subscription/gate-modal";
 import Link from "next/link";
 import RootNavbar from "@/components/layout/root-navbar";
-import { SubscriptionTier } from "../gql/graphql";
+import { SubscriptionTier } from "@/gql/graphql";
+import { getFuelConsumption } from "@/utils/fuel-consumption";
+import { getPower } from "@/utils/power";
+import { getTorque } from "@/utils/torque";
 import { graphql } from "@/gql";
 import { useHref } from "@/utils/use-href";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
+import { useUnits } from "@/hooks/use-units";
 
 const getGarage = graphql(`
   query GetGarage {
@@ -29,6 +38,9 @@ const getGarage = graphql(`
       }
       settings {
         id
+        powerUnit
+        torqueUnit
+        fuelConsumptionUnit
       }
       cars {
         id
@@ -38,6 +50,8 @@ const getGarage = graphql(`
         year
         bannerImageUrl
         averageConsumptionLitersPerKm
+        powerKw
+        torqueNm
         dragSessions {
           id
         }
@@ -56,6 +70,10 @@ export default function Home() {
   const href = useHref();
 
   const { data } = useQuery(getGarage);
+
+  const { powerUnit, torqueUnit, fuelConsumptionUnit } = useUnits(
+    data?.me?.settings
+  );
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -141,12 +159,40 @@ export default function Home() {
                   <span>{car.dragSessions?.length ?? 0} Drag Sessions</span>
                 </div>
                 <div className="flex items-center gap-2">
+                  <ChartLine className="w-4 h-4 text-primary" />
+                  <span>{car.dragSessions?.length ?? 0} Dyno Sessions</span>
+                </div>
+                <div className="flex items-center gap-2">
                   <Flame className="w-4 h-4 text-primary" />
                   <span>
                     {car.averageConsumptionLitersPerKm
-                      ? `${(car.averageConsumptionLitersPerKm * 100).toFixed(
-                          1
-                        )} L/100km`
+                      ? `${getFuelConsumption(
+                          car.averageConsumptionLitersPerKm,
+                          fuelConsumptionUnit
+                        ).toLocaleString()} ${
+                          fuelConsumptionUnitsShort[fuelConsumptionUnit]
+                        }`
+                      : "No data"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-primary" />
+                  <span>
+                    {car.powerKw
+                      ? `${getPower(car.powerKw, powerUnit).toLocaleString()} ${
+                          powerUnitsShort[powerUnit]
+                        }`
+                      : "No data"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Gauge className="w-4 h-4 text-primary" />
+                  <span>
+                    {car.torqueNm
+                      ? `${getTorque(
+                          car.torqueNm,
+                          torqueUnit
+                        ).toLocaleString()} ${torqueUnitsShort[torqueUnit]}`
                       : "No data"}
                   </span>
                 </div>

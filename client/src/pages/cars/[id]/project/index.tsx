@@ -3,6 +3,7 @@ import { Tab, Tabs } from "@heroui/react";
 
 import CarLayout from "@/components/layout/car-layout";
 import Kanban from "@/components/project/kanban";
+import Link from "next/link";
 import SubscriptionOverlay from "@/components/subscription-overlay";
 import { SubscriptionTier } from "@/gql/graphql";
 import { useRouter } from "next/router";
@@ -22,6 +23,7 @@ export default function Project() {
 
       <Tabs variant="underlined" selectedKey="kanban">
         <Tab
+          as={Link}
           key="kanban"
           title={
             <div className="flex items-center space-x-2">
@@ -35,6 +37,7 @@ export default function Project() {
           <Kanban />
         </Tab>
         <Tab
+          as={Link}
           key="mods"
           title={
             <div className="flex items-center space-x-2">
@@ -45,6 +48,7 @@ export default function Project() {
           href={`/cars/${router.query.id}/project/mods`}
         />
         <Tab
+          as={Link}
           key="build-log"
           title={
             <div className="flex items-center space-x-2">
