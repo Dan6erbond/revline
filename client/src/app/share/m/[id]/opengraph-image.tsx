@@ -20,6 +20,12 @@ export default async function Image({
     join(process.cwd(), "assets/Inter_24pt-Medium.ttf")
   );
 
+  const logo = (
+    await readFile(
+      join(process.cwd(), "public", "web-app-manifest-192x192.png")
+    ).then((buff) => Uint8Array.from(buff))
+  ).buffer;
+
   const client = getClient();
 
   const { id } = await params;
@@ -70,7 +76,14 @@ export default async function Image({
         </div>
 
         {/* Footer */}
-        <p tw="text-3xl font-bold text-white">{name}</p>
+        <div tw="flex justify-between items-center">
+          <p tw="text-3xl font-bold text-white">{name}</p>
+          <img
+            src={logo as any}
+            alt="Revline 1 logo"
+            style={{ width: 48, height: 48, objectFit: "contain" }}
+          />
+        </div>
       </div>
     ),
     {

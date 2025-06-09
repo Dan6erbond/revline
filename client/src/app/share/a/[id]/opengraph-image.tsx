@@ -1,5 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
+
 import { ImageResponse } from "next/og";
-import { MediaItemFragment } from "../../../../gql/graphql";
+import { MediaItemFragment } from "@/gql/graphql";
 import { getAlbum } from "@/components/album/shared";
 import { getClient } from "@/apollo-client/server";
 import { join } from "node:path";
@@ -20,6 +22,12 @@ export default async function Image({
   const inter = await readFile(
     join(process.cwd(), "assets/Inter_24pt-Medium.ttf")
   );
+
+  const logo = (
+    await readFile(
+      join(process.cwd(), "public", "web-app-manifest-192x192.png")
+    ).then((buff) => Uint8Array.from(buff))
+  ).buffer;
 
   const client = getClient();
 
@@ -78,7 +86,15 @@ export default async function Image({
         </div>
 
         {/* Footer */}
-        <p tw="text-3xl font-bold text-white truncate">{name}</p>
+        <div tw="flex justify-between items-center">
+          <p tw="text-3xl font-bold text-white">{name}</p>
+          <img
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            src={logo as any}
+            alt="Revline 1 logo"
+            style={{ width: 48, height: 48, objectFit: "contain" }}
+          />
+        </div>
       </div>
     ),
     {
