@@ -10540,10 +10540,10 @@ type MediaMutation struct {
 	op                        Op
 	typ                       string
 	id                        *uuid.UUID
-	create_time               *time.Time
-	update_time               *time.Time
 	title                     *string
 	description               *string
+	create_time               *time.Time
+	update_time               *time.Time
 	clearedFields             map[string]struct{}
 	user                      *uuid.UUID
 	cleareduser               bool
@@ -10666,78 +10666,6 @@ func (m *MediaMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetCreateTime sets the "create_time" field.
-func (m *MediaMutation) SetCreateTime(t time.Time) {
-	m.create_time = &t
-}
-
-// CreateTime returns the value of the "create_time" field in the mutation.
-func (m *MediaMutation) CreateTime() (r time.Time, exists bool) {
-	v := m.create_time
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreateTime returns the old "create_time" field's value of the Media entity.
-// If the Media object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MediaMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreateTime requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
-	}
-	return oldValue.CreateTime, nil
-}
-
-// ResetCreateTime resets all changes to the "create_time" field.
-func (m *MediaMutation) ResetCreateTime() {
-	m.create_time = nil
-}
-
-// SetUpdateTime sets the "update_time" field.
-func (m *MediaMutation) SetUpdateTime(t time.Time) {
-	m.update_time = &t
-}
-
-// UpdateTime returns the value of the "update_time" field in the mutation.
-func (m *MediaMutation) UpdateTime() (r time.Time, exists bool) {
-	v := m.update_time
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdateTime returns the old "update_time" field's value of the Media entity.
-// If the Media object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MediaMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
-	}
-	return oldValue.UpdateTime, nil
-}
-
-// ResetUpdateTime resets all changes to the "update_time" field.
-func (m *MediaMutation) ResetUpdateTime() {
-	m.update_time = nil
-}
-
 // SetTitle sets the "title" field.
 func (m *MediaMutation) SetTitle(s string) {
 	m.title = &s
@@ -10834,6 +10762,78 @@ func (m *MediaMutation) DescriptionCleared() bool {
 func (m *MediaMutation) ResetDescription() {
 	m.description = nil
 	delete(m.clearedFields, media.FieldDescription)
+}
+
+// SetCreateTime sets the "create_time" field.
+func (m *MediaMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *MediaMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the Media entity.
+// If the Media object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MediaMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *MediaMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (m *MediaMutation) SetUpdateTime(t time.Time) {
+	m.update_time = &t
+}
+
+// UpdateTime returns the value of the "update_time" field in the mutation.
+func (m *MediaMutation) UpdateTime() (r time.Time, exists bool) {
+	v := m.update_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdateTime returns the old "update_time" field's value of the Media entity.
+// If the Media object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MediaMutation) OldUpdateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdateTime: %w", err)
+	}
+	return oldValue.UpdateTime, nil
+}
+
+// ResetUpdateTime resets all changes to the "update_time" field.
+func (m *MediaMutation) ResetUpdateTime() {
+	m.update_time = nil
 }
 
 // SetUserID sets the "user" edge to the User entity by id.
@@ -11096,17 +11096,17 @@ func (m *MediaMutation) Type() string {
 // AddedFields().
 func (m *MediaMutation) Fields() []string {
 	fields := make([]string, 0, 4)
-	if m.create_time != nil {
-		fields = append(fields, media.FieldCreateTime)
-	}
-	if m.update_time != nil {
-		fields = append(fields, media.FieldUpdateTime)
-	}
 	if m.title != nil {
 		fields = append(fields, media.FieldTitle)
 	}
 	if m.description != nil {
 		fields = append(fields, media.FieldDescription)
+	}
+	if m.create_time != nil {
+		fields = append(fields, media.FieldCreateTime)
+	}
+	if m.update_time != nil {
+		fields = append(fields, media.FieldUpdateTime)
 	}
 	return fields
 }
@@ -11116,14 +11116,14 @@ func (m *MediaMutation) Fields() []string {
 // schema.
 func (m *MediaMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case media.FieldCreateTime:
-		return m.CreateTime()
-	case media.FieldUpdateTime:
-		return m.UpdateTime()
 	case media.FieldTitle:
 		return m.Title()
 	case media.FieldDescription:
 		return m.Description()
+	case media.FieldCreateTime:
+		return m.CreateTime()
+	case media.FieldUpdateTime:
+		return m.UpdateTime()
 	}
 	return nil, false
 }
@@ -11133,14 +11133,14 @@ func (m *MediaMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *MediaMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case media.FieldCreateTime:
-		return m.OldCreateTime(ctx)
-	case media.FieldUpdateTime:
-		return m.OldUpdateTime(ctx)
 	case media.FieldTitle:
 		return m.OldTitle(ctx)
 	case media.FieldDescription:
 		return m.OldDescription(ctx)
+	case media.FieldCreateTime:
+		return m.OldCreateTime(ctx)
+	case media.FieldUpdateTime:
+		return m.OldUpdateTime(ctx)
 	}
 	return nil, fmt.Errorf("unknown Media field %s", name)
 }
@@ -11150,20 +11150,6 @@ func (m *MediaMutation) OldField(ctx context.Context, name string) (ent.Value, e
 // type.
 func (m *MediaMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case media.FieldCreateTime:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreateTime(v)
-		return nil
-	case media.FieldUpdateTime:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdateTime(v)
-		return nil
 	case media.FieldTitle:
 		v, ok := value.(string)
 		if !ok {
@@ -11177,6 +11163,20 @@ func (m *MediaMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDescription(v)
+		return nil
+	case media.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
+	case media.FieldUpdateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdateTime(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Media field %s", name)
@@ -11242,17 +11242,17 @@ func (m *MediaMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *MediaMutation) ResetField(name string) error {
 	switch name {
-	case media.FieldCreateTime:
-		m.ResetCreateTime()
-		return nil
-	case media.FieldUpdateTime:
-		m.ResetUpdateTime()
-		return nil
 	case media.FieldTitle:
 		m.ResetTitle()
 		return nil
 	case media.FieldDescription:
 		m.ResetDescription()
+		return nil
+	case media.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
+	case media.FieldUpdateTime:
+		m.ResetUpdateTime()
 		return nil
 	}
 	return fmt.Errorf("unknown Media field %s", name)

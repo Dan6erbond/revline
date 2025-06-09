@@ -16,16 +16,25 @@ func (a *Album) Car(ctx context.Context) (*Car, error) {
 	return result, err
 }
 
-func (a *Album) Media(ctx context.Context) (result []*Media, err error) {
-	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = a.NamedMedia(graphql.GetFieldContext(ctx).Field.Alias)
-	} else {
-		result, err = a.Edges.MediaOrErr()
+func (a *Album) Media(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy []*MediaOrder, where *MediaWhereInput,
+) (*MediaConnection, error) {
+	opts := []MediaPaginateOption{
+		WithMediaOrder(orderBy),
+		WithMediaFilter(where.Filter),
 	}
-	if IsNotLoaded(err) {
-		result, err = a.QueryMedia().All(ctx)
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := a.Edges.totalCount[1][alias]
+	if nodes, err := a.NamedMedia(alias); err == nil || hasTotalCount {
+		pager, err := newMediaPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &MediaConnection{Edges: []*MediaEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
 	}
-	return result, err
+	return a.QueryMedia().Paginate(ctx, after, first, before, last, opts...)
 }
 
 func (bl *BuildLog) Car(ctx context.Context) (*Car, error) {
@@ -140,16 +149,25 @@ func (c *Car) ServiceSchedules(ctx context.Context) (result []*ServiceSchedule, 
 	return result, err
 }
 
-func (c *Car) Media(ctx context.Context) (result []*Media, err error) {
-	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = c.NamedMedia(graphql.GetFieldContext(ctx).Field.Alias)
-	} else {
-		result, err = c.Edges.MediaOrErr()
+func (c *Car) Media(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy []*MediaOrder, where *MediaWhereInput,
+) (*MediaConnection, error) {
+	opts := []MediaPaginateOption{
+		WithMediaOrder(orderBy),
+		WithMediaFilter(where.Filter),
 	}
-	if IsNotLoaded(err) {
-		result, err = c.QueryMedia().All(ctx)
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := c.Edges.totalCount[7][alias]
+	if nodes, err := c.NamedMedia(alias); err == nil || hasTotalCount {
+		pager, err := newMediaPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &MediaConnection{Edges: []*MediaEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
 	}
-	return result, err
+	return c.QueryMedia().Paginate(ctx, after, first, before, last, opts...)
 }
 
 func (c *Car) Albums(ctx context.Context) (result []*Album, err error) {

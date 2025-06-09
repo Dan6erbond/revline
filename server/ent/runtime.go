@@ -265,17 +265,14 @@ func init() {
 	fuelupDescID := fuelupFields[0].Descriptor()
 	// fuelup.DefaultID holds the default value on creation for the id field.
 	fuelup.DefaultID = fuelupDescID.Default.(func() uuid.UUID)
-	mediaMixin := schema.Media{}.Mixin()
-	mediaMixinFields0 := mediaMixin[0].Fields()
-	_ = mediaMixinFields0
 	mediaFields := schema.Media{}.Fields()
 	_ = mediaFields
 	// mediaDescCreateTime is the schema descriptor for create_time field.
-	mediaDescCreateTime := mediaMixinFields0[0].Descriptor()
+	mediaDescCreateTime := mediaFields[3].Descriptor()
 	// media.DefaultCreateTime holds the default value on creation for the create_time field.
 	media.DefaultCreateTime = mediaDescCreateTime.Default.(func() time.Time)
 	// mediaDescUpdateTime is the schema descriptor for update_time field.
-	mediaDescUpdateTime := mediaMixinFields0[1].Descriptor()
+	mediaDescUpdateTime := mediaFields[4].Descriptor()
 	// media.DefaultUpdateTime holds the default value on creation for the update_time field.
 	media.DefaultUpdateTime = mediaDescUpdateTime.Default.(func() time.Time)
 	// media.UpdateDefaultUpdateTime holds the default value on update for the update_time field.

@@ -55,7 +55,9 @@ func (Car) Edges() []ent.Edge {
 		edge.To("service_items", ServiceItem.Type),
 		edge.To("service_logs", ServiceLog.Type),
 		edge.To("service_schedules", ServiceSchedule.Type),
-		edge.To("media", Media.Type),
+		edge.To("media", Media.Type).
+			Annotations(entgql.RelayConnection()).
+			Annotations(entgql.MultiOrder()),
 		edge.To("albums", Album.Type),
 		edge.To("documents", Document.Type),
 		edge.To("dyno_sessions", DynoSession.Type),

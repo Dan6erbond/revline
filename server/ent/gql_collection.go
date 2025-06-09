@@ -75,8 +75,88 @@ func (a *AlbumQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 				path  = append(path, alias)
 				query = (&MediaClient{config: a.config}).Query()
 			)
-			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, mediaImplementors)...); err != nil {
+			args := newMediaPaginateArgs(fieldArgs(ctx, new(MediaWhereInput), path...))
+			if err := validateFirstLast(args.first, args.last); err != nil {
+				return fmt.Errorf("validate first and last in path %q: %w", path, err)
+			}
+			pager, err := newMediaPager(args.opts, args.last != nil)
+			if err != nil {
+				return fmt.Errorf("create new pager in path %q: %w", path, err)
+			}
+			if query, err = pager.applyFilter(query); err != nil {
 				return err
+			}
+			ignoredEdges := !hasCollectedField(ctx, append(path, edgesField)...)
+			if hasCollectedField(ctx, append(path, totalCountField)...) || hasCollectedField(ctx, append(path, pageInfoField)...) {
+				hasPagination := args.after != nil || args.first != nil || args.before != nil || args.last != nil
+				if hasPagination || ignoredEdges {
+					query := query.Clone()
+					a.loadTotal = append(a.loadTotal, func(ctx context.Context, nodes []*Album) error {
+						ids := make([]driver.Value, len(nodes))
+						for i := range nodes {
+							ids[i] = nodes[i].ID
+						}
+						var v []struct {
+							NodeID uuid.UUID `sql:"album_id"`
+							Count  int       `sql:"count"`
+						}
+						query.Where(func(s *sql.Selector) {
+							joinT := sql.Table(album.MediaTable)
+							s.Join(joinT).On(s.C(media.FieldID), joinT.C(album.MediaPrimaryKey[1]))
+							s.Where(sql.InValues(joinT.C(album.MediaPrimaryKey[0]), ids...))
+							s.Select(joinT.C(album.MediaPrimaryKey[0]), sql.Count("*"))
+							s.GroupBy(joinT.C(album.MediaPrimaryKey[0]))
+						})
+						if err := query.Select().Scan(ctx, &v); err != nil {
+							return err
+						}
+						m := make(map[uuid.UUID]int, len(v))
+						for i := range v {
+							m[v[i].NodeID] = v[i].Count
+						}
+						for i := range nodes {
+							n := m[nodes[i].ID]
+							if nodes[i].Edges.totalCount[1] == nil {
+								nodes[i].Edges.totalCount[1] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[1][alias] = n
+						}
+						return nil
+					})
+				} else {
+					a.loadTotal = append(a.loadTotal, func(_ context.Context, nodes []*Album) error {
+						for i := range nodes {
+							n := len(nodes[i].Edges.Media)
+							if nodes[i].Edges.totalCount[1] == nil {
+								nodes[i].Edges.totalCount[1] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[1][alias] = n
+						}
+						return nil
+					})
+				}
+			}
+			if ignoredEdges || (args.first != nil && *args.first == 0) || (args.last != nil && *args.last == 0) {
+				continue
+			}
+			if query, err = pager.applyCursors(query, args.after, args.before); err != nil {
+				return err
+			}
+			path = append(path, edgesField, nodeField)
+			if field := collectedField(ctx, path...); field != nil {
+				if err := query.collectField(ctx, false, opCtx, *field, path, mayAddCondition(satisfies, mediaImplementors)...); err != nil {
+					return err
+				}
+			}
+			if limit := paginateLimit(args.first, args.last); limit > 0 {
+				if oneNode {
+					pager.applyOrder(query.Limit(limit))
+				} else {
+					modify := entgql.LimitPerRow(album.MediaPrimaryKey[0], limit, pager.orderExpr(query))
+					query.modifiers = append(query.modifiers, modify)
+				}
+			} else {
+				query = pager.applyOrder(query)
 			}
 			a.WithNamedMedia(alias, func(wq *MediaQuery) {
 				*wq = *query
@@ -406,8 +486,84 @@ func (c *CarQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphq
 				path  = append(path, alias)
 				query = (&MediaClient{config: c.config}).Query()
 			)
-			if err := query.collectField(ctx, false, opCtx, field, path, mayAddCondition(satisfies, mediaImplementors)...); err != nil {
+			args := newMediaPaginateArgs(fieldArgs(ctx, new(MediaWhereInput), path...))
+			if err := validateFirstLast(args.first, args.last); err != nil {
+				return fmt.Errorf("validate first and last in path %q: %w", path, err)
+			}
+			pager, err := newMediaPager(args.opts, args.last != nil)
+			if err != nil {
+				return fmt.Errorf("create new pager in path %q: %w", path, err)
+			}
+			if query, err = pager.applyFilter(query); err != nil {
 				return err
+			}
+			ignoredEdges := !hasCollectedField(ctx, append(path, edgesField)...)
+			if hasCollectedField(ctx, append(path, totalCountField)...) || hasCollectedField(ctx, append(path, pageInfoField)...) {
+				hasPagination := args.after != nil || args.first != nil || args.before != nil || args.last != nil
+				if hasPagination || ignoredEdges {
+					query := query.Clone()
+					c.loadTotal = append(c.loadTotal, func(ctx context.Context, nodes []*Car) error {
+						ids := make([]driver.Value, len(nodes))
+						for i := range nodes {
+							ids[i] = nodes[i].ID
+						}
+						var v []struct {
+							NodeID uuid.UUID `sql:"car_media"`
+							Count  int       `sql:"count"`
+						}
+						query.Where(func(s *sql.Selector) {
+							s.Where(sql.InValues(s.C(car.MediaColumn), ids...))
+						})
+						if err := query.GroupBy(car.MediaColumn).Aggregate(Count()).Scan(ctx, &v); err != nil {
+							return err
+						}
+						m := make(map[uuid.UUID]int, len(v))
+						for i := range v {
+							m[v[i].NodeID] = v[i].Count
+						}
+						for i := range nodes {
+							n := m[nodes[i].ID]
+							if nodes[i].Edges.totalCount[7] == nil {
+								nodes[i].Edges.totalCount[7] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[7][alias] = n
+						}
+						return nil
+					})
+				} else {
+					c.loadTotal = append(c.loadTotal, func(_ context.Context, nodes []*Car) error {
+						for i := range nodes {
+							n := len(nodes[i].Edges.Media)
+							if nodes[i].Edges.totalCount[7] == nil {
+								nodes[i].Edges.totalCount[7] = make(map[string]int)
+							}
+							nodes[i].Edges.totalCount[7][alias] = n
+						}
+						return nil
+					})
+				}
+			}
+			if ignoredEdges || (args.first != nil && *args.first == 0) || (args.last != nil && *args.last == 0) {
+				continue
+			}
+			if query, err = pager.applyCursors(query, args.after, args.before); err != nil {
+				return err
+			}
+			path = append(path, edgesField, nodeField)
+			if field := collectedField(ctx, path...); field != nil {
+				if err := query.collectField(ctx, false, opCtx, *field, path, mayAddCondition(satisfies, mediaImplementors)...); err != nil {
+					return err
+				}
+			}
+			if limit := paginateLimit(args.first, args.last); limit > 0 {
+				if oneNode {
+					pager.applyOrder(query.Limit(limit))
+				} else {
+					modify := entgql.LimitPerRow(car.MediaColumn, limit, pager.orderExpr(query))
+					query.modifiers = append(query.modifiers, modify)
+				}
+			} else {
+				query = pager.applyOrder(query)
 			}
 			c.WithNamedMedia(alias, func(wq *MediaQuery) {
 				*wq = *query
@@ -1918,16 +2074,6 @@ func (m *MediaQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 			m.WithNamedAlbums(alias, func(wq *AlbumQuery) {
 				*wq = *query
 			})
-		case "createTime":
-			if _, ok := fieldSeen[media.FieldCreateTime]; !ok {
-				selectedFields = append(selectedFields, media.FieldCreateTime)
-				fieldSeen[media.FieldCreateTime] = struct{}{}
-			}
-		case "updateTime":
-			if _, ok := fieldSeen[media.FieldUpdateTime]; !ok {
-				selectedFields = append(selectedFields, media.FieldUpdateTime)
-				fieldSeen[media.FieldUpdateTime] = struct{}{}
-			}
 		case "title":
 			if _, ok := fieldSeen[media.FieldTitle]; !ok {
 				selectedFields = append(selectedFields, media.FieldTitle)
@@ -1937,6 +2083,16 @@ func (m *MediaQuery) collectField(ctx context.Context, oneNode bool, opCtx *grap
 			if _, ok := fieldSeen[media.FieldDescription]; !ok {
 				selectedFields = append(selectedFields, media.FieldDescription)
 				fieldSeen[media.FieldDescription] = struct{}{}
+			}
+		case "createTime":
+			if _, ok := fieldSeen[media.FieldCreateTime]; !ok {
+				selectedFields = append(selectedFields, media.FieldCreateTime)
+				fieldSeen[media.FieldCreateTime] = struct{}{}
+			}
+		case "updateTime":
+			if _, ok := fieldSeen[media.FieldUpdateTime]; !ok {
+				selectedFields = append(selectedFields, media.FieldUpdateTime)
+				fieldSeen[media.FieldUpdateTime] = struct{}{}
 			}
 		case "id":
 		case "__typename":
@@ -1972,6 +2128,34 @@ func newMediaPaginateArgs(rv map[string]any) *mediaPaginateArgs {
 	}
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case []*MediaOrder:
+			args.opts = append(args.opts, WithMediaOrder(v))
+		case []any:
+			var orders []*MediaOrder
+			for i := range v {
+				mv, ok := v[i].(map[string]any)
+				if !ok {
+					continue
+				}
+				var (
+					err1, err2 error
+					order      = &MediaOrder{Field: &MediaOrderField{}, Direction: entgql.OrderDirectionAsc}
+				)
+				if d, ok := mv[directionField]; ok {
+					err1 = order.Direction.UnmarshalGQL(d)
+				}
+				if f, ok := mv[fieldField]; ok {
+					err2 = order.Field.UnmarshalGQL(f)
+				}
+				if err1 == nil && err2 == nil {
+					orders = append(orders, order)
+				}
+			}
+			args.opts = append(args.opts, WithMediaOrder(orders))
+		}
 	}
 	if v, ok := rv[whereField].(*MediaWhereInput); ok {
 		args.opts = append(args.opts, WithMediaFilter(v.Filter))

@@ -253,10 +253,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Media",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			media.FieldCreateTime:  {Type: field.TypeTime, Column: media.FieldCreateTime},
-			media.FieldUpdateTime:  {Type: field.TypeTime, Column: media.FieldUpdateTime},
 			media.FieldTitle:       {Type: field.TypeString, Column: media.FieldTitle},
 			media.FieldDescription: {Type: field.TypeString, Column: media.FieldDescription},
+			media.FieldCreateTime:  {Type: field.TypeTime, Column: media.FieldCreateTime},
+			media.FieldUpdateTime:  {Type: field.TypeTime, Column: media.FieldUpdateTime},
 		},
 	}
 	graph.Nodes[12] = &sqlgraph.Node{
@@ -2981,16 +2981,6 @@ func (f *MediaFilter) WhereID(p entql.ValueP) {
 	f.Where(p.Field(media.FieldID))
 }
 
-// WhereCreateTime applies the entql time.Time predicate on the create_time field.
-func (f *MediaFilter) WhereCreateTime(p entql.TimeP) {
-	f.Where(p.Field(media.FieldCreateTime))
-}
-
-// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
-func (f *MediaFilter) WhereUpdateTime(p entql.TimeP) {
-	f.Where(p.Field(media.FieldUpdateTime))
-}
-
 // WhereTitle applies the entql string predicate on the title field.
 func (f *MediaFilter) WhereTitle(p entql.StringP) {
 	f.Where(p.Field(media.FieldTitle))
@@ -2999,6 +2989,16 @@ func (f *MediaFilter) WhereTitle(p entql.StringP) {
 // WhereDescription applies the entql string predicate on the description field.
 func (f *MediaFilter) WhereDescription(p entql.StringP) {
 	f.Where(p.Field(media.FieldDescription))
+}
+
+// WhereCreateTime applies the entql time.Time predicate on the create_time field.
+func (f *MediaFilter) WhereCreateTime(p entql.TimeP) {
+	f.Where(p.Field(media.FieldCreateTime))
+}
+
+// WhereUpdateTime applies the entql time.Time predicate on the update_time field.
+func (f *MediaFilter) WhereUpdateTime(p entql.TimeP) {
+	f.Where(p.Field(media.FieldUpdateTime))
 }
 
 // WhereHasUser applies a predicate to check if query has an edge user.

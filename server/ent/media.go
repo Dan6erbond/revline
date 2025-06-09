@@ -21,14 +21,14 @@ type Media struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// CreateTime holds the value of the "create_time" field.
-	CreateTime time.Time `json:"create_time,omitempty"`
-	// UpdateTime holds the value of the "update_time" field.
-	UpdateTime time.Time `json:"update_time,omitempty"`
 	// Title holds the value of the "title" field.
 	Title *string `json:"title,omitempty"`
 	// Description holds the value of the "description" field.
 	Description *string `json:"description,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
+	// UpdateTime holds the value of the "update_time" field.
+	UpdateTime time.Time `json:"update_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MediaQuery when eager-loading is set.
 	Edges                    MediaEdges `json:"edges"`
@@ -149,18 +149,6 @@ func (m *Media) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				m.ID = *value
 			}
-		case media.FieldCreateTime:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field create_time", values[i])
-			} else if value.Valid {
-				m.CreateTime = value.Time
-			}
-		case media.FieldUpdateTime:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field update_time", values[i])
-			} else if value.Valid {
-				m.UpdateTime = value.Time
-			}
 		case media.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
@@ -174,6 +162,18 @@ func (m *Media) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				m.Description = new(string)
 				*m.Description = value.String
+			}
+		case media.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				m.CreateTime = value.Time
+			}
+		case media.FieldUpdateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+			} else if value.Valid {
+				m.UpdateTime = value.Time
 			}
 		case media.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -257,12 +257,6 @@ func (m *Media) String() string {
 	var builder strings.Builder
 	builder.WriteString("Media(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", m.ID))
-	builder.WriteString("create_time=")
-	builder.WriteString(m.CreateTime.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("update_time=")
-	builder.WriteString(m.UpdateTime.Format(time.ANSIC))
-	builder.WriteString(", ")
 	if v := m.Title; v != nil {
 		builder.WriteString("title=")
 		builder.WriteString(*v)
@@ -272,6 +266,12 @@ func (m *Media) String() string {
 		builder.WriteString("description=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("create_time=")
+	builder.WriteString(m.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("update_time=")
+	builder.WriteString(m.UpdateTime.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

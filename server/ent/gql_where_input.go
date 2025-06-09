@@ -4607,26 +4607,6 @@ type MediaWhereInput struct {
 	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
 	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
 
-	// "create_time" field predicates.
-	CreateTime      *time.Time  `json:"createTime,omitempty"`
-	CreateTimeNEQ   *time.Time  `json:"createTimeNEQ,omitempty"`
-	CreateTimeIn    []time.Time `json:"createTimeIn,omitempty"`
-	CreateTimeNotIn []time.Time `json:"createTimeNotIn,omitempty"`
-	CreateTimeGT    *time.Time  `json:"createTimeGT,omitempty"`
-	CreateTimeGTE   *time.Time  `json:"createTimeGTE,omitempty"`
-	CreateTimeLT    *time.Time  `json:"createTimeLT,omitempty"`
-	CreateTimeLTE   *time.Time  `json:"createTimeLTE,omitempty"`
-
-	// "update_time" field predicates.
-	UpdateTime      *time.Time  `json:"updateTime,omitempty"`
-	UpdateTimeNEQ   *time.Time  `json:"updateTimeNEQ,omitempty"`
-	UpdateTimeIn    []time.Time `json:"updateTimeIn,omitempty"`
-	UpdateTimeNotIn []time.Time `json:"updateTimeNotIn,omitempty"`
-	UpdateTimeGT    *time.Time  `json:"updateTimeGT,omitempty"`
-	UpdateTimeGTE   *time.Time  `json:"updateTimeGTE,omitempty"`
-	UpdateTimeLT    *time.Time  `json:"updateTimeLT,omitempty"`
-	UpdateTimeLTE   *time.Time  `json:"updateTimeLTE,omitempty"`
-
 	// "title" field predicates.
 	Title             *string  `json:"title,omitempty"`
 	TitleNEQ          *string  `json:"titleNEQ,omitempty"`
@@ -4660,6 +4640,26 @@ type MediaWhereInput struct {
 	DescriptionNotNil       bool     `json:"descriptionNotNil,omitempty"`
 	DescriptionEqualFold    *string  `json:"descriptionEqualFold,omitempty"`
 	DescriptionContainsFold *string  `json:"descriptionContainsFold,omitempty"`
+
+	// "create_time" field predicates.
+	CreateTime      *time.Time  `json:"createTime,omitempty"`
+	CreateTimeNEQ   *time.Time  `json:"createTimeNEQ,omitempty"`
+	CreateTimeIn    []time.Time `json:"createTimeIn,omitempty"`
+	CreateTimeNotIn []time.Time `json:"createTimeNotIn,omitempty"`
+	CreateTimeGT    *time.Time  `json:"createTimeGT,omitempty"`
+	CreateTimeGTE   *time.Time  `json:"createTimeGTE,omitempty"`
+	CreateTimeLT    *time.Time  `json:"createTimeLT,omitempty"`
+	CreateTimeLTE   *time.Time  `json:"createTimeLTE,omitempty"`
+
+	// "update_time" field predicates.
+	UpdateTime      *time.Time  `json:"updateTime,omitempty"`
+	UpdateTimeNEQ   *time.Time  `json:"updateTimeNEQ,omitempty"`
+	UpdateTimeIn    []time.Time `json:"updateTimeIn,omitempty"`
+	UpdateTimeNotIn []time.Time `json:"updateTimeNotIn,omitempty"`
+	UpdateTimeGT    *time.Time  `json:"updateTimeGT,omitempty"`
+	UpdateTimeGTE   *time.Time  `json:"updateTimeGTE,omitempty"`
+	UpdateTimeLT    *time.Time  `json:"updateTimeLT,omitempty"`
+	UpdateTimeLTE   *time.Time  `json:"updateTimeLTE,omitempty"`
 
 	// "user" edge predicates.
 	HasUser     *bool             `json:"hasUser,omitempty"`
@@ -4777,54 +4777,6 @@ func (i *MediaWhereInput) P() (predicate.Media, error) {
 	if i.IDLTE != nil {
 		predicates = append(predicates, media.IDLTE(*i.IDLTE))
 	}
-	if i.CreateTime != nil {
-		predicates = append(predicates, media.CreateTimeEQ(*i.CreateTime))
-	}
-	if i.CreateTimeNEQ != nil {
-		predicates = append(predicates, media.CreateTimeNEQ(*i.CreateTimeNEQ))
-	}
-	if len(i.CreateTimeIn) > 0 {
-		predicates = append(predicates, media.CreateTimeIn(i.CreateTimeIn...))
-	}
-	if len(i.CreateTimeNotIn) > 0 {
-		predicates = append(predicates, media.CreateTimeNotIn(i.CreateTimeNotIn...))
-	}
-	if i.CreateTimeGT != nil {
-		predicates = append(predicates, media.CreateTimeGT(*i.CreateTimeGT))
-	}
-	if i.CreateTimeGTE != nil {
-		predicates = append(predicates, media.CreateTimeGTE(*i.CreateTimeGTE))
-	}
-	if i.CreateTimeLT != nil {
-		predicates = append(predicates, media.CreateTimeLT(*i.CreateTimeLT))
-	}
-	if i.CreateTimeLTE != nil {
-		predicates = append(predicates, media.CreateTimeLTE(*i.CreateTimeLTE))
-	}
-	if i.UpdateTime != nil {
-		predicates = append(predicates, media.UpdateTimeEQ(*i.UpdateTime))
-	}
-	if i.UpdateTimeNEQ != nil {
-		predicates = append(predicates, media.UpdateTimeNEQ(*i.UpdateTimeNEQ))
-	}
-	if len(i.UpdateTimeIn) > 0 {
-		predicates = append(predicates, media.UpdateTimeIn(i.UpdateTimeIn...))
-	}
-	if len(i.UpdateTimeNotIn) > 0 {
-		predicates = append(predicates, media.UpdateTimeNotIn(i.UpdateTimeNotIn...))
-	}
-	if i.UpdateTimeGT != nil {
-		predicates = append(predicates, media.UpdateTimeGT(*i.UpdateTimeGT))
-	}
-	if i.UpdateTimeGTE != nil {
-		predicates = append(predicates, media.UpdateTimeGTE(*i.UpdateTimeGTE))
-	}
-	if i.UpdateTimeLT != nil {
-		predicates = append(predicates, media.UpdateTimeLT(*i.UpdateTimeLT))
-	}
-	if i.UpdateTimeLTE != nil {
-		predicates = append(predicates, media.UpdateTimeLTE(*i.UpdateTimeLTE))
-	}
 	if i.Title != nil {
 		predicates = append(predicates, media.TitleEQ(*i.Title))
 	}
@@ -4914,6 +4866,54 @@ func (i *MediaWhereInput) P() (predicate.Media, error) {
 	}
 	if i.DescriptionContainsFold != nil {
 		predicates = append(predicates, media.DescriptionContainsFold(*i.DescriptionContainsFold))
+	}
+	if i.CreateTime != nil {
+		predicates = append(predicates, media.CreateTimeEQ(*i.CreateTime))
+	}
+	if i.CreateTimeNEQ != nil {
+		predicates = append(predicates, media.CreateTimeNEQ(*i.CreateTimeNEQ))
+	}
+	if len(i.CreateTimeIn) > 0 {
+		predicates = append(predicates, media.CreateTimeIn(i.CreateTimeIn...))
+	}
+	if len(i.CreateTimeNotIn) > 0 {
+		predicates = append(predicates, media.CreateTimeNotIn(i.CreateTimeNotIn...))
+	}
+	if i.CreateTimeGT != nil {
+		predicates = append(predicates, media.CreateTimeGT(*i.CreateTimeGT))
+	}
+	if i.CreateTimeGTE != nil {
+		predicates = append(predicates, media.CreateTimeGTE(*i.CreateTimeGTE))
+	}
+	if i.CreateTimeLT != nil {
+		predicates = append(predicates, media.CreateTimeLT(*i.CreateTimeLT))
+	}
+	if i.CreateTimeLTE != nil {
+		predicates = append(predicates, media.CreateTimeLTE(*i.CreateTimeLTE))
+	}
+	if i.UpdateTime != nil {
+		predicates = append(predicates, media.UpdateTimeEQ(*i.UpdateTime))
+	}
+	if i.UpdateTimeNEQ != nil {
+		predicates = append(predicates, media.UpdateTimeNEQ(*i.UpdateTimeNEQ))
+	}
+	if len(i.UpdateTimeIn) > 0 {
+		predicates = append(predicates, media.UpdateTimeIn(i.UpdateTimeIn...))
+	}
+	if len(i.UpdateTimeNotIn) > 0 {
+		predicates = append(predicates, media.UpdateTimeNotIn(i.UpdateTimeNotIn...))
+	}
+	if i.UpdateTimeGT != nil {
+		predicates = append(predicates, media.UpdateTimeGT(*i.UpdateTimeGT))
+	}
+	if i.UpdateTimeGTE != nil {
+		predicates = append(predicates, media.UpdateTimeGTE(*i.UpdateTimeGTE))
+	}
+	if i.UpdateTimeLT != nil {
+		predicates = append(predicates, media.UpdateTimeLT(*i.UpdateTimeLT))
+	}
+	if i.UpdateTimeLTE != nil {
+		predicates = append(predicates, media.UpdateTimeLTE(*i.UpdateTimeLTE))
 	}
 
 	if i.HasUser != nil {

@@ -345,10 +345,10 @@ var (
 	// MediaColumns holds the columns for the "media" table.
 	MediaColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "create_time", Type: field.TypeTime},
-		{Name: "update_time", Type: field.TypeTime},
 		{Name: "title", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
 		{Name: "car_media", Type: field.TypeUUID, Nullable: true},
 		{Name: "mod_product_option_media", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_media", Type: field.TypeUUID, Nullable: true},

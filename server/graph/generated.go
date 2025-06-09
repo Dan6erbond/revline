@@ -79,7 +79,7 @@ type ComplexityRoot struct {
 		Car        func(childComplexity int) int
 		CreateTime func(childComplexity int) int
 		ID         func(childComplexity int) int
-		Media      func(childComplexity int) int
+		Media      func(childComplexity int, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.MediaOrder, where *ent.MediaWhereInput) int
 		Title      func(childComplexity int) int
 		UpdateTime func(childComplexity int) int
 	}
@@ -121,7 +121,7 @@ type ComplexityRoot struct {
 		FuelUps                       func(childComplexity int) int
 		ID                            func(childComplexity int) int
 		Make                          func(childComplexity int) int
-		Media                         func(childComplexity int) int
+		Media                         func(childComplexity int, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.MediaOrder, where *ent.MediaWhereInput) int
 		Model                         func(childComplexity int) int
 		Mods                          func(childComplexity int, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, where *ent.ModWhereInput) int
 		Name                          func(childComplexity int) int
@@ -267,6 +267,17 @@ type ComplexityRoot struct {
 		URL              func(childComplexity int) int
 		UpdateTime       func(childComplexity int) int
 		User             func(childComplexity int) int
+	}
+
+	MediaConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	MediaEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	Mod struct {
@@ -707,7 +718,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			break
 		}
 
-		return e.complexity.Album.Media(childComplexity), true
+		args, err := ec.field_Album_media_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Album.Media(childComplexity, args["after"].(*entgql.Cursor[uuid.UUID]), args["first"].(*int), args["before"].(*entgql.Cursor[uuid.UUID]), args["last"].(*int), args["orderBy"].([]*ent.MediaOrder), args["where"].(*ent.MediaWhereInput)), true
 
 	case "Album.title":
 		if e.complexity.Album.Title == nil {
@@ -922,7 +938,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			break
 		}
 
-		return e.complexity.Car.Media(childComplexity), true
+		args, err := ec.field_Car_media_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Car.Media(childComplexity, args["after"].(*entgql.Cursor[uuid.UUID]), args["first"].(*int), args["before"].(*entgql.Cursor[uuid.UUID]), args["last"].(*int), args["orderBy"].([]*ent.MediaOrder), args["where"].(*ent.MediaWhereInput)), true
 
 	case "Car.model":
 		if e.complexity.Car.Model == nil {
@@ -1738,6 +1759,41 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Media.User(childComplexity), true
+
+	case "MediaConnection.edges":
+		if e.complexity.MediaConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.MediaConnection.Edges(childComplexity), true
+
+	case "MediaConnection.pageInfo":
+		if e.complexity.MediaConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.MediaConnection.PageInfo(childComplexity), true
+
+	case "MediaConnection.totalCount":
+		if e.complexity.MediaConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.MediaConnection.TotalCount(childComplexity), true
+
+	case "MediaEdge.cursor":
+		if e.complexity.MediaEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.MediaEdge.Cursor(childComplexity), true
+
+	case "MediaEdge.node":
+		if e.complexity.MediaEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.MediaEdge.Node(childComplexity), true
 
 	case "Mod.buildLogs":
 		if e.complexity.Mod.BuildLogs == nil {
@@ -3538,6 +3594,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputDynoSessionWhereInput,
 		ec.unmarshalInputExpenseWhereInput,
 		ec.unmarshalInputFuelUpWhereInput,
+		ec.unmarshalInputMediaOrder,
 		ec.unmarshalInputMediaWhereInput,
 		ec.unmarshalInputModProductOptionWhereInput,
 		ec.unmarshalInputModWhereInput,
@@ -3693,6 +3750,119 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Album_media_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Album_media_argsAfter(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["after"] = arg0
+	arg1, err := ec.field_Album_media_argsFirst(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["first"] = arg1
+	arg2, err := ec.field_Album_media_argsBefore(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["before"] = arg2
+	arg3, err := ec.field_Album_media_argsLast(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["last"] = arg3
+	arg4, err := ec.field_Album_media_argsOrderBy(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["orderBy"] = arg4
+	arg5, err := ec.field_Album_media_argsWhere(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["where"] = arg5
+	return args, nil
+}
+func (ec *executionContext) field_Album_media_argsAfter(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*entgql.Cursor[uuid.UUID], error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+	if tmp, ok := rawArgs["after"]; ok {
+		return ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+	}
+
+	var zeroVal *entgql.Cursor[uuid.UUID]
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Album_media_argsFirst(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+	if tmp, ok := rawArgs["first"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Album_media_argsBefore(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*entgql.Cursor[uuid.UUID], error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+	if tmp, ok := rawArgs["before"]; ok {
+		return ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+	}
+
+	var zeroVal *entgql.Cursor[uuid.UUID]
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Album_media_argsLast(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+	if tmp, ok := rawArgs["last"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Album_media_argsOrderBy(
+	ctx context.Context,
+	rawArgs map[string]any,
+) ([]*ent.MediaOrder, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		return ec.unmarshalOMediaOrder2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaOrderᚄ(ctx, tmp)
+	}
+
+	var zeroVal []*ent.MediaOrder
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Album_media_argsWhere(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*ent.MediaWhereInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+	if tmp, ok := rawArgs["where"]; ok {
+		return ec.unmarshalOMediaWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaWhereInput(ctx, tmp)
+	}
+
+	var zeroVal *ent.MediaWhereInput
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Car_buildLogs_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -3803,6 +3973,119 @@ func (ec *executionContext) field_Car_buildLogs_argsWhere(
 	}
 
 	var zeroVal *ent.BuildLogWhereInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_media_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Car_media_argsAfter(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["after"] = arg0
+	arg1, err := ec.field_Car_media_argsFirst(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["first"] = arg1
+	arg2, err := ec.field_Car_media_argsBefore(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["before"] = arg2
+	arg3, err := ec.field_Car_media_argsLast(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["last"] = arg3
+	arg4, err := ec.field_Car_media_argsOrderBy(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["orderBy"] = arg4
+	arg5, err := ec.field_Car_media_argsWhere(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["where"] = arg5
+	return args, nil
+}
+func (ec *executionContext) field_Car_media_argsAfter(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*entgql.Cursor[uuid.UUID], error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+	if tmp, ok := rawArgs["after"]; ok {
+		return ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+	}
+
+	var zeroVal *entgql.Cursor[uuid.UUID]
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_media_argsFirst(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+	if tmp, ok := rawArgs["first"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_media_argsBefore(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*entgql.Cursor[uuid.UUID], error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+	if tmp, ok := rawArgs["before"]; ok {
+		return ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+	}
+
+	var zeroVal *entgql.Cursor[uuid.UUID]
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_media_argsLast(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+	if tmp, ok := rawArgs["last"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_media_argsOrderBy(
+	ctx context.Context,
+	rawArgs map[string]any,
+) ([]*ent.MediaOrder, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		return ec.unmarshalOMediaOrder2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaOrderᚄ(ctx, tmp)
+	}
+
+	var zeroVal []*ent.MediaOrder
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Car_media_argsWhere(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*ent.MediaWhereInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+	if tmp, ok := rawArgs["where"]; ok {
+		return ec.unmarshalOMediaWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaWhereInput(ctx, tmp)
+	}
+
+	var zeroVal *ent.MediaWhereInput
 	return zeroVal, nil
 }
 
@@ -5760,21 +6043,24 @@ func (ec *executionContext) _Album_media(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Media(ctx)
+		return obj.Media(ctx, fc.Args["after"].(*entgql.Cursor[uuid.UUID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[uuid.UUID]), fc.Args["last"].(*int), fc.Args["orderBy"].([]*ent.MediaOrder), fc.Args["where"].(*ent.MediaWhereInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.Media)
+	res := resTmp.(*ent.MediaConnection)
 	fc.Result = res
-	return ec.marshalOMedia2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaᚄ(ctx, field.Selections, res)
+	return ec.marshalNMediaConnection2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaConnection(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Album_media(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Album_media(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Album",
 		Field:      field,
@@ -5782,33 +6068,26 @@ func (ec *executionContext) fieldContext_Album_media(_ context.Context, field gr
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Media_id(ctx, field)
-			case "createTime":
-				return ec.fieldContext_Media_createTime(ctx, field)
-			case "updateTime":
-				return ec.fieldContext_Media_updateTime(ctx, field)
-			case "title":
-				return ec.fieldContext_Media_title(ctx, field)
-			case "description":
-				return ec.fieldContext_Media_description(ctx, field)
-			case "user":
-				return ec.fieldContext_Media_user(ctx, field)
-			case "car":
-				return ec.fieldContext_Media_car(ctx, field)
-			case "modProductOption":
-				return ec.fieldContext_Media_modProductOption(ctx, field)
-			case "buildLog":
-				return ec.fieldContext_Media_buildLog(ctx, field)
-			case "albums":
-				return ec.fieldContext_Media_albums(ctx, field)
-			case "url":
-				return ec.fieldContext_Media_url(ctx, field)
-			case "metadata":
-				return ec.fieldContext_Media_metadata(ctx, field)
+			case "edges":
+				return ec.fieldContext_MediaConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_MediaConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_MediaConnection_totalCount(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Media", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type MediaConnection", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Album_media_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -6289,14 +6568,14 @@ func (ec *executionContext) fieldContext_BuildLog_media(_ context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Media_id(ctx, field)
-			case "createTime":
-				return ec.fieldContext_Media_createTime(ctx, field)
-			case "updateTime":
-				return ec.fieldContext_Media_updateTime(ctx, field)
 			case "title":
 				return ec.fieldContext_Media_title(ctx, field)
 			case "description":
 				return ec.fieldContext_Media_description(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Media_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Media_updateTime(ctx, field)
 			case "user":
 				return ec.fieldContext_Media_user(ctx, field)
 			case "car":
@@ -7437,21 +7716,24 @@ func (ec *executionContext) _Car_media(ctx context.Context, field graphql.Collec
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Media(ctx)
+		return obj.Media(ctx, fc.Args["after"].(*entgql.Cursor[uuid.UUID]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[uuid.UUID]), fc.Args["last"].(*int), fc.Args["orderBy"].([]*ent.MediaOrder), fc.Args["where"].(*ent.MediaWhereInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.Media)
+	res := resTmp.(*ent.MediaConnection)
 	fc.Result = res
-	return ec.marshalOMedia2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaᚄ(ctx, field.Selections, res)
+	return ec.marshalNMediaConnection2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaConnection(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Car_media(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Car_media(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Car",
 		Field:      field,
@@ -7459,33 +7741,26 @@ func (ec *executionContext) fieldContext_Car_media(_ context.Context, field grap
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Media_id(ctx, field)
-			case "createTime":
-				return ec.fieldContext_Media_createTime(ctx, field)
-			case "updateTime":
-				return ec.fieldContext_Media_updateTime(ctx, field)
-			case "title":
-				return ec.fieldContext_Media_title(ctx, field)
-			case "description":
-				return ec.fieldContext_Media_description(ctx, field)
-			case "user":
-				return ec.fieldContext_Media_user(ctx, field)
-			case "car":
-				return ec.fieldContext_Media_car(ctx, field)
-			case "modProductOption":
-				return ec.fieldContext_Media_modProductOption(ctx, field)
-			case "buildLog":
-				return ec.fieldContext_Media_buildLog(ctx, field)
-			case "albums":
-				return ec.fieldContext_Media_albums(ctx, field)
-			case "url":
-				return ec.fieldContext_Media_url(ctx, field)
-			case "metadata":
-				return ec.fieldContext_Media_metadata(ctx, field)
+			case "edges":
+				return ec.fieldContext_MediaConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_MediaConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_MediaConnection_totalCount(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Media", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type MediaConnection", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Car_media_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -7841,14 +8116,14 @@ func (ec *executionContext) fieldContext_Car_bannerImage(_ context.Context, fiel
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Media_id(ctx, field)
-			case "createTime":
-				return ec.fieldContext_Media_createTime(ctx, field)
-			case "updateTime":
-				return ec.fieldContext_Media_updateTime(ctx, field)
 			case "title":
 				return ec.fieldContext_Media_title(ctx, field)
 			case "description":
 				return ec.fieldContext_Media_description(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Media_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Media_updateTime(ctx, field)
 			case "user":
 				return ec.fieldContext_Media_user(ctx, field)
 			case "car":
@@ -12819,6 +13094,88 @@ func (ec *executionContext) fieldContext_Media_id(_ context.Context, field graph
 	return fc, nil
 }
 
+func (ec *executionContext) _Media_title(ctx context.Context, field graphql.CollectedField, obj *ent.Media) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Media_title(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Media_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Media",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Media_description(ctx context.Context, field graphql.CollectedField, obj *ent.Media) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Media_description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Media_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Media",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Media_createTime(ctx context.Context, field graphql.CollectedField, obj *ent.Media) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Media_createTime(ctx, field)
 	if err != nil {
@@ -12902,88 +13259,6 @@ func (ec *executionContext) fieldContext_Media_updateTime(_ context.Context, fie
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Media_title(ctx context.Context, field graphql.CollectedField, obj *ent.Media) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Media_title(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Title, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Media_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Media",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Media_description(ctx context.Context, field graphql.CollectedField, obj *ent.Media) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Media_description(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Description, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Media_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Media",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -13446,6 +13721,262 @@ func (ec *executionContext) fieldContext_Media_metadata(_ context.Context, field
 				return ec.fieldContext_FileMetadata_expires(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type FileMetadata", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MediaConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.MediaConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MediaConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.MediaEdge)
+	fc.Result = res
+	return ec.marshalOMediaEdge2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MediaConnection_edges(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MediaConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "node":
+				return ec.fieldContext_MediaEdge_node(ctx, field)
+			case "cursor":
+				return ec.fieldContext_MediaEdge_cursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MediaEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MediaConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.MediaConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MediaConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.PageInfo[uuid.UUID])
+	fc.Result = res
+	return ec.marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MediaConnection_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MediaConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MediaConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.MediaConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MediaConnection_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MediaConnection_totalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MediaConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MediaEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.MediaEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MediaEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Media)
+	fc.Result = res
+	return ec.marshalOMedia2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMedia(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MediaEdge_node(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MediaEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Media_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Media_title(ctx, field)
+			case "description":
+				return ec.fieldContext_Media_description(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Media_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Media_updateTime(ctx, field)
+			case "user":
+				return ec.fieldContext_Media_user(ctx, field)
+			case "car":
+				return ec.fieldContext_Media_car(ctx, field)
+			case "modProductOption":
+				return ec.fieldContext_Media_modProductOption(ctx, field)
+			case "buildLog":
+				return ec.fieldContext_Media_buildLog(ctx, field)
+			case "albums":
+				return ec.fieldContext_Media_albums(ctx, field)
+			case "url":
+				return ec.fieldContext_Media_url(ctx, field)
+			case "metadata":
+				return ec.fieldContext_Media_metadata(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Media", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MediaEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.MediaEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MediaEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.Cursor[uuid.UUID])
+	fc.Result = res
+	return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MediaEdge_cursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MediaEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Cursor does not have child fields")
 		},
 	}
 	return fc, nil
@@ -15003,14 +15534,14 @@ func (ec *executionContext) fieldContext_ModProductOption_media(_ context.Contex
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Media_id(ctx, field)
-			case "createTime":
-				return ec.fieldContext_Media_createTime(ctx, field)
-			case "updateTime":
-				return ec.fieldContext_Media_updateTime(ctx, field)
 			case "title":
 				return ec.fieldContext_Media_title(ctx, field)
 			case "description":
 				return ec.fieldContext_Media_description(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Media_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Media_updateTime(ctx, field)
 			case "user":
 				return ec.fieldContext_Media_user(ctx, field)
 			case "car":
@@ -15929,14 +16460,14 @@ func (ec *executionContext) fieldContext_Mutation_updateMedia(ctx context.Contex
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Media_id(ctx, field)
-			case "createTime":
-				return ec.fieldContext_Media_createTime(ctx, field)
-			case "updateTime":
-				return ec.fieldContext_Media_updateTime(ctx, field)
 			case "title":
 				return ec.fieldContext_Media_title(ctx, field)
 			case "description":
 				return ec.fieldContext_Media_description(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Media_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Media_updateTime(ctx, field)
 			case "user":
 				return ec.fieldContext_Media_user(ctx, field)
 			case "car":
@@ -20573,14 +21104,14 @@ func (ec *executionContext) fieldContext_Query_media(ctx context.Context, field 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Media_id(ctx, field)
-			case "createTime":
-				return ec.fieldContext_Media_createTime(ctx, field)
-			case "updateTime":
-				return ec.fieldContext_Media_updateTime(ctx, field)
 			case "title":
 				return ec.fieldContext_Media_title(ctx, field)
 			case "description":
 				return ec.fieldContext_Media_description(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Media_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Media_updateTime(ctx, field)
 			case "user":
 				return ec.fieldContext_Media_user(ctx, field)
 			case "car":
@@ -25351,14 +25882,14 @@ func (ec *executionContext) fieldContext_UploadMediaResult_media(_ context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Media_id(ctx, field)
-			case "createTime":
-				return ec.fieldContext_Media_createTime(ctx, field)
-			case "updateTime":
-				return ec.fieldContext_Media_updateTime(ctx, field)
 			case "title":
 				return ec.fieldContext_Media_title(ctx, field)
 			case "description":
 				return ec.fieldContext_Media_description(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Media_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Media_updateTime(ctx, field)
 			case "user":
 				return ec.fieldContext_Media_user(ctx, field)
 			case "car":
@@ -26210,14 +26741,14 @@ func (ec *executionContext) fieldContext_User_media(_ context.Context, field gra
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Media_id(ctx, field)
-			case "createTime":
-				return ec.fieldContext_Media_createTime(ctx, field)
-			case "updateTime":
-				return ec.fieldContext_Media_updateTime(ctx, field)
 			case "title":
 				return ec.fieldContext_Media_title(ctx, field)
 			case "description":
 				return ec.fieldContext_Media_description(ctx, field)
+			case "createTime":
+				return ec.fieldContext_Media_createTime(ctx, field)
+			case "updateTime":
+				return ec.fieldContext_Media_updateTime(ctx, field)
 			case "user":
 				return ec.fieldContext_Media_user(ctx, field)
 			case "car":
@@ -32220,27 +32751,13 @@ func (ec *executionContext) unmarshalInputCreateMediaInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createTime", "updateTime", "title", "description", "userID", "carID", "modProductOptionID", "buildLogIDs", "albumIDs"}
+	fieldsInOrder := [...]string{"title", "description", "createTime", "updateTime", "userID", "carID", "modProductOptionID", "buildLogIDs", "albumIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "createTime":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTime = data
-		case "updateTime":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTime = data
 		case "title":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -32255,6 +32772,20 @@ func (ec *executionContext) unmarshalInputCreateMediaInput(ctx context.Context, 
 				return it, err
 			}
 			it.Description = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "userID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -36158,6 +36689,44 @@ func (ec *executionContext) unmarshalInputFuelUpWhereInput(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputMediaOrder(ctx context.Context, obj any) (ent.MediaOrder, error) {
+	var it ent.MediaOrder
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+
+	fieldsInOrder := [...]string{"direction", "field"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "direction":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		case "field":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNMediaOrderField2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputMediaWhereInput(ctx context.Context, obj any) (ent.MediaWhereInput, error) {
 	var it ent.MediaWhereInput
 	asMap := map[string]any{}
@@ -36165,7 +36734,7 @@ func (ec *executionContext) unmarshalInputMediaWhereInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleIsNil", "titleNotNil", "titleEqualFold", "titleContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "hasUser", "hasUserWith", "hasCar", "hasCarWith", "hasModProductOption", "hasModProductOptionWith", "hasBuildLog", "hasBuildLogWith", "hasAlbums", "hasAlbumsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleIsNil", "titleNotNil", "titleEqualFold", "titleContainsFold", "description", "descriptionNEQ", "descriptionIn", "descriptionNotIn", "descriptionGT", "descriptionGTE", "descriptionLT", "descriptionLTE", "descriptionContains", "descriptionHasPrefix", "descriptionHasSuffix", "descriptionIsNil", "descriptionNotNil", "descriptionEqualFold", "descriptionContainsFold", "createTime", "createTimeNEQ", "createTimeIn", "createTimeNotIn", "createTimeGT", "createTimeGTE", "createTimeLT", "createTimeLTE", "updateTime", "updateTimeNEQ", "updateTimeIn", "updateTimeNotIn", "updateTimeGT", "updateTimeGTE", "updateTimeLT", "updateTimeLTE", "hasUser", "hasUserWith", "hasCar", "hasCarWith", "hasModProductOption", "hasModProductOptionWith", "hasBuildLog", "hasBuildLogWith", "hasAlbums", "hasAlbumsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -36249,118 +36818,6 @@ func (ec *executionContext) unmarshalInputMediaWhereInput(ctx context.Context, o
 				return it, err
 			}
 			it.IDLTE = data
-		case "createTime":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTime = data
-		case "createTimeNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTimeNEQ = data
-		case "createTimeIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
-			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTimeIn = data
-		case "createTimeNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
-			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTimeNotIn = data
-		case "createTimeGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTimeGT = data
-		case "createTimeGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTimeGTE = data
-		case "createTimeLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTimeLT = data
-		case "createTimeLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.CreateTimeLTE = data
-		case "updateTime":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTime = data
-		case "updateTimeNEQ":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTimeNEQ = data
-		case "updateTimeIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
-			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTimeIn = data
-		case "updateTimeNotIn":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
-			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTimeNotIn = data
-		case "updateTimeGT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTimeGT = data
-		case "updateTimeGTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTimeGTE = data
-		case "updateTimeLT":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTimeLT = data
-		case "updateTimeLTE":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTimeLTE = data
 		case "title":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -36571,6 +37028,118 @@ func (ec *executionContext) unmarshalInputMediaWhereInput(ctx context.Context, o
 				return it, err
 			}
 			it.DescriptionContainsFold = data
+		case "createTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTime = data
+		case "createTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNEQ = data
+		case "createTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeIn = data
+		case "createTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeNotIn = data
+		case "createTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGT = data
+		case "createTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeGTE = data
+		case "createTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLT = data
+		case "createTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreateTimeLTE = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
+		case "updateTimeNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNEQ = data
+		case "updateTimeIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeIn = data
+		case "updateTimeNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeNotIn = data
+		case "updateTimeGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGT = data
+		case "updateTimeGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeGTE = data
+		case "updateTimeLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLT = data
+		case "updateTimeLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTimeLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTimeLTE = data
 		case "hasUser":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUser"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -44104,20 +44673,13 @@ func (ec *executionContext) unmarshalInputUpdateMediaInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updateTime", "title", "clearTitle", "description", "clearDescription", "userID", "clearUser", "carID", "clearCar", "modProductOptionID", "clearModProductOption", "addBuildLogIDs", "removeBuildLogIDs", "clearBuildLog", "addAlbumIDs", "removeAlbumIDs", "clearAlbums"}
+	fieldsInOrder := [...]string{"title", "clearTitle", "description", "clearDescription", "updateTime", "userID", "clearUser", "carID", "clearCar", "modProductOptionID", "clearModProductOption", "addBuildLogIDs", "removeBuildLogIDs", "clearBuildLog", "addAlbumIDs", "removeAlbumIDs", "clearAlbums"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "updateTime":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UpdateTime = data
 		case "title":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -44146,6 +44708,13 @@ func (ec *executionContext) unmarshalInputUpdateMediaInput(ctx context.Context, 
 				return it, err
 			}
 			it.ClearDescription = data
+		case "updateTime":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updateTime"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdateTime = data
 		case "userID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
 			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
@@ -47425,13 +47994,16 @@ func (ec *executionContext) _Album(ctx context.Context, sel ast.SelectionSet, ob
 		case "media":
 			field := field
 
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._Album_media(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -48006,13 +48578,16 @@ func (ec *executionContext) _Car(ctx context.Context, sel ast.SelectionSet, obj 
 		case "media":
 			field := field
 
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._Car_media(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -50032,6 +50607,10 @@ func (ec *executionContext) _Media(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "title":
+			out.Values[i] = ec._Media_title(ctx, field, obj)
+		case "description":
+			out.Values[i] = ec._Media_description(ctx, field, obj)
 		case "createTime":
 			out.Values[i] = ec._Media_createTime(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -50042,10 +50621,6 @@ func (ec *executionContext) _Media(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "title":
-			out.Values[i] = ec._Media_title(ctx, field, obj)
-		case "description":
-			out.Values[i] = ec._Media_description(ctx, field, obj)
 		case "user":
 			field := field
 
@@ -50280,6 +50855,93 @@ func (ec *executionContext) _Media(ctx context.Context, sel ast.SelectionSet, ob
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var mediaConnectionImplementors = []string{"MediaConnection"}
+
+func (ec *executionContext) _MediaConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.MediaConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mediaConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MediaConnection")
+		case "edges":
+			out.Values[i] = ec._MediaConnection_edges(ctx, field, obj)
+		case "pageInfo":
+			out.Values[i] = ec._MediaConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalCount":
+			out.Values[i] = ec._MediaConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var mediaEdgeImplementors = []string{"MediaEdge"}
+
+func (ec *executionContext) _MediaEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.MediaEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mediaEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MediaEdge")
+		case "node":
+			out.Values[i] = ec._MediaEdge_node(ctx, field, obj)
+		case "cursor":
+			out.Values[i] = ec._MediaEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -54327,6 +54989,37 @@ func (ec *executionContext) marshalNMedia2ᚖgithubᚗcomᚋDan6erbondᚋrevline
 	return ec._Media(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNMediaConnection2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaConnection(ctx context.Context, sel ast.SelectionSet, v *ent.MediaConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MediaConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNMediaOrder2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaOrder(ctx context.Context, v any) (*ent.MediaOrder, error) {
+	res, err := ec.unmarshalInputMediaOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNMediaOrderField2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaOrderField(ctx context.Context, v any) (*ent.MediaOrderField, error) {
+	var res = new(ent.MediaOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNMediaOrderField2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.MediaOrderField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) unmarshalNMediaWhereInput2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaWhereInput(ctx context.Context, v any) (*ent.MediaWhereInput, error) {
 	res, err := ec.unmarshalInputMediaWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
@@ -56918,7 +57611,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]interface{}, error) {
+func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[string]any, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -56926,7 +57619,7 @@ func (ec *executionContext) unmarshalOMap2map(ctx context.Context, v any) (map[s
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
+func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]any) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -56986,6 +57679,72 @@ func (ec *executionContext) marshalOMedia2ᚖgithubᚗcomᚋDan6erbondᚋrevline
 		return graphql.Null
 	}
 	return ec._Media(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOMediaEdge2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.MediaEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOMediaEdge2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOMediaEdge2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaEdge(ctx context.Context, sel ast.SelectionSet, v *ent.MediaEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MediaEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOMediaOrder2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaOrderᚄ(ctx context.Context, v any) ([]*ent.MediaOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*ent.MediaOrder, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNMediaOrder2ᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaOrder(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) unmarshalOMediaWhereInput2ᚕᚖgithubᚗcomᚋDan6erbondᚋrevlineᚋentᚐMediaWhereInputᚄ(ctx context.Context, v any) ([]*ent.MediaWhereInput, error) {

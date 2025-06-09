@@ -449,12 +449,12 @@ func (mq *MediaQuery) WithAlbums(opts ...func(*AlbumQuery)) *MediaQuery {
 // Example:
 //
 //	var v []struct {
-//		CreateTime time.Time `json:"create_time,omitempty"`
+//		Title string `json:"title,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Media.Query().
-//		GroupBy(media.FieldCreateTime).
+//		GroupBy(media.FieldTitle).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (mq *MediaQuery) GroupBy(field string, fields ...string) *MediaGroupBy {
@@ -472,11 +472,11 @@ func (mq *MediaQuery) GroupBy(field string, fields ...string) *MediaGroupBy {
 // Example:
 //
 //	var v []struct {
-//		CreateTime time.Time `json:"create_time,omitempty"`
+//		Title string `json:"title,omitempty"`
 //	}
 //
 //	client.Media.Query().
-//		Select(media.FieldCreateTime).
+//		Select(media.FieldTitle).
 //		Scan(ctx, &v)
 func (mq *MediaQuery) Select(fields ...string) *MediaSelect {
 	mq.ctx.Fields = append(mq.ctx.Fields, fields...)

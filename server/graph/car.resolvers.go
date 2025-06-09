@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/Dan6erbond/revline/auth"
 	"github.com/Dan6erbond/revline/ent"
-	"github.com/Dan6erbond/revline/ent/car"
 	"github.com/Dan6erbond/revline/ent/dynoresult"
 	"github.com/Dan6erbond/revline/ent/dynosession"
 	"github.com/Dan6erbond/revline/ent/expense"
@@ -238,7 +237,7 @@ func (r *carResolver) OdometerKm(ctx context.Context, obj *ent.Car) (float64, er
 
 // PowerKw is the resolver for the powerKw field.
 func (r *carResolver) PowerKw(ctx context.Context, obj *ent.Car) (*float64, error) {
-	res, err := r.entClient.Debug().Car.Query().Where(car.ID(obj.ID)).Limit(1).QueryDynoSessions().Order(dynosession.ByCreateTime(sql.OrderDesc())).Limit(1).
+	res, err := obj.QueryDynoSessions().Order(dynosession.ByCreateTime(sql.OrderDesc())).Limit(1).
 		QueryResults().Where(dynoresult.PowerKwNotNil()).Order(dynoresult.ByPowerKw(sql.OrderDesc())).First(ctx)
 
 	if ent.IsNotFound(err) {

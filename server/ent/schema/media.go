@@ -1,12 +1,13 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"entgo.io/ent/schema/mixin"
 	"github.com/google/uuid"
 )
 
@@ -22,6 +23,15 @@ func (Media) Fields() []ent.Field {
 			Default(uuid.New),
 		field.String("title").Optional().Nillable(),
 		field.String("description").Optional().Nillable(),
+		field.Time("create_time").
+			Default(time.Now).
+			Immutable().
+			Annotations(
+				entgql.OrderField("CREATE_TIME"),
+			),
+		field.Time("update_time").
+			Default(time.Now).
+			UpdateDefault(time.Now),
 	}
 }
 
@@ -44,16 +54,11 @@ func (Media) Edges() []ent.Edge {
 	}
 }
 
-// Mixins of the Media.
-func (Media) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		mixin.Time{},
-	}
-}
-
 // Annotations returns Media annotations.
 func (Media) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
+		entgql.RelayConnection(),
+		entgql.MultiOrder(),
 	}
 }

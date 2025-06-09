@@ -31,7 +31,9 @@ func (Album) Edges() []ent.Edge {
 			Ref("albums").
 			Unique().
 			Required(),
-		edge.To("media", Media.Type),
+		edge.To("media", Media.Type).
+			Annotations(entgql.RelayConnection()).
+			Annotations(entgql.MultiOrder()),
 	}
 }
 

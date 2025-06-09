@@ -26,34 +26,6 @@ type MediaCreate struct {
 	hooks    []Hook
 }
 
-// SetCreateTime sets the "create_time" field.
-func (mc *MediaCreate) SetCreateTime(t time.Time) *MediaCreate {
-	mc.mutation.SetCreateTime(t)
-	return mc
-}
-
-// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
-func (mc *MediaCreate) SetNillableCreateTime(t *time.Time) *MediaCreate {
-	if t != nil {
-		mc.SetCreateTime(*t)
-	}
-	return mc
-}
-
-// SetUpdateTime sets the "update_time" field.
-func (mc *MediaCreate) SetUpdateTime(t time.Time) *MediaCreate {
-	mc.mutation.SetUpdateTime(t)
-	return mc
-}
-
-// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
-func (mc *MediaCreate) SetNillableUpdateTime(t *time.Time) *MediaCreate {
-	if t != nil {
-		mc.SetUpdateTime(*t)
-	}
-	return mc
-}
-
 // SetTitle sets the "title" field.
 func (mc *MediaCreate) SetTitle(s string) *MediaCreate {
 	mc.mutation.SetTitle(s)
@@ -78,6 +50,34 @@ func (mc *MediaCreate) SetDescription(s string) *MediaCreate {
 func (mc *MediaCreate) SetNillableDescription(s *string) *MediaCreate {
 	if s != nil {
 		mc.SetDescription(*s)
+	}
+	return mc
+}
+
+// SetCreateTime sets the "create_time" field.
+func (mc *MediaCreate) SetCreateTime(t time.Time) *MediaCreate {
+	mc.mutation.SetCreateTime(t)
+	return mc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (mc *MediaCreate) SetNillableCreateTime(t *time.Time) *MediaCreate {
+	if t != nil {
+		mc.SetCreateTime(*t)
+	}
+	return mc
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (mc *MediaCreate) SetUpdateTime(t time.Time) *MediaCreate {
+	mc.mutation.SetUpdateTime(t)
+	return mc
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (mc *MediaCreate) SetNillableUpdateTime(t *time.Time) *MediaCreate {
+	if t != nil {
+		mc.SetUpdateTime(*t)
 	}
 	return mc
 }
@@ -275,14 +275,6 @@ func (mc *MediaCreate) createSpec() (*Media, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := mc.mutation.CreateTime(); ok {
-		_spec.SetField(media.FieldCreateTime, field.TypeTime, value)
-		_node.CreateTime = value
-	}
-	if value, ok := mc.mutation.UpdateTime(); ok {
-		_spec.SetField(media.FieldUpdateTime, field.TypeTime, value)
-		_node.UpdateTime = value
-	}
 	if value, ok := mc.mutation.Title(); ok {
 		_spec.SetField(media.FieldTitle, field.TypeString, value)
 		_node.Title = &value
@@ -290,6 +282,14 @@ func (mc *MediaCreate) createSpec() (*Media, *sqlgraph.CreateSpec) {
 	if value, ok := mc.mutation.Description(); ok {
 		_spec.SetField(media.FieldDescription, field.TypeString, value)
 		_node.Description = &value
+	}
+	if value, ok := mc.mutation.CreateTime(); ok {
+		_spec.SetField(media.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := mc.mutation.UpdateTime(); ok {
+		_spec.SetField(media.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
 	}
 	if nodes := mc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

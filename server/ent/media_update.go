@@ -34,12 +34,6 @@ func (mu *MediaUpdate) Where(ps ...predicate.Media) *MediaUpdate {
 	return mu
 }
 
-// SetUpdateTime sets the "update_time" field.
-func (mu *MediaUpdate) SetUpdateTime(t time.Time) *MediaUpdate {
-	mu.mutation.SetUpdateTime(t)
-	return mu
-}
-
 // SetTitle sets the "title" field.
 func (mu *MediaUpdate) SetTitle(s string) *MediaUpdate {
 	mu.mutation.SetTitle(s)
@@ -77,6 +71,12 @@ func (mu *MediaUpdate) SetNillableDescription(s *string) *MediaUpdate {
 // ClearDescription clears the value of the "description" field.
 func (mu *MediaUpdate) ClearDescription() *MediaUpdate {
 	mu.mutation.ClearDescription()
+	return mu
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (mu *MediaUpdate) SetUpdateTime(t time.Time) *MediaUpdate {
+	mu.mutation.SetUpdateTime(t)
 	return mu
 }
 
@@ -277,9 +277,6 @@ func (mu *MediaUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := mu.mutation.UpdateTime(); ok {
-		_spec.SetField(media.FieldUpdateTime, field.TypeTime, value)
-	}
 	if value, ok := mu.mutation.Title(); ok {
 		_spec.SetField(media.FieldTitle, field.TypeString, value)
 	}
@@ -291,6 +288,9 @@ func (mu *MediaUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if mu.mutation.DescriptionCleared() {
 		_spec.ClearField(media.FieldDescription, field.TypeString)
+	}
+	if value, ok := mu.mutation.UpdateTime(); ok {
+		_spec.SetField(media.FieldUpdateTime, field.TypeTime, value)
 	}
 	if mu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -489,12 +489,6 @@ type MediaUpdateOne struct {
 	mutation *MediaMutation
 }
 
-// SetUpdateTime sets the "update_time" field.
-func (muo *MediaUpdateOne) SetUpdateTime(t time.Time) *MediaUpdateOne {
-	muo.mutation.SetUpdateTime(t)
-	return muo
-}
-
 // SetTitle sets the "title" field.
 func (muo *MediaUpdateOne) SetTitle(s string) *MediaUpdateOne {
 	muo.mutation.SetTitle(s)
@@ -532,6 +526,12 @@ func (muo *MediaUpdateOne) SetNillableDescription(s *string) *MediaUpdateOne {
 // ClearDescription clears the value of the "description" field.
 func (muo *MediaUpdateOne) ClearDescription() *MediaUpdateOne {
 	muo.mutation.ClearDescription()
+	return muo
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (muo *MediaUpdateOne) SetUpdateTime(t time.Time) *MediaUpdateOne {
+	muo.mutation.SetUpdateTime(t)
 	return muo
 }
 
@@ -762,9 +762,6 @@ func (muo *MediaUpdateOne) sqlSave(ctx context.Context) (_node *Media, err error
 			}
 		}
 	}
-	if value, ok := muo.mutation.UpdateTime(); ok {
-		_spec.SetField(media.FieldUpdateTime, field.TypeTime, value)
-	}
 	if value, ok := muo.mutation.Title(); ok {
 		_spec.SetField(media.FieldTitle, field.TypeString, value)
 	}
@@ -776,6 +773,9 @@ func (muo *MediaUpdateOne) sqlSave(ctx context.Context) (_node *Media, err error
 	}
 	if muo.mutation.DescriptionCleared() {
 		_spec.ClearField(media.FieldDescription, field.TypeString)
+	}
+	if value, ok := muo.mutation.UpdateTime(); ok {
+		_spec.SetField(media.FieldUpdateTime, field.TypeTime, value)
 	}
 	if muo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

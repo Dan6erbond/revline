@@ -1331,10 +1331,10 @@ func (c *FuelUpUpdateOne) SetInput(i UpdateFuelUpInput) *FuelUpUpdateOne {
 
 // CreateMediaInput represents a mutation input for creating mediaslice.
 type CreateMediaInput struct {
-	CreateTime         *time.Time
-	UpdateTime         *time.Time
 	Title              *string
 	Description        *string
+	CreateTime         *time.Time
+	UpdateTime         *time.Time
 	UserID             *uuid.UUID
 	CarID              *uuid.UUID
 	ModProductOptionID *uuid.UUID
@@ -1344,17 +1344,17 @@ type CreateMediaInput struct {
 
 // Mutate applies the CreateMediaInput on the MediaMutation builder.
 func (i *CreateMediaInput) Mutate(m *MediaMutation) {
-	if v := i.CreateTime; v != nil {
-		m.SetCreateTime(*v)
-	}
-	if v := i.UpdateTime; v != nil {
-		m.SetUpdateTime(*v)
-	}
 	if v := i.Title; v != nil {
 		m.SetTitle(*v)
 	}
 	if v := i.Description; v != nil {
 		m.SetDescription(*v)
+	}
+	if v := i.CreateTime; v != nil {
+		m.SetCreateTime(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
 	}
 	if v := i.UserID; v != nil {
 		m.SetUserID(*v)
@@ -1381,11 +1381,11 @@ func (c *MediaCreate) SetInput(i CreateMediaInput) *MediaCreate {
 
 // UpdateMediaInput represents a mutation input for updating mediaslice.
 type UpdateMediaInput struct {
-	UpdateTime            *time.Time
 	ClearTitle            bool
 	Title                 *string
 	ClearDescription      bool
 	Description           *string
+	UpdateTime            *time.Time
 	ClearUser             bool
 	UserID                *uuid.UUID
 	ClearCar              bool
@@ -1402,9 +1402,6 @@ type UpdateMediaInput struct {
 
 // Mutate applies the UpdateMediaInput on the MediaMutation builder.
 func (i *UpdateMediaInput) Mutate(m *MediaMutation) {
-	if v := i.UpdateTime; v != nil {
-		m.SetUpdateTime(*v)
-	}
 	if i.ClearTitle {
 		m.ClearTitle()
 	}
@@ -1416,6 +1413,9 @@ func (i *UpdateMediaInput) Mutate(m *MediaMutation) {
 	}
 	if v := i.Description; v != nil {
 		m.SetDescription(*v)
+	}
+	if v := i.UpdateTime; v != nil {
+		m.SetUpdateTime(*v)
 	}
 	if i.ClearUser {
 		m.ClearUser()

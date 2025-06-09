@@ -3016,19 +3016,14 @@ func (c *MediaConnection) build(nodes []*Media, pager *mediaPager, after *Cursor
 type MediaPaginateOption func(*mediaPager) error
 
 // WithMediaOrder configures pagination ordering.
-func WithMediaOrder(order *MediaOrder) MediaPaginateOption {
-	if order == nil {
-		order = DefaultMediaOrder
-	}
-	o := *order
+func WithMediaOrder(order []*MediaOrder) MediaPaginateOption {
 	return func(pager *mediaPager) error {
-		if err := o.Direction.Validate(); err != nil {
-			return err
+		for _, o := range order {
+			if err := o.Direction.Validate(); err != nil {
+				return err
+			}
 		}
-		if o.Field == nil {
-			o.Field = DefaultMediaOrder.Field
-		}
-		pager.order = &o
+		pager.order = append(pager.order, order...)
 		return nil
 	}
 }
@@ -3046,7 +3041,7 @@ func WithMediaFilter(filter func(*MediaQuery) (*MediaQuery, error)) MediaPaginat
 
 type mediaPager struct {
 	reverse bool
-	order   *MediaOrder
+	order   []*MediaOrder
 	filter  func(*MediaQuery) (*MediaQuery, error)
 }
 
@@ -3057,8 +3052,10 @@ func newMediaPager(opts []MediaPaginateOption, reverse bool) (*mediaPager, error
 			return nil, err
 		}
 	}
-	if pager.order == nil {
-		pager.order = DefaultMediaOrder
+	for i, o := range pager.order {
+		if i > 0 && o.Field == pager.order[i-1].Field {
+			return nil, fmt.Errorf("duplicate order direction %q", o.Direction)
+		}
 	}
 	return pager, nil
 }
@@ -3071,48 +3068,87 @@ func (p *mediaPager) applyFilter(query *MediaQuery) (*MediaQuery, error) {
 }
 
 func (p *mediaPager) toCursor(m *Media) Cursor {
-	return p.order.Field.toCursor(m)
+	cs_ := make([]any, 0, len(p.order))
+	for _, o_ := range p.order {
+		cs_ = append(cs_, o_.Field.toCursor(m).Value)
+	}
+	return Cursor{ID: m.ID, Value: cs_}
 }
 
 func (p *mediaPager) applyCursors(query *MediaQuery, after, before *Cursor) (*MediaQuery, error) {
-	direction := p.order.Direction
+	idDirection := entgql.OrderDirectionAsc
 	if p.reverse {
-		direction = direction.Reverse()
+		idDirection = entgql.OrderDirectionDesc
 	}
-	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultMediaOrder.Field.column, p.order.Field.column, direction) {
+	fields, directions := make([]string, 0, len(p.order)), make([]OrderDirection, 0, len(p.order))
+	for _, o := range p.order {
+		fields = append(fields, o.Field.column)
+		direction := o.Direction
+		if p.reverse {
+			direction = direction.Reverse()
+		}
+		directions = append(directions, direction)
+	}
+	predicates, err := entgql.MultiCursorsPredicate(after, before, &entgql.MultiCursorsOptions{
+		FieldID:     DefaultMediaOrder.Field.column,
+		DirectionID: idDirection,
+		Fields:      fields,
+		Directions:  directions,
+	})
+	if err != nil {
+		return nil, err
+	}
+	for _, predicate := range predicates {
 		query = query.Where(predicate)
 	}
 	return query, nil
 }
 
 func (p *mediaPager) applyOrder(query *MediaQuery) *MediaQuery {
-	direction := p.order.Direction
-	if p.reverse {
-		direction = direction.Reverse()
+	var defaultOrdered bool
+	for _, o := range p.order {
+		direction := o.Direction
+		if p.reverse {
+			direction = direction.Reverse()
+		}
+		query = query.Order(o.Field.toTerm(direction.OrderTermOption()))
+		if o.Field.column == DefaultMediaOrder.Field.column {
+			defaultOrdered = true
+		}
+		if len(query.ctx.Fields) > 0 {
+			query.ctx.AppendFieldOnce(o.Field.column)
+		}
 	}
-	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
-	if p.order.Field != DefaultMediaOrder.Field {
+	if !defaultOrdered {
+		direction := entgql.OrderDirectionAsc
+		if p.reverse {
+			direction = direction.Reverse()
+		}
 		query = query.Order(DefaultMediaOrder.Field.toTerm(direction.OrderTermOption()))
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(p.order.Field.column)
 	}
 	return query
 }
 
 func (p *mediaPager) orderExpr(query *MediaQuery) sql.Querier {
-	direction := p.order.Direction
-	if p.reverse {
-		direction = direction.Reverse()
-	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(p.order.Field.column)
+		for _, o := range p.order {
+			query.ctx.AppendFieldOnce(o.Field.column)
+		}
 	}
 	return sql.ExprFunc(func(b *sql.Builder) {
-		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
-		if p.order.Field != DefaultMediaOrder.Field {
-			b.Comma().Ident(DefaultMediaOrder.Field.column).Pad().WriteString(string(direction))
+		for _, o := range p.order {
+			direction := o.Direction
+			if p.reverse {
+				direction = direction.Reverse()
+			}
+			b.Ident(o.Field.column).Pad().WriteString(string(direction))
+			b.Comma()
 		}
+		direction := entgql.OrderDirectionAsc
+		if p.reverse {
+			direction = direction.Reverse()
+		}
+		b.Ident(DefaultMediaOrder.Field.column).Pad().WriteString(string(direction))
 	})
 }
 
@@ -3167,6 +3203,53 @@ func (m *MediaQuery) Paginate(
 	}
 	conn.build(nodes, pager, after, first, before, last)
 	return conn, nil
+}
+
+var (
+	// MediaOrderFieldCreateTime orders Media by create_time.
+	MediaOrderFieldCreateTime = &MediaOrderField{
+		Value: func(m *Media) (ent.Value, error) {
+			return m.CreateTime, nil
+		},
+		column: media.FieldCreateTime,
+		toTerm: media.ByCreateTime,
+		toCursor: func(m *Media) Cursor {
+			return Cursor{
+				ID:    m.ID,
+				Value: m.CreateTime,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f MediaOrderField) String() string {
+	var str string
+	switch f.column {
+	case MediaOrderFieldCreateTime.column:
+		str = "CREATE_TIME"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f MediaOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *MediaOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("MediaOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATE_TIME":
+		*f = *MediaOrderFieldCreateTime
+	default:
+		return fmt.Errorf("%s is not a valid MediaOrderField", str)
+	}
+	return nil
 }
 
 // MediaOrderField defines the ordering field of Media.
