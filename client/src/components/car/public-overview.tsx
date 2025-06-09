@@ -25,16 +25,16 @@ import {
   TorqueUnit,
 } from "@/gql/graphql";
 
-import DynoSessionChart from "../performance/dyno-sessions/chart";
-import ModChip from "../../mods/chip";
-import { createExtensions } from "../minimal-tiptap/hooks/use-minimal-tiptap";
+import DynoSessionChart from "@/components/performance/dyno-sessions/chart";
+import ModChip from "@/mods/chip";
+import { createExtensions } from "@/components/minimal-tiptap/hooks/use-minimal-tiptap";
 import { generateHTML } from "@tiptap/react";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { resolveDragResultType } from "@/utils/drag-session";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
-import { useUnits } from "../../hooks/use-units";
+import { useUnits } from "@/hooks/use-units";
 
 const getPublicCarOverview = graphql(`
   query GetPublicCarOverview($id: ID!) {
