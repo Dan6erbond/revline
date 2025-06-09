@@ -1,5 +1,5 @@
 import { StrictTypedTypePolicies } from "@/gql/apollo-helpers";
-import { possibleTypes } from "@/gql/possibleTypes.json";
+import pt from "@/gql/possibleTypes.json";
 import {
   ApolloCache,
   ApolloClient,
@@ -16,6 +16,8 @@ import merge from "deepmerge";
 import isEqual from "lodash/isEqual";
 import { Session } from "next-auth";
 import { RefObject } from "react";
+
+const { possibleTypes } = pt;
 
 export const APOLLO_STATE_PROP_NAME = "__APOLLO_STATE__";
 
