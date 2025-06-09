@@ -56,7 +56,7 @@ export default async function Image({
               <p tw="text-sm mb-0 text-gray-400">{email}</p>
             </div>
           </div>
-          <p tw="text-lg text-gray-400">Shared on Revline</p>
+          <p tw="text-lg text-gray-400">Shared on Revline 1</p>
         </div>
 
         {/* Media */}
