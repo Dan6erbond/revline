@@ -331,8 +331,8 @@ export default function Album() {
                     name="mediaIds"
                     render={({ field: { value, onChange } }) => (
                       <fieldset className="space-y-2">
-                        <legend>Media</legend>
-                        <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-4">
+                        <legend className="sr-only">Media</legend>
+                        <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                           {galleryData?.car.media?.edges?.map((e) => (
                             <SelectableMediaItem
                               item={e!.node!}
