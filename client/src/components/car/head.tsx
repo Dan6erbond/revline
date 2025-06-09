@@ -34,13 +34,17 @@ export default function CarHead({
   basePath: string;
   page?: "overview" | "mods" | "build-log";
 }) {
-  const { name, make, model, trim, year, bannerImage, owner, id } = car;
+  const { name, make, model, trim, year, owner, id } = car;
   const username = owner?.profile?.username || "a Revline 1 user";
   const fallbackTitleParts = [year, make, model, trim].filter(Boolean);
   const carTitle = name || fallbackTitleParts.join(" ");
 
   let titleSuffix = "";
   let description = "";
+  let imageUrl = new URL(
+    basePath + `/cars/${id}/opengraph-image`,
+    baseUrl
+  ).toString();
 
   switch (page) {
     case "mods":
@@ -63,10 +67,6 @@ export default function CarHead({
   }
 
   const title = `${carTitle} | ${titleSuffix} | Revline 1`;
-
-  const imageUrl =
-    bannerImage?.url ||
-    new URL(basePath + "/placeholder.png", baseUrl).toString();
   const canonicalUrl = new URL(basePath + `/cars/${id}`, baseUrl).toString();
 
   return (
