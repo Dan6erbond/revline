@@ -1,8 +1,8 @@
-import { Button, Input, Textarea } from "@heroui/react";
+import { Button, Input } from "@heroui/react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
-import { MinimalTiptapEditor } from "../../minimal-tiptap";
-import React from "react";
+import { JSONContent } from "@tiptap/react";
+import { MinimalTiptapEditor } from "@/components/minimal-tiptap";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { useMutation } from "@apollo/client";
@@ -20,7 +20,7 @@ const createDynoSession = graphql(`
 
 type Inputs = {
   title: string;
-  notes: any;
+  notes: JSONContent;
 };
 
 export default function Create() {

@@ -151,7 +151,10 @@ export default function BuildLog({
                   {e?.node?.media && e?.node?.media.length > 0 && (
                     <div className="flex flex-nowrap gap-4 overflow-x-auto p-2">
                       {e?.node?.media.map((m) => (
-                        <div className="aspect-square shrink-0 relative h-[150px] md:h-[200px] lg:h-[250px] rounded-xl overflow-hidden border-2 border-content4">
+                        <div
+                          key={m.id}
+                          className="aspect-square shrink-0 relative h-[150px] md:h-[200px] lg:h-[250px] rounded-xl overflow-hidden border-2 border-content4"
+                        >
                           <MediaPreview item={m} key={m.id} />
                         </div>
                       ))}
@@ -217,11 +220,7 @@ export default function BuildLog({
 
 export async function getServerSideProps(
   ctx: GetServerSidePropsContext
-): Promise<
-  GetServerSidePropsResult<
-    ComponentProps<typeof BuildLog> & { [key: string]: any }
-  >
-> {
+): Promise<GetServerSidePropsResult<ComponentProps<typeof BuildLog>>> {
   const session = await auth(ctx);
   const client = buildClient({ accessToken: session?.accessToken });
 

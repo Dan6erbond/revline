@@ -1,9 +1,7 @@
-import { ApolloCache, DataProxy } from "@apollo/client/cache";
 import Column, { getTasksByRank } from "./column";
 import {
   DefaultContext,
   MutationUpdaterFunction,
-  Unmasked,
   useApolloClient,
   useMutation,
   useQuery,
@@ -20,7 +18,6 @@ import {
 import { FragmentType, graphql } from "@/gql";
 import {
   GetTasksByRankQuery,
-  GetTasksByRankQueryVariables,
   TaskFieldsFragment,
   TaskStatus,
   UpdateTaskMutation,
@@ -28,6 +25,7 @@ import {
 } from "@/gql/graphql";
 import { TaskCard, TaskFields } from "./task";
 
+import { ApolloCache } from "@apollo/client/cache";
 import { Switch } from "@heroui/react";
 import { getQueryParam } from "@/utils/router";
 import { useRouter } from "next/router";
@@ -99,7 +97,7 @@ export default function Kanban() {
       status = over.data.current.task.status;
       const oldStatus = active.data.current?.task.status as TaskStatus;
 
-      let queryOptions = {
+      const queryOptions = {
         query: getTasksByRank,
         variables: {
           id: getQueryParam(router.query.id) as string,
@@ -172,11 +170,11 @@ export default function Kanban() {
           },
         });
       };
-    } else if (Object.values(TaskStatus).includes(over.id as any)) {
+    } else if (Object.values(TaskStatus).includes(over.id as TaskStatus)) {
       status = over.id as TaskStatus;
       const oldStatus = active.data.current?.task.status as TaskStatus;
 
-      let queryOptions = {
+      const queryOptions = {
         query: getTasksByRank,
         variables: {
           id: getQueryParam(router.query.id) as string,

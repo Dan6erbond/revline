@@ -260,6 +260,7 @@ export default function Task({
         ((node: HTMLButtonElement) => {
           setNodeRef(node);
           setDropRef(node);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }) as any
       }
       style={{
@@ -269,6 +270,7 @@ export default function Task({
       {...attributes}
       className={cn(isDragging && "invisible pointer-events-none")}
       isPressable
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       {...(props as any)}
     />
   );

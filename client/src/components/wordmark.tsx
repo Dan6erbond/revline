@@ -8,6 +8,7 @@ export default function Wordmark(props: React.ComponentProps<"svg">) {
       viewBox="0 0 139 27"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      {...props}
     >
       <path
         d="M70.3221 26.2841V6.64773H72.6104V26.2841H70.3221Z"

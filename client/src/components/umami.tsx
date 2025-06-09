@@ -20,6 +20,7 @@ export default function Umami({
         umami.identify(id, user);
       }
     }, 500);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id]);
 
   return (

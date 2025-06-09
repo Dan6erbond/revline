@@ -11,7 +11,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { skipToken, useMutation, useSuspenseQuery } from "@apollo/client";
 
 import { CircleUserRound } from "lucide-react";
-import { code } from "currency-codes";
 import { graphql } from "@/gql";
 import { useSession } from "next-auth/react";
 import { withNotification } from "@/utils/with-notification";
@@ -162,18 +161,6 @@ export default function ProfileForm() {
         },
       })
   );
-
-  const currencyFilter = (textValue: string, inputValue: string) => {
-    if (inputValue.length === 0) {
-      return true;
-    }
-
-    const c = code(textValue)!;
-
-    return `${c.currency} ${c.code} ${c.countries.join(" ")}`
-      .toLowerCase()
-      .includes(inputValue.toLowerCase());
-  };
 
   return (
     <form

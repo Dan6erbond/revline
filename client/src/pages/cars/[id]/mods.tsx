@@ -182,9 +182,7 @@ export default function Mods({
 
 export async function getServerSideProps(
   ctx: GetServerSidePropsContext
-): Promise<
-  GetServerSidePropsResult<ComponentProps<typeof Mods> & { [key: string]: any }>
-> {
+): Promise<GetServerSidePropsResult<ComponentProps<typeof Mods>>> {
   const session = await auth(ctx);
   const client = buildClient({ accessToken: session?.accessToken });
 

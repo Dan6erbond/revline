@@ -46,9 +46,7 @@ export default function Car({
 
 export async function getServerSideProps(
   ctx: GetServerSidePropsContext
-): Promise<
-  GetServerSidePropsResult<ComponentProps<typeof Car> & { [key: string]: any }>
-> {
+): Promise<GetServerSidePropsResult<ComponentProps<typeof Car>>> {
   const session = await auth(ctx);
   const client = buildClient({ accessToken: session?.accessToken });
 

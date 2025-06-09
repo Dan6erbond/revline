@@ -1,6 +1,7 @@
 import { Button, Input } from "@heroui/react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
+import { JSONContent } from "@tiptap/react";
 import { MinimalTiptapEditor } from "@/components/minimal-tiptap";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
@@ -19,7 +20,7 @@ const createDragSession = graphql(`
 
 type Inputs = {
   title: string;
-  notes: any;
+  notes: JSONContent;
 };
 
 export default function Create() {

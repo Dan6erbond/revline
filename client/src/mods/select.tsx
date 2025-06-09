@@ -37,7 +37,7 @@ export default function ModsSelect({
       classNames={{ innerWrapper: "py-4" }}
       items={
         modsData?.car.mods.edges
-          ?.map((e) => e?.node!)
+          ?.map((e) => e!.node!)
           .filter((n) => (filterMods ? filterMods(n) : true)) ?? []
       }
       {...props}
