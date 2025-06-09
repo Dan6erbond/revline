@@ -11,6 +11,7 @@ export default auth((req) => {
     if (/^\/cars\/[0-9a-zA-Z\-]+\/mods$/.test(req.nextUrl.pathname)) return;
     if (/^\/cars\/[0-9a-zA-Z\-]+\/build\-log$/.test(req.nextUrl.pathname)) return;
     if (/^\/cars\/[0-9a-zA-Z\-]+\/gallery$/.test(req.nextUrl.pathname)) return;
+    if (/^\/cars\/[0-9a-zA-Z\-]+\/opengraph\-image$/.test(req.nextUrl.pathname)) return;
 
     console.log(req.nextUrl.pathname);
 
