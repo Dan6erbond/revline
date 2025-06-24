@@ -71,7 +71,7 @@ export default function Create() {
             {...field}
           />
         )}
-      />{" "}
+      />
       <Button type="submit" className="self-end">
         Create
       </Button>
