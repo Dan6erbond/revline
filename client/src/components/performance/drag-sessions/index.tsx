@@ -3,15 +3,17 @@ import { FileText, Plus, Timer } from "lucide-react";
 
 import Create from "./create";
 import Link from "next/link";
-import Session from "./session";
 import { Suspense } from "react";
 import { createExtensions } from "@/components/minimal-tiptap/hooks/use-minimal-tiptap";
+import dynamic from "next/dynamic";
 import { generateHTML } from "@tiptap/react";
 import { getQueryParam } from "@/utils/router";
 import { graphql } from "@/gql";
 import { isUUID } from "@/utils/is-uuid";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "next/router";
+
+const Session = dynamic(() => import("./session"), { ssr: false });
 
 const getDragSessions = graphql(`
   query GetDragSessions($id: ID!) {
