@@ -26,7 +26,7 @@ if (process.env.SERVER_URL) {
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: "standalone",
-  basePath: process.env.BASE_PATH,
+  basePath: "/app",
   env: {
     BASE_PATH: process.env.BASE_PATH,
   },
