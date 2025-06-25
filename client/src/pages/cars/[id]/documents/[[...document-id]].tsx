@@ -16,6 +16,7 @@ import CarLayout from "@/components/layout/car-layout";
 import Details from "@/components/documents/details";
 import Dropzone from "@/components/dropzone";
 import FileIcon from "@/components/file-icon";
+import NextLink from "next/link";
 import SubscriptionOverlay from "@/components/subscription-overlay";
 import { SubscriptionTier } from "@/gql/graphql";
 import { Suspense } from "react";
@@ -96,7 +97,10 @@ export default function Documents() {
                 <TableCell>{doc.name}</TableCell>
                 <TableCell>{doc.tags.join(", ")}</TableCell>
                 <TableCell>
-                  <Link href={`/cars/${router.query.id}/documents/${doc.id}`}>
+                  <Link
+                    as={NextLink}
+                    href={`/cars/${router.query.id}/documents/${doc.id}`}
+                  >
                     <Eye />
                   </Link>
                 </TableCell>
