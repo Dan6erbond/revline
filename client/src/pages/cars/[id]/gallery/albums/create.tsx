@@ -103,9 +103,7 @@ export default function Create() {
         if (!data) {
           router.push(`/cars/${router.query.id}/gallery/albums`);
         } else {
-          router.push(
-            `/cars/${router.query.id}/gallery/albums/${data.createAlbum.id}`
-          );
+          router.push(`/cars/${router.query.id}/gallery/albums/${data.createAlbum.id}`);
         }
       });
     }
