@@ -68,7 +68,12 @@ export default function CreateCar() {
     }).then(({ data }) => {
       if (!data) return;
 
-      router.push(`/cars/${data.createCar.id}`);
+      router.push({
+        pathname: "/cars/[id]",
+        query: {
+          id: data.createCar.id,
+        },
+      });
     });
   };
 
