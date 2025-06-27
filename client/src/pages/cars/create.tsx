@@ -37,6 +37,13 @@ const createCar = graphql(`
 export default function CreateCar() {
   const router = useRouter();
 
+  console.log({
+    basePath: router.basePath,
+    pathname: router.pathname,
+    asPath: router.asPath,
+    route: router.route,
+  });
+
   const { register, handleSubmit } = useForm<Inputs>();
 
   const [mutate] = useMutation(createCar, {
@@ -71,6 +78,8 @@ export default function CreateCar() {
       console.log({
         basePath: router.basePath,
         pathname: router.pathname,
+        asPath: router.asPath,
+        route: router.route,
       });
       router.push(`/cars/${data.createCar.id}`);
     });
