@@ -34,6 +34,9 @@ const nextConfig: NextConfig = {
     remotePatterns,
   },
   transpilePackages: ["next-auth"],
+  experimental: {
+    clientRouterFilter: false,
+  }
 };
 
 export default nextConfig;
