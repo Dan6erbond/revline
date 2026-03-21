@@ -1,0 +1,40 @@
+databaseurl: "postgres://postgres:postgres@localhost:5432/revline?sslmode=disable"
+environment: "development"
+publicurl: "http://localhost:3000"
+licensekey: ""
+
+server:
+  host: "localhost"
+  port: 4000
+  publicurl: "http://localhost:4000"
+
+auth:
+  providers:
+    - name: "zitadel"
+      type: "oidc"
+      emailclaim: "email"
+      issuerurl: "http://localhost:8080"
+
+s3:
+  endpoint: "localhost:9003"
+  bucket: "revline-media"
+  accesskey: "minioadmin"
+  secretaccesskey: "minioadmin"
+  usessl: false
+  region: "us-east-1"
+
+stripe:
+  secretkey: ""
+  webhooksecret: ""
+  connectwebhooksecret: ""
+  products:
+    diy:
+      id: ""
+      prices:
+        monthly:
+          id: ""
+    enthusiast:
+      id: ""
+      prices:
+        monthly:
+          id: ""
